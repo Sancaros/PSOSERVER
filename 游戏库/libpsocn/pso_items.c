@@ -155,7 +155,7 @@ size_t max_stack_size(const item_t* item) {
 	return max_stack_size_for_item(item->datab[0], item->datab[1]);
 }
 
-// TODO 需要客户端支持各种堆叠
+/* 物品类型堆叠检测表函数 */
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 
 	switch (data0) {

@@ -167,22 +167,6 @@ void generate_common_weapon_special(sfmt_t* rng,
 		special_mult * (uint8_t)rand_float_0_1_from_crypt(rng));
 }
 
-void set_item_identified_flag_if_challenge(lobby_t* l, item_t* item) {
-	if ((l->challenge) &&
-		(item->datab[0] == ITEM_TYPE_WEAPON) &&
-		(item->datab[4] & 0x80) &&
-		(is_item_rare(item) || (item->datab[4] != 0))) {
-		item->datab[4] &= ~(0x80);
-	}
-}
-
-void set_rare_item_unidentified_flag(item_t* item) {
-	if ((item->datab[0] == ITEM_TYPE_WEAPON) &&
-		(is_item_rare(item) || (item->datab[4] != 0))) {
-		item->datab[4] |= 0x80;
-	}
-}
-
 void generate_common_weapon_variances(lobby_t* l, sfmt_t* rng, uint8_t area_norm, item_t* item, pt_bb_entry_t* ent) {
 	clear_inv_item(item);
 	item->datab[0] = 0x00;
@@ -217,7 +201,7 @@ void generate_common_weapon_variances(lobby_t* l, sfmt_t* rng, uint8_t area_norm
 		}
 		generate_common_weapon_bonuses(rng, item, area_norm, ent);
 		generate_common_weapon_special(rng, item, area_norm, ent);
-		set_item_identified_flag_if_challenge(l, item);
+		set_item_identified_flag(l->challenge, item);
 	}
 }
 
@@ -243,16 +227,21 @@ void generate_common_armor_slot_count(sfmt_t* rng, item_t* item, pt_bb_entry_t* 
 }
 
 void generate_common_armor_slots_and_bonuses(sfmt_t* rng, item_t* item, pt_bb_entry_t* ent) {
-	if ((item->datab[0] != 0x01) || (item->datab[1] < 1) || (item->datab[1] > 2)) {
+	/* 检测物品是否属于盔甲 */
+	if ((item->datab[0] != ITEM_TYPE_GUARD) || (item->datab[1] < ITEM_SUBTYPE_FRAME) || (item->datab[1] > ITEM_SUBTYPE_BARRIER)) {
 		return;
 	}
 
-	if (item->datab[1] == 1) {
+	if (item->datab[1] == ITEM_SUBTYPE_FRAME) {
 		generate_common_armor_slot_count(rng, item, ent);
 	}
 
 	pmt_guard_bb_t def;
-	pmt_lookup_guard_bb(item->datal[0], &def);
+	errno_t err = 0;
+	if (err = pmt_lookup_guard_bb(item->datal[0], &def)) {
+		ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item->datal[0]);
+		return;
+	}
 	set_armor_or_shield_defense_bonus(item, (int16_t)(def.dfp_range * rand_float_0_1_from_crypt(rng)));
 	set_common_armor_evasion_bonus(item, (int16_t)(def.evp_range * rand_float_0_1_from_crypt(rng)));
 }
@@ -387,11 +376,11 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 
 /* drop_sub TODO */
 uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
-	if (/*!this->item_drop_sub || */(area < 0x10) || (area > 0x11)) {
+	if (!item_drop_sub || (area < 0x10) || (area > 0x11)) {
 		switch (l->episode) {
 		case GAME_TYPE_EPISODE_1:
 			if (area >= 15) {
-				ERR_LOG("invalid Episode 1 area number");
+				ERR_LOG("%s 无效章节 I 区域数字 %d", get_lobby_leader_describe(l), area);
 			}
 			switch (area) {
 			case 11:
@@ -405,7 +394,7 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 			default:
 				return area;
 			}
-			ERR_LOG("this should be impossible area %d", area);
+			ERR_LOG("%s 在非法区域 %d", get_lobby_leader_describe(l), area);
 		case GAME_TYPE_EPISODE_2: {
 			static const uint8_t area_subs[] = {
 				0x01, // 13 (VR Temple Alpha)
@@ -436,12 +425,12 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 			// TODO: Figure out remaps for Episode 4 (if there are any)
 			return area;
 		default:
-			ERR_LOG("invalid episode number %d", l->episode);
+			ERR_LOG("%s 无效章节 %d", get_lobby_leader_describe(l), l->episode);
 		}
 
 	}
 	else {
-		return /*this->item_drop_sub->override_area*/0;
+		return item_drop_sub[l->episode].override_area;
 	}
 
 	return 0;
@@ -575,7 +564,7 @@ void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area,
 		// Note: The original code does the following here:
 		// clear_inv_item(&item);
 		// item->datab[0] = 0x05;
-		ERR_LOG("invalid item class");
+		ERR_LOG("%s 掉落无效物品类型 0x%02X", get_lobby_leader_describe(l), item->datab[0]);
 	}
 
 	clear_item_if_restricted(l, item);
@@ -632,10 +621,7 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 	switch (item.datab[0]) {
 	case ITEM_TYPE_WEAPON:
 		generate_rare_weapon_bonuses(rng, ent, &item, rand_int(rng, 10));
-		if(l->challenge)
-			set_item_identified_flag_if_challenge(l, &item);
-		else
-			set_rare_weapon_untekker(&item);
+		set_item_identified_flag(l->challenge, &item);
 		break;
 	case ITEM_TYPE_GUARD:
 		generate_common_armor_slots_and_bonuses(rng, &item, ent);
@@ -737,7 +723,7 @@ item_t on_box_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 
 	/* 如果物品不为空 则对稀有物品添加未鉴定属性 */
 	if (!is_item_empty(&item))
-		set_rare_item_unidentified_flag(&item);
+		set_item_identified_flag(l->challenge, &item);
 
 	return item;
 }
@@ -840,29 +826,32 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 
 		switch (item_class) {
 		case ITEM_TYPE_WEAPON: // Weapon
-			item.datab[0] = 0x00;
+			item.datab[0] = ITEM_TYPE_WEAPON;
 			break;
 		case ITEM_SUBTYPE_FRAME: // Armor
-			item.dataw[0] = 0x0101;
+			item.datab[0] = ITEM_TYPE_GUARD;
+			item.datab[1] = ITEM_SUBTYPE_FRAME;
 			break;
 		case ITEM_SUBTYPE_BARRIER: // Shield
-			item.dataw[0] = 0x0201;
+			item.datab[0] = ITEM_TYPE_GUARD;
+			item.datab[1] = ITEM_SUBTYPE_BARRIER;
 			break;
 		case ITEM_SUBTYPE_UNIT: // Unit
-			item.dataw[0] = 0x0301;
+			item.datab[0] = ITEM_TYPE_GUARD;
+			item.datab[1] = ITEM_SUBTYPE_UNIT;
 			break;
 		case 4: // Tool
-			item.datab[0] = 0x03;
+			item.datab[0] = ITEM_TYPE_TOOL;
 			break;
 		case 5: // Meseta
-			item.datab[0] = 0x04;
+			item.datab[0] = ITEM_TYPE_MESETA;
 			item.data2l = choose_meseta_amount(rng, ent->enemy_meseta_ranges, enemy_type) & 0xFFFF;
 			break;
 		default:
 			return item;
 		}
 
-		if (item.datab[0] != 0x04) {
+		if (item.datab[0] != ITEM_TYPE_MESETA) {
 			generate_common_item_variances(l, rng, norm_area, &item, ent);
 		}
 	}
@@ -886,9 +875,9 @@ item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_
 	return item;
 }
 
-item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 物品类型) {
+item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint8_t normarea, uint8_t 颜色ID, uint8_t 物品类型) {
 	static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
-	static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
+	static const uint8_t max_tech_lvl[4] = { 4,  7, 10, 15 };
 	static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 	item_t item = { 0 };
 	uint8_t tmp_value = 0;
@@ -899,19 +888,24 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 	/* 检索物品类型 */
 	switch (item.datab[0]) {
 	case ITEM_TYPE_WEAPON: // 武器
-		item.datab[1] = (sfmt_genrand_uint32(随机因子) % 12) + 1; /* 01 - 0C 普通物品*/
+		item.datab[1] = rand_int(随机因子, 12) + 1; /* 01 - 0C 普通武器物品*/
 
 		/* 9 以下都是 0/1 + 难度 9以上则 0-3（难度）类型ID*/
 		if (item.datab[1] > 9) {
 			item.datab[2] = 难度;
 		}
 		else
-			item.datab[2] = (sfmt_genrand_uint32(随机因子) & 2) + 难度;
+			item.datab[2] = rand_int(随机因子, 2) + 难度; /* 难度最大值 3 增加值 0 1 2 */
 
 		/* 打磨值 0 - 10*/
-		item.datab[3] = sfmt_genrand_uint32(随机因子) % 11;
+		item.datab[3] = rand_int(随机因子, 11);
+
 		/* 特殊攻击 0 - 10 配合难度 0 - 3*/
-		item.datab[4] = sfmt_genrand_uint32(随机因子) % 11 + 难度;
+		//generate_common_weapon_special(随机因子, &item, normarea, ent);
+		item.datab[4] = rand_int(随机因子, 11) + 难度;
+		if (item.datab[4])
+			item.datab[4] |= 0x80;
+
 		/* datab[5] 在这里不涉及 礼物 未鉴定*/
 
 		/* 生成属性*/
@@ -951,7 +945,7 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 		switch (item.datab[1]) {
 		case ITEM_SUBTYPE_FRAME://护甲
 			/*护甲物品子类型*/
-			item.datab[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 6);
+			item.datab[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 6); /* 0x00 - 0x17 普通盔甲 随难度提升掉落物品类型 */
 			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
 				ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
 				break;
@@ -976,7 +970,7 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 		case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
 
 			/*护盾物品子类型*/
-			item.datab[2] = (sfmt_genrand_uint32(随机因子) % 5) + (难度 * 5);
+			item.datab[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 5); /* 0x00 - 0x14 普通护盾*/
 			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
 				ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
 				break;
@@ -1105,7 +1099,7 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 	return item;
 }
 
-item_t create_bb_box_waste_item(lobby_t* l, sfmt_t* 随机因子, uint32_t def0, uint32_t def1, uint32_t def2) {
+item_t create_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint32_t def0, uint32_t def1, uint32_t def2) {
 	item_t item = { 0 };
 	uint8_t tmp_value = 0;
 	errno_t err = 0;
@@ -1132,9 +1126,13 @@ item_t create_bb_box_waste_item(lobby_t* l, sfmt_t* 随机因子, uint32_t def0, uin
 		/* 打磨值 0 - 7*/
 		if (sfmt_genrand_uint32(随机因子) % 2)
 			item.datab[3] = sfmt_genrand_uint32(随机因子) % 8 + 1;
+
 		/* 特殊攻击 0 - 10 配合难度 0 - 3*/
 		if (sfmt_genrand_uint32(随机因子) % 2)
 			item.datab[4] = sfmt_genrand_uint32(随机因子) % 11 + 难度;
+
+		if (item.datab[4])
+			item.datab[4] |= 0x80;
 		/* datab[5] 在这里不涉及 礼物 未鉴定*/
 
 		/* 生成属性*/
@@ -1255,20 +1253,28 @@ item_t create_bb_box_waste_item(lobby_t* l, sfmt_t* 随机因子, uint32_t def0, uin
 }
 
 /* 特殊箱子掉落 */
-item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint32_t def0, uint32_t def1, uint32_t def2) {
+item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint32_t def0, uint32_t def1, uint32_t def2) {
 	item_t item = { 0 };
 	/* 初始化物品数据 */
 	clear_inv_item(&item);
 	item.datab[0] = (def0 >> 0x18) & 0x0F;
 	/* 随机选择掉率普通物品还是稀有物品 */
-	int choice_rng = sfmt_genrand_uint32(rng) % 2;
+	uint32_t choice_rng = rand_int(rng, 2); /* 50% 几率选择掉落垃圾物品还是其他物品 */
 	/* 获取房主玩家的颜色ID */
-	uint8_t section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+	uint8_t section_id = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+
+	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
+	if (!ent) {
+		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);
+		return item;
+	}
+
+	uint8_t normarea = get_pt_data_area_bb(l->episode, area);
 
 	if (choice_rng)
-		item = create_bb_box_item(l, rng, section, item.datab[0]);
+		item = create_bb_box_item(l, ent, rng, normarea, section_id, item.datab[0]);
 	else
-		item = create_bb_box_waste_item(l, rng, def0, def1, def2);
+		item = create_bb_box_waste_item(l, ent, rng, def0, def1, def2);
 	
 	return item;
 }

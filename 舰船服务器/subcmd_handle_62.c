@@ -1326,6 +1326,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bitemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
+    uint8_t drop_area = 0, section = 0;
 
     if (!in_game(src))
         return -1;
@@ -1339,22 +1340,22 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 continue;
 
             if (l->clients[i]->cur_area != src->cur_area) {
-                l->clients[i]->cur_area = src->cur_area;
+                drop_area = src->cur_area;
             }
 
             ship_client_t* p2 = l->clients[i];
             pthread_mutex_lock(&p2->mutex);
             psocn_bb_char_t* p2_char = get_client_char_bb(p2);
-            uint8_t p2_section = p2_char->dress_data.section;
+            section = p2_char->dress_data.section;
             if (l->drop_psocn) {
-                p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
+                section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
             if (pkt->ignore_def) {
-                iitem.data = on_box_item_drop(l, &p2->sfmt_rng, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
+                iitem.data = on_box_item_drop(l, &p2->sfmt_rng, get_pt_data_area_bb(l->episode, drop_area), section);
             }
             else
-                iitem.data = on_specialized_box_item_drop(l, &p2->sfmt_rng,
+                iitem.data = on_specialized_box_item_drop(l, &p2->sfmt_rng, drop_area,
                     pkt->def[0], pkt->def[1], pkt->def[2]);
 
             if (is_item_empty(&iitem.data)) {
@@ -1383,13 +1384,14 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     else {
         pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
-        uint8_t section = character->dress_data.section;
+        section = character->dress_data.section;
+        drop_area = src->cur_area;
 
         if (pkt->ignore_def) {
-            iitem.data = on_box_item_drop(l, &src->sfmt_rng, get_pt_data_area_bb(l->episode, src->cur_area), section);
+            iitem.data = on_box_item_drop(l, &src->sfmt_rng, get_pt_data_area_bb(l->episode, drop_area), section);
         }
         else
-            iitem.data = on_specialized_box_item_drop(l, &src->sfmt_rng,
+            iitem.data = on_specialized_box_item_drop(l, &src->sfmt_rng, drop_area,
                 pkt->def[0], pkt->def[1], pkt->def[2]);
 
         if (is_item_empty(&iitem.data)) {

@@ -3274,33 +3274,35 @@ void set_item_kill_count_if_unsealable(item_t* item) {
     }
 }
 
-/* 设置武器物品为未鉴定 */
-void set_weapon_tekker_value(item_t* item) {
+/* 设置物品的鉴定状态
+如果物品是稀有物品或涵盖属性
+则区分是挑战模式掉落的
+还是普通掉落
+如果挑战
+则直接鉴定物品
+相反则让其未鉴定*/
+void set_item_identified_flag(bool is_mode, item_t* item) {
     pmt_weapon_bb_t weapon;
-    errno_t err;
-    /* 先确保他是一把武器 */
-    if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
-        ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
-        return;
-    }
-    else {
-        if (!(item->datab[4] & 0x80)) {
-            item->datab[4] |= 0x80;
+    if (item->datab[0] == ITEM_TYPE_WEAPON) {
+        errno_t err;
+        /* 先确保他是一把武器 */
+        if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
+            ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
+            return;
         }
-    }
-}
 
-/* 设置稀有武器物品为未鉴定 */
-void set_rare_weapon_untekker(item_t* item) {
-    pmt_weapon_bb_t weapon;
-    errno_t err;
-    /* 先确保他是一把武器 */
-    if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
-        ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
-        return;
-    }
-
-    if (is_item_rare(item)) {
-        set_weapon_tekker_value(item);
+        /* 检测物品是否稀有或有属性 */
+        if (is_item_rare(item) || (item->datab[4] != 0)) {
+            /* 挑战模式 则取消未鉴定状态 */
+            if (is_mode) {
+                if (item->datab[4] & 0x80)
+                    item->datab[4] &= ~(0x80);
+            }
+            else {
+                if (!(item->datab[4] & 0x80)) {
+                    item->datab[4] |= 0x80;
+                }
+            }
+        }
     }
 }

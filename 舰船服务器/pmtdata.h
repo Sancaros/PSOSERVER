@@ -581,7 +581,6 @@ int find_tool_by_class(uint8_t tool_class, uint8_t data[2]);
 bool is_unsealable_item(const item_t* item);
 void set_sealed_item_kill_count(item_t* item, int16_t v);
 void set_item_kill_count_if_unsealable(item_t* item);
-void set_weapon_tekker_value(item_t* item);
-void set_rare_weapon_untekker(item_t* item);
+void set_item_identified_flag(bool is_mode, item_t* item);
 
 #endif /* !PMTDATA_H */

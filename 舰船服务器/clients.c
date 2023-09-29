@@ -1622,6 +1622,27 @@ char* get_player_describe(ship_client_t* src) {
     return char_des;
 }
 
+char* get_lobby_leader_describe(lobby_t* l) {
+    if (!l)
+        return "房间不存在";
+
+    ship_client_t* src = l->clients[l->leader_id];
+    if(src)
+        return "房主不存在";
+
+    /* 初始化角色描述内存 */
+    memset(char_des, 0, sizeof(char_des));
+
+    sprintf(char_des, "%s(%d:%d:%s)"
+        , get_player_name(src->pl, src->version, false)
+        , src->guildcard
+        , src->sec_data.slot
+        , client_type[src->version].ver_name
+    );
+
+    return char_des;
+}
+
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {
     err->has_error = false;
     err->error_cmd_type = 0;

@@ -643,6 +643,10 @@ typedef struct {
     uint8_t max_tech_disk_level; // 0xFF = no maximum
 } Restrictions;
 
+typedef struct {
+    uint8_t override_area;
+} ItemDropSub;
+
 static int have_v2pt = 0;
 static int have_gcpt = 0;
 static int have_bbpt = 0;
@@ -653,6 +657,7 @@ static pt_v3_entry_t gc_ptdata[4][4][10];
 static pt_bb_entry_t bb_ptdata[5][4][10];
 static pt_bb_entry_t bb_dymnamic_ptdata[5][4][10];
 static Restrictions* restrictions = NULL;
+static ItemDropSub* item_drop_sub;
 
 uint8_t unit_weights_table1[0x88];
 int8_t unit_weights_table2[0x0D];
@@ -702,7 +707,7 @@ uint32_t rand_int(sfmt_t* rng, uint64_t max);
 float rand_float_0_1_from_crypt(sfmt_t* rng);
 void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area, item_t* item, pt_bb_entry_t* ent);
 item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint8_t section_id);
-item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint32_t def0, uint32_t def1, uint32_t def2);
+item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint32_t def0, uint32_t def1, uint32_t def2);
 item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_t area, uint8_t section_id);
 
 uint16_t get_random_value(sfmt_t* rng, rang_16bit_t range);
