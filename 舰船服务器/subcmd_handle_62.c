@@ -1240,11 +1240,11 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
 
-        game_enemy_t* en = &l->map_enemies->enemies[mid];
-        if (pkt->rt_index != en->rt_index) {
-            ERR_LOG("命令参数 rt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
-                pkt->rt_index, mid, en->rt_index);
-        }
+        //game_enemy_t* en = &l->map_enemies->enemies[mid];
+        //if (pkt->rt_index != en->rt_index) {
+        //    ERR_LOG("命令参数 rt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
+        //        pkt->rt_index, mid, en->rt_index);
+        //}
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->rt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);
@@ -2817,8 +2817,10 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         case ITEM_TYPE_WEAPON: // 武器
             /* 打磨值 0 - 10*/
             iitem.data.datab[3] = sfmt_genrand_uint32(rng) % 11;
-            /* 特殊攻击 0 - 10 配合难度 0 - 3*/
-            iitem.data.datab[4] = sfmt_genrand_uint32(rng) % 11 + 难度;
+            /* 特殊攻击 0 - 10 配合难度 0 - 3 33%几率 获得特殊EX */
+            if ((sfmt_genrand_uint32(rng) % 3) == 1) {
+                iitem.data.datab[4] = sfmt_genrand_uint32(rng) % 11 + 难度;
+            }
             /* datab[5] 在这里不涉及 礼物 未鉴定*/
 
             /* 生成属性*/
@@ -2827,7 +2829,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                 /*0-5 涵盖所有属性*/
                 for (size_t x = 0; x < 6; x++) {
                     /* 后期设置调整 生成属性几率 TODO */
-                    if ((sfmt_genrand_uint32(rng) % 5) == 1) {
+                    if ((sfmt_genrand_uint32(rng) % 6) == 1) {
                         /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
                         iitem.data.datab[(num_percentages * 2) + 6] = (uint8_t)x;
                         tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 21];/* 0 - 5 % 0 - 19*/
@@ -2858,8 +2860,9 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                     return -1;
                 }
 
-                /*随机槽位 0 - 4 */
-                iitem.data.datab[5] = sfmt_genrand_uint32(rng) % 5;
+                /*随机槽位 0 - 4 33几率新增槽位 */
+                if ((sfmt_genrand_uint32(rng) % 3) == 1)
+                    iitem.data.datab[5] = sfmt_genrand_uint32(rng) % 4 + 1;
 
                 /* DFP值 */
                 tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.dfp_range + 1;
@@ -2911,7 +2914,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
         case ITEM_TYPE_MAG:
             magitemstat_t stats;
-            ItemMagStats_init(&stats);
+            ItemMagStats_init(&stats, get_player_msg_color_set(src));
             assign_mag_stats(&iitem.data, &stats);
             break;
 

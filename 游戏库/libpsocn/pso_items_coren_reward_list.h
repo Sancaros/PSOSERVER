@@ -225,29 +225,29 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_Kit_of_MARK3
 		},
-		//10000 美赛塔
+		//10000 美赛塔 灵感之环 各种回复型插件
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_HP_Restorate, BBItem_HP_Generate, BBItem_HP_Revival,
+			BBItem_TP_Restorate, BBItem_TP_Generate, BBItem_TP_Revival,
+			BBItem_PB_Amplifier, BBItem_PB_Generate, BBItem_PB_Create,
+			BBItem_SMARTLINK
 		},
-		//100000 美赛塔
+		//100000 美赛塔 光子系列
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Cell_of_MAG_502, BBItem_Cell_of_MAG_213, BBItem_Parts_of_RoboChao,
+			BBItem_Photon_Booster, BBItem_AddSlot, BBItem_Photon_Drop,
+			BBItem_Photon_Sphere, BBItem_Photon_Crystal, BBItem_Secret_Ticket,
+			BBItem_Photon_Ticket
 		}
 	},
 	/* 星期四 */
@@ -264,29 +264,29 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_Kit_of_MASTER_SYSTEM
 		},
-		//10000 美赛塔
+		//10000 美赛塔 五周年纪念谢恩刀 总督恩赐的阳伞 金槌 网球拍 羽子板 注射器 捕虫网 十手 宽永通宝 竹枪
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_BAMBOO_SPEAR, BBItem_KANEI_TSUHO, BBItem_JITTE,
+			BBItem_BUTTERFLY_NET, BBItem_SYRINGE, BBItem_BATTLEDORE,
+			BBItem_RACKET, BBItem_HAMMER, BBItem_TYRELLS_PARASOL,
+			BBItem_5TH_ANNIV_BLADE
 		},
-		//100000 美赛塔
+		//100000 美赛塔 部分天堂级插件
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Heavenly_Mind, BBItem_Heavenly_Luck, BBItem_Heavenly_Ability,
+			BBItem_Heavenly_HP, BBItem_Heavenly_TP, BBItem_Heavenly_Resist,
+			BBItem_Heavenly_Technique, BBItem_HP_Ressurection, BBItem_TP_Ressurection,
+			BBItem_Heavenly_Ability
 		}
 	},
 	/* 星期五 */
@@ -303,29 +303,29 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_Kit_of_GENESIS
 		},
-		//10000 美赛塔
+		//10000 美赛塔 阿迦萨达(玛古) 堕天灵＆怵天灵(玛古) 拉比鸟(玛古) 特拉西斯(玛古) 汉堡包(玛古) 艾尔诺娅(玛古) 恶魔之翼(玛古) 天使之翼(玛古) 音速兔子(玛古)
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Mag, BBItem_Soniti, BBItem_ANGELS_WING,
+			BBItem_DEVILS_WING, BBItem_ELENOR, BBItem_HAMBURGER,
+			BBItem_Tellusis, BBItem_Rappy, BBItem_Gael_Giel,
+			BBItem_Agastya
 		},
-		//100000 美赛塔
+		//100000 美赛塔 公会之领域 浅黄絲威褄取鎧 隐身铠 暗杀者迷彩服 红色外套 KROES SWEATER 污浊的救生衣 细菌防具[拉夫特利亚] DF服
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_DF_FIELD, BBItem_VIRUS_ARMOR_Lafuteria, BBItem_DIRTY_LIFEJACKET,
+			BBItem_KROES_SWEATER, BBItem_SONICTEAM_ARMOR, BBItem_RED_COAT,
+			BBItem_THIRTEEN, BBItem_STEALTH_SUIT, BBItem_UNION_FIELD,
+			BBItem_SAMURAI_ARMOR
 		}
 	},
 	/* 星期六 */
@@ -342,29 +342,29 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_Kit_of_SEGA_SATURN
 		},
-		//10000 美赛塔
+		//10000 美赛塔 莉可的眼镜 莉可的耳环 红色手镯
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Valiant_Frame, BBItem_Imperial_Armor, BBItem_Holiness_Armor,
+			BBItem_Guardian_Armor, BBItem_Divinity_Armor, BBItem_Ultimate_Frame,
+			BBItem_Celestial_Armor, BBItem_RED_RING, BBItem_RIKOS_GLASSES,
+			BBItem_RIKOS_EARRING
 		},
-		//100000 美赛塔
+		//100000 美赛塔 拉古奥尔手镯 抵抗黑色手镯 抵抗阳光手镯
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_TRIPOLIC_REFLECTOR, BBItem_REGENERATE_GEAR_BP, BBItem_BLACK_RING_7C,
+			BBItem_WHITE_RING_74, BBItem_YELLOW_RING_63, BBItem_GREEN_RING_5B,
+			BBItem_BLUE_RING_53, BBItem_ANTI_DARK_RING, BBItem_ANTI_LIGHT_RING,
+			BBItem_RAGOL_RING
 		}
 	}
 };

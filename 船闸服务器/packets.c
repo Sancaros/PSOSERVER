@@ -116,12 +116,7 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                 }
                 else if (rv < 0) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
-                    ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", rv);
-
-                    print_ascii_hex(errl, sendbuf, len - total);
-
-                    if (sendbuf)
-                        free_safe(sendbuf);
+                    ERR_LOG("Gnutls *** 发送损坏的数据(%d). 取消响应.", rv);
                     return -1;
                 }
 

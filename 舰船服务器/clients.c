@@ -48,6 +48,7 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #endif
+#include "mag_bb.h"
 
 /* Player levelup data */
 extern bb_level_table_t bb_char_stats;
@@ -1645,6 +1646,14 @@ char* get_lobby_leader_describe(lobby_t* l) {
     );
 
     return char_des;
+}
+
+uint8_t get_player_msg_color_set(ship_client_t* src) {
+    psocn_bb_char_t* character = get_client_char_bb(src);
+    if (!character)
+        return 0;
+
+    return costume_mag_color_type[character->dress_data.ch_class][character->dress_data.costume];
 }
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {

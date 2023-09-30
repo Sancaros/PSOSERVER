@@ -5907,7 +5907,6 @@ int handle_pkt(ship_t* c) {
             else if (sz < 0) {
                 ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
                 ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
-                print_ascii_hex(errl, recvbuf, 65536 - c->recvbuf_cur);
             }
 
             free_safe(recvbuf);

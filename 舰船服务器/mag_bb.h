@@ -288,11 +288,8 @@ enum mag_type {
 /* 计算玛古等级 */
 uint16_t compute_mag_level(const item_t* item);
 
-void ItemMagStats_init(magitemstat_t* stat);
+void ItemMagStats_init(magitemstat_t* stat, uint8_t color);
 void assign_mag_stats(item_t* item, magitemstat_t* mag);
 
 /* MAG 喂养函数 */
 int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_index);
-
-/* MAG 喂养函数 */
-//int mag_bb_feed(ship_client_t* src, uint32_t mag_id, uint32_t item_id);

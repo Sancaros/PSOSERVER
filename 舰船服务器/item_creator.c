@@ -324,11 +324,11 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 	}
 }
 
-void generate_common_mag_variances(item_t* item) {
+void generate_common_mag_variances(item_t* item, uint8_t color) {
 	if (item->datab[0] == ITEM_TYPE_MAG) {
 		item->datab[1] = 0x00;
 		magitemstat_t stats;
-		ItemMagStats_init(&stats);
+		ItemMagStats_init(&stats, color);
 		assign_mag_stats(item, &stats);
 	}
 }
@@ -565,7 +565,7 @@ void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area,
 		break;
 
 	case ITEM_TYPE_MAG:
-		generate_common_mag_variances(item);
+		generate_common_mag_variances(item, get_player_msg_color_set(l->clients[l->leader_id]));
 		break;
 
 	case ITEM_TYPE_TOOL:
@@ -643,7 +643,7 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 		generate_common_armor_slots_and_bonuses(rng, &item, ent);
 		break;
 	case ITEM_TYPE_MAG:
-		generate_common_mag_variances(&item);
+		generate_common_mag_variances(&item, get_player_msg_color_set(l->clients[l->leader_id]));
 		break;
 	case ITEM_TYPE_TOOL:
 		clear_tool_item_if_invalid(&item);
@@ -1031,7 +1031,7 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 
 	case ITEM_TYPE_MAG:
 		magitemstat_t stats;
-		ItemMagStats_init(&stats);
+		ItemMagStats_init(&stats, get_player_msg_color_set(l->clients[l->leader_id]));
 		assign_mag_stats(&item, &stats);
 		break;
 
@@ -1217,7 +1217,7 @@ item_t create_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子
 
 	case ITEM_TYPE_MAG:
 		magitemstat_t stats;
-		ItemMagStats_init(&stats);
+		ItemMagStats_init(&stats, get_player_msg_color_set(l->clients[l->leader_id]));
 		assign_mag_stats(&item, &stats);
 		break;
 	case ITEM_TYPE_TOOL:

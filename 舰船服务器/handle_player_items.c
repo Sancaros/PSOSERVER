@@ -2424,11 +2424,10 @@ void fix_inv_bank_item(item_t* i) {
         break;
 
     case ITEM_TYPE_MAG:// Âê¹Å
-        magitem_t* playermag;
         int16_t mag_def, mag_pow, mag_dex, mag_mind;
         int32_t total_levels;
 
-        playermag = (magitem_t*)&i->datab[0];
+        magitem_t* playermag = (magitem_t*)&i->datab[0];
 
         if (playermag->synchro > 120)
             playermag->synchro = 120;

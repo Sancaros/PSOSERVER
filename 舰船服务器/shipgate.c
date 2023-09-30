@@ -189,9 +189,6 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                 else if (rv < 0) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", rv);
-
-                    print_ascii_hex(errl, sendbuf, len - total);
-
                     return -1;
                 }
 
@@ -3582,7 +3579,6 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
             else if (sz < 0) {
                 ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
                 ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
-                print_ascii_hex(errl, recvbuf, MAX_TMP_BUFF - c->recvbuf_cur);
             }
 
             return sz;

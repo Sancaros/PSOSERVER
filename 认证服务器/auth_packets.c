@@ -863,7 +863,7 @@ int send_menu(login_client_t* c, uint32_t type) {
 static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
     uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
-    char no_ship_msg[] = "No Ships";
+    char no_ship_msg[] = "No Active Ship";
     char query[256];
     uint32_t num_ships = 0;
     void *result;

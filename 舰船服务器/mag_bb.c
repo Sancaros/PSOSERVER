@@ -121,7 +121,7 @@ void update_stat(item_t* data, size_t which, int8_t delta) {
 	}
 }
 
-void ItemMagStats_init(magitemstat_t* stat) {
+void ItemMagStats_init(magitemstat_t* stat, uint8_t color) {
 	stat->iq = 0;
 	stat->synchro = 40;
 	stat->def = 500;
@@ -130,7 +130,7 @@ void ItemMagStats_init(magitemstat_t* stat) {
 	stat->mind = 0;
 	stat->flags = 0;
 	stat->photon_blasts = 0;
-	stat->color = 14;
+	stat->color = color;
 }
 
 void assign_mag_stats(item_t* item, magitemstat_t* stat) {
