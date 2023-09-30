@@ -1705,6 +1705,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         pthread_mutex_unlock(&src->mutex);
         return -2;
     }
+
     inventory_t* inv = get_client_inv_bb(src);
 
     /* 在玩家背包中查找物品. */
@@ -1968,19 +1969,21 @@ static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
     if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
+    inventory_t* inv = get_client_inv_bb(src);
+
     /* See if its a stackable item, since we have to treat them differently. */
     if (is_stackable(&pkt->data)) {
         /* Its stackable, so see if we have any in the inventory already */
         for (i = 0; i < src->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if (src->iitems[i].data.datal[0] == pkt->data.datal[0]) {
-                src->iitems[i].data.datal[1] += pkt->data.datal[1];
+            if (inv->iitems[i].data.datal[0] == pkt->data.datal[0]) {
+                inv->iitems[i].data.datal[1] += pkt->data.datal[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&src->iitems[src->item_count++].data.datal[0], &pkt->data.datal[0],
+    memcpy(&inv->iitems[inv->item_count++].data.datal[0], &pkt->data.datal[0],
         sizeof(uint32_t) * 5);
 
 send_pkt:
