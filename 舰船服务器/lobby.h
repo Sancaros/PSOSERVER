@@ -363,6 +363,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req);
 /* Remove a player from a lobby without changing their lobby (for instance, if
    they disconnected). */
 int lobby_remove_player(ship_client_t *c);
+int lobby_remove_player_bb(ship_client_t* c);
 
 /* Send an information reply packet with information about the lobby. */
 int lobby_info_reply(ship_client_t *c, uint32_t lobby);

@@ -1457,6 +1457,62 @@ out:
     return rv;
 }
 
+/* Remove a player from a lobby without changing their lobby (for instance, if
+   they disconnected). */
+int lobby_remove_player_bb(ship_client_t* c) {
+    lobby_t* l = c->cur_lobby;
+    int rv = 0, delete_lobby, client_id;
+
+    /* They're not in a lobby, so we're done. */
+    if (!l) {
+        return 0;
+    }
+
+    /* Lock the mutex before we try anything funny. */
+    pthread_mutex_lock(&l->mutex);
+
+    /* If they were bursting, unlock the lobby... */
+    if ((c->flags & CLIENT_FLAG_BURSTING)) {
+        l->flags &= ~LOBBY_FLAG_BURSTING;
+        lobby_handle_done_burst_bb(l, NULL);
+    }
+
+    /* If the client is leaving a game lobby, then send their monster stats
+       up to the shipgate. */
+    if (l->type == LOBBY_TYPE_GAME && (c->flags & CLIENT_FLAG_TRACK_KILLS))
+        shipgate_send_mkill(&ship->sg, c->guildcard, c->cur_block->b, c, l);
+
+    /* We have a nice function to handle most of the heavy lifting... */
+    client_id = c->client_id;
+    delete_lobby = lobby_remove_client_locked(c, client_id, l);
+
+    if (delete_lobby < 0) {
+        /* Uhh... what do we do about this... */
+        rv = -1;
+        goto out;
+    }
+
+    /* The client has now gone completely away, update the clients in the lobby
+       so that they know the requester has gone. */
+    send_lobby_leave(l, c, client_id);
+
+    if (delete_lobby) {
+        pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
+        lobby_destroy_locked(l, 1);
+        pthread_rwlock_unlock(&c->cur_block->lobby_lock);
+    }
+
+    c->cur_lobby = NULL;
+
+out:
+    /* We're done, clean up. */
+    if (delete_lobby < 1) {
+        pthread_mutex_unlock(&l->mutex);
+    }
+
+    return rv;
+}
+
 int lobby_send_pkt_dcnte(lobby_t *l, ship_client_t *src, void *h, void *h2,
                          int igcheck) {
     dc_pkt_hdr_t *hdr = (dc_pkt_hdr_t *)h, *hdr2 = (dc_pkt_hdr_t *)h2;

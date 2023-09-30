@@ -361,8 +361,8 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
 			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
-			BBItem_TRIPOLIC_REFLECTOR, BBItem_REGENERATE_GEAR_BP, BBItem_BLACK_RING_7C,
-			BBItem_WHITE_RING_74, BBItem_YELLOW_RING_63, BBItem_GREEN_RING_5B,
+			BBItem_TRIPOLIC_REFLECTOR, BBItem_REGENERATE_GEAR_BP, BBItem_WEAPONS_SILVER_SHIELD,
+			BBItem_WEAPONS_COPPER_SHIELD, BBItem_YELLOW_RING_63, BBItem_GREEN_RING_5B,
 			BBItem_BLUE_RING_53, BBItem_ANTI_DARK_RING, BBItem_ANTI_LIGHT_RING,
 			BBItem_RAGOL_RING
 		}

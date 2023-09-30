@@ -1184,7 +1184,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             将客户端从其所在的大厅中删除，
             这将强制稍后发送的0x84表现为我们正在将其添加到任何大厅中 . */
         pthread_mutex_unlock(&c->mutex);
-        return lobby_remove_player(c);
+        return lobby_remove_player_bb(c);
     }
 
     /* If the client isn't in a lobby already, then add them to the first
