@@ -920,7 +920,6 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
 }
 
 static int td(ship_client_t *c, lobby_t *l, void *req) {
-    //int32_t r = mt19937_genrand_int32(&c->cur_block->rng);
     uint32_t r = sfmt_genrand_uint32(&c->cur_block->sfmt_rng);
     uint32_t i[4] = { 4, 0, 0, 0 };
 

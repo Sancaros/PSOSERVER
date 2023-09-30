@@ -2321,16 +2321,16 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
-//( 00000010 )   00 00 00 00 00 00 00 00   13 00 01 00 00 00 00 00  ................
-//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
-//( 00000010 )   00 00 00 00 00 00 00 00   14 00 01 00 00 00 00 00  ................
-//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
-//( 00000010 )   00 00 00 00 00 00 00 00   15 00 01 00 00 00 00 00  ................
-//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
-//( 00000010 )   00 00 00 00 00 00 00 00   16 00 01 00 00 00 00 00  ................
-//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
-//( 00000010 )   00 00 00 00 00 00 00 00   17 00 01 00 00 00 00 00  ................
+    //( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+    //( 00000010 )   00 00 00 00 00 00 00 00   13 00 01 00 00 00 00 00  ................
+    //( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+    //( 00000010 )   00 00 00 00 00 00 00 00   14 00 01 00 00 00 00 00  ................
+    //( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+    //( 00000010 )   00 00 00 00 00 00 00 00   15 00 01 00 00 00 00 00  ................
+    //( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+    //( 00000010 )   00 00 00 00 00 00 00 00   16 00 01 00 00 00 00 00  ................
+    //( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+    //( 00000010 )   00 00 00 00 00 00 00 00   17 00 01 00 00 00 00 00  ................
     iitem_t ii;
     memset(&ii, 0, PSOCN_STLENGTH_IITEM);
     ii.data = pkt->item_data;
@@ -2743,34 +2743,29 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     // 打印当前是星期几
     //DBG_LOG("今天是 %s.", currentDayOfWeek);
 
-    reward_percent[0] = weekly_reward_percent[menu_choice][reward_list.wday][0];
-    reward_percent[1] = weekly_reward_percent[menu_choice][reward_list.wday][1];
-    reward_percent[2] = weekly_reward_percent[menu_choice][reward_list.wday][2];
+    reward_percent[0] = 国庆_weekly_reward_percent[menu_choice][reward_list.wday][0];
+    reward_percent[1] = 国庆_weekly_reward_percent[menu_choice][reward_list.wday][1];
+    reward_percent[2] = 国庆_weekly_reward_percent[menu_choice][reward_list.wday][2];
     reward_list.rewards = day_reward_list[reward_list.wday][menu_choice];
 
     /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/
-    if (!src->game_data->gm_debug) {
-
+    if (src->game_data->gm_debug) {
+        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+    }
+    else {
         uint32_t rng_value = sfmt_genrand_uint32(rng) % 100 + 1;
-        if ((rng_value <= reward_percent[0]) && (reward_percent[0] != 0)) {
-            result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
-        }
-        else if ((rng_value <= reward_percent[1]) && (reward_percent[1] != 0)) {
-            result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
-        }
-        else if ((rng_value <= reward_percent[2]) && (reward_percent[2] != 0)) {
-            result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
-        }
-        else {
+        size_t tmp_choice = menu_choice + 1;
+        if (tmp_choice > 3)
+            tmp_choice = 3;
 
-#ifdef DEBUG
+        for (size_t i = 0; i < tmp_choice; i++) {
+            if ((rng_value <= reward_percent[i]) && (reward_percent[i] != 0)) {
+                result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+                break;
+            }
+        }
 
-#endif // DEBUG
-            send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得奖励.",
-                currentDayOfWeek,
-                menu_choice_price[menu_choice],
-                get_player_name(src->pl, src->version, false)
-            );
+        if (is_item_empty(&result_item)) {
 
 #ifdef DEBUG
             DBG_LOG("美赛塔奖励 menu_choice 0x%08X rng_value %d", menu_choice, rng_value);
@@ -2794,12 +2789,17 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
             subcmd_send_bb_create_inv_item(src, iitem.data, amount);
 
-            subcmd_bb_send_coren_reward(src, 0, result_item);
-            return 0;
+            send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得物品奖励\n安慰奖: %d 美赛塔.",
+                currentDayOfWeek,
+                menu_choice_price[menu_choice],
+                get_player_name(src->pl, src->version, false),
+                amount
+            );
+
+            return subcmd_bb_send_coren_reward(src, 0, result_item);
         }
 
-    }else
-        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+    }
 
     iitem = player_iitem_init(result_item);
 
@@ -2924,7 +2924,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             iitem.data.datab[5] = get_item_amount(&iitem.data, 1);
             break;
         }
-        
+
         iitem.data.item_id = generate_item_id(l, src->client_id);
 
     }
@@ -2946,18 +2946,17 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         get_item_describe(&iitem.data, src->version)
     );
 
-    if(is_item_rare(&iitem.data))
+    if (is_item_rare(&iitem.data))
         announce_message(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
             "恭喜 %s 在 \tE\tC4%d \tE\tC7美赛塔档次抽奖获得了 "
             "\tE\tC6%s.",
             currentDayOfWeek,
-            get_player_name(src->pl, src->version, false), 
-            menu_choice_price[menu_choice], 
+            get_player_name(src->pl, src->version, false),
+            menu_choice_price[menu_choice],
             get_item_describe(&iitem.data, src->version)
         );
 
-    subcmd_bb_send_coren_reward(src, 0, iitem.data);
-    return 0;
+    return subcmd_bb_send_coren_reward(src, 0, result_item);
 }
 
 // 定义函数指针数组

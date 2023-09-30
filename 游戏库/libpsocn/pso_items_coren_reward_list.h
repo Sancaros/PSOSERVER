@@ -89,6 +89,39 @@ uint32_t weekly_reward_percent[3][7][3] = {
 	}
 };
 
+uint32_t 国庆_weekly_reward_percent[3][7][3] = {
+	//1000 美赛塔
+	{
+		{40, 0, 0},  // Day 7
+		{40, 0, 0},  // Day 1，第一列物品概率为4%，第二列物品概率为0%，第三列物品概率为0%
+		{40, 0, 0},  // Day 2
+		{40, 0, 0},  // Day 3
+		{40, 0, 0},  // Day 4
+		{40, 0, 0},  // Day 5
+		{40, 0, 0}   // Day 6
+	},
+	//10000 美赛塔
+	{
+		{50, 40, 0},  // Day 7
+		{50, 40, 0},  // Day 1，第一列物品概率为8%，第二列物品概率为8%，第三列物品概率为0%
+		{50, 40, 0},  // Day 2
+		{50, 40, 0},  // Day 3
+		{50, 40, 0},  // Day 4
+		{50, 40, 0},  // Day 5
+		{50, 40, 0}   // Day 6
+	},
+	//100000 美赛塔
+	{
+		{70, 50, 40},  // Day 7
+		{70, 50, 40},  // Day 1，第一列物品概率为12%，第二列物品概率为8%，第三列物品概率为4%
+		{70, 50, 40},  // Day 2
+		{70, 50, 40},  // Day 3
+		{70, 50, 40},  // Day 4
+		{70, 50, 40},  // Day 5
+		{70, 50, 40}   // Day 6
+	}
+};
+
 // 定义总共的物品数量
 #define TOTAL_COREN_ITEMS 25
 
@@ -237,11 +270,11 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_PB_Amplifier, BBItem_PB_Generate, BBItem_PB_Create,
 			BBItem_SMARTLINK
 		},
-		//100000 美赛塔 光子系列
+		//100000 美赛塔 光子系列 怪物部件 玛古细胞
 		{
-			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
-			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
-			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_P_arms_Arms, BBItem_Bringers_Right_Arm, BBItem_Delsabers_Left_Arm,
+			BBItem_Delsabers_Right_Arm, BBItem_Heart_of_Opa_Opa, BBItem_Heart_of_Chao,
+			BBItem_Heart_of_Pian, BBItem_Parts_of_RoboChao, BBItem_Power_Material,
 			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_Cell_of_MAG_502, BBItem_Cell_of_MAG_213, BBItem_Parts_of_RoboChao,
@@ -276,11 +309,11 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_RACKET, BBItem_HAMMER, BBItem_TYRELLS_PARASOL,
 			BBItem_5TH_ANNIV_BLADE
 		},
-		//100000 美赛塔 部分天堂级插件
+		//100000 美赛塔 部分高级插件
 		{
-			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
-			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
-			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_V501, BBItem_V502, BBItem_V801,
+			BBItem_LIMITER, BBItem_ADEPT, BBItem_DIVINE_PROTECTION,
+			BBItem_Heavenly_Battle, BBItem_Heavenly_Power, BBItem_Power_Material,
 			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_Heavenly_Mind, BBItem_Heavenly_Luck, BBItem_Heavenly_Ability,
@@ -317,9 +350,9 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 		},
 		//100000 美赛塔 公会之领域 浅黄絲威褄取鎧 隐身铠 暗杀者迷彩服 红色外套 KROES SWEATER 污浊的救生衣 细菌防具[拉夫特利亚] DF服
 		{
-			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
-			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
-			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_DBS_ARMOR, BBItem_GUARD_WAVE, BBItem_DF_FIELD,
+			BBItem_LUMINOUS_FIELD, BBItem_CHU_CHU_FEVER, BBItem_LOVE_HEART,
+			BBItem_FLAME_GARMENT, BBItem_AURA_FIELD, BBItem_Power_Material,
 			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_DF_FIELD, BBItem_VIRUS_ARMOR_Lafuteria, BBItem_DIRTY_LIFEJACKET,
@@ -354,11 +387,11 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_Celestial_Armor, BBItem_RED_RING, BBItem_RIKOS_GLASSES,
 			BBItem_RIKOS_EARRING
 		},
-		//100000 美赛塔 拉古奥尔手镯 抵抗黑色手镯 抵抗阳光手镯
+		//100000 美赛塔 拉古奥尔手镯 抵抗黑色手镯 抵抗阳光手镯 厄普西隆之盾 天使圆环 黑色手套 腥臭盾 八咫镜 露芘卡 深渊来客
 		{
-			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
-			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
-			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_YATA_MIRROR, BBItem_BLACK_GAUNTLETS, BBItem_EPSIGUARD,
+			BBItem_ANGEL_RING, BBItem_Scape_Doll, BBItem_FROM_THE_DEPTHS,
+			BBItem_RUPIKA, BBItem_STINK_SHIELD, BBItem_Power_Material,
 			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_TRIPOLIC_REFLECTOR, BBItem_REGENERATE_GEAR_BP, BBItem_WEAPONS_SILVER_SHIELD,
