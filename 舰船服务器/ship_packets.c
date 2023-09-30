@@ -13262,7 +13262,7 @@ int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
         dc_err_pkt_hdr_t* dc_err_pkt = (dc_err_pkt_hdr_t*)prepend_command_header(c->version, false, dchdr->pkt_type, dchdr->flags, data);
         err_type = dc_err_pkt->hdr.pkt_type;
         err_len = dc_err_pkt->hdr.pkt_len;
-        err_subtype = dc_err_pkt->data[0];
+        err_subtype = dc_err_pkt->type;
         break;
     }
     case CLIENT_VERSION_PC: {
@@ -13270,7 +13270,7 @@ int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
         pc_err_pkt_hdr_t* pc_err_pkt = (pc_err_pkt_hdr_t*)prepend_command_header(c->version, false, pchdr->pkt_type, pchdr->flags, data);
         err_type = pc_err_pkt->hdr.pkt_type;
         err_len = pc_err_pkt->hdr.pkt_len;
-        err_subtype = pc_err_pkt->data[0];
+        err_subtype = pc_err_pkt->type;
         break;
     }
     case CLIENT_VERSION_BB: {
@@ -13280,7 +13280,7 @@ int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
         bb_err_pkt_hdr_t* bb_err_pkt = (bb_err_pkt_hdr_t*)prepend_command_header(c->version, false, bbhdr->pkt_type, bbhdr->flags, data);
         err_type = bb_err_pkt->hdr.pkt_type;
         err_len = bb_err_pkt->hdr.pkt_len;
-        err_subtype = bb_err_pkt->data[0];
+        err_subtype = bb_err_pkt->type;
         break;
     }
     default:

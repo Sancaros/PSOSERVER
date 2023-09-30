@@ -156,16 +156,20 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             item.datab[5] = sfmt_genrand_uint32(随机因子) % 5;
 
             /* DFP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
-            if (tmp_value < 0)
-                tmp_value = 0;
-            item.datab[6] = tmp_value;
+            if (pmt_guard.dfp_range) {
+                tmp_value = sfmt_genrand_uint32(随机因子) % (pmt_guard.dfp_range + 1);
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                item.datab[6] = tmp_value;
+            }
 
             /* EVP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
-            if (tmp_value < 0)
-                tmp_value = 0;
-            item.datab[8] = tmp_value;
+            if (pmt_guard.evp_range) {
+                tmp_value = sfmt_genrand_uint32(随机因子) % (pmt_guard.evp_range + 1);
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                item.datab[8] = tmp_value;
+            }
             break;
 
         case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
@@ -178,16 +182,20 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             }
 
             /* DFP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
-            if (tmp_value < 0)
-                tmp_value = 0;
-            item.datab[6] = tmp_value;
+            if (pmt_guard.dfp_range) {
+                tmp_value = sfmt_genrand_uint32(随机因子) % (pmt_guard.dfp_range + 1);
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                item.datab[6] = tmp_value;
+            }
 
             /* EVP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
-            if (tmp_value < 0)
-                tmp_value = 0;
-            item.datab[8] = tmp_value;
+            if (pmt_guard.evp_range) {
+                tmp_value = sfmt_genrand_uint32(随机因子) % (pmt_guard.evp_range + 1);
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                item.datab[8] = tmp_value;
+            }
             break;
 
         case ITEM_SUBTYPE_UNIT://插件

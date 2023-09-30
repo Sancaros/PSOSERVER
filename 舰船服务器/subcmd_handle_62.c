@@ -1214,11 +1214,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 continue;
             }
 
-            iitem.data.item_id = generate_item_id(l, 0xFF);
-
-#ifdef DEBUG
-            print_item_data(&iitem.data, l->version);
-#endif // DEBUG
+            //iitem.data.item_id = generate_item_id(l, 0xFF);
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
@@ -1226,6 +1222,10 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
+
+#ifdef DEBUG
+            print_item_data(&iitem.data, l->version);
+#endif // DEBUG
 
             rv = subcmd_send_bb_drop_item(p2, pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
@@ -1251,11 +1251,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        iitem.data.item_id = generate_item_id(l, 0xFF);
-
-#ifdef DEBUG
-        print_item_data(&iitem.data, l->version);
-#endif // DEBUG
+        //iitem.data.item_id = generate_item_id(l, 0xFF);
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
@@ -1263,6 +1259,10 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
+
+#ifdef DEBUG
+        print_item_data(&iitem.data, l->version);
+#endif // DEBUG
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
@@ -1364,18 +1364,18 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 continue;
             }
 
-            iitem.data.item_id = generate_item_id(l, 0xFF);
+            //iitem.data.item_id = generate_item_id(l, 0xFF);
+
+            litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
+            if (!lt) {
+                ERR_LOG("%s 无法将物品添加至游戏房间! pkt->ignore_def %d", get_player_describe(p2), pkt->ignore_def);
+                pthread_mutex_unlock(&p2->mutex);
+                continue;
+            }
 
 #ifdef DEBUG
             print_item_data(&iitem.data, l->version);
 #endif // DEBUG
-
-            litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
-            if (!lt) {
-                ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(p2));
-                pthread_mutex_unlock(&p2->mutex);
-                continue;
-            }
 
             rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
@@ -1400,11 +1400,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        iitem.data.item_id = generate_item_id(l, 0xFF);
-
-#ifdef DEBUG
-        print_item_data(&iitem.data, l->version);
-#endif // DEBUG
+        //iitem.data.item_id = generate_item_id(l, 0xFF);
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
@@ -1412,6 +1408,10 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
+
+#ifdef DEBUG
+        print_item_data(&iitem.data, l->version);
+#endif // DEBUG
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
@@ -2716,8 +2716,6 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
 
-    pthread_mutex_lock(&src->mutex);
-
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     // 获取当前系统时间
@@ -2790,14 +2788,13 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             if (!add_iitem(src, iitem)) {
                 ERR_LOG("%s 背包空间不足, 无法获得物品!",
                     get_player_describe(src));
-                pthread_mutex_unlock(&src->mutex);
+                pthread_mutex_lock(&src->mutex);
                 return -1;
             }
 
             subcmd_send_bb_create_inv_item(src, iitem.data, amount);
 
-            subcmd_bb_send_coren_reward(dest, 0, result_item);
-            pthread_mutex_unlock(&src->mutex);
+            subcmd_bb_send_coren_reward(src, 0, result_item);
             return 0;
         }
 
@@ -2856,7 +2853,6 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             case ITEM_SUBTYPE_FRAME://护甲
                 if (err = pmt_lookup_guard_bb(iitem.data.datal[0], &pmt_guard)) {
                     ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
-                    pthread_mutex_unlock(&src->mutex);
                     return -1;
                 }
 
@@ -2865,42 +2861,48 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                     iitem.data.datab[5] = sfmt_genrand_uint32(rng) % 4 + 1;
 
                 /* DFP值 */
-                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.dfp_range + 1;
-                if (tmp_value < 0)
-                    tmp_value = 0;
-                iitem.data.datab[6] = tmp_value;
+                if (pmt_guard.dfp_range) {
+                    tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
+                    if (tmp_value < 0)
+                        tmp_value = 0;
+                    iitem.data.datab[6] = tmp_value;
+                }
 
                 /* EVP值 */
-                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.evp_range + 1;
-                if (tmp_value < 0)
-                    tmp_value = 0;
-                iitem.data.datab[8] = tmp_value;
+                if (pmt_guard.evp_range) {
+                    tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
+                    if (tmp_value < 0)
+                        tmp_value = 0;
+                    iitem.data.datab[8] = tmp_value;
+                }
                 break;
 
             case ITEM_SUBTYPE_BARRIER://护盾
                 if (err = pmt_lookup_guard_bb(iitem.data.datal[0], &pmt_guard)) {
                     ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
-                    pthread_mutex_unlock(&src->mutex);
                     return -1;
                 }
 
                 /* DFP值 */
-                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.dfp_range + 1;
-                if (tmp_value < 0)
-                    tmp_value = 0;
-                iitem.data.datab[6] = tmp_value;
+                if (pmt_guard.dfp_range) {
+                    tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
+                    if (tmp_value < 0)
+                        tmp_value = 0;
+                    iitem.data.datab[6] = tmp_value;
+                }
 
                 /* EVP值 */
-                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.evp_range + 1;
-                if (tmp_value < 0)
-                    tmp_value = 0;
-                iitem.data.datab[8] = tmp_value;
+                if (pmt_guard.evp_range) {
+                    tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
+                    if (tmp_value < 0)
+                        tmp_value = 0;
+                    iitem.data.datab[8] = tmp_value;
+                }
                 break;
 
             case ITEM_SUBTYPE_UNIT://插件
                 if (err = pmt_lookup_unit_bb(iitem.data.datal[0], &pmt_unit)) {
                     ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
-                    pthread_mutex_unlock(&src->mutex);
                     return -1;
                 }
 
@@ -2932,7 +2934,6 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     if (!add_iitem(src, iitem)) {
         ERR_LOG("%s 背包空间不足, 无法获得物品!",
             get_player_describe(src));
-        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 
@@ -2955,8 +2956,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             get_item_describe(&iitem.data, src->version)
         );
 
-    subcmd_bb_send_coren_reward(dest, 1, iitem.data);
-    pthread_mutex_unlock(&src->mutex);
+    subcmd_bb_send_coren_reward(src, 0, iitem.data);
     return 0;
 }
 

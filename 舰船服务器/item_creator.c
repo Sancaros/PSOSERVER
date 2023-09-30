@@ -381,24 +381,27 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 /* drop_sub TODO */
 uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 	if (!item_drop_sub || (area < 0x10) || (area > 0x11)) {
+		uint8_t new_area = area;
 		switch (l->episode) {
 		case GAME_TYPE_EPISODE_1:
-			if (area >= 15) {
-				ERR_LOG("%s 无效章节 I 区域数字 %d", get_lobby_leader_describe(l), area);
-			}
 			switch (area) {
 			case 11:
-				return 3; // Dragon -> Cave 1
+				new_area = 3; // Dragon -> Cave 1
+				break;
 			case 12:
-				return 6; // De Rol Le -> Mine 1
+				new_area = 6; // De Rol Le -> Mine 1
+				break;
 			case 13:
-				return 8; // Vol Opt -> Ruins 1
+				new_area = 8; // Vol Opt -> Ruins 1
+				break;
 			case 14:
-				return 10; // Dark Falz -> Ruins 3
+				new_area = 10; // Dark Falz -> Ruins 3
+				break;
 			default:
-				return area;
+				new_area = area;
+				break;
 			}
-			ERR_LOG("%s 在非法区域 %d", get_lobby_leader_describe(l), area);
+			break;
 		case GAME_TYPE_EPISODE_2: {
 			static const uint8_t area_subs[] = {
 				0x01, // 13 (VR Temple Alpha)
@@ -419,19 +422,30 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 				0x08, // 22 (Seaside Night)
 				0x0A, // 23 (Tower)
 			};
+
 			if ((area >= 0x13) && (area < 0x24)) {
-				return area_subs[area - 0x13];
-			}
-			return area;
+				new_area = area_subs[area - 0x13];
+			}else
+				new_area = area;
+			break;
 		}
 		case GAME_TYPE_EPISODE_3:
 		case GAME_TYPE_EPISODE_4:
 			// TODO: Figure out remaps for Episode 4 (if there are any)
-			return area;
+			new_area = area + 1;
+			break;
 		default:
-			ERR_LOG("%s 无效章节 %d", get_lobby_leader_describe(l), l->episode);
+			ERR_LOG("%s 无效章节 %d 区域 %d", get_lobby_leader_describe(l), l->episode, area);
+			new_area = 1;
+			break;
 		}
 
+		if (area >= 10) {
+			ERR_LOG("%s 章节 %d 区域数字大于10 %d", get_lobby_leader_describe(l), l->episode, area);
+			new_area = 10;
+		}
+
+		return new_area;
 	}
 	else {
 		return item_drop_sub[l->episode].override_area;

@@ -7059,7 +7059,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    pthread_mutex_lock(&src->mutex);
     inventory_t* inv = get_client_inv_bb(src);
 
     iitem_t remove_item = { 0 };
@@ -7070,7 +7069,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("%s !pt_itemid 玩家背包中没有光子票据", get_player_describe(src));
         send_msg(src, MSG1_TYPE, __(src, "\tE\tC4您的背包中没有光子票据了!"));
         send_bb_item_exchange_gallon_result(src, 0x00000001, pkt->subcmd_code, pkt->unknown_a2);
-        pthread_mutex_unlock(&src->mutex);
         return 0;
     }
 
@@ -7096,7 +7094,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-            pthread_mutex_unlock(&src->mutex);
             return -3;
         }
         // 宽永通宝
@@ -7109,7 +7106,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-            pthread_mutex_unlock(&src->mutex);
             return -3;
         }
         // 棒棒糖
@@ -7122,7 +7118,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-            pthread_mutex_unlock(&src->mutex);
             return -3;
         }
         // 隐身衣
@@ -7132,7 +7127,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        pthread_mutex_unlock(&src->mutex);
         return -4;
     }
 
@@ -7144,20 +7138,15 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t add_item = player_iitem_init(item);
     if (!add_iitem(src, add_item)) {
         ERR_LOG("%s 获取兑换物品失败!", get_player_describe(src));
-        pthread_mutex_unlock(&src->mutex);
         return -5;
     }
 
     subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
 
     // Gallon's Plan result
-    send_bb_item_exchange_gallon_result(src, 0x00000000, pkt->subcmd_code, pkt->unknown_a2);
+    //send_bb_item_exchange_gallon_result(src, 0x00000000, pkt->subcmd_code, pkt->unknown_a2);
 
-    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-
-    pthread_mutex_unlock(&src->mutex);
-
-    return 0;
+    return send_bb_item_exchange_gallon_result(src, 0x00000000, pkt->subcmd_code, pkt->unknown_a2);
 }
 
 // 定义函数指针数组

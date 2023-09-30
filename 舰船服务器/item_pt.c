@@ -724,7 +724,8 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 	{
 		switch (cur_area) {
 		case 0:
-			return -1;
+			area = -1;
+			break;
 
 			/* Gal Gryphon -> SeaSide Daytime */
 		case 11:
@@ -764,7 +765,8 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 	{
 		switch (cur_area) {
 		case 0:
-			return -1;
+			area = -1;
+			break;
 
 			/* Gal Gryphon -> SeaSide Daytime */
 		case 12:
@@ -807,6 +809,9 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 		area = cur_area + 1;
 		break;
 	}
+
+	if (area < 0)
+		return 1;
 
 	if (area > 10)
 		area = 10;

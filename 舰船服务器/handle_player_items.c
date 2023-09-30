@@ -2402,9 +2402,9 @@ void fix_inv_bank_item(item_t* i) {
                 break;
             }
 
-            if (i->datab[6] > tmp_guard.dfp_range)
+            if (i->datab[6] > tmp_guard.dfp_range && tmp_guard.dfp_range)
                 i->datab[6] = tmp_guard.dfp_range;
-            if (i->datab[8] > tmp_guard.evp_range)
+            if (i->datab[8] > tmp_guard.evp_range && tmp_guard.evp_range)
                 i->datab[8] = tmp_guard.evp_range;
             break;
 
@@ -2415,9 +2415,9 @@ void fix_inv_bank_item(item_t* i) {
                 break;
             }
 
-            if (i->datab[6] > tmp_guard.dfp_range)
+            if (i->datab[6] > tmp_guard.dfp_range && tmp_guard.dfp_range)
                 i->datab[6] = tmp_guard.dfp_range;
-            if (i->datab[8] > tmp_guard.evp_range)
+            if (i->datab[8] > tmp_guard.evp_range && tmp_guard.evp_range)
                 i->datab[8] = tmp_guard.evp_range;
             break;
         }

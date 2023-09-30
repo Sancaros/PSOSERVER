@@ -99,7 +99,6 @@
     <ClInclude Include="subcmd_size_table.h" />
     <ClInclude Include="subcmd_send.h" />
     <ClInclude Include="itemrt_remap.h" />
-    <ClInclude Include="测试.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico" />
