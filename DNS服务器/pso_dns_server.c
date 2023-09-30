@@ -573,87 +573,109 @@ dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size
 
 static host_info_t* find_host(const char* hostname) {
     /* Linear search through the list for the one we're looking for. */
-    for (int i = 0; i < host_count; ++i) {
-        if (!cmp_str(hosts[i].name, hostname)) {
-            host_line = i;
-            return hosts + i;
+    __try {
+        for (int i = 0; i < host_count; ++i) {
+            if (isEmptyString(hosts[i].name))
+                continue;
+
+            if (!cmp_str(hosts[i].name, hostname)) {
+                host_line = i;
+                return hosts + i;
+            }
         }
     }
 
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+    }
     return NULL;
 }
 
 static int respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     host_info_t* h, dnsmsg_t* inmsg) {
-    in_addr_t a;
-    uint8_t* outbuf = get_sendbuf();
-    dnsmsg_t* outmsg = (dnsmsg_t*)outbuf;
+    __try {
+        in_addr_t a;
+        uint8_t* outbuf = get_sendbuf();
+        dnsmsg_t* outmsg = (dnsmsg_t*)outbuf;
 
-    /* DNS specifies that any UDP messages over 512 bytes are truncated. We
-       don't bother sending them at all, since we should never approach that
-       size to start with. */
-    if (len + 16 > 512) {
-        ERR_LOG("端口 %d / %d 字节 超出限制", sock, len + 16);
-        return -1;
-    }
-
-    /* Copy the input to the output to start. */
-    memcpy(outmsg, inmsg, len);
-
-    /* Set the answer count to 1, and set the flags appropriately. */
-    outmsg->ancount = htons(1);
-    outmsg->flags = htons(0x8180);
-
-    /* Subtract out the size of the header. */
-    len -= sizeof(dnsmsg_t);
-
-    if (!isEmptyString(h->host4))
-        if (!isIPAddress(h->host4)) {
-            if (get_IPv4_from_hostname(h->host4, ipv4) == 0) {
-                DNS_LOG("DNS (%d)%s 跳转IPv4地址为 %s:%s", host_line, h->name, h->host4, ipv4);
-                /* Make sure the IP looks sane. */
-                if (inet_pton(AF_INET, ipv4, &h->addr) != 1) {
-                    ERR_LOG("read_config - inet_pton");
-                    return -2;
-                }
-            }
-            else {
-                ERR_LOG("从 %s 获取 IPv4 地址失败", h->host4);
-                return -3;
-            }
+        /* DNS specifies that any UDP messages over 512 bytes are truncated. We
+           don't bother sending them at all, since we should never approach that
+           size to start with. */
+        if (len + 16 > 512) {
+            ERR_LOG("端口 %d / %d 字节 超出限制", sock, len + 16);
+            return -1;
         }
 
-    /* Fill in the response. This is ugly, but it works. */
-    a = ntohl(h->addr);
-    outmsg->data[len++] = 0xc0;
-    outmsg->data[len++] = 0x0c;
-    outmsg->data[len++] = 0x00;
-    outmsg->data[len++] = 0x01;
-    outmsg->data[len++] = 0x00;
-    outmsg->data[len++] = 0x01;
-    outmsg->data[len++] = 0x00; /* Next 4 bytes are the TTL. */
-    outmsg->data[len++] = 0x00;
-    outmsg->data[len++] = 0x09;
-    outmsg->data[len++] = 0xfc;
-    outmsg->data[len++] = 0x00; /* Address length is the next 2. */
-    outmsg->data[len++] = 0x04;
-    outmsg->data[len++] = (uint8_t)(a >> 24);
-    outmsg->data[len++] = (uint8_t)(a >> 16);
-    outmsg->data[len++] = (uint8_t)(a >> 8);
-    outmsg->data[len++] = (uint8_t)a;
+        /* Copy the input to the output to start. */
+        memcpy(outmsg, inmsg, len);
+
+        /* Set the answer count to 1, and set the flags appropriately. */
+        outmsg->ancount = htons(1);
+        outmsg->flags = htons(0x8180);
+
+        /* Subtract out the size of the header. */
+        len -= sizeof(dnsmsg_t);
+
+        if (!isEmptyString(h->host4))
+            if (!isIPAddress(h->host4)) {
+                if (get_IPv4_from_hostname(h->host4, ipv4) == 0) {
+                    DNS_LOG("DNS (%d)%s 跳转IPv4地址为 %s:%s", host_line, h->name, h->host4, ipv4);
+                    /* Make sure the IP looks sane. */
+                    if (inet_pton(AF_INET, ipv4, &h->addr) != 1) {
+                        ERR_LOG("read_config - inet_pton");
+                        return -2;
+                    }
+                }
+                else {
+                    ERR_LOG("从 %s 获取 IPv4 地址失败", h->host4);
+                    return -3;
+                }
+            }
+
+        /* Fill in the response. This is ugly, but it works. */
+        a = ntohl(h->addr);
+        outmsg->data[len++] = 0xc0;
+        outmsg->data[len++] = 0x0c;
+        outmsg->data[len++] = 0x00;
+        outmsg->data[len++] = 0x01;
+        outmsg->data[len++] = 0x00;
+        outmsg->data[len++] = 0x01;
+        outmsg->data[len++] = 0x00; /* Next 4 bytes are the TTL. */
+        outmsg->data[len++] = 0x00;
+        outmsg->data[len++] = 0x09;
+        outmsg->data[len++] = 0xfc;
+        outmsg->data[len++] = 0x00; /* Address length is the next 2. */
+        outmsg->data[len++] = 0x04;
+        outmsg->data[len++] = (uint8_t)(a >> 24);
+        outmsg->data[len++] = (uint8_t)(a >> 16);
+        outmsg->data[len++] = (uint8_t)(a >> 8);
+        outmsg->data[len++] = (uint8_t)a;
 
 
 
-    /* Send ther response. */
-    int bytes_sent = sendto(sock, outbuf, len + sizeof(dnsmsg_t), 0, (struct sockaddr*)addr,
-        sizeof(struct sockaddr_in));
-    if (bytes_sent < 0) {
-        ERR_LOG("sendto %d 错误", sock);
-        return -4;
+        /* Send ther response. */
+        int bytes_sent = sendto(sock, outbuf, len + sizeof(dnsmsg_t), 0, (struct sockaddr*)addr,
+            sizeof(struct sockaddr_in));
+        if (bytes_sent < 0) {
+            ERR_LOG("sendto %d 错误", sock);
+            return -4;
+        }
+
+        DNS_LOG("发送DNS信息至端口 %d / %d 字节", sock, bytes_sent);
+
+        return 0;
+
     }
 
-    DNS_LOG("发送DNS信息至端口 %d / %d 字节", sock, bytes_sent);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+    }
     return 0;
 }
 
@@ -687,6 +709,7 @@ static int check_inmsg(uint8_t* inbuf) {
 }
 
 static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint8_t* inbuf) {
+
     size_t i;
     uint8_t partlen = 0;
     static char hostbuf[MAX_BUFF_LENGTH];
@@ -706,69 +729,80 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint
     /* 找出客户端要查找的主机的名称. */
     i = 0;
     while (i < len) {
-        partlen = inmsg->data[i];
+        __try {
 
-        /* Make sure the length is sane. */
-        if (len < i + partlen + 5) {
-            /* Throw out the obvious bad packet. */
+            partlen = inmsg->data[i];
 
-            if (addr->sin_family == AF_INET) {
-                struct sockaddr_in* ipv4 = (struct sockaddr_in*)addr;
-                // 将 IPv4 地址转换为点分十进制字符串
-                inet_ntop(AF_INET, &(ipv4->sin_addr), ip_str, INET_ADDRSTRLEN);
-            }
-            else if (addr->sin_family == AF_INET6) {
-                struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)addr;
-                // 将 IPv6 地址转换为点分十六进制字符串
-                inet_ntop(AF_INET6, &(ipv6->sin6_addr), ip_str, INET6_ADDRSTRLEN);
-            }
-            else {
-                ERR_LOG("接入端口 %d 无效IP地址family.", sock);
-                return -2;
+            /* Make sure the length is sane. */
+            if (len < i + partlen + 5) {
+                /* Throw out the obvious bad packet. */
+
+                if (addr->sin_family == AF_INET) {
+                    struct sockaddr_in* ipv4 = (struct sockaddr_in*)addr;
+                    // 将 IPv4 地址转换为点分十进制字符串
+                    inet_ntop(AF_INET, &(ipv4->sin_addr), ip_str, INET_ADDRSTRLEN);
+                }
+                else if (addr->sin_family == AF_INET6) {
+                    struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)addr;
+                    // 将 IPv6 地址转换为点分十六进制字符串
+                    inet_ntop(AF_INET6, &(ipv6->sin6_addr), ip_str, INET6_ADDRSTRLEN);
+                }
+                else {
+                    ERR_LOG("接入端口 %d 无效IP地址family.", sock);
+                    return -2;
+                }
+
+                ERR_LOG("接入 %s:%d 抛出坏数据包,断开其连接.", ip_str, sock);
+                return -3;
             }
 
-            ERR_LOG("接入 %s:%d 抛出坏数据包,断开其连接.", ip_str, sock);
-            return -3;
+            /* 我们读了最后一部分了吗? */
+            if (partlen == 0) {
+                /* 确保消息的其余部分与我们预期的一样. */
+                if (inmsg->data[i + 1] != 0 || inmsg->data[i + 2] != 1 ||
+                    inmsg->data[i + 3] != 0 || inmsg->data[i + 4] != 1) {
+                    ERR_LOG("端口 %d 抛出非IN A请求.", sock);
+                    return -4;
+                }
+
+                hostbuf[hostlen - 1] = '\0';
+                i = len;
+
+                /* 查看请求的主机是否在我们的列表中.如果是,请回复.*/
+                host = find_host(hostbuf);
+                if (!host) {
+                    ERR_LOG("端口 %d 需求的 %s 解析不在列表中.", sock, hostbuf);
+                    return -5;
+                }
+
+                if (respond_to_query(sock, olen, addr, host, inmsg)) {
+                    ERR_LOG("端口 %d 数据回应错误.", sock);
+                    return -6;
+                }
+
+                /* And we're done. */
+                return 0;
+            }
+
+            /* We've got a part to copy into our string... Do so. */
+            if (hostlen + partlen + 1 >= sizeof(hostbuf)) {
+                ERR_LOG("主机名长度超过缓冲区.");
+                return -7;
+            }
+
+            memcpy(hostbuf + hostlen, inmsg->data + i + 1, partlen);
+            hostlen += partlen;
+            hostbuf[hostlen++] = '.';
+            i += partlen + 1;
+
         }
 
-        /* 我们读了最后一部分了吗? */
-        if (partlen == 0) {
-            /* 确保消息的其余部分与我们预期的一样. */
-            if (inmsg->data[i + 1] != 0 || inmsg->data[i + 2] != 1 ||
-                inmsg->data[i + 3] != 0 || inmsg->data[i + 4] != 1) {
-                ERR_LOG("端口 %d 抛出非IN A请求.", sock);
-                return -4;
-            }
+        __except (crash_handler(GetExceptionInformation())) {
+            // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-            hostbuf[hostlen - 1] = '\0';
-            i = len;
-
-            /* 查看请求的主机是否在我们的列表中.如果是,请回复.*/
-            host = find_host(hostbuf);
-            if (!host) {
-                ERR_LOG("端口 %d 需求的 %s 解析不在列表中.", sock, hostbuf);
-                return -5;
-            }
-
-            if (respond_to_query(sock, olen, addr, host, inmsg)) {
-                ERR_LOG("端口 %d 数据回应错误.", sock);
-                return -6;
-            }
-
-            /* And we're done. */
-            return 0;
+            CRASH_LOG("出现错误, 程序将退出.");
+            (void)getchar();
         }
-
-        /* We've got a part to copy into our string... Do so. */
-        if (hostlen + partlen + 1 >= sizeof(hostbuf)) {
-            ERR_LOG("主机名长度超过缓冲区.");
-            return -7;
-        }
-
-        memcpy(hostbuf + hostlen, inmsg->data + i + 1, partlen);
-        hostlen += partlen;
-        hostbuf[hostlen++] = '.';
-        i += partlen + 1;
     }
 
     return 0;
@@ -1067,20 +1101,20 @@ void get_ip_address(struct sockaddr_in* addr, char* ip_buffer) {
 }
 
 static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
-    __try {
+    struct sockaddr_in client_addr = { 0 };
+    char ipstr[INET6_ADDRSTRLEN];
+    socklen_t len;
+    ssize_t recive_len;
+    dns_client_t* i = { 0 }, * tmp;
+    uint8_t* inbuf = get_recvbuf();
+    int sock = SOCKET_ERROR, j;
+    int rv = 0, dns_size = sizeof(dnsmsg_t);
+    size_t client_count = 0;
 
-        struct sockaddr_in client_addr = { 0 };
-        char ipstr[INET6_ADDRSTRLEN];
-        socklen_t len;
-        ssize_t recive_len;
-        dns_client_t* i = { 0 }, * tmp;
-        uint8_t* inbuf = get_recvbuf();
-        int sock = SOCKET_ERROR, j;
-        int rv = 0, dns_size = sizeof(dnsmsg_t);
-        size_t client_count = 0;
+    /* Go ahead and loop forever... */
+    for (;;) {
 
-        /* Go ahead and loop forever... */
-        for (;;) {
+        __try {
 
             /* Check the listening sockets first. */
             for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
@@ -1159,13 +1193,12 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             }
         }
 
-    }
+        __except (crash_handler(GetExceptionInformation())) {
+            // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    __except (crash_handler(GetExceptionInformation())) {
-        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-
-        CRASH_LOG("出现错误, 程序将退出.");
-        (void)getchar();
+            CRASH_LOG("出现错误, 程序将退出.");
+            (void)getchar();
+        }
     }
 }
 
