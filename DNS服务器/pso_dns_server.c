@@ -100,6 +100,67 @@ static int inet_pton4(const char* src, void* dst) {
 
 #endif
 
+/* The key for accessing our thread-specific receive buffer. */
+pthread_key_t recvbuf_key;
+
+/* Retrieve the thread-specific recvbuf for the current thread. */
+uint8_t* get_recvbuf(void) {
+    uint8_t* recvbuf = (uint8_t*)pthread_getspecific(recvbuf_key);
+
+    /* If we haven't initialized the recvbuf pointer yet for this thread, then
+       we need to do that now. */
+    if (!recvbuf) {
+        recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+
+        if (!recvbuf) {
+            ERR_LOG("malloc");
+            perror("malloc");
+            return NULL;
+        }
+
+        memset(recvbuf, 0, MAX_PACKET_BUFF);
+
+        if (pthread_setspecific(recvbuf_key, recvbuf)) {
+            ERR_LOG("pthread_setspecific");
+            perror("pthread_setspecific");
+            free_safe(recvbuf);
+            return NULL;
+        }
+    }
+
+    return recvbuf;
+}
+
+/* The key for accessing our thread-specific send buffer. */
+pthread_key_t sendbuf_key;
+
+/* 获取当前线程的 sendbuf 线程特定内存空间. */
+uint8_t* get_sendbuf() {
+    uint8_t* sendbuf = (uint8_t*)pthread_getspecific(sendbuf_key);
+
+    /* If we haven't initialized the sendbuf pointer yet for this thread, then
+       we need to do that now. */
+    if (!sendbuf) {
+        sendbuf = (uint8_t*)malloc(MAX_TMP_BUFF);
+
+        if (!sendbuf) {
+            ERR_LOG("malloc");
+            perror("malloc");
+            return NULL;
+        }
+
+        memset(sendbuf, 0, MAX_TMP_BUFF);
+
+        if (pthread_setspecific(sendbuf_key, sendbuf)) {
+            ERR_LOG("pthread_setspecific");
+            free_safe(sendbuf);
+            return NULL;
+        }
+    }
+
+    return sendbuf;
+}
+
 static int cmp_str(const char* s1, const char* s2) {
     int v;
 
@@ -474,7 +535,6 @@ bool addBlockedIP(const char* ipAddress, const char* fn) {
 /* 创建一个新连接，并将它存储在客户端列表中。*/
 dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size) {
     pthread_mutexattr_t attr;
-    uint16_t qdc, anc, nsc, arc;
 
     /* 为新客户端分配内存空间。*/
     dns_client_t* rv = (dns_client_t*)malloc(sizeof(dns_client_t));
@@ -503,35 +563,12 @@ dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size
     uint32_t rng_seed = (uint32_t)(time(NULL) ^ sock);
     sfmt_init_gen_rand(&(rv->sfmt_rng), rng_seed);
 
-    /* 按需要更改所有字段的字节顺序。*/
-    qdc = ntohs(inmsg->qdcount);
-    anc = ntohs(inmsg->ancount);
-    nsc = ntohs(inmsg->nscount);
-    arc = ntohs(inmsg->arcount);
-
-#ifdef DEBUG
-    print_ascii_hex(inmsg, sizeof(dnsmsg_t));
-#endif // DEBUG
-
-    /* 检查消息以确保它似乎来自PSO。*/
-    if (qdc != 1 || anc != 0 || nsc != 0 || arc != 0) {
-#ifdef DEBUG
-        ERR_LOG("从端口 %d 发送的DNS数据无效。", sock);
-#endif // DEBUG
-        goto err;
-}
-
     /* 将新客户端插入到列表末尾。*/
     TAILQ_INSERT_TAIL(&clients, rv, qentry);
 
     rv->auth = 1;
 
     return rv;
-
-err:
-    pthread_mutex_destroy(&(rv->mutex));
-    free_safe(rv);
-    return NULL;
 }
 
 static host_info_t* find_host(const char* hostname) {
@@ -549,8 +586,10 @@ static host_info_t* find_host(const char* hostname) {
 }
 
 static int respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
-    host_info_t* h) {
+    host_info_t* h, dnsmsg_t* inmsg) {
     in_addr_t a;
+    uint8_t* outbuf = get_sendbuf();
+    dnsmsg_t* outmsg = (dnsmsg_t*)outbuf;
 
     /* DNS specifies that any UDP messages over 512 bytes are truncated. We
        don't bother sending them at all, since we should never approach that
@@ -620,18 +659,9 @@ static int respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     return 0;
 }
 
-static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
-    size_t i;
-    uint8_t partlen = 0;
-    static char hostbuf[1024];
-    size_t hostlen = 0;
-    host_info_t* host;
+static int check_inmsg(uint8_t* inbuf) {
+    dnsmsg_t* inmsg = (dnsmsg_t*)inbuf;
     uint16_t qdc, anc, nsc, arc;
-    size_t olen = len;
-    char ip_str[INET6_ADDRSTRLEN];
-
-    /* 减去头部数据的大小. */
-    len -= sizeof(dnsmsg_t);
 
     /* 根据需要切换所有内容的字节顺序. */
     qdc = ntohs(inmsg->qdcount);
@@ -654,6 +684,26 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
 #endif // DEBUG
         return -1;
     }
+
+    return 0;
+}
+
+static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint8_t* inbuf) {
+    size_t i;
+    uint8_t partlen = 0;
+    static char hostbuf[1024];
+    size_t hostlen = 0;
+    host_info_t* host;
+    size_t olen = len;
+    char ip_str[INET6_ADDRSTRLEN];
+
+    if (check_inmsg(inbuf))
+        return -1;
+
+    dnsmsg_t* inmsg = (dnsmsg_t*)inbuf;
+
+    /* 减去头部数据的大小. */
+    len -= sizeof(dnsmsg_t);
 
     /* 找出客户端要查找的主机的名称. */
     i = 0;
@@ -702,7 +752,7 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
                 return -5;
             }
 
-            if (respond_to_query(sock, olen, addr, host)) {
+            if (respond_to_query(sock, olen, addr, host, inmsg)) {
                 ERR_LOG("端口 %d 数据回应错误.", sock);
                 return -6;
             }
@@ -1021,6 +1071,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
         socklen_t len;
         ssize_t recive_len;
         dns_client_t* i = { 0 }, * tmp;
+        uint8_t* inbuf = get_recvbuf();
         int sock = SOCKET_ERROR, j;
         int rv = 0, dns_size = sizeof(dnsmsg_t);
         size_t client_count = 0;
@@ -1032,11 +1083,18 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
                 len = sizeof(struct sockaddr);
                 recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len);
+
                 sock = ntohs(client_addr.sin_port);
                 get_ip_address(&client_addr, ipstr);
+
+                if (check_inmsg(inbuf)) {
+                    ERR_LOG("断开非法连接 来源: %s:%d", ipstr, sock);
+                    close(sock);
+                    continue; // 继续等待下一次接收
+                }
+
                 if (isIPBlocked(ipstr, "dns_blocked_ips.txt")) {
                     //ERR_LOG("断开被屏蔽的连接 来源: %s:%d", ipstr, sock);
-                    memset(inbuf, 0, sizeof(inbuf));
                     close(sock);
                     continue; // 继续等待下一次接收
                 }
@@ -1054,7 +1112,14 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                         continue; // 继续等待下一次接收
                     }
 
-                    rv = process_query(sockets[j], recive_len, &client_addr);
+                    /* Read in the configuration. */
+                    if (read_config(CONFIG_DIR, CONFIG_FILE)) {
+                        ERR_LOG("read_config 错误");
+                        close(sock);
+                        continue; // 继续等待下一次接收
+                    }
+
+                    rv = process_query(sockets[j], recive_len, &client_addr, inbuf);
                     if (rv) {
 #ifdef DEBUG
                         ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
@@ -1114,12 +1179,6 @@ void* server_thread(void* arg) {
 
     return NULL;
 }
-
-/* The key for accessing our thread-specific receive buffer. */
-pthread_key_t recvbuf_key;
-
-/* The key for accessing our thread-specific send buffer. */
-pthread_key_t sendbuf_key;
 
 /* Destructor for the thread-specific receive buffer */
 static void buf_dtor(void* rb) {

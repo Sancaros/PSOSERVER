@@ -135,12 +135,12 @@ typedef struct dns_client {
 TAILQ_HEAD(client_queue, dns_client);
 extern struct client_queue clients;
 
-/* Input and output packet buffers. */
-static uint8_t inbuf[1024];
-static uint8_t outbuf[1024];
-
-static dnsmsg_t* inmsg = (dnsmsg_t*)inbuf;
-static dnsmsg_t* outmsg = (dnsmsg_t*)outbuf;
+///* Input and output packet buffers. */
+//static uint8_t inbuf[1024];
+//static uint8_t outbuf[1024];
+//
+//static dnsmsg_t* inmsg = (dnsmsg_t*)inbuf;
+//static dnsmsg_t* outmsg = (dnsmsg_t*)outbuf;
 
 /* Read from the configuration. */
 static host_info_t* hosts;
