@@ -279,7 +279,7 @@ static int read_config(const char* dir, const char* fn) {
     char* fullfn;
     FILE* fp;
     int entries = 0, lineno = 0;
-    char linebuf[1024], name[1024], host4[1024], host6[1024];
+    char linebuf[MAX_BUFF_LENGTH], name[MAX_BUFF_LENGTH], host4[MAX_BUFF_LENGTH], host6[MAX_BUFF_LENGTH];
     in_addr_t addr;
     void* tmp;
 
@@ -296,27 +296,27 @@ static int read_config(const char* dir, const char* fn) {
     if (!(fp = fopen(fullfn, "r"))) {
         ERR_LOG("read_config - 打开文件错误");
         fprintf(stderr, "Filename was %s\n", fullfn);
-        return -1;
+        return -2;
     }
 
     /* Allocate some space to start. We probably won't need this many entries,
        so we'll trim it later on. */
-    if (!(hosts = (host_info_t*)malloc(sizeof(host_info_t) * 256))) {
+    if (!(hosts = (host_info_t*)malloc(sizeof(host_info_t) * MAX_HOST_COUNT))) {
         ERR_LOG("read_config - 分配内存错误");
-        return -1;
+        return -3;
     }
 
-    host_count = 256;
+    host_count = MAX_HOST_COUNT;
 
     /* Read in the configuration file one line at a time. */
-    while (fgets(linebuf, 1024, fp)) {
+    while (fgets(linebuf, MAX_BUFF_LENGTH, fp)) {
         /* If the line is too long, bail out. */
         flen = strlen(linebuf);
         ++lineno;
 
-        if (linebuf[flen - 1] != '\n' && flen == 1023) {
+        if (linebuf[flen - 1] != '\n' && flen == (MAX_BUFF_LENGTH - 1)) {
             fprintf(stderr, "设置行 %d 数据太长,请检查该行的设置!\n", lineno);
-            return -1;
+            return -4;
         }
 
         /* Ignore any blank lines or comments. */
@@ -335,7 +335,7 @@ static int read_config(const char* dir, const char* fn) {
 #endif // DEBUG
                 }
                 else {
-                    ERR_LOG("DNS (%d)%s 跳转至IPv4域名 %s 失败", lineno, name, host4);
+                    ERR_LOG("设置文件错误 DNS (%d)%s 设置跳转至IPv4域名 %s 失败", lineno, name, host4);
                 }
             }
 
@@ -355,7 +355,7 @@ static int read_config(const char* dir, const char* fn) {
         /* Make sure the IP looks sane. */
         if (inet_pton(AF_INET, ipv4, &addr) != 1) {
             ERR_LOG("read_config - inet_pton");
-            return -1;
+            return -5;
         }
 
         /* Make sure we have enough space in the hosts array. */
@@ -363,7 +363,7 @@ static int read_config(const char* dir, const char* fn) {
             tmp = realloc(hosts, host_count * sizeof(host_info_t) * 2);
             if (!tmp) {
                 ERR_LOG("read_config - realloc");
-                return -1;
+                return -6;
             }
 
             host_count *= 2;
@@ -374,21 +374,21 @@ static int read_config(const char* dir, const char* fn) {
         hosts[entries].name = (char*)malloc(strlen(name) + 1);
         if (!hosts[entries].name) {
             ERR_LOG("read_config - malloc name");
-            return -1;
+            return -7;
         }
 
         /* Make space to store the hostname. */
         hosts[entries].host4 = (char*)malloc(strlen(host4) + 1);
         if (!hosts[entries].host4) {
             ERR_LOG("read_config - malloc host4");
-            return -1;
+            return -8;
         }
 
         /* Make space to store the hostname. */
         hosts[entries].host6 = (char*)malloc(strlen(host6) + 1);
         if (!hosts[entries].host6) {
             ERR_LOG("read_config - malloc host6");
-            return -1;
+            return -9;
         }
 
         /* Fill in the entry and move on to the next one (if any). */
@@ -572,10 +572,8 @@ dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size
 }
 
 static host_info_t* find_host(const char* hostname) {
-    int i;
-
     /* Linear search through the list for the one we're looking for. */
-    for (i = 0; i < host_count; ++i) {
+    for (int i = 0; i < host_count; ++i) {
         if (!cmp_str(hosts[i].name, hostname)) {
             host_line = i;
             return hosts + i;
@@ -691,7 +689,7 @@ static int check_inmsg(uint8_t* inbuf) {
 static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint8_t* inbuf) {
     size_t i;
     uint8_t partlen = 0;
-    static char hostbuf[1024];
+    static char hostbuf[MAX_BUFF_LENGTH];
     size_t hostlen = 0;
     host_info_t* host;
     size_t olen = len;
@@ -762,6 +760,11 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint
         }
 
         /* We've got a part to copy into our string... Do so. */
+        if (hostlen + partlen + 1 >= sizeof(hostbuf)) {
+            ERR_LOG("主机名长度超过缓冲区.");
+            return -7;
+        }
+
         memcpy(hostbuf + hostlen, inmsg->data + i + 1, partlen);
         hostlen += partlen;
         hostbuf[hostlen++] = '.';
@@ -1113,10 +1116,8 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                     }
 
                     /* Read in the configuration. */
-                    if (read_config(CONFIG_DIR, CONFIG_FILE)) {
-                        ERR_LOG("read_config 错误");
-                        close(sock);
-                        continue; // 继续等待下一次接收
+                    if (rv = read_config(CONFIG_DIR, CONFIG_FILE)) {
+                        ERR_LOG("read_config 错误码 %d", rv);
                     }
 
                     rv = process_query(sockets[j], recive_len, &client_addr, inbuf);
@@ -1124,8 +1125,6 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
 #ifdef DEBUG
                         ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
 #endif // DEBUG
-                        close(sock);
-                        continue; // 继续等待下一次接收
                     }
                     else {
                         ++client_count;
@@ -1133,8 +1132,8 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
 
                         get_ip_address(&i->ip_addr, ipstr);
                         DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, i->sock);
-                        i->disconnected = 1;
                     }
+                    i->disconnected = 1;
                 }
             }
 
