@@ -2170,7 +2170,7 @@ static int dcnte_process_game_create(ship_client_t* c,
 
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, pkt->password,
-        0, 0, 0, 0, c->version, c->pl->v1.character.dress_data.section,
+        0, 0, 0, 0, c->version, get_player_section(c),
         event, 0, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
@@ -2225,7 +2225,7 @@ static int dc_process_game_create(ship_client_t* c, dc_game_create_pkt* pkt) {
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, pkt->password,
         pkt->difficulty, pkt->battle, pkt->challenge,
-        pkt->version, c->version, c->pl->v1.character.dress_data.section,
+        pkt->version, c->version, get_player_section(c),
         event, 0, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
@@ -2273,7 +2273,7 @@ static int pc_process_game_create(ship_client_t* c, pc_game_create_pkt* pkt) {
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, password, pkt->difficulty,
         pkt->battle, pkt->challenge, 1, c->version,
-        c->pl->v1.character.dress_data.section, event, 0, c, 0, 0);
+        get_player_section(c), event, 0, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
@@ -2335,7 +2335,7 @@ static int gc_process_game_create(ship_client_t* c, gc_game_create_pkt* pkt) {
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, pkt->password,
         pkt->difficulty, pkt->battle, pkt->challenge,
-        0, c->version, c->pl->v1.character.dress_data.section, event,
+        0, c->version, get_player_section(c), event,
         pkt->episode, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
@@ -2375,7 +2375,7 @@ static int ep3_process_game_create(ship_client_t* c, ep3_game_create_pkt* pkt) {
 
     /* Create the lobby structure. */
     l = lobby_create_ep3_game(c->cur_block, name, pkt->password,
-        pkt->view_battle, c->pl->v1.character.dress_data.section, c);
+        pkt->view_battle, get_player_section(c), c);
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {

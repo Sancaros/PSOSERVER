@@ -1546,7 +1546,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                             weapon->data.datab[3] = 0x00; // Not grinded
                             //強化値を０にする（つまりメルクリウスロッド + 9（0x00220109）→メルクリウスロッド（0x00220100）にする）
                             weapon->data.datab[4] = 0x00;
-                            //Send_Item(client->character.inventory[eq_wep].data.item_id, client);
+                            //Send_Item(inv->iitems[eq_wep].data.item_id, client);
                             // 詳細不明。装備している武器をインベントリの最終行に送る？
                         }
                         break;
@@ -1762,7 +1762,9 @@ combintion_other:
                     }
                 }
                 if (combo.level != 0xFF && character->disp.level + 1 < combo.level) {
+#ifdef DEBUG
                     ERR_LOG("%s 物品合成适用于等级要求,但玩家等级过低", get_player_describe(src));
+#endif // DEBUG
                     return -5;
                 }
                 // If we get here, then the combo applies
@@ -2098,7 +2100,7 @@ bool item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签) {
 }
 
 /* 物品检测装备标签 */
-int item_check_equip_flags(ship_client_t* src, uint32_t item_id) {
+int player_equip_item(ship_client_t* src, uint32_t item_id) {
     pmt_weapon_bb_t tmp_wp = { 0 };
     pmt_guard_bb_t tmp_guard = { 0 };
     uint32_t found = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
@@ -2257,6 +2259,75 @@ int item_check_equip_flags(ship_client_t* src, uint32_t item_id) {
     }
 
     if (!found)
+        return -1;
+
+    return 0;
+}
+
+int player_unequip_item(ship_client_t* src, uint32_t item_id) {
+    int found_item = 0;
+    size_t x = 0, i = 0;
+
+    inventory_t* inv = get_client_inv_bb(src);
+
+    for (x = 0; x < inv->item_count; x++) {
+        if (inv->iitems[x].data.item_id == item_id) {
+            found_item = 1;
+            inv->iitems[x].flags &= LE32(0xFFFFFFF7);
+            switch (inv->iitems[x].data.datab[0]) {
+            case ITEM_TYPE_WEAPON:
+                // Remove any other weapon (in case of a glitch... or stacking)
+                for (i = 0; i < inv->item_count; i++) {
+                    if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_WEAPON) &&
+                        (inv->iitems[i].flags & LE32(0x00000008)))
+                        inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                }
+                break;
+            case ITEM_TYPE_GUARD:
+                switch (inv->iitems[x].data.datab[1])
+                {
+                case ITEM_SUBTYPE_FRAME:
+                    // Remove any other armor (stacking?) and equipped slot items.
+                    for (i = 0; i < inv->item_count; i++) {
+                        if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
+                            (inv->iitems[i].data.datab[1] != ITEM_SUBTYPE_FRAME) &&
+                            (inv->iitems[i].flags & LE32(0x00000008))) {
+                            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                            inv->iitems[i].data.datab[4] = 0x00;
+                        }
+                    }
+                    break;
+                case ITEM_SUBTYPE_BARRIER:
+                    // Remove any other barrier (stacking?)
+                    for (i = 0; i < inv->item_count; i++)
+                    {
+                        if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
+                            (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
+                            (inv->iitems[i].flags & LE32(0x00000008))) {
+                            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                            inv->iitems[i].data.datab[4] = 0x00;
+                        }
+                    }
+                    break;
+                case ITEM_SUBTYPE_UNIT:
+                    // Remove unit from slot
+                    inv->iitems[x].data.datab[4] = 0x00;
+                    break;
+                }
+                break;
+            case ITEM_TYPE_MAG:
+                // Remove any other mags (stacking?)
+                for (i = 0; i < inv->item_count; i++)
+                    if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_MAG) &&
+                        (inv->iitems[i].flags & LE32(0x00000008)))
+                        inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                break;
+            }
+            break;
+        }
+    }
+
+    if (x >= inv->item_count && !found_item)
         return -1;
 
     return 0;

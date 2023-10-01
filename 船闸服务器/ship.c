@@ -80,7 +80,7 @@ extern monster_event_t* events;
 extern uint32_t script_count;
 extern ship_script_t* scripts;
 
-//static uint8_t recvbuf[65536];
+static uint8_t recvbuf[MAX_PACKET_BUFF];
 
 /* 公会相关 */
 static uint8_t default_guild_flag[2048];
@@ -5844,13 +5844,13 @@ static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
 uint8_t* get_sg_recvbuf(void) {
-    uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+    //uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
-    if (!recvbuf) {
-        ERR_LOG("malloc");
-        perror("malloc");
-        return NULL;
-    }
+    //if (!recvbuf) {
+    //    ERR_LOG("malloc");
+    //    perror("malloc");
+    //    return NULL;
+    //}
 
     memset(recvbuf, 0, MAX_PACKET_BUFF);
 
@@ -5982,7 +5982,7 @@ int handle_pkt(ship_t* c) {
             c->recvbuf_size = 0;
         }
 
-        free_safe(recvbuf);
+        //free_safe(recvbuf);
 
         return rv;
     }

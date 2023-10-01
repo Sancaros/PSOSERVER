@@ -1614,6 +1614,9 @@ lobby_t* get_client_lobby(ship_client_t* src) {
 }
 
 char* get_player_describe(ship_client_t* src) {
+    if(!src)
+        return "玩家不存在";
+
     /* 初始化角色描述内存 */
     memset(char_des, 0, sizeof(char_des));
 
@@ -1632,7 +1635,7 @@ char* get_lobby_leader_describe(lobby_t* l) {
         return "房间不存在";
 
     ship_client_t* src = l->clients[l->leader_id];
-    if(src)
+    if(!src)
         return "房主不存在";
 
     /* 初始化角色描述内存 */
@@ -1654,6 +1657,49 @@ uint8_t get_player_msg_color_set(ship_client_t* src) {
         return 0;
 
     return costume_mag_color_type[character->dress_data.ch_class][character->dress_data.costume];
+}
+
+uint8_t get_player_section(ship_client_t* src) {
+    /* 初始化一个颜色ID数值 */
+    uint8_t section_id = 0;
+
+    if (!src)
+        return section_id;
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        psocn_v1v2v3pc_char_t* v2character = get_client_char_nobb(src);
+        section_id = v2character->dress_data.section;
+        break;
+
+    case CLIENT_VERSION_BB:
+        psocn_bb_char_t* character = get_client_char_bb(src);
+        section_id = character->dress_data.section;
+        break;
+    default:
+        ERR_LOG("%s 版本 %s 颜色未获取成功",get_player_describe(src), client_type[0].ver_name);
+        break;
+    }
+
+    return section_id;
+}
+
+uint8_t get_lobby_leader_section(lobby_t* l) {
+    if (!l)
+        return 0;
+
+    ship_client_t* src = l->clients[l->leader_id];
+    if (!src) {
+        ERR_LOG("房间 %s 没有房主ID %d", l->name, l->leader_id);
+        return 0;
+    }
+
+    return get_player_section(src);
 }
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {

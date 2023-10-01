@@ -380,7 +380,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     else
         l->item_lobby_id = 0xF0000000;
 
-    l->leader_id = 1;
+    l->leader_id = bb ? 0 : 1;
     l->difficulty = difficulty;
     l->battle = battle;
     l->challenge = chal;

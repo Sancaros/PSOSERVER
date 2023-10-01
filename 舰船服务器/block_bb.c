@@ -1548,7 +1548,7 @@ static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
     /* 创建游戏房间结构. */
     l = lobby_create_game(c->cur_block, name, passwd, pkt->difficulty,
         pkt->battle, pkt->challenge, 0, c->version,
-        c->pl->bb.character.dress_data.section, event, pkt->episode, c,
+        get_player_section(c), event, pkt->episode, c,
         pkt->single_player, 1);
 
     /* If we don't have a game, something went wrong... tell the user. */

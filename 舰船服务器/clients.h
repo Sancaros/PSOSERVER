@@ -487,6 +487,8 @@ lobby_t* get_client_lobby(ship_client_t* src);
 char* get_player_describe(ship_client_t* src);
 char* get_lobby_leader_describe(lobby_t* l);
 uint8_t get_player_msg_color_set(ship_client_t* src);
+uint8_t get_player_section(ship_client_t* src);
+uint8_t get_lobby_leader_section(lobby_t* l);
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type);
 

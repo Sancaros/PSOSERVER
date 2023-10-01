@@ -169,6 +169,7 @@ static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
 static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
     __try {
         ssize_t rv, total = 0;
+        void* tmp;
 
         if (sendbuf == NULL || len == 0 || len > MAX_TMP_BUFF) {
             ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
@@ -195,6 +196,35 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
 
                 total += rv;
             }
+        }
+
+        rv = len - total;
+
+        if (rv) {
+            /* Move out any already transferred data. */
+            if (c->sendbuf_start) {
+                memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+                    c->sendbuf_cur - c->sendbuf_start);
+                c->sendbuf_cur -= c->sendbuf_start;
+            }
+
+            /* See if we need to reallocate the buffer. */
+            if (c->sendbuf_cur + rv > c->sendbuf_size) {
+                tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+
+                /* If we can't allocate the space, bail. */
+                if (tmp == NULL) {
+                    ERR_LOG("realloc");
+                    return -1;
+                }
+
+                c->sendbuf_size = c->sendbuf_cur + rv;
+                c->sendbuf = (unsigned char*)tmp;
+            }
+
+            /* Copy what's left of the packet into the output buffer. */
+            memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+            c->sendbuf_cur += rv;
         }
 
         return 0;

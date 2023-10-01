@@ -33,20 +33,20 @@
 #include "ship.h"
 #include <pso_pack.h>
 
-//static uint8_t sendbuf[65536];
+static uint8_t sendbuf[MAX_PACKET_BUFF];
 
 /* 获取 sendbuf 动态内存数据. */
 uint8_t* get_sg_sendbuf(void) {
-    uint8_t* sendbuf = (uint8_t*)malloc(MAX_TMP_BUFF);
+    //uint8_t* sendbuf = (uint8_t*)malloc(MAX_TMP_BUFF);
 
-    /* If we haven't initialized the sendbuf pointer yet for this thread, then
-       we need to do that now. */
-    if (!sendbuf) {
-        ERR_LOG("malloc");
-        return NULL;
-    }
+    ///* If we haven't initialized the sendbuf pointer yet for this thread, then
+    //   we need to do that now. */
+    //if (!sendbuf) {
+    //    ERR_LOG("malloc");
+    //    return NULL;
+    //}
 
-    memset(sendbuf, 0, MAX_TMP_BUFF);
+    memset(sendbuf, 0, MAX_PACKET_BUFF);
 
     return sendbuf;
 }
@@ -82,12 +82,11 @@ static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
 
 /* Send a raw packet away. */
 static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
-
     __try {
         ssize_t rv, total = 0;
-        //void* tmp;
+        void* tmp;
 
-        if (sendbuf == NULL || len == 0 || len > MAX_TMP_BUFF) {
+        if (sendbuf == NULL || len == 0 || len > MAX_PACKET_BUFF) {
             ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
             return 0;
         }
@@ -114,34 +113,34 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
             }
         }
 
-        //rv = len - total;
+        rv = len - total;
 
-        //if (rv) {
-        //    /* Move out any already transferred data. */
-        //    if (c->sendbuf_start) {
-        //        memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-        //            c->sendbuf_cur - c->sendbuf_start);
-        //        c->sendbuf_cur -= c->sendbuf_start;
-        //    }
+        if (rv) {
+            /* Move out any already transferred data. */
+            if (c->sendbuf_start) {
+                memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+                    c->sendbuf_cur - c->sendbuf_start);
+                c->sendbuf_cur -= c->sendbuf_start;
+            }
 
-        //    /* See if we need to reallocate the buffer. */
-        //    if (c->sendbuf_cur + rv > c->sendbuf_size) {
-        //        tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+            /* See if we need to reallocate the buffer. */
+            if (c->sendbuf_cur + rv > c->sendbuf_size) {
+                tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
 
-        //        /* If we can't allocate the space, bail. */
-        //        if (tmp == NULL) {
-        //            ERR_LOG("realloc");
-        //            return -1;
-        //        }
+                /* If we can't allocate the space, bail. */
+                if (tmp == NULL) {
+                    ERR_LOG("realloc");
+                    return -1;
+                }
 
-        //        c->sendbuf_size = c->sendbuf_cur + rv;
-        //        c->sendbuf = (unsigned char*)tmp;
-        //    }
+                c->sendbuf_size = c->sendbuf_cur + rv;
+                c->sendbuf = (unsigned char*)tmp;
+            }
 
-        //    /* Copy what's left of the packet into the output buffer. */
-        //    memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-        //    c->sendbuf_cur += rv;
-        //}
+            /* Copy what's left of the packet into the output buffer. */
+            memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+            c->sendbuf_cur += rv;
+        }
 
         //if (sendbuf)
         //    free_safe(sendbuf);
@@ -505,7 +504,7 @@ int send_error(ship_t* c, uint16_t type, uint16_t flags, uint32_t err,
     uint16_t sz;
 
     /* Make sure the data size is valid */
-    if (data_sz > MAX_TMP_BUFF - sizeof(shipgate_error_pkt))
+    if (data_sz > MAX_PACKET_BUFF - sizeof(shipgate_error_pkt))
         return -1;
 
     /* Clear the header of the packet */

@@ -1235,7 +1235,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     else {
         pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
-        section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
+        section = get_lobby_leader_section(l);
 
         if (!l->map_enemies) {
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
@@ -1386,7 +1386,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     else {
         pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
-        section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
+        section = get_lobby_leader_section(l);
         drop_area = src->cur_area;
 
         if (pkt->ignore_def) {

@@ -1409,7 +1409,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    equip_resault = item_check_equip_flags(src, item_id);
+    equip_resault = player_equip_item(src, item_id);
     /* 是否存在物品背包中? */
     if (equip_resault) {
         ERR_LOG("%s 装备了未存在的物品数据! 错误码:%d",

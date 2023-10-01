@@ -314,7 +314,7 @@ uint8_t *get_sendbuf() {
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
        we need to do that now. */
     if(!sendbuf) {
-        sendbuf = (uint8_t *)malloc(MAX_TMP_BUFF);
+        sendbuf = (uint8_t *)malloc(MAX_PACKET_BUFF);
 
         if(!sendbuf) {
             ERR_LOG("malloc");
@@ -322,7 +322,7 @@ uint8_t *get_sendbuf() {
             return NULL;
         }
 
-        memset(sendbuf, 0, MAX_TMP_BUFF);
+        memset(sendbuf, 0, MAX_PACKET_BUFF);
 
         if(pthread_setspecific(sendbuf_key, sendbuf)) {
             ERR_LOG("pthread_setspecific");

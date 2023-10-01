@@ -348,7 +348,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				mag_item->datab[1] = 0x19; // Vritra
 				break;
 			default:
-				ERR_LOG("无效角色职业 %d", character->dress_data.ch_class);
+				ERR_LOG("%s 无效角色职业 %d", get_player_describe(src), character->dress_data.ch_class);
 				err = -2;
 				return err;
 			}
@@ -408,7 +408,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 					table_index += 6;
 				}
 				else if (!is_hunter) {
-					ERR_LOG("角色职业 %s 不在范围中", pso_class[character->dress_data.ch_class].cn_name);
+					ERR_LOG("%s 角色职业 %s 不在玛古进化范围中", get_player_describe(src), pso_class[character->dress_data.ch_class].cn_name);
 					err = -3;
 					return err;
 				}
@@ -442,8 +442,8 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				bool is_hunter = char_class_is_hunter(src->equip_flags);
 				bool is_ranger = char_class_is_ranger(src->equip_flags);
 				bool is_force = char_class_is_force(src->equip_flags);
-				if (is_hunter + is_ranger + is_force != 1) {
-					ERR_LOG("角色职业 %s 不在范围中", pso_class[character->dress_data.ch_class].cn_name);
+				if (!is_hunter && !is_ranger && !is_force) {
+					ERR_LOG("%s 角色职业 %s 不在范围中", get_player_describe(src), pso_class[character->dress_data.ch_class].cn_name);
 					err = -4;
 					return err;
 				}

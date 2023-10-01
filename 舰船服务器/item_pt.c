@@ -711,7 +711,7 @@ int pt_bb_enabled(void) {
 }
 
 size_t get_pt_index(uint8_t episode, size_t pt_index) {
-	size_t ep4_pt_index_offset = 0x57;//87 Item_PT EP4 enemy_index 差值
+	size_t ep4_pt_index_offset = 0x58;//87 Item_PT EP4 enemy_index 差值
 	return (episode == GAME_TYPE_EPISODE_3 ? (pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (pt_index - ep4_pt_index_offset) : pt_index);
 }
 
@@ -2371,7 +2371,7 @@ static int check_and_send(ship_client_t* c, lobby_t* l, uint32_t item[4],
 	int area, subcmd_itemreq_t* req, int csr) {
 	uint32_t v;
 	iitem_t iitem = { 0 };
-	int section;
+	uint8_t section = get_lobby_leader_section(l);
 	uint8_t stars = 0;
 
 #ifdef DEBUG
@@ -2407,7 +2407,6 @@ static int check_and_send(ship_client_t* c, lobby_t* l, uint32_t item[4],
 		iitem.data.data2l = LE32(item[3]);
 
 		if (!psocn_limits_check_item(l->limits_list, &iitem, v)) {
-			section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
 			ITEM_LOG("发现不合法服务器掉落\n"
 				"%08X %08X %08X %08X\n"
 				"游戏房间信息: 难度: %d, 角色颜色ID: %d, 房间标签: %08X\n"
@@ -2532,7 +2531,7 @@ static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
    and thus is appropriate for any version before PSOGC. */
 int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 	subcmd_itemreq_t* req = (subcmd_itemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+	uint8_t section = get_lobby_leader_section(l);
 	pt_v2_entry_t* ent;
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
@@ -2826,7 +2825,7 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 
 int pt_generate_v2_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 	subcmd_itemreq_t* req = (subcmd_itemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+	uint8_t section = get_lobby_leader_section(l);
 	pt_v2_entry_t* ent;
 	uint16_t obj_id;
 	game_object_t* gobj;
@@ -3111,7 +3110,7 @@ int pt_generate_v2_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
    This function only works for PSOGC. */
 int pt_generate_gc_drop(ship_client_t* c, lobby_t* l, void* r) {
 	subcmd_itemreq_t* req = (subcmd_itemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+	uint8_t section = get_lobby_leader_section(l);
 	pt_v3_entry_t* ent;
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
@@ -3464,7 +3463,7 @@ int pt_generate_gc_drop(ship_client_t* c, lobby_t* l, void* r) {
 
 int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 	subcmd_bitemreq_t* req = (subcmd_bitemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+	uint8_t section = get_lobby_leader_section(l);
 	pt_v3_entry_t* ent;
 	uint16_t obj_id;
 	game_object_t* gobj;
@@ -3819,7 +3818,7 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 
 int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
+	uint8_t section = get_lobby_leader_section(l);
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
 	int area, do_rare = 1;
@@ -4059,7 +4058,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
+	uint8_t section = get_lobby_leader_section(l);
 	uint16_t obj_id;
 	game_object_t* gobj;
 	map_object_t* obj;

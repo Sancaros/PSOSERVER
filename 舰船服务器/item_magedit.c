@@ -323,8 +323,7 @@ int magedit_read_bb(const char* fn, int norestrict) {
 
 uint8_t magedit_lookup_mag_evolution_number(item_t* item) {
 
-    /* Make sure we loaded the PMT stuff to start with and that there is a place
-       to put the returned value */
+    /* 确保文件在且物品数据指针有效 */
     if (!have_bb_magedit || !item) {
         return -1;
     }

@@ -829,7 +829,7 @@ item_t check_rare_spec_and_create_rare_enemy_item(lobby_t* l, pt_bb_entry_t* ent
 item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* rng, uint32_t enemy_type, uint8_t norm_area, uint8_t section_id) {
 	item_t item = { 0 };
 	if (enemy_type > 0x58) {
-		ERR_LOG("无效(%d %d %d %d) Enemy Type: %" PRIX32, l->episode, l->challenge, l->difficulty, section_id, enemy_type);
+		ERR_LOG("%s 无效(%d %d %d %d) Enemy Type: %d", get_lobby_leader_describe(l), l->episode, l->challenge, l->difficulty, section_id, enemy_type);
 		return item;
 	}
 #ifdef DEBUG
@@ -1279,7 +1279,7 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 	/* 随机选择掉率普通物品还是稀有物品 */
 	uint32_t choice_rng = rand_int(rng, 2); /* 50% 几率选择掉落垃圾物品还是其他物品 */
 	/* 获取房主玩家的颜色ID */
-	uint8_t section_id = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+	uint8_t section_id = get_lobby_leader_section(l);
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {

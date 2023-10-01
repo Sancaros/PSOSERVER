@@ -560,7 +560,7 @@ uint32_t rt_generate_v2_rare(ship_client_t *src, lobby_t *l, int rt_index,
     double rnd;
     rt_set_t *set;
     int i;
-    uint8_t section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+    uint8_t section = get_lobby_leader_section(l);
 
     /* Make sure we read in a rare table and we have a sane index */
     if(!have_v2rt)
@@ -599,7 +599,7 @@ uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
     double rnd;
     rt_set_t *set;
     int i;
-    uint8_t section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+    uint8_t section = get_lobby_leader_section(l);
 
     /* Make sure we read in a rare table and we have a sane index */
     if(!have_gcrt)
