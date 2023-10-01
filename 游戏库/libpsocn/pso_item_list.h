@@ -5852,7 +5852,7 @@ static bbitem_map_t bbitem_list_cn[] = {
     { BBItem_Christmas_Card, "圣诞节贺卡" },
     { BBItem_Birthday_Card, "生日贺卡" },
     { BBItem_Proof_of_Sonic_Team, "索尼克小队的证书" },
-    { BBItem_Special_Event_Ticket, "特殊入场券" },
+    { BBItem_Special_Event_Ticket, "特殊活动券" },
     { BBItem_Flower_Bouquet_10, "花束_10" },
     { BBItem_Cake_11, "蛋糕_11" },
     { BBItem_Accessories, "装饰品" },
