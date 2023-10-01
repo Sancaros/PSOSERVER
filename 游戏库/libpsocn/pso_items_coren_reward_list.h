@@ -192,10 +192,10 @@ uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_EXCALIBUR, BBItem_OROTIAGITO_alt, BBItem_AGITO_1980,
 			BBItem_DELSABERS_BUSTER
 		},
-		//100000 美赛塔 武器剑类 PC 斩龙 最后的生还者 弗罗文大剑 魔法剑 红色大剑 红西诺兽剑 双圣剑拉维斯
+		//100000 美赛塔 武器剑类 PC 斩龙 最后的生还者 弗罗文大剑 魔法剑 红色大剑 红西诺兽剑 双圣剑拉维斯 二连神威 零度切刃
 		{
-			BBItem_Photon_Crystal, BBItem_BLADE_DANCE, BBItem_Saber,
-			BBItem_Brand, BBItem_Buster, BBItem_Pallasch,
+			BBItem_Photon_Crystal, BBItem_BLADE_DANCE, BBItem_ZERO_DIVIDE,
+			BBItem_DURANDAL, BBItem_TWO_KAMUI, BBItem_GALATINE,
 			BBItem_Gladius, BBItem_DBS_SABER, BBItem_KALADBOLG,
 			BBItem_DURANDAL, BBItem_GALATINE, BBItem_PHOENIX_CLAW,
 			BBItem_DOUBLE_SABER, BBItem_STAG_CUTLERY, BBItem_DELSABERS_BUSTER,
