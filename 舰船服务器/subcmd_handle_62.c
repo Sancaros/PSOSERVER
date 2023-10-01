@@ -1183,6 +1183,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t iitem = { 0 };
     uint16_t mid = pkt->entity_id;
     int rv = 0;
+    uint8_t section = 0;
 
     if (!in_game(src))
         return -1;
@@ -1201,13 +1202,13 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ship_client_t* p2 = l->clients[i];
             pthread_mutex_lock(&p2->mutex);
             psocn_bb_char_t* p2_char = get_client_char_bb(p2);
-            uint8_t p2_section = p2_char->dress_data.section;
+            section = p2_char->dress_data.section;
             /* 复用模式 独立 随机颜色ID */
             if (l->drop_psocn) {
-                p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
+                section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->rt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->rt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
 
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
@@ -1234,7 +1235,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     else {
         pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
-        uint8_t section = character->dress_data.section;
+        section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
 
         if (!l->map_enemies) {
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
@@ -1385,7 +1386,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     else {
         pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
-        section = character->dress_data.section;
+        section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
         drop_area = src->cur_area;
 
         if (pkt->ignore_def) {
@@ -1739,7 +1740,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
                 size_t shop_price = price_for_item(&item);
                 if (shop_price <= 0) {
                     ERR_LOG("%s:%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d"
-                        , get_player_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
+                        , get_player_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version, 0), item.datal[0], shop_price);
                     continue;
                 }
 

@@ -30,52 +30,29 @@
 #include "rtdata.h"
 #include "ship_packets.h"
 
-uint16_t key_for_params(uint32_t mode, uint32_t episode, uint8_t difficulty, uint8_t secid) {
-    if (difficulty > 3) {
-        // 抛出异常
-        ERR_LOG("incorrect difficulty");
-        return 0;
-    }
-    if (secid > 10) {
-        // 抛出异常
-        ERR_LOG("incorrect section id");
-        return 0;
-    }
+char abbreviation_for_difficulty(uint8_t difficulty) {
+    char abbreviation = '?';
 
-    uint16_t key = ((difficulty & 3) << 4) | (secid & 0x0F);
-    switch (mode) {
+    switch (difficulty) {
     case 0:
+        abbreviation = 'N';
         break;
     case 1:
-        key |= 0x0040;
+        abbreviation = 'H';
         break;
     case 2:
-        key |= 0x0080;
+        abbreviation = 'V';
         break;
     case 3:
-        key |= 0x00C0;
+        abbreviation = 'U';
         break;
     default:
-        // 抛出异常
-        ERR_LOG("invalid gamemode in RareItemSet");
-        return 0;
+        // 在给定的范围之外，默认返回 '?'
+        abbreviation = '?';
+        break;
     }
-    switch (episode) {
-    case GAME_TYPE_EPISODE_1:
-        break;
-    case GAME_TYPE_EPISODE_2:
-        key |= 0x0100;
-        break;
-    case GAME_TYPE_EPISODE_3:
-    case GAME_TYPE_EPISODE_4:
-        key |= 0x0200;
-        break;
-    default:
-        // 抛出异常
-        ERR_LOG("invalid episode in RareItemSet");
-        return 0;
-    }
-    return key;
+
+    return abbreviation;
 }
 
 int rt_read_v2(const char *fn) {
@@ -333,7 +310,7 @@ int rt_read_bb(const char* fn) {
 
     /* Open up the file and make sure it looks sane enough... */
     if (!(a = pso_gsl_read_open(fn, 0, &err))) {
-        ERR_LOG("%d 无法读取 BB %s: %s", a, fn, pso_strerror(err));
+        ERR_LOG("无法读取 BB %s: %s", fn, pso_strerror(err));
         free_safe(buf);
         return -1;
     }
@@ -460,7 +437,7 @@ out:
 rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
     pso_gsl_read_t* a;
     const char difficulties[4] = { 'n', 'h', 'v', 'u' };
-    // 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
+    //EP1 0  NULL / EP2 1  l / CHALLENGE 2 c  / EP4 3 bb
     const char* game_type[4] = { "", "l" , "c", "bb" };
     char filename[32];
     uint32_t hnd;
@@ -489,15 +466,12 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
         goto out;
     }
 
-    /* Figure out the name of the file in the archive that we're
-       looking for... */
+    /* 获取需要读取的文件名称 */
     snprintf(filename, 32, "ItemRT%s%c%d.rel", game_type[章节],
         tolower(abbreviation_for_difficulty(难度)), 颜色);
 
 #ifdef DEBUG
-
     DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
-
 #endif // DEBUG
 
     /* Grab a handle to that file. */
@@ -662,25 +636,24 @@ rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficul
     uint8_t game_type = 0;//和游戏章节类型相关
     /* Grab the rare table for the game */
     //EP1 0  NULL / EP2 1  l /  CHALLENGE 2 c / EP4 3 bb
-    switch (episode)
-    {
-    case GAME_TYPE_NORMAL:
-    case GAME_TYPE_EPISODE_1:
-        if (challenge)
-            game_type = 2;
-        else
+    if (challenge) {
+        game_type = 2;
+    }
+    else {
+        switch (episode)
+        {
+        case GAME_TYPE_NORMAL:
+        case GAME_TYPE_EPISODE_1:
             game_type = 0;
-        break;
-    case GAME_TYPE_EPISODE_2:
-        if (challenge)
-            game_type = 2;
-        else
+            break;
+        case GAME_TYPE_EPISODE_2:
             game_type = 1;
-        break;
-    case GAME_TYPE_EPISODE_3:
-    case GAME_TYPE_EPISODE_4:
-        game_type = 3;
-        break;
+            break;
+        case GAME_TYPE_EPISODE_3:
+        case GAME_TYPE_EPISODE_4:
+            game_type = 3;
+            break;
+        }
     }
 
     rt_table_t* tmp = rt_dynamics_read_bb(ship->cfg->bb_rtdata_file, game_type, difficulty, section);

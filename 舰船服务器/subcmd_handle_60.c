@@ -3637,7 +3637,7 @@ static int sub60_5F_dc(ship_client_t* src, ship_client_t* dest,
                 LE32(pkt->data.item.data2l), LE32(pkt->data.item2));
 
             /* Grab the item name, if we can find it. */
-            name = item_get_name((item_t*)&item.data, v);
+            name = item_get_name((item_t*)&item.data, v, 0);
 
             /* Fill in the destroy item packet. */
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
@@ -3746,7 +3746,7 @@ static int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
 
     if (src->game_data->gm_debug)
         DBG_LOG("地面物品 %08" PRIX32 " 已被摧毁 (%s)",
-            iitem_data.data.item_id, item_get_name(&iitem_data.data, src->version));
+            iitem_data.data.item_id, item_get_name(&iitem_data.data, src->version, 0));
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

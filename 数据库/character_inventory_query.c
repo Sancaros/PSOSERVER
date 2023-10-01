@@ -132,7 +132,7 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
 static int db_insert_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
 	char item_name_text[32];
 
-	istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
+	istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5, 0), sizeof(item_name_text));
 
 	memset(myquery, 0, sizeof(myquery));
 
@@ -180,7 +180,7 @@ static int db_insert_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 static int db_update_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
 	char item_name_text[64];
 
-	istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
+	istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5, 0), sizeof(item_name_text));
 
 	memset(myquery, 0, sizeof(myquery));
 

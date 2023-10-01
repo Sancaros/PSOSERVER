@@ -153,7 +153,7 @@ static int db_cleanup_bank_common_items(uint32_t gc) {
 static int db_insert_bank_common_items(bitem_t* item, uint32_t gc, int item_index) {
     char item_name_text[64];
 
-    istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
+    istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5, 0), sizeof(item_name_text));
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -242,7 +242,7 @@ uint32_t db_get_char_bank_common_item_count(uint32_t gc) {
 static int db_update_bank_common_items(bitem_t* item, uint32_t gc, int item_index) {
     char item_name_text[64];
 
-    istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
+    istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5, 0), sizeof(item_name_text));
 
     memset(myquery, 0, sizeof(myquery));
 

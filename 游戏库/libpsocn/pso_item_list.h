@@ -21,6 +21,13 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifndef _WIN32
+#define PACKED __attribute__((packed))
+#else
+#define PACKED __declspec(align(1))
+#pragma pack(push, 1) 
+#endif
+
 #pragma warning (disable:4819)
 /* 物品代码清单. */
 typedef enum item_code_e {
@@ -1959,36 +1966,25 @@ typedef enum bbitem_code_e {
     BBItem_Monofluid = 0x000103,
     BBItem_Difluid = 0x010103,
     BBItem_Trifluid = 0x020103,
-    BBItem_Disk_Lv01 = 0x000203,
-    BBItem_Disk_Lv02 = 0x010203,
-    BBItem_Disk_Lv03 = 0x020203,
-    BBItem_Disk_Lv04 = 0x030203,
-    BBItem_Disk_Lv05 = 0x040203,
-    BBItem_Disk_Lv06 = 0x050203,
-    BBItem_Disk_Lv07 = 0x060203,
-    BBItem_Disk_Lv08 = 0x070203,
-    BBItem_Disk_Lv09 = 0x080203,
-    BBItem_Disk_Lv10 = 0x090203,
-    BBItem_Disk_Lv11 = 0x0A0203,
-    BBItem_Disk_Lv12 = 0x0B0203,
-    BBItem_Disk_Lv13 = 0x0C0203,
-    BBItem_Disk_Lv14 = 0x0D0203,
-    BBItem_Disk_Lv15 = 0x0E0203,
-    BBItem_Disk_Lv16 = 0x0F0203,
-    BBItem_Disk_Lv17 = 0x100203,
-    BBItem_Disk_Lv18 = 0x110203,
-    BBItem_Disk_Lv19 = 0x120203,
-    BBItem_Disk_Lv20 = 0x130203,
-    BBItem_Disk_Lv21 = 0x140203,
-    BBItem_Disk_Lv22 = 0x150203,
-    BBItem_Disk_Lv23 = 0x160203,
-    BBItem_Disk_Lv24 = 0x170203,
-    BBItem_Disk_Lv25 = 0x180203,
-    BBItem_Disk_Lv26 = 0x190203,
-    BBItem_Disk_Lv27 = 0x1A0203,
-    BBItem_Disk_Lv28 = 0x1B0203,
-    BBItem_Disk_Lv29 = 0x1C0203,
-    BBItem_Disk_Lv30 = 0x1D0203,
+    BBItem_TECHNIQUE_FOIE = 0x000203,
+    BBItem_TECHNIQUE_GIFOIE = 0x010203,
+    BBItem_TECHNIQUE_RAFOIE = 0x020203,
+    BBItem_TECHNIQUE_BARTA = 0x030203,
+    BBItem_TECHNIQUE_GIBARTA = 0x040203,
+    BBItem_TECHNIQUE_RABARTA = 0x050203,
+    BBItem_TECHNIQUE_ZONDE = 0x060203,
+    BBItem_TECHNIQUE_GIZONDE = 0x070203,
+    BBItem_TECHNIQUE_RAZONDE = 0x080203,
+    BBItem_TECHNIQUE_GRANTS = 0x090203,
+    BBItem_TECHNIQUE_DEBAND = 0x0A0203,
+    BBItem_TECHNIQUE_JELLEN = 0x0B0203,
+    BBItem_TECHNIQUE_ZALURE = 0x0C0203,
+    BBItem_TECHNIQUE_SHIFTA = 0x0D0203,
+    BBItem_TECHNIQUE_RYUKER = 0x0E0203,
+    BBItem_TECHNIQUE_RESTA = 0x0F0203,
+    BBItem_TECHNIQUE_ANTI = 0x100203,
+    BBItem_TECHNIQUE_REVERSER = 0x110203,
+    BBItem_TECHNIQUE_MEGID = 0x120203,
     BBItem_Sol_Atomizer = 0x000303,
     BBItem_Moon_Atomizer = 0x000403,
     BBItem_Star_Atomizer = 0x000503,
@@ -2168,15 +2164,21 @@ typedef enum bbitem_code_e {
 
 /* 其他版本物品结构清单 */
 typedef struct item_map_s {
-    item_code_t code;
+    union {
+        item_code_t code;
+        uint8_t datab[4];
+    };
     const char* name;
-} item_map_t;
+} PACKED item_map_t;
 
 /* BB物品结构清单 */
 typedef struct bbitem_map_s {
-    bbitem_code_t code;
+    union {
+        bbitem_code_t code;
+        uint8_t datab[4];
+    };
     const char* name;
-} bbitem_map_t;
+} PACKED bbitem_map_t;
 
 // BB 物品参数结构
 typedef struct bb_item_wp {
@@ -2237,7 +2239,14 @@ typedef struct bb_item_mst {
     uint32_t unused4;
     uint32_t unused5;
     uint32_t amt; //mst amount
-} bb_item_mst_t;
+} PACKED bb_item_mst_t;
+
+#ifndef _WIN32
+#else
+#pragma pack()
+#endif
+
+#undef PACKED
 
 /* 物品名称总清单. 来自 PSOPC. */
 static item_map_t item_list[] = {
@@ -4170,36 +4179,25 @@ static bbitem_map_t bbitem_list_en[] = {
     { BBItem_Monofluid, "Monofluid" },
     { BBItem_Difluid, "Difluid" },
     { BBItem_Trifluid, "Trifluid" },
-    { BBItem_Disk_Lv01, "Disk:Lv.1" },
-    { BBItem_Disk_Lv02, "Disk:Lv.2" },
-    { BBItem_Disk_Lv03, "Disk:Lv.3" },
-    { BBItem_Disk_Lv04, "Disk:Lv.4" },
-    { BBItem_Disk_Lv05, "Disk:Lv.5" },
-    { BBItem_Disk_Lv06, "Disk:Lv.6" },
-    { BBItem_Disk_Lv07, "Disk:Lv.7" },
-    { BBItem_Disk_Lv08, "Disk:Lv.8" },
-    { BBItem_Disk_Lv09, "Disk:Lv.9" },
-    { BBItem_Disk_Lv10, "Disk:Lv.10" },
-    { BBItem_Disk_Lv11, "Disk:Lv.11" },
-    { BBItem_Disk_Lv12, "Disk:Lv.12" },
-    { BBItem_Disk_Lv13, "Disk:Lv.13" },
-    { BBItem_Disk_Lv14, "Disk:Lv.14" },
-    { BBItem_Disk_Lv15, "Disk:Lv.15" },
-    { BBItem_Disk_Lv16, "Disk:Lv.16" },
-    { BBItem_Disk_Lv17, "Disk:Lv.17" },
-    { BBItem_Disk_Lv18, "Disk:Lv.18" },
-    { BBItem_Disk_Lv19, "Disk:Lv.19" },
-    { BBItem_Disk_Lv20, "Disk:Lv.20" },
-    { BBItem_Disk_Lv21, "Disk:Lv.21" },
-    { BBItem_Disk_Lv22, "Disk:Lv.22" },
-    { BBItem_Disk_Lv23, "Disk:Lv.23" },
-    { BBItem_Disk_Lv24, "Disk:Lv.24" },
-    { BBItem_Disk_Lv25, "Disk:Lv.25" },
-    { BBItem_Disk_Lv26, "Disk:Lv.26" },
-    { BBItem_Disk_Lv27, "Disk:Lv.27" },
-    { BBItem_Disk_Lv28, "Disk:Lv.28" },
-    { BBItem_Disk_Lv29, "Disk:Lv.29" },
-    { BBItem_Disk_Lv30, "Disk:Lv.30" },
+    { BBItem_TECHNIQUE_FOIE, "Foie" },
+    { BBItem_TECHNIQUE_GIFOIE, "Gifoie" },
+    { BBItem_TECHNIQUE_RAFOIE, "Rafoie" },
+    { BBItem_TECHNIQUE_BARTA, "Barta" },
+    { BBItem_TECHNIQUE_GIBARTA, "Gibarta" },
+    { BBItem_TECHNIQUE_RABARTA, "Rabarta" },
+    { BBItem_TECHNIQUE_ZONDE, "Zonde" },
+    { BBItem_TECHNIQUE_GIZONDE, "Gizonde" },
+    { BBItem_TECHNIQUE_RAZONDE, "Razonde" },
+    { BBItem_TECHNIQUE_GRANTS, "Grants" },
+    { BBItem_TECHNIQUE_DEBAND, "Deband" },
+    { BBItem_TECHNIQUE_JELLEN, "Jellen" },
+    { BBItem_TECHNIQUE_ZALURE, "Zalure" },
+    { BBItem_TECHNIQUE_SHIFTA, "Shifta" },
+    { BBItem_TECHNIQUE_RYUKER, "Ryuker" },
+    { BBItem_TECHNIQUE_RESTA, "Resta" },
+    { BBItem_TECHNIQUE_ANTI, "Anti" },
+    { BBItem_TECHNIQUE_REVERSER, "Reverser" },
+    { BBItem_TECHNIQUE_MEGID, "Megid" },
     { BBItem_Sol_Atomizer, "Sol Atomizer" },
     { BBItem_Moon_Atomizer, "Moon Atomizer" },
     { BBItem_Star_Atomizer, "Star Atomizer" },
@@ -5724,36 +5722,25 @@ static bbitem_map_t bbitem_list_cn[] = {
     { BBItem_Monofluid, "小TP回复液" },
     { BBItem_Difluid, "中TP回复液" },
     { BBItem_Trifluid, "大TP回复液" },
-    { BBItem_Disk_Lv01, "光盘:Lv.1" },
-    { BBItem_Disk_Lv02, "光盘:Lv.2" },
-    { BBItem_Disk_Lv03, "光盘:Lv.3" },
-    { BBItem_Disk_Lv04, "光盘:Lv.4" },
-    { BBItem_Disk_Lv05, "光盘:Lv.5" },
-    { BBItem_Disk_Lv06, "光盘:Lv.6" },
-    { BBItem_Disk_Lv07, "光盘:Lv.7" },
-    { BBItem_Disk_Lv08, "光盘:Lv.8" },
-    { BBItem_Disk_Lv09, "光盘:Lv.9" },
-    { BBItem_Disk_Lv10, "光盘:Lv.10" },
-    { BBItem_Disk_Lv11, "光盘:Lv.11" },
-    { BBItem_Disk_Lv12, "光盘:Lv.12" },
-    { BBItem_Disk_Lv13, "光盘:Lv.13" },
-    { BBItem_Disk_Lv14, "光盘:Lv.14" },
-    { BBItem_Disk_Lv15, "光盘:Lv.15" },
-    { BBItem_Disk_Lv16, "光盘:Lv.16" },
-    { BBItem_Disk_Lv17, "光盘:Lv.17" },
-    { BBItem_Disk_Lv18, "光盘:Lv.18" },
-    { BBItem_Disk_Lv19, "光盘:Lv.19" },
-    { BBItem_Disk_Lv20, "光盘:Lv.20" },
-    { BBItem_Disk_Lv21, "光盘:Lv.21" },
-    { BBItem_Disk_Lv22, "光盘:Lv.22" },
-    { BBItem_Disk_Lv23, "光盘:Lv.23" },
-    { BBItem_Disk_Lv24, "光盘:Lv.24" },
-    { BBItem_Disk_Lv25, "光盘:Lv.25" },
-    { BBItem_Disk_Lv26, "光盘:Lv.26" },
-    { BBItem_Disk_Lv27, "光盘:Lv.27" },
-    { BBItem_Disk_Lv28, "光盘:Lv.28" },
-    { BBItem_Disk_Lv29, "光盘:Lv.29" },
-    { BBItem_Disk_Lv30, "光盘:Lv.30" },
+    { BBItem_TECHNIQUE_FOIE, "火球术" },
+    { BBItem_TECHNIQUE_GIFOIE, "火墙术" },
+    { BBItem_TECHNIQUE_RAFOIE, "炎狱术" },
+    { BBItem_TECHNIQUE_BARTA, "冻气术" },
+    { BBItem_TECHNIQUE_GIBARTA, "冰箭术" },
+    { BBItem_TECHNIQUE_RABARTA, "极冰术" },
+    { BBItem_TECHNIQUE_ZONDE, "闪电术" },
+    { BBItem_TECHNIQUE_GIZONDE, "群雷术" },
+    { BBItem_TECHNIQUE_RAZONDE, "雷爆术" },
+    { BBItem_TECHNIQUE_GRANTS, "圣光术" },
+    { BBItem_TECHNIQUE_DEBAND, "强体术" },
+    { BBItem_TECHNIQUE_JELLEN, "降攻术" },
+    { BBItem_TECHNIQUE_ZALURE, "降防术" },
+    { BBItem_TECHNIQUE_SHIFTA, "强攻术" },
+    { BBItem_TECHNIQUE_RYUKER, "瞬移术" },
+    { BBItem_TECHNIQUE_RESTA, "圣泉术" },
+    { BBItem_TECHNIQUE_ANTI, "状态术" },
+    { BBItem_TECHNIQUE_REVERSER, "回魂术" },
+    { BBItem_TECHNIQUE_MEGID, "死咒术" },
     { BBItem_Sol_Atomizer, "魂之粉" },
     { BBItem_Moon_Atomizer, "月之粉" },
     { BBItem_Star_Atomizer, "星之粉" },

@@ -1159,8 +1159,10 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
 #ifdef DEBUG
                         ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
 #endif // DEBUG
+                        i->disconnected = 1;
+                        continue; // 继续等待下一次接收
                     }
-                    else {
+                    else if (i->auth) {
                         ++client_count;
                         set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
 

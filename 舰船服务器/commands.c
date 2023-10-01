@@ -565,7 +565,7 @@ static int handle_item(ship_client_t *src, const char *params) {
 
     send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version),
+        item_get_name(&src->new_item, src->version, 0),
         __(src, "\tE\tC6设置成功, 立即生成."));
 
     ITEM_LOG("%s 使用权限制造:", get_player_describe(src));
@@ -631,7 +631,7 @@ static int handle_item1(ship_client_t* src, const char* params) {
 
     return send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version),
+        item_get_name(&src->new_item, src->version, 0),
         __(src, "\tE\tC6 new_item item1 设置成功, 立即生成."));
 }
 
@@ -755,7 +755,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
 
     send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version),
+        item_get_name(&src->new_item, src->version, 0),
         __(src, "\tE\tC6生成成功."));
 
     print_item_data(&src->new_item, l->version);
@@ -3906,7 +3906,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
 
     send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version),
+        item_get_name(&src->new_item, src->version, 0),
         __(src, "\tE\tC6 new_item 设置成功."));
 
     /* Make sure that the requester is in a team, not a lobby. */

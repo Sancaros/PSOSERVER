@@ -1268,7 +1268,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 /* Process a client's done bursting signal. */
 static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
-    int rv;
+    int rv = 0;
 
     /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY) {
@@ -1617,18 +1617,18 @@ static int bb_process_update_quest_stats(ship_client_t* c,
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
 
-    print_ascii_hex(errl, pkt, len);
-
     if (!l || !(l->flags & LOBBY_FLAG_QUESTING))
         return -1;
 
     if (c->flags & 0x00002000)
         ERR_LOG("trial edition client sent update quest stats command.");
 
-    DBG_LOG("process_dc_update_quest_stats qid %d  quest_internal_id %d", l->qid, pkt->quest_internal_id);
+    DBG_LOG("bb_process_update_quest_stats qid %d  quest_internal_id %d", l->qid, pkt->quest_internal_id);
+    print_ascii_hex(dbgl, pkt, len);
 
     if (l->qid != pkt->quest_internal_id) {
-        ERR_LOG("l->qid != pkt->quest_internal_id.");
+        ERR_LOG("l->qid %d != pkt->quest_internal_id %d.", l->qid, pkt->quest_internal_id);
+        print_ascii_hex(errl, pkt, len);
         return -1;
     }
 

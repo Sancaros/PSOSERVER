@@ -32,31 +32,6 @@
 #include "packets.h"
 #include "pso_StringReader.h"
 
-char abbreviation_for_difficulty(uint8_t difficulty) {
-    char abbreviation = '?';
-
-    switch (difficulty) {
-    case 0:
-        abbreviation = 'N';
-        break;
-    case 1:
-        abbreviation = 'H';
-        break;
-    case 2:
-        abbreviation = 'V';
-        break;
-    case 3:
-        abbreviation = 'U';
-        break;
-    default:
-        // 在给定的范围之外，默认返回 '?'
-        abbreviation = '?';
-        break;
-    }
-
-    return abbreviation;
-}
-
 int quest_version(ship_client_t* c) {
     switch (c->version) {
     case CLIENT_VERSION_DCV1:

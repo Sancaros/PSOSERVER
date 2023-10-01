@@ -110,6 +110,79 @@ static const int8_t weapon_bonus_values[21] = {
     50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
 };
 
+typedef struct weapon_special {
+    uint8_t id;
+    const char* name;
+    const char* cn_name;
+} weapon_special_t;
+
+static const weapon_special_t weapon_specials[] = {
+    {0x00, NULL, "无属性"},
+    {0x01, "Draw", "吸血"},
+    {0x02, "Drain", "饮血"},
+    {0x03, "Fill", "噬血"},
+    {0x04, "Gush", "嗜血"},
+    {0x05, "Heart", "心之"},
+    {0x06, "Mind", "智之"},
+    {0x07, "Soul", "魂之"},
+    {0x08, "Geist", "魄之"},
+    {0x09, "Master\'s", "将之"},
+    {0x0A, "Lord\'s", "相之"},
+    {0x0B, "King\'s", "王之"},
+    {0x0C, "Charge", "销金"},
+    {0x0D, "Spirit", "销魂"},
+    {0x0E, "Berserk", "销血"},
+    {0x0F, "Ice", "冰晶"},
+    {0x10, "Frost", "冰霜"},
+    {0x11, "Freeze", "冰冻"},
+    {0x12, "Blizzard", "冰暴"},
+    {0x13, "Bind", "小麻痹"},
+    {0x14, "Hold", "中麻痹"},
+    {0x15, "Seize", "强麻痹"},
+    {0x16, "Arrest", "全麻痹"},
+    {0x17, "Heat", "高热"},
+    {0x18, "Fire", "火热"},
+    {0x19, "Flame", "灼热"},
+    {0x1A, "Burning", "炽热"},
+    {0x1B, "Shock", "雷鸣"},
+    {0x1C, "Thunder", "雷击"},
+    {0x1D, "Storm", "雷爆"},
+    {0x1E, "Tempest", "雷霆"},
+    {0x1F, "Dim", "暗淡"},
+    {0x20, "Shadow", "暗影"},
+    {0x21, "Dark", "暗黑"},
+    {0x22, "Hell", "地狱"},
+    {0x23, "Panic", "混乱"},
+    {0x24, "Riot", "暴动"},
+    {0x25, "Havoc", "浩劫"},
+    {0x26, "Chaos", "混沌"},
+    {0x27, "Devil\'s", "魔鬼的"},
+    {0x28, "Demon\'s", "恶魔的"},
+};
+
+typedef struct s_rank_special {
+    uint8_t id;
+    const char* name;
+    const char* cn_name;
+} s_rank_special_t;
+
+static const s_rank_special_t s_rank_specials[] = {
+    {0x01, "Jellen", "降攻"},
+    {0x02, "Zalure", "降防"},
+    {0x05, "Burning", "炽热"},
+    {0x06, "Tempest", "雷霆"},
+    {0x07, "Blizzard", "冰暴"},
+    {0x08, "Arrest", "全麻痹"},
+    {0x09, "Chaos", "混沌"},
+    {0x0A, "Hell", "地狱"},
+    {0x0B, "Spirit", "销魂"},
+    {0x0C, "Berserk", "销血"},
+    {0x0D, "Demon\'s", "恶魔的"},
+    {0x0E, "Gush", "嗜血"},
+    {0x0F, "Geist", "魄之"},
+    {0x10, "King\'s", "王之"},
+};
+
 /* 游戏固定插件属性加成 */
 static const uint8_t unit_bonus_values[5][2] = {
     {0xFE, 0xFF},
@@ -192,7 +265,7 @@ void clear_tool_item_if_invalid(item_t* item);
 bool is_common_consumable(uint32_t primary_identifier);
 
 /* 获取物品名称 */
-const char* item_get_name(const item_t* item, int version);
+const char* item_get_name(const item_t* item, int version, int languageCheck);
 bool is_item_empty(item_t* item);
 void set_armor_or_shield_defense_bonus(item_t* item, int16_t bonus);
 int16_t get_armor_or_shield_defense_bonus(const item_t* item);

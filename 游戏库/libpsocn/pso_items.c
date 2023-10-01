@@ -240,23 +240,25 @@ void clear_after(item_t* this, size_t position, size_t count) {
 	}
 }
 
-const char* item_get_name_by_code(item_code_t code, int version) {
+const char* item_get_name_by_code(const item_t* item) {
 	item_map_t* cur = item_list;
-	//TODO 未完成多语言物品名称
-
-	(void)version;
 
 	const char* unknow_name = "未识别物品名称";
 
-	/* Take care of mags so that we'll match them properly... */
-	if ((code & 0xFF) == 0x02) {
-		code &= 0xFFFF;
-	}
+	if (item->datal[0] == BBItem_Saber0)
+		return "空";
 
 	/* Look through the list for the one we want */
 	while (cur->code != Item_NoSuchItem) {
-		if (cur->code == code) {
-			return cur->name;
+		if (cur->datab[0] == item->datab[0]) {
+			if (item->datab[0] == ITEM_TYPE_MAG) {
+				if (cur->datab[1] == item->datab[1])
+					return cur->name;
+			}
+			else if (cur->datab[1] == item->datab[1] && cur->datab[2] == item->datab[2]) {
+				return cur->name;
+
+			}
 		}
 
 		++cur;
@@ -266,28 +268,29 @@ const char* item_get_name_by_code(item_code_t code, int version) {
 	return unknow_name;
 }
 
-const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
-	bbitem_map_t* cur = bbitem_list_en;
-	//TODO 未完成多语言物品名称
-	(void)version;
+const char* bbitem_get_name_by_code(const item_t* item, int languageCheck) {
+	bbitem_map_t* cur = bbitem_list_cn;
 
 	const char* unknow_name = "未识别物品名称";
 
-	//TODO 未完成多语言物品名称
-	int32_t languageCheck = 1;
-	if (languageCheck) {
-		cur = bbitem_list_cn;
+	if (languageCheck && languageCheck < 10) {
+		cur = bbitem_list_en;
 	}
 
-	/* Take care of mags so that we'll match them properly... */
-	if ((code & 0xFF) == ITEM_TYPE_MAG) {
-		code &= 0xFFFF;
-	}
+	if (item->datal[0] == BBItem_Saber0)
+		return "空";
 
 	/* Look through the list for the one we want */
-	while (cur->code != Item_NoSuchItem) {
-		if (cur->code == code) {
-			return cur->name;
+	while (cur->code != BBItem_NoSuchItem) {
+		if (cur->datab[0] == item->datab[0]) {
+			if (item->datab[0] == ITEM_TYPE_MAG) {
+				if (cur->datab[1] == item->datab[1])
+					return cur->name;
+			}
+			else if (cur->datab[1] == item->datab[1] && cur->datab[2] == item->datab[2]) {
+				return cur->name;
+
+			}
 		}
 
 		++cur;
@@ -300,7 +303,7 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
 }
 
 /* 获取物品名称 */
-const char* item_get_name(const item_t* item, int version) {
+const char* item_get_name(const item_t* item, int version, int languageCheck) {
 	uint32_t code = item->datab[0] | (item->datab[1] << 8) |
 		(item->datab[2] << 16);
 
@@ -344,9 +347,9 @@ const char* item_get_name(const item_t* item, int version) {
 	}
 
 	if (version == 5)
-		return bbitem_get_name_by_code((bbitem_code_t)code, version);
+		return bbitem_get_name_by_code(item, languageCheck);
 	else
-		return item_get_name_by_code((item_code_t)code, version);
+		return item_get_name_by_code(item);
 }
 
 bool is_item_empty(item_t* item) {
@@ -486,7 +489,7 @@ void print_biitem_data(void* data, int item_index, int version, int inv, int err
 			iitem_t* iitem = (iitem_t*)data;
 
 			ITEM_LOG("%s X %s物品:(ID %d / %08X) %s", err_text, inv_text,
-				iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version));
+				iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version, 0));
 
 			ITEM_LOG(""
 				"槽位 (%d) "
@@ -513,7 +516,7 @@ void print_biitem_data(void* data, int item_index, int version, int inv, int err
 			bitem_t* bitem = (bitem_t*)data;
 
 			ITEM_LOG("%s X %s物品:(ID %d / %08X) %s", err_text, inv_text,
-				bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version));
+				bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version, 0));
 
 			ITEM_LOG(""
 				"槽位 (%d) "
@@ -563,7 +566,7 @@ char* get_item_describe(const item_t* item, int version) {
 	switch (item->datab[0]) {
 	case ITEM_TYPE_WEAPON: // 武器
 		sprintf(item_des, "%s+%d 属性%d [%s%d/%s%d/%s%d]"
-			, item_get_name(item, version)
+			, item_get_name(item, version, 0)
 			, item->datab[3]
 			, item->datab[4]
 			, weapon_attrib[item->datab[6]], item->datab[7]
@@ -575,7 +578,7 @@ char* get_item_describe(const item_t* item, int version) {
 		switch (item->datab[1]) {
 		case ITEM_SUBTYPE_FRAME://护甲
 			sprintf(item_des, "%s %dS [%d+/%d+]"
-				, item_get_name(item, version)
+				, item_get_name(item, version, 0)
 				, item->datab[5]
 				, item->datab[6]
 				, item->datab[8]
@@ -583,7 +586,7 @@ char* get_item_describe(const item_t* item, int version) {
 			break;
 		case ITEM_SUBTYPE_BARRIER://护盾
 			sprintf(item_des, "%s [%d+/%d+]"
-				, item_get_name(item, version)
+				, item_get_name(item, version, 0)
 				, item->datab[6]
 				, item->datab[8]
 			);
@@ -592,11 +595,11 @@ char* get_item_describe(const item_t* item, int version) {
 		case ITEM_SUBTYPE_UNIT://插件
 			const char* bonus_desc = get_unit_bonus_describe(item);
 			if (bonus_desc == NULL) {
-				sprintf(item_des, "%s", item_get_name(item, version));
+				sprintf(item_des, "%s", item_get_name(item, version, 0));
 			}
 			else {
 				sprintf(item_des, "%s [%s]"
-					, item_get_name(item, version)
+					, item_get_name(item, version, 0)
 					, bonus_desc
 				);
 			}
@@ -606,7 +609,7 @@ char* get_item_describe(const item_t* item, int version) {
 
 	case ITEM_TYPE_MAG:
 		sprintf(item_des, "%s %s Lv%d 同步 %d 智商 %d [%d/%d/%d/%d]"
-			, item_get_name(item, version)
+			, item_get_name(item, version, 0)
 			, get_mag_color_name(item->data2b[3])
 			, item->datab[2]
 			, item->data2b[0]
@@ -627,7 +630,7 @@ char* get_item_describe(const item_t* item, int version) {
 		}
 		else {
 			sprintf(item_des, "%s x%d"
-				, item_get_name(item, version)
+				, item_get_name(item, version, 0)
 				, item->datab[5]
 			);
 		}

@@ -103,6 +103,9 @@ static int have_bbrt = 0;
 static rt_table_t bb_rtdata[4][4][10];
 static rt_table_t bb_dymnamic_rtdata[4][4][10];
 
+/* 返回难度文字名称 */
+char abbreviation_for_difficulty(uint8_t difficulty);
+
 int rt_read_v2(const char *fn);
 int rt_read_gc(const char *fn);
 int rt_read_bb(const char* fn);
