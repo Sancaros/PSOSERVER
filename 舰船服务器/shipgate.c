@@ -64,6 +64,8 @@ extern uint8_t ship_ip6[16];
 /* Player levelup data */
 bb_level_table_t bb_char_stats;
 v2_level_table_t v2_char_stats;
+/* 已改为数据库载入 */
+bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 psocn_bb_mode_char_t default_mode_char;
 
@@ -167,7 +169,6 @@ static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
 static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
     __try {
         ssize_t rv, total = 0;
-        void* tmp;
 
         if (sendbuf == NULL || len == 0 || len > MAX_TMP_BUFF) {
             ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
@@ -188,41 +189,12 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                 }
                 else if (rv < 0) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
-                    ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", rv);
+                    ERR_LOG("Gnutls *** 发送损坏的数据(%d). 取消响应.", rv);
                     return -1;
                 }
 
                 total += rv;
             }
-        }
-
-        rv = len - total;
-
-        if (rv) {
-            /* Move out any already transferred data. */
-            if (c->sendbuf_start) {
-                memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-                    c->sendbuf_cur - c->sendbuf_start);
-                c->sendbuf_cur -= c->sendbuf_start;
-            }
-
-            /* See if we need to reallocate the buffer. */
-            if (c->sendbuf_cur + rv > c->sendbuf_size) {
-                tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-
-                /* If we can't allocate the space, bail. */
-                if (tmp == NULL) {
-                    ERR_LOG("realloc");
-                    return -1;
-                }
-
-                c->sendbuf_size = c->sendbuf_cur + rv;
-                c->sendbuf = (unsigned char*)tmp;
-            }
-
-            /* Copy what's left of the packet into the output buffer. */
-            memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-            c->sendbuf_cur += rv;
         }
 
         return 0;
@@ -1569,7 +1541,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                             }
 
                             if (c->bb_pl->character.inv.iitems[i].present) {
-                                fix_inv_bank_item(tmpi);
+                                //fix_inv_bank_item(tmpi);
                                 tmpi->item_id = EMPTY_STRING;
                             }
                             else
@@ -1578,7 +1550,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
 
                         fix_client_inv(&c->bb_pl->character.inv);
 
-                        fix_equip_item(&c->bb_pl->character.inv);
+                        //fix_equip_item(&c->bb_pl->character.inv);
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
@@ -1593,7 +1565,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                             }
 
                             if (c->bb_pl->bank.bitems[i].show_flags && c->bb_pl->bank.bitems[i].amount) {
-                                fix_inv_bank_item(tmpi);
+                                //fix_inv_bank_item(tmpi);
                             }
                             else
                                 clear_bitem(&c->bb_pl->bank.bitems[i]); /* 初始化无效的银行物品 以免数据错误 */
@@ -3116,7 +3088,6 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
         }
     }
 
-
 #ifdef DEBUG
     CONFIG_LOG("接收 Blue Burst 玩家 %d 个职业 %d 个法术最大等级数据", j, i);
 
@@ -3601,7 +3572,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 
             /* 我们始终需要8字节的倍数。 */
             if (pkt_sz & 0x07) {
-                pkt_sz = (pkt_sz & 0xFFF8) + 8;
+                pkt_sz = (pkt_sz & 0xFFF8) + recv_size;
             }
 
             /* 是否已接收完整的数据包？ */
@@ -3629,11 +3600,6 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 
         /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
         if (sz && rv == 0) {
-            /* 如果缓冲区中有数据，则释放它。 */
-            free_safe(c->recvbuf);
-            c->recvbuf = NULL;
-            c->recvbuf_size = 0;
-
             /* 如果接收缓冲区大小不够，则重新分配。 */
             if (c->recvbuf_size < sz) {
                 tmp = realloc(c->recvbuf, sz);

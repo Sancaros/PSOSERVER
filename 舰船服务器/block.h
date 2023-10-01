@@ -94,6 +94,8 @@ int block_info_reply(ship_client_t *c, uint32_t block);
 
 ship_client_t *block_find_client(block_t *b, uint32_t gc);
 
+int join_game(ship_client_t* c, lobby_t* l);
+
 /* Process a change lobby packet. */
 int process_change_lobby(ship_client_t* c, uint32_t item_id);
 
@@ -103,7 +105,6 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
 /* Process block commands for a client. */
 int dc_process_pkt(ship_client_t* c, uint8_t* pkt);
 
-int bb_join_game(ship_client_t* c, lobby_t* l);
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt);
 
 int send_motd(ship_client_t *c);

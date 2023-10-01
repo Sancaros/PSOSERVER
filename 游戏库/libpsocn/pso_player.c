@@ -15,9 +15,11 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <f_iconv.h>
+
 #include "pso_player.h"
 #include "f_logs.h"
-#include <f_iconv.h>
+#include "pso_items.h"
 
 /* Possible values for the version field of ship_client_t */
 #define CLIENT_VERSION_DCV1     0
@@ -28,32 +30,36 @@
 #define CLIENT_VERSION_BB       5
 #define CLIENT_VERSION_XBOX     6
 
-bool char_class_is_male(uint8_t cls) {
-	return class_flags[cls] & MALE;
+bool char_class_is_male(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_MALE;
 }
 
-bool char_class_is_human(uint8_t cls) {
-	return class_flags[cls] & HUMAN;
+bool char_class_is_female(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_FEMALE;
 }
 
-bool char_class_is_newman(uint8_t cls) {
-	return class_flags[cls] & NEWMAN;
+bool char_class_is_human(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_HUMAN;
 }
 
-bool char_class_is_android(uint8_t cls) {
-	return class_flags[cls] & ANDROID;
+bool char_class_is_newman(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_NEWMAN;
 }
 
-bool char_class_is_hunter(uint8_t cls) {
-	return class_flags[cls] & HUNTER;
+bool char_class_is_android(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_DROID;
 }
 
-bool char_class_is_ranger(uint8_t cls) {
-	return class_flags[cls] & RANGER;
+bool char_class_is_hunter(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_HUNTER;
 }
 
-bool char_class_is_force(uint8_t cls) {
-	return class_flags[cls] & FORCE;
+bool char_class_is_ranger(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_RANGER;
+}
+
+bool char_class_is_force(uint8_t equip_flags) {
+	return equip_flags & EQUIP_FLAGS_FORCE;
 }
 
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src) {

@@ -48,6 +48,11 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 size_t find_litem_index(lobby_t* l, item_t* item);
 
 /* 获取背包中目标物品所在槽位 */
+bool find_mag_and_feed_item(const inventory_t* inv,
+    const uint32_t mag_id,
+    const uint32_t item_id,
+    size_t* mag_item_index,
+    size_t* feed_item_index);
 int find_iitem_index(const inventory_t* inv, const uint32_t item_id);
 int find_titem_index(const trade_inv_t* trade, const uint32_t item_id);
 int check_titem_id(const trade_inv_t* trade, const uint32_t item_id);
@@ -88,10 +93,10 @@ void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);
 void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);
 
 /* 物品检测装备标签 */
-int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
-int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_flags, inventory_t* inv, uint32_t item_id);
+bool item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
+int item_check_equip_flags(ship_client_t* src, uint32_t item_id);
 /* 给客户端标记可穿戴职业装备的标签 */
-int item_class_tag_equip_flag(ship_client_t* c);
+void item_class_tag_equip_flag(ship_client_t* c);
 void remove_titem_equip_flags(iitem_t* trade_item);
 
 //修复背包银行数据错误的物品代码

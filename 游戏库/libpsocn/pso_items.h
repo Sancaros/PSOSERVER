@@ -24,8 +24,8 @@
 #include "pso_item_list.h"
 
 // item_equip_flags 职业装备标志 用于识别不同种族
-#define EQUIP_FLAGS_NONE     1
-#define EQUIP_FLAGS_OK       0
+#define EQUIP_FLAGS_NONE     false
+#define EQUIP_FLAGS_OK       true
 #define EQUIP_FLAGS_HUNTER   0x01   // Bit 1 猎人
 #define EQUIP_FLAGS_RANGER   0x02   // Bit 2 枪手
 #define EQUIP_FLAGS_FORCE    0x04   // Bit 3 法师
@@ -35,6 +35,22 @@
 #define EQUIP_FLAGS_MALE     0x40   // Bit 7 男人
 #define EQUIP_FLAGS_FEMALE   0x80   // Bit 8 女人
 #define EQUIP_FLAGS_MAX      8
+
+/* 每个职业对应的装备FLAGS */
+static uint8_t class_equip_flags[12] = {
+    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_MALE,    // HUmar
+    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_NEWMAN    | EQUIP_FLAGS_FEMALE,  // HUnewearl
+    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_MALE,    // HUcast
+    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_MALE,    // RAmar
+    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_MALE,    // RAcast
+    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_FEMALE,  // RAcaseal
+    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_FEMALE,  // FOmarl
+    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_NEWMAN    | EQUIP_FLAGS_MALE,    // FOnewm
+    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_NEWMAN    | EQUIP_FLAGS_FEMALE,  // FOnewearl
+    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_FEMALE,  // HUcaseal
+    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_MALE,    // FOmar
+    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_FEMALE   // RAmarl
+};
 
 #define MAX_LOBBY_SAVED_ITEMS           3000
 

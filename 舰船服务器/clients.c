@@ -1657,9 +1657,9 @@ uint8_t get_player_msg_color_set(ship_client_t* src) {
 }
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {
-    err->has_error = false;
-    err->error_cmd_type = 0;
-    err->error_subcmd_type = 0;
+    err->has_error = has_error;
+    err->error_cmd_type = error_cmd_type;
+    err->error_subcmd_type = error_subcmd_type;
 }
 
 void clean_client_err(client_error_t* err) {

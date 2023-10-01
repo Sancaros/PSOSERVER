@@ -13258,29 +13258,24 @@ int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX: {
-        dc_pkt_hdr_t* dchdr = (dc_pkt_hdr_t*)data;
-        dc_err_pkt_hdr_t* dc_err_pkt = (dc_err_pkt_hdr_t*)prepend_command_header(c->version, false, dchdr->pkt_type, dchdr->flags, data);
-        err_type = dc_err_pkt->hdr.pkt_type;
-        err_len = dc_err_pkt->hdr.pkt_len;
-        err_subtype = dc_err_pkt->type;
+        subcmd_pkt_t* dchdr = (subcmd_pkt_t*)data;
+        err_type = dchdr->hdr.dc.pkt_type;
+        err_len = dchdr->hdr.dc.pkt_len;
+        err_subtype = dchdr->type;
         break;
     }
     case CLIENT_VERSION_PC: {
-        pc_pkt_hdr_t* pchdr = (pc_pkt_hdr_t*)data;
-        pc_err_pkt_hdr_t* pc_err_pkt = (pc_err_pkt_hdr_t*)prepend_command_header(c->version, false, pchdr->pkt_type, pchdr->flags, data);
-        err_type = pc_err_pkt->hdr.pkt_type;
-        err_len = pc_err_pkt->hdr.pkt_len;
-        err_subtype = pc_err_pkt->type;
+        subcmd_pkt_t* pchdr = (subcmd_pkt_t*)data;
+        err_type = pchdr->hdr.pc.pkt_type;
+        err_len = pchdr->hdr.pc.pkt_len;
+        err_subtype = pchdr->type;
         break;
     }
     case CLIENT_VERSION_BB: {
-        bb_err_pkt_hdr_t header = { 0 };
-
-        bb_pkt_hdr_t* bbhdr = (bb_pkt_hdr_t*)data;
-        bb_err_pkt_hdr_t* bb_err_pkt = (bb_err_pkt_hdr_t*)prepend_command_header(c->version, false, bbhdr->pkt_type, bbhdr->flags, data);
-        err_type = bb_err_pkt->hdr.pkt_type;
-        err_len = bb_err_pkt->hdr.pkt_len;
-        err_subtype = bb_err_pkt->type;
+        subcmd_bb_pkt_t* bbhdr = (subcmd_bb_pkt_t*)data;
+        err_type = bbhdr->hdr.pkt_type;
+        err_len = bbhdr->hdr.pkt_len;
+        err_subtype = bbhdr->type;
         break;
     }
     default:
@@ -13303,8 +13298,16 @@ int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
         goto subcmd_err_handle;
     }
     else {
-        /* Attempt to change the player's lobby. */
-        bb_join_game(c, l);
+        if (c->game_data->err.has_error) {
+            send_msg(c, BB_SCROLL_MSG_TYPE,
+                "%s 错误指令:0x%zX 副指令:0x%zX",
+                __(c, "\tE\tC6数据出错,请联系管理员处理!"),
+                c->game_data->err.error_cmd_type,
+                c->game_data->err.error_subcmd_type
+            );
+        }
+
+        send_warp(c, 0, true);
     }
 
     ERR_LOG("%s 玩家发生错误1 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_type, err_subtype);

@@ -1103,7 +1103,9 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
 
         num_tools_bb[i] = values.count;
 
-        //DBG_LOG("i %d num_tools_bb %d", i, num_tools_bb[i]);
+#ifdef DEBUG
+        DBG_LOG("i %d num_tools_bb %d", i, num_tools_bb[i]);
+#endif // DEBUG
 
         if (!(tools_bb[i] = (pmt_tool_bb_t*)malloc(sizeof(pmt_tool_bb_t) *
             values.count))) {
@@ -3332,6 +3334,7 @@ uint8_t choose_weapon_special(uint8_t det) {
 }
 
 int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
+    /* 检索PMT工具表 最大0x1A张 再检索每一张表的子表 */
     for (uint8_t z = 0; z < num_tool_types_bb; z++) {
         for (uint8_t y = 0; y < num_tools_bb[z]; y++) {
             if (tools_bb[z][y].base.index == tool_class) {

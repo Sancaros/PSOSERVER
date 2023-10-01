@@ -62,135 +62,6 @@ extern time_t srv_time;
 
 extern psocn_bb_mode_char_t default_mode_char;
 
-/* Process a chat packet from a Blue Burst client. */
-int bb_join_game(ship_client_t* c, lobby_t* l) {
-    int rv;
-
-    /* Make sure they don't have the protection flag on */
-    if (c->flags & CLIENT_FLAG_GC_PROTECT) {
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7请先登录\n才可加入游戏."));
-        return LOBBY_FLAG_ERROR_ADD_CLIENT;
-    }
-
-    item_class_tag_equip_flag(c);
-
-    /* See if they can change lobbies... */
-    rv = lobby_change_lobby(c, l);
-
-    if (rv == LOBBY_FLAG_ERROR_GAME_V1_CLASS) {
-        /* HUcaseal, FOmar, or RAmarl trying to join a v1 game */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7你的职业无法进入\n"
-                "PSO V1 版本游戏."));
-    }
-    if (rv == LOBBY_FLAG_ERROR_SINGLEPLAYER/* && !c->reset_quest*/) {
-        /* Single player mode */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7无法进入单人模式房间."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_PC_ONLY) {
-        /* PC only */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7该房间仅限 PSOPC 版本进入."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_V1_ONLY) {
-        /* V1 only */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7该房间仅限 PSOv1 版本进入."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_DC_ONLY) {
-        /* DC only */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7该房间仅限 PSODC 版本进入."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_LEGIT_TEMP_UNAVAIL) {
-        /* Temporarily unavailable */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7The game is\ntemporarily\nunavailable."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_LEGIT_MODE) {
-        /* Legit check failed */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7Game mode is set\nto legit and you\n"
-                "failed the legit\ncheck!"));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_QUESTSEL) {
-        /* Quest selection in progress */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7该房间已在选择任务中."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_QUESTING) {
-        /* Questing in progress */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7该房间已在任务中."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_DCV2_ONLY) {
-        /* V1 client attempting to join a V2 only game */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7该房间仅限 DCV2 版本进入."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_MAX_LEVEL) {
-        /* Level is too high */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7你的等级太高了."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_MIN_LEVEL) {
-        /* Level is too high */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7你的等级太低了."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_BURSTING) {
-        /* A client is bursting. */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7玩家正在跃迁中"));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_REMOVE_CLIENT) {
-        /* The lobby has disappeared. */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7游戏已不存在."));
-    }
-    else if (rv == LOBBY_FLAG_ERROR_ADD_CLIENT) {
-        /* The lobby is full. */
-        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7游戏房间人数已满."));
-    }
-    else {
-        /* Clear their legit mode flag... */
-        if ((c->flags & CLIENT_FLAG_LEGIT)) {
-            c->flags &= ~CLIENT_FLAG_LEGIT;
-            if (c->limits)
-                release(c->limits);
-        }
-
-        if (!c->game_data->err.has_error)
-            regenerate_lobby_item_id(l, c);
-    }
-
-    c->game_info.guildcard = c->guildcard;
-    c->game_info.slot = c->sec_data.slot;
-    c->game_info.block = c->cur_block->b;
-    c->game_info.c_version = c->version;
-
-    strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.gc_string, sizeof(c->game_info.name));
-    c->game_info.name[31] = 0;
-
-    c->mode = 0;
-    c->bank_type = false;
-    c->game_data->expboost = 0;
-
-    /* 备份临时数据 TODO BB版本未完成 */
-    if (c->version != CLIENT_VERSION_BB &&
-        (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, &c->game_info, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR)) {
-            DBG_LOG("备份临时数据 版本 %d", c->version);
-            return rv;
-        }
-    }
-
-    return 0;
-}
-
 static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
     size_t len = LE16(pkt->hdr.pkt_len) - 16;
@@ -509,7 +380,7 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
         c->create_lobby = NULL;
 
         /* Add the user to the lobby... */
-        if (bb_join_game(c, l)) {
+        if (join_game(c, l)) {
             /* Something broke, destroy the created lobby before anyone
                tries to join it. */
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
@@ -784,7 +655,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         }
 
         /* Attempt to change the player's lobby. */
-        return bb_join_game(c, l);
+        return join_game(c, l);
     }
 
         /* Quest category */
@@ -914,7 +785,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         }
 
         /* Attempt to change the player's lobby. */
-        return bb_join_game(c, ls);
+        return join_game(c, ls);
 
     case MENU_ID_PLAYER:
         return bb_process_player_menu(c, item_id);
@@ -1696,7 +1567,7 @@ static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
 
     /* We've got a new game, but nobody's in it yet... Lets put the requester
        in the game. */
-    if (bb_join_game(c, l)) {
+    if (join_game(c, l)) {
         /* Something broke, destroy the created lobby before anyone tries to
            join it. */
         pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
@@ -3237,7 +3108,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             err = subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 /* 错误处理方案函数 */
-                return send_subcmd_error_client_return_to_ship(c, (subcmd_bb_pkt_t*)pkt);
+                return send_subcmd_error_client_return_to_ship(c, pkt);
             }
 
             return err;
@@ -3253,7 +3124,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             err = subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 /* 错误处理方案函数 */
-                return send_subcmd_error_client_return_to_ship(c, (subcmd_bb_pkt_t*)pkt);
+                return send_subcmd_error_client_return_to_ship(c, pkt);
             }
             return err;
 
@@ -3262,7 +3133,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             err = subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 /* 错误处理方案函数 */
-                return send_subcmd_error_client_return_to_ship(c, (subcmd_bb_pkt_t*)pkt);
+                return send_subcmd_error_client_return_to_ship(c, pkt);
             }
             return err;
 

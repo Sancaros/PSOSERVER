@@ -251,6 +251,11 @@ const char* item_get_name_by_code(const item_t* item) {
 	/* Look through the list for the one we want */
 	while (cur->code != Item_NoSuchItem) {
 		if (cur->datab[0] == item->datab[0]) {
+			if (item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK)
+				if (cur->datab[2] == item->datab[4])
+					return cur->name;
+
+
 			if (item->datab[0] == ITEM_TYPE_MAG) {
 				if (cur->datab[1] == item->datab[1])
 					return cur->name;
@@ -283,6 +288,11 @@ const char* bbitem_get_name_by_code(const item_t* item, int languageCheck) {
 	/* Look through the list for the one we want */
 	while (cur->code != BBItem_NoSuchItem) {
 		if (cur->datab[0] == item->datab[0]) {
+			if(item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK)
+				if(cur->datab[2] == item->datab[4])
+					return cur->name;
+
+
 			if (item->datab[0] == ITEM_TYPE_MAG) {
 				if (cur->datab[1] == item->datab[1])
 					return cur->name;
@@ -304,47 +314,47 @@ const char* bbitem_get_name_by_code(const item_t* item, int languageCheck) {
 
 /* 获取物品名称 */
 const char* item_get_name(const item_t* item, int version, int languageCheck) {
-	uint32_t code = item->datab[0] | (item->datab[1] << 8) |
-		(item->datab[2] << 16);
-
-	/* 获取相关物品参数对比 */
-	switch (item->datab[0]) {
-	case ITEM_TYPE_WEAPON:  /* 武器 */
-		if (item->datab[5]) {
-			code = (item->datab[5] << 8);
-		}
-		break;
-
-	case ITEM_TYPE_GUARD:  /* 装甲 */
-		if (item->datab[1] != ITEM_SUBTYPE_UNIT && item->datab[3]) {
-			code = code | (item->datab[3] << 16);
-		}
-		//printf("数据1: %02X 数据3: %02X\n", item->item_data1[1], item->item_data1[3]);
-		break;
-
-	case ITEM_TYPE_MAG:  /* 玛古 */
-		if (item->datab[1] == 0x00 && item->datab[2] >= 0xC9) {
-			code = 0x02 | (((item->datab[2] - 0xC9) + 0x2C) << 8);
-		}
-		break;
-
-	case ITEM_TYPE_TOOL: /* 物品 */
-		if (code == 0x060D03 && item->datab[3]) {
-			code = 0x000E03 | ((item->datab[3] - 1) << 16);
-		}
-		break;
-
-	case ITEM_TYPE_MESETA: /* 美赛塔 */
-		break;
-
-#ifdef DEBUG
-	default:
-		ERR_LOG("未找到物品类型");
-		break;
-
-#endif // DEBUG
-
-	}
+//	uint32_t code = item->datab[0] | (item->datab[1] << 8) |
+//		(item->datab[2] << 16);
+//
+//	/* 获取相关物品参数对比 */
+//	switch (item->datab[0]) {
+//	case ITEM_TYPE_WEAPON:  /* 武器 */
+//		if (item->datab[5]) {
+//			code = (item->datab[5] << 8);
+//		}
+//		break;
+//
+//	case ITEM_TYPE_GUARD:  /* 装甲 */
+//		if (item->datab[1] != ITEM_SUBTYPE_UNIT && item->datab[3]) {
+//			code = code | (item->datab[3] << 16);
+//		}
+//		//printf("数据1: %02X 数据3: %02X\n", item->item_data1[1], item->item_data1[3]);
+//		break;
+//
+//	case ITEM_TYPE_MAG:  /* 玛古 */
+//		if (item->datab[1] == 0x00 && item->datab[2] >= 0xC9) {
+//			code = 0x02 | (((item->datab[2] - 0xC9) + 0x2C) << 8);
+//		}
+//		break;
+//
+//	case ITEM_TYPE_TOOL: /* 物品 */
+//		if (code == 0x060D03 && item->datab[3]) {
+//			code = 0x000E03 | ((item->datab[3] - 1) << 16);
+//		}
+//		break;
+//
+//	case ITEM_TYPE_MESETA: /* 美赛塔 */
+//		break;
+//
+//#ifdef DEBUG
+//	default:
+//		ERR_LOG("未找到物品类型");
+//		break;
+//
+//#endif // DEBUG
+//
+//	}
 
 	if (version == 5)
 		return bbitem_get_name_by_code(item, languageCheck);
@@ -565,7 +575,7 @@ char* get_item_describe(const item_t* item, int version) {
 	/* 检索物品类型 */
 	switch (item->datab[0]) {
 	case ITEM_TYPE_WEAPON: // 武器
-		sprintf(item_des, "%s+%d 属性%d [%s%d/%s%d/%s%d]"
+		sprintf(item_des, "%s +%d 属性%d [%s%d/%s%d/%s%d]"
 			, item_get_name(item, version, 0)
 			, item->datab[3]
 			, item->datab[4]
@@ -577,7 +587,7 @@ char* get_item_describe(const item_t* item, int version) {
 	case ITEM_TYPE_GUARD: // 装甲
 		switch (item->datab[1]) {
 		case ITEM_SUBTYPE_FRAME://护甲
-			sprintf(item_des, "%s %dS [%d+/%d+]"
+			sprintf(item_des, "%s %d槽 [%d+/%d+]"
 				, item_get_name(item, version, 0)
 				, item->datab[5]
 				, item->datab[6]
@@ -622,10 +632,10 @@ char* get_item_describe(const item_t* item, int version) {
 		break;
 
 	case ITEM_TYPE_TOOL:
-		if (item->datab[1] == 0x02) {
+		if (item->datab[1] == ITEM_SUBTYPE_DISK) {
 			sprintf(item_des, "%s Lv%d"
 				, get_technique_comment(item->datab[4])
-				, item->datab[2]
+				, item->datab[2] + 1
 			);
 		}
 		else {

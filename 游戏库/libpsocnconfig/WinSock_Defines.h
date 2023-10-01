@@ -28,6 +28,3 @@ typedef unsigned long DWORD;
 #define FALSE 0
 #define SOCKET_ERROR (-1)
 #endif
-
-#define MAX_TMP_BUFF 64000
-#define MAX_PACKET_BUFF ( MAX_TMP_BUFF * 16 )

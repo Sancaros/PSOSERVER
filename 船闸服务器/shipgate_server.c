@@ -652,16 +652,18 @@ void run_server(int tsock, int tsock6) {
                     rv = handle_pkt(i);
                     if (rv && rv != -1) {
                         ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
+
+                        i->last_ping = 0;
                         i->err_inconnect = 1;
                         continue;
                     }
 
                     if (rv == -1) {
+
+                        i->last_ping = 0;
                         i->disconnected = 1;
                         continue;
                     }
-
-                    i->last_ping = 0;
                 }
 
                 /* If we have anything to write, check if we can. */

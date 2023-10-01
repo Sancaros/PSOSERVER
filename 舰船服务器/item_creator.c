@@ -36,6 +36,7 @@
 #include "itemrt_remap.h"
 
 bool should_allow_meseta_drops(lobby_t* l) {
+	/*需要完成一个开关或者是版本检测*/
 	return l->challenge != 1;
 }
 
@@ -80,38 +81,47 @@ float rand_float_0_1_from_crypt(sfmt_t* rng) {
 	return (float)(next >> 16) / 65536.0f;
 }
 
+// 从一维加权表中随机选择一个值
 uint8_t get_rand_from_weighted_tables(sfmt_t* rng,
 	uint8_t* data, size_t offset, size_t num_values, size_t stride) {
+
 	uint64_t rand_max = 0;
-	for (size_t x = 0; x != num_values; x++) {
-		rand_max += data[x * stride + offset];
+	for (size_t x = 0; x < num_values; x++) {
+		rand_max += data[x * stride + offset];  // 计算加权表的总权重
 	}
+
 	if (rand_max == 0) {
-		ERR_LOG("权重表为空 offset 0x%08X num_values %d stride %d", offset, num_values, stride);
+		ERR_LOG("权重表为空 offset 0x%08X num_values %zu stride %zu", offset, num_values, stride);
 		return 0;
 	}
 
-	uint32_t x = rand_int(rng, rand_max);
+	uint32_t x = rand_int(rng, rand_max);  // 生成一个 [0, rand_max) 范围内的随机数
+
 	for (size_t z = 0; z < num_values; z++) {
 		uint32_t table_value = data[z * stride + offset];
-		if (x < table_value) {
+
+		if (x < table_value) {  // 当随机数 x 小于当前元素的权重时，返回对应的索引值
 			return (uint8_t)z;
 		}
-		x -= table_value;
+
+		x -= table_value;  // 更新随机数 x
 	}
+
 	ERR_LOG("选择器不小于 rand_max");
 	return 0;
 }
 
+// 从二维垂直排列的加权表中随机选择一个值
 uint8_t get_rand_from_weighted_tables_2d_vertical(sfmt_t* rng,
 	void* tables, size_t offset, size_t X, size_t Y) {
 	uint8_t* table = (uint8_t*)tables;
+
 	if (!table) {
 		ERR_LOG("数据表为空");
 		return 0;
 	}
-	return get_rand_from_weighted_tables(rng, &table[0],
-		offset, X, Y);
+
+	return get_rand_from_weighted_tables(rng, &table[0], offset, X, Y);
 }
 
 void generate_common_weapon_bonuses(sfmt_t* rng,
@@ -135,8 +145,14 @@ void generate_common_weapon_bonuses(sfmt_t* rng,
 	}
 }
 
-uint8_t get_rand_from_weighted_tables_1d(sfmt_t* rng, uint8_t* data, size_t X) {
-	return get_rand_from_weighted_tables(rng, data, 0, X, 1);
+uint8_t get_rand_from_weighted_tables_1d(sfmt_t* rng,
+	uint8_t* tables, size_t X) {
+	if (!tables) {
+		ERR_LOG("一维数据表为空");
+		return 0;
+	}
+
+	return get_rand_from_weighted_tables(rng, tables, 0, X, 1);
 }
 
 void generate_common_weapon_grind(sfmt_t* rng,
@@ -364,12 +380,15 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 
 	uint8_t tool_class = get_rand_from_weighted_tables_2d_vertical(rng,
 		&ent->tool_class_prob_table, area_norm, 28, 10);
+
 	if (tool_class == 0x1A) {
+		/* 如果到底了 则让它掉落PD 这是PD的PMT索引ID */
 		tool_class = 0x73;
 	}
 
 	generate_common_tool_type(tool_class, item);
-	if (item->datab[1] == 0x02) { // Tech disk
+	// 法术光盘
+	if (item->datab[1] == ITEM_SUBTYPE_DISK) {
 		item->datab[4] = get_rand_from_weighted_tables_2d_vertical(rng,
 			ent->technique_index_prob_table, area_norm, 19, 10);
 		item->datab[2] = generate_tech_disk_level(rng, item->datab[4], area_norm, ent);

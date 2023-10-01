@@ -563,14 +563,6 @@ static int handle_item(ship_client_t *src, const char *params) {
         return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
     }
 
-    send_txt(src, "%s %s %s",
-        __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version, 0),
-        __(src, "\tE\tC6设置成功, 立即生成."));
-
-    ITEM_LOG("%s 使用权限制造:", get_player_describe(src));
-    print_item_data(&src->new_item, l->version);
-
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
@@ -591,6 +583,14 @@ static int handle_item(ship_client_t *src, const char *params) {
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
         pthread_mutex_unlock(&l->mutex);
     }
+
+    send_txt(src, "%s %s %s",
+        __(src, "\tE\tC8物品:"),
+        item_get_name(&src->new_item, src->version, 0),
+        __(src, "\tE\tC6设置成功, 立即生成."));
+
+    ITEM_LOG("%s 使用权限制造:", get_player_describe(src));
+    print_item_data(&src->new_item, l->version);
 
     return 0;
 }
@@ -618,7 +618,7 @@ static int handle_item1(ship_client_t* src, const char* params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效 item1 物品代码."));
     }
 
-    pmt_item_base_check_t item_base_check = get_item_definition_bb(item, src->new_item.datal[1]);
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(item, src->new_item.datal[0]);
     if (item_base_check.err) {
         clear_inv_item(&src->new_item);
         return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
@@ -753,13 +753,6 @@ static int handle_miitem(ship_client_t* src, const char* params) {
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
 
-    send_txt(src, "%s %s %s",
-        __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version, 0),
-        __(src, "\tE\tC6生成成功."));
-
-    print_item_data(&src->new_item, l->version);
-
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
@@ -780,6 +773,15 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
         pthread_mutex_unlock(&l->mutex);
     }
+
+    send_txt(src, "%s %s %s",
+        __(src, "\tE\tC8物品:"),
+        item_get_name(&src->new_item, src->version, 0),
+        __(src, "\tE\tC6生成成功."));
+
+    ITEM_LOG("%s 使用权限制造:", get_player_describe(src));
+    print_item_data(&src->new_item, l->version);
+
     return 0;
 }
 
@@ -1751,6 +1753,9 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
     /* If there's no arguments, then dump the caller's inventory. */
     else if (!params || params[0] == '\0') {
         dumpinv_internal(src);
+
+        return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+            , get_player_describe(src), __(src, "\tE\tC7的背包数据已存储到日志."));
     }
     /* Otherwise, try to parse the arguments. */
     else {
@@ -1790,10 +1795,13 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
             }
 
             dumpinv_internal(target);
+
+            return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+                , get_player_describe(target), __(src, "\tE\tC7的背包数据已存储到日志."));
         }
     }
 
-    return send_txt(src, "%s", __(src, "\tE\tC7已转储的背包数据到日志文件."));
+    return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4背包数据存储失败."));
 }
 
 static void dumpbank_internal(ship_client_t* src) {
@@ -1824,17 +1832,20 @@ static void dumpbank_internal(ship_client_t* src) {
 }
 
 /* 用法: /dbgbank [clientid/guildcard] */
-static int handle_dbgbank(ship_client_t *c, const char *params) {
-    lobby_t *l = c->cur_lobby;
+static int handle_dbgbank(ship_client_t *src, const char *params) {
+    lobby_t *l = src->cur_lobby;
     uint32_t client;
 
     /* Make sure the requester is a GM. */
-    if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    if(!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
     }
     
     if(!params || params[0] == '\0') {
-        dumpbank_internal(c);
+        dumpbank_internal(src);
+
+        return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+            , get_player_describe(src), __(src, "\tE\tC7的银行数据已存储到日志."));
     }
     /* Otherwise, try to parse the arguments. */
     else {
@@ -1843,7 +1854,7 @@ static int handle_dbgbank(ship_client_t *c, const char *params) {
         client = (int)strtoul(params, NULL, 10);
 
         if(errno) {
-            return send_txt(c, "%s", __(c, "\tE\tC7无效目标."));
+            return send_txt(src, "%s", __(src, "\tE\tC7无效目标."));
         }
 
         /* See if we have a client ID or a guild card number... */
@@ -1852,7 +1863,7 @@ static int handle_dbgbank(ship_client_t *c, const char *params) {
 
             if(client >= 4 && l->type == LOBBY_TYPE_GAME) {
                 pthread_mutex_unlock(&l->mutex);
-                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
+                return send_txt(src, "%s", __(src, "\tE\tC7无效 Client ID."));
             }
 
             if(l->clients[client]) {
@@ -1860,24 +1871,27 @@ static int handle_dbgbank(ship_client_t *c, const char *params) {
             }
             else {
                 pthread_mutex_unlock(&l->mutex);
-                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
+                return send_txt(src, "%s", __(src, "\tE\tC7无效 Client ID."));
             }
 
             pthread_mutex_unlock(&l->mutex);
         }
         /* Otherwise, assume we're looking for a guild card number. */
         else {
-            ship_client_t *target = block_find_client(c->cur_block, client);
+            ship_client_t *target = block_find_client(src->cur_block, client);
 
             if(!target) {
-                return send_txt(c, "%s", __(c, "\tE\tC7未找到请求的玩家."));
+                return send_txt(src, "%s", __(src, "\tE\tC7未找到请求的玩家."));
             }
 
             dumpbank_internal(target);
+
+            return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+                , get_player_describe(target), __(src, "\tE\tC7的银行数据已存储到日志."));
         }
     }
 
-    return send_txt(c, "%s", __(c, "\tE\tC7已转储的背包数据到日志文件."));
+    return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4银行数据存储失败."));
 }
 
 /* 用法: /showdcpc [off] */
@@ -4108,7 +4122,7 @@ static int handle_resetquest(ship_client_t* c, const char* params) {
             c->reset_quest = true;
 
             /* Attempt to change the player's lobby. */
-            bb_join_game(c, l);
+            join_game(c, l);
 
             c->reset_quest = false;
             return 0;
@@ -4117,7 +4131,7 @@ static int handle_resetquest(ship_client_t* c, const char* params) {
         c->reset_quest = true;
 
         /* Attempt to change the player's lobby. */
-        bb_join_game(c, l);
+        join_game(c, l);
 
         c->reset_quest = false;
         return 0;
@@ -4145,9 +4159,14 @@ static int handle_quick_return(ship_client_t* c, const char* params) {
 
     if (l->flags & LOBBY_FLAG_QUESTING) {
         return send_warp(c, 1, false);
+    } else if (l->type == LOBBY_TYPE_GAME) {
+        if(c->cur_area > 0)
+            return send_warp(c, 0, true);
+        else
+            return send_txt(c, "%s", __(c, "\tE\tC6您已经在先驱者2号了."));
     }
 
-    return send_txt(c, "%s", __(c, "\tE\tC6当前不在任务中."));
+    return send_txt(c, "%s", __(c, "\tE\tC4无法在大厅使用该指令."));
 }
 
 /* 用法: /pl */

@@ -49,27 +49,6 @@ typedef struct dress_flag {
 /* 36字节 角色信息数据结构 */
 typedef struct psocn_disp_char {
     psocn_pl_stats_t stats;
-    //TODO 这是什么参数
-    //union unkonw {
-    //    struct unkonw1 {
-    //        uint8_t opt_flag1;
-    //        uint8_t opt_flag2;
-    //        uint8_t opt_flag3;
-    //        uint8_t opt_flag4;
-    //        uint8_t opt_flag5;
-    //        uint8_t opt_flag6;
-    //        uint8_t opt_flag7;
-    //        uint8_t opt_flag8;
-    //        uint8_t opt_flag9;
-    //        uint8_t opt_flag10;
-    //    }PACKED;
-    //    struct unkonw2 {
-    //        uint16_t unknown_a1;
-    //        float unknown_a2;
-    //        float unknown_a3;
-    //    }PACKED;
-    //};
-
     uint16_t unknown_a1;
     float unknown_a2;
     float unknown_a3;

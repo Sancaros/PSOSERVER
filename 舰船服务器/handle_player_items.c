@@ -35,6 +35,11 @@
 #include "rtdata.h"
 #include "mag_bb.h"
 #include "max_tech_level.h"
+#include "shipgate.h"
+
+iitem_t fix_iitem[MAX_PLAYER_INV_ITEMS];
+bitem_t fix_bitem[MAX_PLAYER_BANK_ITEMS];
+extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////游戏房间操作
@@ -238,6 +243,48 @@ size_t find_litem_index(lobby_t* l, item_t* item) {
 
     return -1;
 }
+
+bool find_mag_and_feed_item(const inventory_t* inv,
+    const uint32_t mag_id,
+    const uint32_t item_id,
+    size_t* mag_item_index,
+    size_t* feed_item_index) {
+
+    if (inv->item_count > MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("背包物品数量超出限制 %d", inv->item_count);
+        return false;
+    }
+
+    for (size_t i = 0; i < inv->item_count; i++) {
+        if (inv->iitems[i].data.item_id == mag_id) {
+            /* 找到玛古 */
+            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_MAG) &&
+                (inv->iitems[i].data.datab[1] <= Mag_Agastya)) {
+
+                *mag_item_index = i;
+                for (size_t j = 0; j < inv->item_count; j++) {
+                    if (inv->iitems[j].data.item_id == item_id) {
+                        /* 找到喂养的物品 */
+                        if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_TOOL) &&
+                            (inv->iitems[j].data.datab[1] < ITEM_SUBTYPE_TELEPIPE) &&
+                            (inv->iitems[j].data.datab[1] != ITEM_SUBTYPE_DISK) &&
+                            (inv->iitems[j].data.datab[5] > 0x00)) {
+
+                            *feed_item_index = j;
+                            // 找到魔法装备和喂养物品，返回true
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // 没有找到魔法装备和喂养物品，返回false
+    return false;
+}
+
 
 int find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
     int x = 0;
@@ -761,6 +808,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
+    fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -810,8 +858,8 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
     // 检查是否超出美赛塔数量
     if (item_id == ITEM_ID_MESETA) {
         if (amount > bank->meseta) {
-            ERR_LOG("GC %" PRIu32 " 移除的美赛塔超出所拥有的",
-                src->guildcard);
+            ERR_LOG("%s 移除的美赛塔超出所拥有的",
+                get_player_describe(src));
             return ret;
         }
         ret.data.datab[0] = ITEM_TYPE_MESETA;
@@ -824,8 +872,8 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
     //size_t index = find_bitem_index(bank, item_id);
 
     if (bitem_index == bank->item_count) {
-        ERR_LOG("GC %" PRIu32 " 银行物品索引超出限制",
-            src->guildcard);
+        ERR_LOG("%s 银行物品索引超出限制",
+            get_player_describe(src));
         return ret;
     }
 
@@ -886,12 +934,13 @@ bool add_iitem(ship_client_t* src, const iitem_t iitem) {
 
     // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
     if (character->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
-        ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值,当前 %d 个物品",
-            src->guildcard, character->inv.item_count);
+        ERR_LOG("%s 背包物品数量超出最大值,当前 %d 个物品",
+            get_player_describe(src), character->inv.item_count);
         return false;
     }
     character->inv.iitems[character->inv.item_count] = iitem;
     character->inv.item_count++;
+    fix_client_inv(&character->inv);
     return true;
 }
 
@@ -968,8 +1017,8 @@ bool add_bitem(ship_client_t* src, const bitem_t bitem) {
     }
 
     if (bank->item_count >= MAX_PLAYER_BANK_ITEMS) {
-        ERR_LOG("GC %" PRIu32 " 银行物品数量超出最大值",
-            src->guildcard);
+        ERR_LOG("%s 银行物品数量超出最大值",
+            get_player_describe(src));
         return false;
     }
     bank->bitems[bank->item_count] = bitem;
@@ -2038,286 +2087,185 @@ void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon
 }
 
 //检查装备穿戴标记item_equip_flags
-int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签) {
-    int32_t eqOK = EQUIP_FLAGS_OK;
-    uint32_t ch;
-
-    for (ch = 0; ch < EQUIP_FLAGS_MAX; ch++) {
-        if ((客户端装备标签 & (1 << ch)) && (!(装备标签 & (1 << ch)))) {
-            eqOK = EQUIP_FLAGS_NONE;
-            break;
+bool item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签) {
+    for (size_t i = 0; i < EQUIP_FLAGS_MAX; i++) {
+        if ((客户端装备标签 & (1 << i)) && (!(装备标签 & (1 << i)))) {
+            return EQUIP_FLAGS_NONE;
         }
     }
 
-    return eqOK;
+    return EQUIP_FLAGS_OK;
 }
 
 /* 物品检测装备标签 */
-int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_flags, inventory_t* inv, uint32_t item_id) {
+int item_check_equip_flags(ship_client_t* src, uint32_t item_id) {
     pmt_weapon_bb_t tmp_wp = { 0 };
     pmt_guard_bb_t tmp_guard = { 0 };
     uint32_t found = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
-    int i = 0;
 
-    i = find_iitem_index(inv, item_id);
-#ifdef DEBUG
-    DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, inv->iitems[i].data.item_id, item_id);
-    print_item_data(&inv->iitems[i].data, c->version);
-#endif // DEBUG
+    psocn_bb_char_t* character = get_client_char_bb(src);
+    inventory_t* inv = &character->inv;
 
-    /* 如果找不到该物品，则将用户从船上推下. */
-    if (i < 0) {
-        ERR_LOG("GC %" PRIu32 " 装备的物品无效! 错误码 %d", gc, i);
-        return -1;
-    }
+    for (int i = 0; i < inv->item_count; i++) {
+        if (inv->iitems[i].data.item_id == item_id) {
+            found = 1;
+            item_t* found_item = &inv->iitems[i].data;
 
-    item_t* found_item = &inv->iitems[i].data;
-
-    if (!found_item) {
-        ERR_LOG("GC %" PRIu32 " 装备的物品已不存在!", gc);
-        return -2;
-    }
-
-    if (found_item->item_id == item_id) {
-        found = 1;
-        inv_count = inv->item_count;
-
-        switch (found_item->datab[0]) {
-        case ITEM_TYPE_WEAPON:
-            if (pmt_lookup_weapon_bb(found_item->datal[0], &tmp_wp)) {
-                ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
-                    gc);
-                return -3;
-            }
-
-            if (item_check_equip(tmp_wp.equip_flag, equip_flags)) {
-                ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
-                    gc);
-                return -4;
-            }
-            else {
-                // 解除角色上任何其他武器的装备。（防止堆叠） 
-                for (j = 0; j < inv_count; j++)
-                    if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_WEAPON) &&
-                        (inv->iitems[j].flags & LE32(0x00000008))) {
-                        inv->iitems[j].flags &= LE32(0xFFFFFFF7);
-                        //DBG_LOG("卸载武器");
-                    }
-                //DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
-            }
-            break;
-
-        case ITEM_TYPE_GUARD:
-            switch (found_item->datab[1]) {
-            case ITEM_SUBTYPE_FRAME:
-                if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
-                    ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
-                        gc);
-                    return -5;
+            switch (found_item->datab[0]) {
+            case ITEM_TYPE_WEAPON:
+                if (pmt_lookup_weapon_bb(found_item->datal[0], &tmp_wp)) {
+                    ERR_LOG("%s 装备了不存在的物品数据!", get_player_describe(src));
+                    return -3;
                 }
 
-                if (target_level < tmp_guard.level_req) {
-                    ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
-                        gc);
-                    return -6;
-                }
-
-                if (item_check_equip(tmp_guard.equip_flag, equip_flags)) {
-                    ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
-                        gc);
-                    return -7;
+                if (!item_check_equip(tmp_wp.equip_flag, src->equip_flags)) {
+                    ERR_LOG("%s 装备了不属于该职业的物品数据!", get_player_describe(src));
+                    return -4;
                 }
                 else {
-                    //DBG_LOG("装甲识别");
-                    // 移除其他装甲和插槽
-                    for (j = 0; j < inv_count; ++j) {
-                        if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
-                            (inv->iitems[j].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
+                    // 解除角色上任何其他武器的装备。（防止堆叠） 
+                    for (j = 0; j < inv_count; j++)
+                        if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_WEAPON) &&
                             (inv->iitems[j].flags & LE32(0x00000008))) {
-                            //DBG_LOG("卸载装甲");
                             inv->iitems[j].flags &= LE32(0xFFFFFFF7);
-                            inv->iitems[j].data.datab[4] = 0x00;
+                            //DBG_LOG("卸载武器");
                         }
+                    //DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
+                }
+                break;
+
+            case ITEM_TYPE_GUARD:
+                switch (found_item->datab[1]) {
+                case ITEM_SUBTYPE_FRAME:
+                    if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
+                        ERR_LOG("%s 装备了不存在的物品数据!", get_player_describe(src));
+                        return -5;
+                    }
+
+                    if (character->disp.level < tmp_guard.level_req) {
+                        ERR_LOG("%s 等级不足, 不应该装备该物品数据!", get_player_describe(src));
+                        return -6;
+                    }
+
+                    if (!item_check_equip(tmp_guard.equip_flag, src->equip_flags)) {
+                        ERR_LOG("%s 装备了不属于该职业的物品数据!", get_player_describe(src));
+                        return -7;
+                    }
+                    else {
+                        //DBG_LOG("装甲识别");
+                        // 移除其他装甲和插槽
+                        for (j = 0; j < inv_count; ++j) {
+                            if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
+                                (inv->iitems[j].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
+                                (inv->iitems[j].flags & LE32(0x00000008))) {
+                                //DBG_LOG("卸载装甲");
+                                inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                                inv->iitems[j].data.datab[4] = 0x00;
+                            }
+                        }
+                        break;
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
+                    if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
+                        ERR_LOG("%s 装备了不存在的物品数据!", get_player_describe(src));
+                        return -8;
+                    }
+
+                    if (character->disp.level < tmp_guard.level_req) {
+                        ERR_LOG("%s 等级不足, 不应该装备该物品数据!", get_player_describe(src));
+                        return -9;
+                    }
+
+                    if (!item_check_equip(tmp_guard.equip_flag, src->equip_flags)) {
+                        ERR_LOG("%s 装备了不属于该职业的物品数据!", get_player_describe(src));
+                        return -10;
+                    }
+                    else {
+                        //DBG_LOG("护盾识别");
+                        // Remove any other barrier
+                        for (j = 0; j < inv_count; ++j) {
+                            if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
+                                (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
+                                (inv->iitems[j].flags & LE32(0x00000008))) {
+                                //DBG_LOG("卸载护盾");
+                                inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                                inv->iitems[j].data.datab[4] = 0x00;
+                            }
+                        }
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_UNIT:// Assign unit a slot
+                    //DBG_LOG("插槽识别");
+                    for (j = 0; j < 4; j++)
+                        slot[j] = 0;
+
+                    for (j = 0; j < inv_count; j++) {
+                        // Another loop ;(
+                        if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
+                            (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT)) {
+                            //DBG_LOG("插槽 %d 识别", j);
+                            if ((inv->iitems[j].flags & LE32(0x00000008)) &&
+                                (inv->iitems[j].data.datab[4] < 0x04)) {
+
+                                slot[inv->iitems[j].data.datab[4]] = 1;
+                                //DBG_LOG("插槽 %d 卸载", j);
+                            }
+                        }
+                    }
+
+                    for (j = 0; j < 4; j++) {
+                        if (slot[j] == 0) {
+                            found_slot = j + 1;
+                            break;
+                        }
+                    }
+
+                    if (found_slot) {
+                        found_slot--;
+                        inv->iitems[j].data.datab[4] = (uint8_t)(found_slot);
+                    }
+                    else {//缺失 TODO
+                        inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                        ERR_LOG("%s 装备了作弊的插槽物品数据!", get_player_describe(src));
+                        return -11;
                     }
                     break;
                 }
                 break;
 
-            case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
-                if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
-                    ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
-                        gc);
-                    return -8;
-                }
+            case ITEM_TYPE_MAG:
+                //DBG_LOG("玛古识别");
+                // Remove equipped mag
+                for (j = 0; j < inv->item_count; j++)
+                    if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_MAG) &&
+                        (inv->iitems[j].flags & LE32(0x00000008))) {
 
-                if (target_level < tmp_guard.level_req) {
-                    ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
-                        gc);
-                    return -9;
-                }
-
-                if (item_check_equip(tmp_guard.equip_flag, equip_flags)) {
-                    ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
-                        gc);
-                    return -10;
-                }else {
-                    //DBG_LOG("护盾识别");
-                    // Remove any other barrier
-                    for (j = 0; j < inv_count; ++j) {
-                        if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
-                            (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
-                            (inv->iitems[j].flags & LE32(0x00000008))) {
-                            //DBG_LOG("卸载护盾");
-                            inv->iitems[j].flags &= LE32(0xFFFFFFF7);
-                            inv->iitems[j].data.datab[4] = 0x00;
-                        }
+                        inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                        //DBG_LOG("卸载玛古");
                     }
-                }
-                break;
-
-            case ITEM_SUBTYPE_UNIT:// Assign unit a slot
-                //DBG_LOG("插槽识别");
-                for (j = 0; j < 4; j++)
-                    slot[j] = 0;
-
-                for (j = 0; j < inv_count; j++) {
-                    // Another loop ;(
-                    if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
-                        (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT)) {
-                        //DBG_LOG("插槽 %d 识别", j);
-                        if ((inv->iitems[j].flags & LE32(0x00000008)) &&
-                            (inv->iitems[j].data.datab[4] < 0x04)) {
-
-                            slot[inv->iitems[j].data.datab[4]] = 1;
-                            //DBG_LOG("插槽 %d 卸载", j);
-                        }
-                    }
-                }
-
-                for (j = 0; j < 4; j++) {
-                    if (slot[j] == 0) {
-                        found_slot = j + 1;
-                        break;
-                    }
-                }
-
-                if (found_slot) {
-                    found_slot--;
-                    inv->iitems[j].data.datab[4] = (uint8_t)(found_slot);
-                }
-                else {//缺失 TODO
-                    inv->iitems[j].flags &= LE32(0xFFFFFFF7);
-                    ERR_LOG("GC %" PRIu32 " 装备了作弊的插槽物品数据!",
-                        gc);
-                    return -11;
-                }
                 break;
             }
-            break;
 
-        case ITEM_TYPE_MAG:
-            //DBG_LOG("玛古识别");
-            // Remove equipped mag
-            for (j = 0; j < inv->item_count; j++)
-                if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_MAG) &&
-                    (inv->iitems[j].flags & LE32(0x00000008))) {
+            //DBG_LOG("完成卸载, 但是未识别成功");
 
-                    inv->iitems[j].flags &= LE32(0xFFFFFFF7);
-                    //DBG_LOG("卸载玛古");
-                }
-            break;
+            /* TODO: Should really make sure we can equip it first... */
+            inv->iitems[i].flags |= LE32(0x00000008);
         }
-
-        //DBG_LOG("完成卸载, 但是未识别成功");
-
-        /* TODO: Should really make sure we can equip it first... */
-        inv->iitems[i].flags |= LE32(0x00000008);
     }
+
+    if (!found)
+        return -1;
 
     return 0;
 }
 
 /* 给客户端标记可穿戴职业装备的标签 */
-int item_class_tag_equip_flag(ship_client_t* c) {
-    uint8_t c_class = c->bb_pl->character.dress_data.ch_class;
-
-    c->equip_flags = 0;
-
-    switch (c_class)
-    {
-    case CLASS_HUMAR:
-        c->equip_flags |= EQUIP_FLAGS_HUNTER;
-        c->equip_flags |= EQUIP_FLAGS_HUMAN;
-        c->equip_flags |= EQUIP_FLAGS_MALE;
-        break;
-
-    case CLASS_HUNEWEARL:
-        c->equip_flags |= EQUIP_FLAGS_HUNTER;
-        c->equip_flags |= EQUIP_FLAGS_NEWMAN;
-        c->equip_flags |= EQUIP_FLAGS_FEMALE;
-        break;
-
-    case CLASS_HUCAST:
-        c->equip_flags |= EQUIP_FLAGS_HUNTER;
-        c->equip_flags |= EQUIP_FLAGS_DROID;
-        c->equip_flags |= EQUIP_FLAGS_MALE;
-        break;
-
-    case CLASS_HUCASEAL:
-        c->equip_flags |= EQUIP_FLAGS_HUNTER;
-        c->equip_flags |= EQUIP_FLAGS_DROID;
-        c->equip_flags |= EQUIP_FLAGS_FEMALE;
-        break;
-
-    case CLASS_RAMAR:
-        c->equip_flags |= EQUIP_FLAGS_RANGER;
-        c->equip_flags |= EQUIP_FLAGS_HUMAN;
-        c->equip_flags |= EQUIP_FLAGS_MALE;
-        break;
-
-    case CLASS_RACAST:
-        c->equip_flags |= EQUIP_FLAGS_RANGER;
-        c->equip_flags |= EQUIP_FLAGS_DROID;
-        c->equip_flags |= EQUIP_FLAGS_MALE;
-        break;
-
-    case CLASS_RACASEAL:
-        c->equip_flags |= EQUIP_FLAGS_RANGER;
-        c->equip_flags |= EQUIP_FLAGS_DROID;
-        c->equip_flags |= EQUIP_FLAGS_FEMALE;
-        break;
-    case CLASS_RAMARL:
-        c->equip_flags |= EQUIP_FLAGS_RANGER;
-        c->equip_flags |= EQUIP_FLAGS_HUMAN;
-        c->equip_flags |= EQUIP_FLAGS_FEMALE;
-        break;
-
-    case CLASS_FONEWM:
-        c->equip_flags |= EQUIP_FLAGS_FORCE;
-        c->equip_flags |= EQUIP_FLAGS_NEWMAN;
-        c->equip_flags |= EQUIP_FLAGS_MALE;
-        break;
-
-    case CLASS_FONEWEARL:
-        c->equip_flags |= EQUIP_FLAGS_FORCE;
-        c->equip_flags |= EQUIP_FLAGS_NEWMAN;
-        c->equip_flags |= EQUIP_FLAGS_FEMALE;
-        break;
-
-    case CLASS_FOMARL:
-        c->equip_flags |= EQUIP_FLAGS_FORCE;
-        c->equip_flags |= EQUIP_FLAGS_HUMAN;
-        c->equip_flags |= EQUIP_FLAGS_FEMALE;
-        break;
-
-    case CLASS_FOMAR:
-        c->equip_flags |= EQUIP_FLAGS_FORCE;
-        c->equip_flags |= EQUIP_FLAGS_HUMAN;
-        c->equip_flags |= EQUIP_FLAGS_MALE;
-        break;
-    }
-
-    return 0;
+void item_class_tag_equip_flag(ship_client_t* c) {
+    psocn_bb_char_t* character = get_client_char_bb(c);
+    c->equip_flags = class_equip_flags[character->dress_data.ch_class];
 }
 
 void remove_titem_equip_flags(iitem_t* trade_item) {
@@ -2568,14 +2516,16 @@ void fix_equip_item(inventory_t* inv) {
 /* 清理背包物品 */
 void fix_client_inv(inventory_t* inv) {
     uint8_t i, j = 0;
-    iitem_t fix_iitem[MAX_PLAYER_INV_ITEMS] = { 0 };
 
     for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
         clear_iitem(&fix_iitem[i]);
 
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-        if (inv->iitems[i].present == 0x0001 || inv->iitems[i].present == 0x0002)
-            fix_iitem[j++] = inv->iitems[i];
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+        if (item_not_identification_bb(inv->iitems[i].data.datal[0], inv->iitems[i].data.datal[1]))
+            continue;
+
+        fix_iitem[j++] = inv->iitems[i];
+    }
 
     inv->item_count = j;
 
@@ -2616,7 +2566,6 @@ void sort_client_inv(inventory_t* inv) {
 
 void fix_client_bank(psocn_bank_t* bank) {
     size_t i, j = 0;
-    bitem_t fix_bitem[MAX_PLAYER_BANK_ITEMS] = { 0 };
 
     for (j = 0; j < MAX_PLAYER_BANK_ITEMS; j++)
         clear_bitem(&fix_bitem[j]);

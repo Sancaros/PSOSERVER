@@ -144,7 +144,7 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 		}
 	}
 
-	if (strlen(dp) + 2 + 1 <= 65536) { // 检查长度是否足够
+	if (strlen(dp) + 2 + 1 <= MAX_PACKET_BUFF) { // 检查长度是否足够
 		strcat(dp, "\n\r"); // 添加两个换行符
 	}
 	else {

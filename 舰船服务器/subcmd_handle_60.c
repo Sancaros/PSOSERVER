@@ -51,6 +51,8 @@ extern bb_level_table_t bb_char_stats;
 extern v2_level_table_t v2_char_stats;
 
 extern psocn_bb_mode_char_t default_mode_char;
+/* 已改为数据库载入 */
+extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
@@ -818,15 +820,14 @@ static int sub60_0D_dc(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     if (pkt->condition_type) {
-
-        if (src->game_data->err.error_cmd_type) {
+        if (src->game_data->err.has_error) {
             send_msg(src, BB_SCROLL_MSG_TYPE,
                 "%s 错误指令:0x%zX 副指令:0x%zX",
                 __(src, "\tE\tC6数据出错,请联系管理员处理!"),
                 src->game_data->err.error_cmd_type,
                 src->game_data->err.error_subcmd_type
             );
-            memset(&src->game_data->err, 0, sizeof(client_error_t));
+            clean_client_err(&src->game_data->err);
         }
 
         if (l->flags & LOBBY_TYPE_GAME) {
@@ -842,15 +843,14 @@ static int sub60_0D_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     if (pkt->condition_type) {
-
-        if (src->game_data->err.error_cmd_type) {
+        if (src->game_data->err.has_error) {
             send_msg(src, BB_SCROLL_MSG_TYPE,
                 "%s 错误指令:0x%zX 副指令:0x%zX",
                 __(src, "\tE\tC6数据出错,请联系管理员处理!"),
                 src->game_data->err.error_cmd_type,
                 src->game_data->err.error_subcmd_type
             );
-            memset(&src->game_data->err, 0, sizeof(client_error_t));
+            clean_client_err(&src->game_data->err);
         }
 
         if (l->flags & LOBBY_TYPE_GAME) {
@@ -1395,27 +1395,25 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
-        DBG_LOG("GC %" PRIu32 " ID不一致!",
-            src->guildcard);
+        DBG_LOG("%s ID不一致!",
+            get_player_describe(src));
 #endif // DEBUG
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    psocn_bb_char_t* character = get_client_char_bb(src);
-
 #ifdef DEBUG
 
-    DBG_LOG("GC %u item_id 0x%08X equip_slot 0x%08X", src->guildcard, item_id, equip_slot);
+    psocn_bb_char_t* character = get_client_char_bb(src);
+
+    DBG_LOG("%s item_id 0x%08X equip_slot 0x%08X", get_player_describe(src), item_id, equip_slot);
 
 #endif // DEBUG
 
-    equip_resault = item_check_equip_flags(src->guildcard, character->disp.level,
-        src->equip_flags, &character->inv, item_id);
-
+    equip_resault = item_check_equip_flags(src, item_id);
     /* 是否存在物品背包中? */
     if (equip_resault) {
-        ERR_LOG("GC %" PRIu32 " 装备了未存在的物品数据! 错误码:%d",
-            src->guildcard, equip_resault);
+        ERR_LOG("%s 装备了未存在的物品数据! 错误码:%d",
+            get_player_describe(src), equip_resault);
         return -1;
     }
 
@@ -1555,29 +1553,26 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    pthread_mutex_lock(&src->mutex);
     if (!in_game(src)) {
-        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_feed_mag_t), 0x03)) {
-        pthread_mutex_unlock(&src->mutex);
         return -2;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     errno_t err = player_feed_mag(src, pkt->mag_item_id, pkt->fed_item_id);
     if (err) {
         ERR_LOG("GC %" PRIu32 " 发送错误数据! 错误码 %d",
             src->guildcard, err);
-        pthread_mutex_unlock(&src->mutex);
         return -2;
     }
 
-    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    pthread_mutex_unlock(&src->mutex);
-
-    return 0;
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int sub60_29_dc(ship_client_t* src, ship_client_t* dest, 
@@ -1688,9 +1683,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     float x = pkt->x, y = pkt->y, z = pkt->z;
     int isframe = 0;
 
-    pthread_mutex_lock(&src->mutex);
     if (!in_game(src)) {
-        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 
@@ -1702,7 +1695,6 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_drop_item_t), 0x06)) {
-        pthread_mutex_unlock(&src->mutex);
         return -2;
     }
 
@@ -1715,7 +1707,6 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     if (index < 0) {
         ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符! 错误码 %d",
             src->guildcard, inv->iitems[index].data.item_id, item_id, index);
-        pthread_mutex_unlock(&src->mutex);
         return index;
     }
 
@@ -1725,7 +1716,6 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
         ERR_LOG("GC %" PRIu32 " 丢弃物品失败!",
             src->guildcard);
-        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 
@@ -1735,14 +1725,11 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品新增游戏房间背包!");
-        pthread_mutex_unlock(&src->mutex);
         return -2;
     }
 
     /* 数据包完成, 发送至游戏房间. */
-    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    pthread_mutex_unlock(&src->mutex);
-    return 0;
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int sub60_2B_dc(ship_client_t* src, ship_client_t* dest, 
@@ -2038,9 +2025,6 @@ static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_select_menu_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (!in_game(src))
-        return -1;
-
     if (!check_pkt_size(src, pkt, 0, 0x05))
         return -2;
 
@@ -2069,9 +2053,6 @@ static int sub60_2D_dc(ship_client_t* src, ship_client_t* dest,
 static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_select_done_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
-    if (!in_game(src))
-        return -1;
 
     if (!check_pkt_size(src, pkt, 0, 0x01))
         return -2;
@@ -2792,7 +2773,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->equip_flags & EQUIP_FLAGS_DROID ||
+    if (char_class_is_android(src->equip_flags) ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
         max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
         ) {
@@ -3637,7 +3618,7 @@ static int sub60_5F_dc(ship_client_t* src, ship_client_t* dest,
                 LE32(pkt->data.item.data2l), LE32(pkt->data.item2));
 
             /* Grab the item name, if we can find it. */
-            name = item_get_name((item_t*)&item.data, v, 0);
+            name = item_get_name(&item.data, v, 0);
 
             /* Fill in the destroy item packet. */
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
@@ -6513,8 +6494,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
                 case 0x0B:
                     // King's
                     exp_percent = 12;
-                    if ((l->difficulty == 0x03) &&
-                        (src->equip_flags & EQUIP_FLAGS_DROID))
+                    if ((l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) && (src->equip_flags & EQUIP_FLAGS_DROID))
                         exp_percent += 30;
                     break;
                 }

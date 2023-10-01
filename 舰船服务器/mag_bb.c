@@ -252,19 +252,36 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	psocn_bb_char_t* character = get_client_char_bb(src);
 
-	/*获取喂养的玛古和喂养的物品*/
-	int mag_item_index = find_iitem_index(&character->inv, mag_item_id);
+	int mag_item_index = -1;
+	int feed_item_index = -1;
+	if (!find_mag_and_feed_item(&character->inv, mag_item_id, feed_item_id, &mag_item_index, &feed_item_index)) {
+		// 没有找到魔法装备和喂养物品
+		ERR_LOG("%s 玛古或物品不存在!", get_player_describe(src));
+		return -1;
+	}
+
+	// 找到了魔法装备和喂养物品
+	// 可以使用mag_item_index和feed_item_index进行后续操作
+	item_t* mag_item = &character->inv.iitems[mag_item_index].data;
+
+	/* 搜索物品的结果索引 */
+	size_t result_index = find_result_index(primary_identifier(&character->inv.iitems[feed_item_index].data));
+
+	if (should_delete_item) {
+		iitem_t delete_item = remove_iitem(src, feed_item_id, 1, src->version != CLIENT_VERSION_BB);
+		if (item_not_identification_bb(delete_item.data.datal[0], delete_item.data.datal[1])) {
+			ERR_LOG("%s 删除 ID 0x%08X 失败", get_player_describe(src), feed_item_id);
+			err = -5;
+		}
+	}
+
+	/* 玛古再次进行检索 */
+	mag_item_index = find_iitem_index(&character->inv, mag_item_id);
 	if (mag_item_index < 0) {
 		ERR_LOG("%s 玛古不存在! 错误码 %d", get_player_describe(src), mag_item_index);
 		return mag_item_index;
 	}
-	item_t* mag_item = &character->inv.iitems[mag_item_index].data;
-	int feed_item_index = find_iitem_index(&character->inv, feed_item_id);
-	if (feed_item_index < 0) {
-		ERR_LOG("%s 喂养物品不存在! 错误码 %d", get_player_describe(src), feed_item_index);
-		return feed_item_index;
-	}
-	item_t* fed_item = &character->inv.iitems[feed_item_index].data;
+	mag_item = &character->inv.iitems[mag_item_index].data;
 
 	/* 查找该玛古的喂养表 */
 	pmt_mag_bb_t mag_table = { 0 };
@@ -273,9 +290,6 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			get_player_describe(src), err);
 		return err;
 	}
-
-	/* 搜索物品的结果索引 */
-	size_t result_index = find_result_index(primary_identifier(fed_item));
 
 	pmt_mag_feed_result_t feed_result = { 0 };
 	if ((err = pmt_lookup_mag_feed_table_bb(mag_item->datal[0], mag_table.feed_table, result_index, &feed_result))) {
@@ -381,12 +395,12 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				uint16_t pow = mag_item->dataw[3] / 100;
 				uint16_t dex = mag_item->dataw[4] / 100;
 				uint16_t mind = mag_item->dataw[5] / 100;
-				bool is_male = char_class_is_male(character->dress_data.ch_class);
+				bool is_male = char_class_is_male(src->equip_flags);
 				size_t table_index = (is_male ? 0 : 1) + section_id_group * 2;
 
-				bool is_hunter = char_class_is_hunter(character->dress_data.ch_class);
-				bool is_ranger = char_class_is_ranger(character->dress_data.ch_class);
-				bool is_force = char_class_is_force(character->dress_data.ch_class);
+				bool is_hunter = char_class_is_hunter(src->equip_flags);
+				bool is_ranger = char_class_is_ranger(src->equip_flags);
+				bool is_force = char_class_is_force(src->equip_flags);
 				if (is_force) {
 					table_index += 12;
 				}
@@ -425,9 +439,9 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				uint16_t dex = mag_item->dataw[4] / 100;
 				uint16_t mind = mag_item->dataw[5] / 100;
 
-				bool is_hunter = char_class_is_hunter(character->dress_data.ch_class);
-				bool is_ranger = char_class_is_ranger(character->dress_data.ch_class);
-				bool is_force = char_class_is_force(character->dress_data.ch_class);
+				bool is_hunter = char_class_is_hunter(src->equip_flags);
+				bool is_ranger = char_class_is_ranger(src->equip_flags);
+				bool is_force = char_class_is_force(src->equip_flags);
 				if (is_hunter + is_ranger + is_force != 1) {
 					ERR_LOG("角色职业 %s 不在范围中", pso_class[character->dress_data.ch_class].cn_name);
 					err = -4;
@@ -506,15 +520,6 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	 //如果玛古进化了,则增加光子爆发
 	if (mag_number != mag_item->datab[1]) {
-
-		/* 进化后的玛古再次进行检索 */
-		mag_item_index = find_iitem_index(&character->inv, mag_item_id);
-		if (mag_item_index < 0) {
-			ERR_LOG("%s 玛古不存在! 错误码 %d", get_player_describe(src), mag_item_index);
-			return mag_item_index;
-		}
-		mag_item = &character->inv.iitems[mag_item_index].data;
-
 		pmt_mag_bb_t new_mag_def = { 0 };
 
 		if (err = pmt_lookup_mag_bb(mag_item->datal[0], &new_mag_def)) {
@@ -525,16 +530,6 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 		if (add_mag_photon_blast(mag_item, new_mag_def.photon_blast)) {
 			ERR_LOG("%s 玛古新增PB %d 出错!", get_player_describe(src), new_mag_def.photon_blast);
-		}
-	}
-
-	if (should_delete_item) {
-		//如果客户端不是BB，则允许透支meseta，因为服务器不是
-		//在银行中添加或删除meseta时通知。
-		iitem_t delete_item = remove_iitem(src, fed_item->item_id, 1, src->version != CLIENT_VERSION_BB);
-		if (item_not_identification_bb(delete_item.data.datal[0], delete_item.data.datal[1])) {
-			ERR_LOG("%s 删除 ID 0x%08X 失败", get_player_describe(src), fed_item->item_id);
-			err = -5;
 		}
 	}
 

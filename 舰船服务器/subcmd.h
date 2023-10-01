@@ -275,7 +275,7 @@ typedef struct G_SendGuildCard_BB {
 struct SymbolChat {
     // TODO: How does this format differ across PSO versions? The GC version
     // treats some fields as unexpectedly large values (for example, face_spec
-    // through unused2 are byteswapped as an le_uint32_t), so we should verify
+    // through unused2 are byteswapped as an uint32_t), so we should verify
     // that the order of these fields is the same on other versions.
     // Bits: ----------------------DMSSSCCCFF
     //   S = sound, C = face color, F = face shape, D = capture, M = mute sound
@@ -324,7 +324,7 @@ typedef struct subcmd_symbol_chat {
     unused_hdr_t shdr;
     // TODO: How does this format differ across PSO versions? The GC version
     // treats some fields as unexpectedly large values (for example, face_spec
-    // through unused2 are byteswapped as an le_uint32_t), so we should verify
+    // through unused2 are byteswapped as an uint32_t), so we should verify
     // that the order of these fields is the same on other versions.
     uint32_t client_id;
     // Bits: SSSCCCFF (S = sound, C = face color, F = face shape)
@@ -341,7 +341,7 @@ typedef struct subcmd_bb_symbol_chat {
     unused_hdr_t shdr;
     // TODO: How does this format differ across PSO versions? The GC version
     // treats some fields as unexpectedly large values (for example, face_spec
-    // through unused2 are byteswapped as an le_uint32_t), so we should verify
+    // through unused2 are byteswapped as an uint32_t), so we should verify
     // that the order of these fields is the same on other versions.
     uint32_t client_id;
     // Bits: SSSCCCFF (S = sound, C = face color, F = face shape)
@@ -1742,119 +1742,46 @@ typedef struct subcmd_burst_pldata {
 
 static int char_bb_size2223 = sizeof(subcmd_burst_pldata_t);
 
-// 0x70: Sync player disp data and inventory (used while loading into game)
+// 6x70: Sync player disp data and inventory (used while loading into game)
 // Annoyingly, they didn't use the same format as the 65/67/68 commands here,
 // and instead rearranged a bunch of things.
-// TODO: Some missing fields should be easy to find in the future (e.g. when the
-// sending player doesn't have 0 meseta, for example)
-// Packet used to communicate current state of players in-game while a new player is bursting. 
-// size = 0x04C8 DC 1176 1224 - 1176 = 48 1242 - 1224 = 18
 typedef struct subcmd_bb_burst_pldata {
-    bb_pkt_hdr_t hdr;               /* 0000 8 */
-    client_id_hdr_t shdr;           /* 0008 4 */
+    /* 0000 */bb_pkt_hdr_t hdr;
+    /* 0008 */client_id_hdr_t shdr;
     // Offsets in this struct are relative to the overall command header
     uint32_t size_minus_4;          /* 000C 4  0x000004C0*/
     // [1] and [3] in this array (and maybe [2] also) appear to be le_floats;
     // they could be the player's current (x, y, z) coords
     uint32_t lobby_num;             /* 0010 4  0x00000001*/
     uint32_t unused2;               /* 0014 4  0x01000000*/
-    float x;                        /* 0018 24 - 43 */
-    float y;                        /* 001C 44 - 43 */
-    float z;
-    uint32_t unk1;
-    uint32_t unk2;
-    uint32_t unk3;
-    uint32_t unk4;
-    uint32_t unk5;
-    uint8_t unk6[64];
-    uint32_t player_tag;
-    uint32_t guildcard;
-    uint8_t unk7[64];
-    uint32_t unk8;
-    uint8_t techniques[20];
-    psocn_dress_data_t dress_data;
-    uint16_t name[0x0C];
-    uint8_t hw_info[0x08];
-    psocn_pl_stats_t stats;
-    uint8_t opt_flag1;
-    uint8_t opt_flag2;
-    uint8_t opt_flag3;
-    uint8_t opt_flag4;
-    uint8_t opt_flag5;
-    uint8_t opt_flag6;
-    uint8_t opt_flag7;
-    uint8_t opt_flag8;
-    uint8_t opt_flag9;
-    uint8_t opt_flag10;
-    uint32_t level;
-    uint32_t exp;
-    uint32_t meseta;
-    inventory_t inv;                /* 0170 44 - 43 */
-    uint32_t unused[4];               /* Unused? */
+    float x;                        /* 0018 */
+    float y;                        /* 001C */
+    float z;                        /* 0020 */
+    /* 0024 */uint32_t unk1;
+    /* 0028 */uint32_t unk2;
+    /* 002C */uint32_t unk3;
+    /* 0030 */uint32_t unk4;
+    /* 0034 */uint32_t unk5;
+    /* 0038 */uint8_t unk6[64];
+    /* 以下为部分识别 */
+    /* 0078 */uint32_t player_tag;
+    /* 007C */uint32_t guildcard;
+    /* 0080 */uint8_t unk7[64];
+    /* 00C0 */uint32_t unk8;
+    /* 00C4 */techniques_t tech; //20 /* 默认 FF 为空*/
+    /* 00D8 */psocn_dress_data_t dress_data;
+    /* 0128 */psocn_bb_char_name_t name;
+    /* 0140 */uint8_t hw_info[0x08];
+    /* 0148 */psocn_disp_char_t disp;
+    /* 上面的结构长度 364 
+       下面是关于物品的 860 */
+    /* 016C */inventory_t inv;
+    /* 04B8 */uint32_t unused[4];               /* 未启用? */
     /* Xbox has a little bit more at the end than other versions... Probably
        safe to just ignore it. */
 } PACKED subcmd_bb_burst_pldata_t;
 
 static int char_bb_size222 = sizeof(subcmd_bb_burst_pldata_t);
-
-typedef struct G_Unknown_6x70 {
-    dc_pkt_hdr_t hdr;               /* 0000 0 */
-    client_id_hdr_t shdr;           /* 0008 8 */
-    // Offsets in this struct are relative to the overall command header
-    uint32_t size_minus_4;          /* 000C 12 ? 0x0000040C*/
-    // [1] and [3] in this array (and maybe [2] also) appear to be le_floats;
-    // they could be the player's current (x, y, z) coords
-    uint32_t lobby_num;             /* 0010 16  0x00000001*/
-    uint32_t unused2;               /* 0014 20  0x01000000*/
-
-    float x;                        /* 0018 24 - 43 */
-    float y;
-    float z;
-
-    uint32_t unknown_a2[2];         /* 0018 24 - 43 */
-
-    uint16_t unknown_a3[4];         /* 002C */
-    uint32_t unknown_a4[3][5];      /* 0034 */
-    uint32_t unknown_a5;            /* 0070 */
-
-    uint32_t player_tag;            /* 0074 */
-    uint32_t guild_card_number;     /* 0078 */
-
-    uint32_t unknown_a6[2];         /* 007C */
-    struct {                        /* 0084 */
-        uint16_t unknown_a1[2];
-        uint32_t unknown_a2[6];
-    } unknown_a7;
-    uint32_t unknown_a8;            /* 00A0 */
-    uint8_t unknown_a9[0x14];       /* 00A4 */
-    uint32_t unknown_a10;           /* 00B8 */
-    uint32_t unknown_a11;           /* 00BC */
-
-
-    uint8_t technique_levels[0x14]; /* 00C0 */ // Last byte is uninitialized
-
-    psocn_dress_data_t dress_data;  /* 00D4 */
-    psocn_pl_stats_t stats;         /* 0124 */
-    uint8_t opt_flag1;              /* 0132  306 - 315 size 10 */
-    uint8_t opt_flag2;
-    uint8_t opt_flag3;
-    uint8_t opt_flag4;
-    uint8_t opt_flag5;
-    uint8_t opt_flag6;
-    uint8_t opt_flag7;
-    uint8_t opt_flag8;
-    uint8_t opt_flag9;
-    uint8_t opt_flag10;
-    //uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
-    uint32_t level;                 /* 013C  316 - 319 size 4 */
-    uint32_t exp;                   /* 0140  320 - 323 size 4 */
-    uint32_t meseta;                /* 0144  324 - 327 size 4 */
-    inventory_t inv;                /* 0148  328 - 1171 size 844 */
-    uint32_t unknown_a15;           /* 0494 1172 - 1176 size 4 */
-} G_Unknown_6x70_t;
-
-static int char_bb_size22322 = sizeof(G_Unknown_6x70_t);
-
 
 // 0x71: loading_burst (used while loading into game) SUBCMD62_BURST6
 typedef struct subcmd_bb_loading_burst {
