@@ -282,10 +282,10 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pkt);
     }
 
-    psocn_bb_char_t* character = get_client_char_bb(src);
-    psocn_bb_char_t* character2 = get_client_char_bb(dest);
+    //psocn_bb_char_t* character = get_client_char_bb(src);
+    //psocn_bb_char_t* character2 = get_client_char_bb(dest);
 
-    DBG_LOG("%s ID %d | %s ID %d",get_player_describe(src), src->client_id, get_player_describe(dest), dest->client_id);
+    //DBG_LOG("%s ID %d | %s ID %d",get_player_describe(src), src->client_id, get_player_describe(dest), dest->client_id);
 
     ////尽可能的让玩家传送。
     ////让我们尽可能多地重建0x70。

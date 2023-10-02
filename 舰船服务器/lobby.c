@@ -1868,7 +1868,7 @@ int lobby_handle_done_burst(lobby_t* l, ship_client_t* c) {
 
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
-        if (rv == 0 && i->pkt) {
+        if (rv == 0) {
             switch (i->pkt->pkt_type) {
             case GAME_SUBCMD60_TYPE:
                 if (subcmd_handle_60(i->src, (subcmd_pkt_t*)i->pkt)) {
@@ -1954,7 +1954,7 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
 
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
-        if (rv == 0 && i->bb_pkt) {
+        if (rv == 0) {
             switch (i->bb_pkt->pkt_type) {
             case GAME_SUBCMD60_TYPE:
                 if (subcmd_bb_handle_60(i->src, (subcmd_bb_pkt_t*)i->bb_pkt)) {
@@ -2056,6 +2056,11 @@ static int lobby_enqueue_pkt_ex(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p,
         goto out;
     }
 
+    if (len <= 0) {
+        ERR_LOG("%s 的列表数据长度为 0 ", get_player_describe(c));
+        len = sizeof(dc_pkt_hdr_t);
+    }
+
     pkt->pkt = (dc_pkt_hdr_t *)malloc(len);
     if(!pkt->pkt) {
         free_safe(pkt);
@@ -2112,6 +2117,11 @@ static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p
     if (!pkt) {
         rv = -3;
         goto out;
+    }
+
+    if (len <= 0) {
+        ERR_LOG("%s 的列表数据长度为 0 ", get_player_describe(c));
+        len = sizeof(bb_pkt_hdr_t);
     }
 
     pkt->bb_pkt = (bb_pkt_hdr_t*)malloc(len);
