@@ -152,17 +152,17 @@ static inline ssize_t receive_message(shipgate_conn_t* c, char* buffer, size_t b
 }
 
 static inline ssize_t sg_recv(shipgate_conn_t *c, void *buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_recv(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_recv(c->session, buffer, len);
 }
 
 static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_send(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_send(c->session, buffer, len);
 }
 
 /* Send a raw packet away. */
@@ -189,8 +189,9 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                 }
                 else if (rv < 0) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
-                    ERR_LOG("Gnutls *** 发送损坏的数据(%d). 取消响应.", rv);
-                    return -1;
+                    ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
+                    //print_ascii_hex(errl, sendbuf, len);
+                    return 0;
                 }
 
                 total += rv;
@@ -3569,7 +3570,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
                 ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
             }
 
-            return sz;
+            return 0;
         }
 
         sz += c->recvbuf_cur;

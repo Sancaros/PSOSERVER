@@ -53,6 +53,7 @@
 /* Player levelup data */
 extern bb_level_table_t bb_char_stats;
 extern v2_level_table_t v2_char_stats;
+extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 #ifdef UNUSED
 #undef UNUSED
@@ -1700,6 +1701,18 @@ uint8_t get_lobby_leader_section(lobby_t* l) {
     }
 
     return get_player_section(src);
+}
+
+uint8_t get_bb_max_tech_level(ship_client_t* src, int tech) {
+    /* 初始化一个颜色ID数值 */
+    uint8_t ch_class = 0;
+
+    if (!src)
+        return ch_class;
+
+    psocn_bb_char_t* character = get_client_char_bb(src);
+
+    return max_tech_level[tech].max_lvl[character->dress_data.ch_class];
 }
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {

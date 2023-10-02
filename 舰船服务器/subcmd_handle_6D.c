@@ -283,22 +283,28 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     psocn_bb_char_t* character = get_client_char_bb(src);
+    psocn_bb_char_t* character2 = get_client_char_bb(dest);
 
-    //尽可能的让玩家传送。
-    //让我们尽可能多地重建0x70。
-    //
-    //可以在这里检索玩家信息
+    DBG_LOG("%s ID %d | %s ID %d",get_player_describe(src), src->client_id, get_player_describe(dest), dest->client_id);
 
-    subcmd_bb_burst_pldata_t pkt2 = { 0 };
+    ////尽可能的让玩家传送。
+    ////让我们尽可能多地重建0x70。
+    ////
+    ////可以在这里检索玩家信息
 
-    memcpy(&pkt2, pkt, pkt->hdr.pkt_len);
+    //subcmd_bb_burst_pldata_t pkt2 = { 0 };
 
-    pkt2.hdr.pkt_type = pkt->hdr.pkt_type;
-    pkt2.hdr.pkt_len = pkt->hdr.pkt_len;
-    pkt2.hdr.flags = pkt->hdr.flags;
+    //memcpy(&pkt2, pkt, pkt->hdr.pkt_len);
 
-    /* 确保玩家的GC正常 */
-    pkt2.guildcard = src->guildcard;
+    //pkt2.hdr.pkt_type = pkt->hdr.pkt_type;
+    //pkt2.hdr.pkt_len = pkt->hdr.pkt_len;
+    //pkt2.hdr.flags = pkt->hdr.flags;
+
+    ///* 确保玩家的GC正常 */
+    //pkt2.guildcard = src->guildcard;
+
+    /* Fall through... */
+    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 
     /* 检测玩家的魔法是否合规 */
     if (!char_class_is_android(src->equip_flags)) {
@@ -306,67 +312,70 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
             if (pkt->tech.all[i] == 0xFF)
                 continue;
 
-            if (pkt->tech.all[i] > max_tech_level[i].max_lvl[character->dress_data.ch_class]) {
+            if (pkt->tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
                 /* 移除不合规的法术 */
-                character->tech.all[i] = 0xFF;
-                send_msg(src, TEXT_MSG_TYPE, "%s %s %s%d 高于 %d %s", __(src, "\tE\tC4法术"), get_technique_comment(i)
-                    , __(src, "\tE\tC4等级"), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]
-                    , __(src, "\tE\tC4已被清除!")
-                );
-                ERR_LOG("法术 %s 等级%d 高于 %d 已被清除!", get_technique_comment(i), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]);
-                pkt2.tech.all[i] = character->tech.all[i];
-            }else
-                pkt2.tech.all[i] = character->tech.all[i];
+                //character->tech.all[i] = 0xFF;
+                //send_msg(src, TEXT_MSG_TYPE, "%s %s %s%d 高于 %d %s", __(src, "\tE\tC4法术"), get_technique_comment(i)
+                //    , __(src, "\tE\tC4等级"), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]
+                //    , __(src, "\tE\tC4已被清除!")
+                //);
+                ERR_LOG("%s 法术 %s 等级%d 高于 %d!", get_player_describe(src), get_technique_comment(i), pkt->tech.all[i] + 1, get_bb_max_tech_level(src, i));
+                //pkt2.tech.all[i] = character->tech.all[i];
+            }
+            //else {
+
+            //    //pkt2.tech.all[i] = character->tech.all[i];
+            //}
         }
     }
-    else {
-        /* 清除机器人的魔法 */
-        for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            character->tech.all[i] = 0xFF;
-            pkt2.tech.all[i] = character->tech.all[i];
-        }
-    }
+    //else {
+    //    /* 清除机器人的魔法 */
+    //    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+    //        character->tech.all[i] = 0xFF;
+    //        //pkt2.tech.all[i] = character->tech.all[i];
+    //    }
+    //}
 
-    /* 这里可以检查角色的合法外观数据 */
-    memcpy(&pkt2.dress_data.gc_string[0], &character->dress_data.gc_string[0], sizeof(psocn_dress_data_t));
+    ///* 这里可以检查角色的合法外观数据 */
+    //memcpy(&pkt2.dress_data.gc_string[0], &character->dress_data.gc_string[0], sizeof(psocn_dress_data_t));
 
-    /* 如果设置了NPC皮肤 则取消房间内的显示 暂时的 防止崩溃 */
-    if (character->dress_data.v2flags)
-        memset(&pkt2.dress_data.costume, 0, 10);
+    ///* 如果设置了NPC皮肤 则取消房间内的显示 暂时的 防止崩溃 */
+    //if (character->dress_data.v2flags)
+    //    memset(&pkt2.dress_data.costume, 0, 10);
 
-    /* 传递玩家的名字数据 */
-    for (i = 0; i < 0x0C; i++) {
-        pkt2.name.all[i] = character->name.all[i];
-    }
+    ///* 传递玩家的名字数据 */
+    //for (i = 0; i < 0x0C; i++) {
+    //    pkt2.name.all[i] = character->name.all[i];
+    //}
 
-    /* 这里可以检测玩家的基础数据 */
-    pkt2.disp.stats.ata = character->disp.stats.ata;
-    pkt2.disp.stats.mst = character->disp.stats.mst;
-    pkt2.disp.stats.evp = character->disp.stats.evp;
-    pkt2.disp.stats.hp = character->disp.stats.hp;
-    pkt2.disp.stats.dfp = character->disp.stats.dfp;
-    pkt2.disp.stats.ata = character->disp.stats.ata;
-    pkt2.disp.stats.lck = character->disp.stats.lck;
-    /* 未知的东西 */
-    pkt2.disp.unknown_a1 = character->disp.unknown_a1;
-    pkt2.disp.unknown_a2 = character->disp.unknown_a2;
-    pkt2.disp.unknown_a3 = character->disp.unknown_a3;
-    /* 等级 经验 美赛塔 */
-    pkt2.disp.level = character->disp.level;
-    pkt2.disp.exp = character->disp.exp;
-    pkt2.disp.meseta = character->disp.meseta;
+    ///* 这里可以检测玩家的基础数据 */
+    //pkt2.disp.stats.ata = character->disp.stats.ata;
+    //pkt2.disp.stats.mst = character->disp.stats.mst;
+    //pkt2.disp.stats.evp = character->disp.stats.evp;
+    //pkt2.disp.stats.hp = character->disp.stats.hp;
+    //pkt2.disp.stats.dfp = character->disp.stats.dfp;
+    //pkt2.disp.stats.ata = character->disp.stats.ata;
+    //pkt2.disp.stats.lck = character->disp.stats.lck;
+    ///* 未知的东西 */
+    //pkt2.disp.unknown_a1 = character->disp.unknown_a1;
+    //pkt2.disp.unknown_a2 = character->disp.unknown_a2;
+    //pkt2.disp.unknown_a3 = character->disp.unknown_a3;
+    ///* 等级 经验 美赛塔 */
+    //pkt2.disp.level = character->disp.level;
+    //pkt2.disp.exp = character->disp.exp;
+    //pkt2.disp.meseta = character->disp.meseta;
 
-    /* 开始检查背包物品 */
-    pkt2.inv.item_count = character->inv.item_count;
-    pkt2.inv.hpmats_used = character->inv.hpmats_used;
-    pkt2.inv.tpmats_used = character->inv.tpmats_used;
-    pkt2.inv.language = character->inv.language;
+    ///* 开始检查背包物品 */
+    //pkt2.inv.item_count = character->inv.item_count;
+    //pkt2.inv.hpmats_used = character->inv.hpmats_used;
+    //pkt2.inv.tpmats_used = character->inv.tpmats_used;
+    //pkt2.inv.language = character->inv.language;
 
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
-        pkt2.inv.iitems[i] = character->inv.iitems[i];
-    }
+    //for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+    //    pkt2.inv.iitems[i] = character->inv.iitems[i];
+    //}
 
-    return send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt2);
+    return rv;
 }
 
 // 定义函数指针数组

@@ -74,10 +74,10 @@ static ssize_t send_message(ship_t* c, const char* message, size_t message_len) 
 }
 
 static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_send(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_send(c->session, buffer, len);
 }
 
 /* Send a raw packet away. */
@@ -104,8 +104,9 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                 }
                 else if (rv < 0) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
-                    ERR_LOG("Gnutls *** 发送损坏的数据(%d). 取消响应.", rv);
-                    return -1;
+                    ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
+                    //print_ascii_hex(errl, sendbuf, len);
+                    return 0;
                 }
 
                 total += rv;

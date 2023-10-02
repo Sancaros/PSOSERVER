@@ -61,6 +61,8 @@ extern uint8_t ship_ip6[16];
 extern time_t srv_time;
 
 extern psocn_bb_mode_char_t default_mode_char;
+/* 已改为数据库载入 */
+extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -1797,21 +1799,22 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
 }
 
 /* 0x00E7 231 完整角色数据 */
-static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
+static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
     psocn_bb_full_char_t char_data = pkt->data;
+    int i = 0;
 
-    if (c->version != CLIENT_VERSION_BB)
+    if (src->version != CLIENT_VERSION_BB)
         return -1;
 
-    if (!c->bb_pl || !c->mode_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR) {
-        ERR_LOG("bb_process_full_char %d %d c->mode %d", c->version, len, c->mode);
+    if (!src->bb_pl || !src->mode_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR) {
+        ERR_LOG("bb_process_full_char %d %d c->mode %d", src->version, len, src->mode);
         return -2;
     }
 
     /* No need if they've already maxed out. */
-    if (c->bb_pl->character.disp.level + 1 > MAX_PLAYER_LEVEL) {
-        ERR_LOG("GC %d 等级超过 200 (%d)", c->guildcard, c->bb_pl->character.disp.level + 1);
+    if (src->bb_pl->character.disp.level + 1 > MAX_PLAYER_LEVEL) {
+        ERR_LOG("GC %d 等级超过 200 (%d)", src->guildcard, src->bb_pl->character.disp.level + 1);
         return -4;
     }
 
@@ -1838,7 +1841,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     //DBG_LOG("玩家背包数据保存 %d", c->game_data->db_save_done);
     //print_ascii_hex(errl, &char_data.character.inv, PSOCN_STLENGTH_INV);
 
-    if (!c->game_data->db_save_done) {
+    if (!src->game_data->db_save_done) {
 
 #ifdef DEBUG
         printf("C->S数据来源 %d 字节\n", len);
@@ -1847,14 +1850,14 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         print_ascii_hex(errl, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
 #endif // DEBUG
 
-        c->game_data->db_save_done = 1;
+        src->game_data->db_save_done = 1;
 #ifdef DEBUG
         DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
         print_ascii_hex(errl, &char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
 
-        if (c->mode) {
-            memcpy(&c->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+        if (src->mode) {
+            memcpy(&src->mode_pl->bb, &char_data.character, 1220);
 #ifdef DEBUG
             DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
             return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
@@ -1863,42 +1866,75 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
 #endif // DEBUG
         }
         else {
-            memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+            memcpy(&src->bb_pl->character, &char_data.character, 1220);
         }
 
         /* BB has this in two places for now... */
         /////////////////////////////////////////////////////////////////////////////////////
         //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
         //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
-        memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+        memcpy(src->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
         //memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
-        memcpy(c->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-        memcpy(c->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
-        memcpy(c->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
-        memcpy(&c->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
-        memcpy(&c->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-        memcpy(c->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-        memcpy(c->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+        memcpy(src->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
+        memcpy(src->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
+        memcpy(src->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
+        memcpy(&src->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
+        memcpy(&src->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+        memcpy(src->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
+        memcpy(src->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
         /////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&c->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
+        memcpy(&src->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
 
 
         /////////////////////////////////////////////////////////////////////////////////////
-        c->bb_opts->option_flags = char_data.option_flags;
-        memcpy(c->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
-        memcpy(c->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
-        memcpy(c->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
-        memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
+        src->bb_opts->option_flags = char_data.option_flags;
+        memcpy(src->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
+        memcpy(src->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
+        memcpy(src->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(src->bb_opts->guild_name));
+        memcpy(&src->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
 
+
+        psocn_bb_char_t* character = get_client_char_bb(src);
+
+        /* 检测玩家的魔法是否合规 */
+        if (!char_class_is_android(src->equip_flags)) {
+            for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+                if (character->tech.all[i] == 0xFF)
+                    continue;
+
+                if (character->tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
+                    src->bb_pl->character.tech.all[i] = 0xFF;
+                    /* 移除不合规的法术 */
+                    //character->tech.all[i] = 0xFF;
+                    //send_msg(src, TEXT_MSG_TYPE, "%s %s %s%d 高于 %d %s", __(src, "\tE\tC4法术"), get_technique_comment(i)
+                    //    , __(src, "\tE\tC4等级"), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]
+                    //    , __(src, "\tE\tC4已被清除!")
+                    //);
+                    ERR_LOG("%s 法术 %s 等级%d 高于 %d, 已被修正为 0 级!", get_player_describe(src), get_technique_comment(i), character->tech.all[i] + 1, get_bb_max_tech_level(src, i));
+                    //pkt2.tech.all[i] = character->tech.all[i];
+                }
+                else {
+
+                    //pkt2.tech.all[i] = character->tech.all[i];
+                }
+            }
+        }
+        //else {
+        //    /* 清除机器人的魔法 */
+        //    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+        //        character->tech.all[i] = 0xFF;
+        //        //pkt2.tech.all[i] = character->tech.all[i];
+        //    }
+        //}
     }
 
-    if (!c->mode) {
+    if (!src->mode) {
 #ifdef DEBUG
 
         DBG_LOG("非MODE存储角色完整数据");
 
 #endif // DEBUG
-        return shipgate_fw_bb(&ship->sg, pkt, c->sec_data.slot, c);
+        return shipgate_fw_bb(&ship->sg, pkt, src->sec_data.slot, src);
     }
 
     return 0;

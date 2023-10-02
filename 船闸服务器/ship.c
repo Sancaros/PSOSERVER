@@ -5842,10 +5842,10 @@ static ssize_t receive_message(ship_t* c, char* buffer, size_t buffer_size) {
 }
 
 static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_recv(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_recv(c->session, buffer, len);
 }
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
@@ -5916,7 +5916,7 @@ int handle_pkt(ship_t* c) {
             }
 
             free_safe(recvbuf);
-            return sz;
+            return 0;
         }
 
         sz += c->recvbuf_cur;

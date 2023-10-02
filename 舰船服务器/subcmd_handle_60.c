@@ -2775,7 +2775,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
 
     if (char_class_is_android(src->equip_flags) ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
-        max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
+        max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == 0
         ) {
         ERR_LOG("%s 职业 %s 发送损坏的 %s 法术攻击数据!",
             get_player_describe(src), pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
@@ -2845,7 +2845,7 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
 
     if (src->equip_flags & EQUIP_FLAGS_DROID ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
-        max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
+        max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == 0
         ) {
         ERR_LOG("%s 释放了违规的法术!",
             get_player_describe(src));

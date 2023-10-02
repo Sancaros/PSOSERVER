@@ -1188,11 +1188,11 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_DISK: // Technique disk
-            uint8_t max_level = max_tech_level[iitem->data.datab[4]].max_lvl[character->dress_data.ch_class];
-            if (iitem->data.datab[2] > max_level) {
+            if (iitem->data.datab[2] + 1 > get_bb_max_tech_level(src, iitem->data.datab[4])) {
                 ERR_LOG("%s 法术科技光碟等级高于职业可用等级", get_player_describe(src));
                 return -1;
             }
+
             character->tech.all[iitem->data.datab[4]] = iitem->data.datab[2];
             break;
 

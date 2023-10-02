@@ -1868,10 +1868,7 @@ int lobby_handle_done_burst(lobby_t* l, ship_client_t* c) {
 
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
-        if (rv == 0) {
-            if (!i->pkt)
-                return 0;
-
+        if (rv == 0 && i->pkt) {
             switch (i->pkt->pkt_type) {
             case GAME_SUBCMD60_TYPE:
                 if (subcmd_handle_60(i->src, (subcmd_pkt_t*)i->pkt)) {
@@ -1955,14 +1952,9 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
     while ((i = STAILQ_FIRST(&l->pkt_queue))) {
         STAILQ_REMOVE_HEAD(&l->pkt_queue, qentry);
 
-        if (!i) {
-            ERR_LOG("%s 未找到房间数据包 %s", get_lobby_leader_describe(l), l->name);
-            continue;
-        }
-
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
-        if (rv == 0) {
+        if (rv == 0 && i->bb_pkt) {
             switch (i->bb_pkt->pkt_type) {
             case GAME_SUBCMD60_TYPE:
                 if (subcmd_bb_handle_60(i->src, (subcmd_bb_pkt_t*)i->bb_pkt)) {
