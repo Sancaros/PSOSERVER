@@ -732,7 +732,7 @@ int client_process_pkt(ship_client_t* c) {
         }
 
         /* Attempt to read, and if we don't get anything, punt. */
-        sz = recv(c->sock, recvbuf + c->recvbuf_cur, MAX_TMP_BUFF - c->recvbuf_cur, 0);
+        sz = recv(c->sock, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur, 0);
 
         //TEST_LOG("客户端接收端口 %d 接收数据 = %d 字节 版本识别 = %d", c->sock, sz, c->version);
 

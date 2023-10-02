@@ -80,7 +80,7 @@ extern monster_event_t* events;
 extern uint32_t script_count;
 extern ship_script_t* scripts;
 
-static uint8_t recvbuf[MAX_PACKET_BUFF];
+//static uint8_t recvbuf[MAX_PACKET_BUFF];
 
 /* 公会相关 */
 static uint8_t default_guild_flag[2048];
@@ -5619,12 +5619,18 @@ static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
         return send_ping(c, 1);
     }
 
-    if (p->host4) {
-        //DBG_LOG("handle_ship_ping %s %d", p->host4, c->key_idx);
+    //if (p->host4) {
+    //    //DBG_LOG("handle_ship_ping %s %d", p->host4, c->key_idx);
 
-        memcpy(c->remote_host4, p->host4, sizeof(c->remote_host4));
-        update_ship_ipv4(c);
-    }
+    //    memcpy(c->remote_host4, p->host4, sizeof(c->remote_host4));
+    //    update_ship_ipv4(c);
+    //}
+#ifdef DEBUG
+
+    DBG_LOG("handle_ship_ping %s %d", c->remote_host4, c->key_idx);
+
+#endif // DEBUG
+    update_ship_ipv4(c);
 
     return 0;
 }
@@ -5844,13 +5850,13 @@ static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
 uint8_t* get_sg_recvbuf(void) {
-    //uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+    uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
-    //if (!recvbuf) {
-    //    ERR_LOG("malloc");
-    //    perror("malloc");
-    //    return NULL;
-    //}
+    if (!recvbuf) {
+        ERR_LOG("malloc");
+        perror("malloc");
+        return NULL;
+    }
 
     memset(recvbuf, 0, MAX_PACKET_BUFF);
 
@@ -5936,7 +5942,9 @@ int handle_pkt(ship_t* c) {
                 c->last_message = time(NULL);
                 rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
-                    ERR_LOG("process_ship_pkt rv = %d", rv);
+                    ERR_LOG("process_ship_pkt 错误 rv = %d", rv);
+                    //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
+                    //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
                     break;
                 }
 
@@ -5953,11 +5961,6 @@ int handle_pkt(ship_t* c) {
 
         /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
         if (sz && rv == 0) {
-            /* 如果缓冲区中有数据，则释放它。 */
-            free_safe(c->recvbuf);
-            c->recvbuf = NULL;
-            c->recvbuf_size = 0;
-
             /* 如果接收缓冲区大小不够，则重新分配。 */
             if (c->recvbuf_size < sz) {
                 tmp = realloc(c->recvbuf, sz);
@@ -5982,7 +5985,7 @@ int handle_pkt(ship_t* c) {
             c->recvbuf_size = 0;
         }
 
-        //free_safe(recvbuf);
+        free_safe(recvbuf);
 
         return rv;
     }

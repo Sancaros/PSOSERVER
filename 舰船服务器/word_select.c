@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <f_logs.h>
+
 #include "clients.h"
 #include "lobby.h"
 #include "subcmd.h"

@@ -1134,7 +1134,7 @@ typedef struct subcmd_bb_subtract_PB_energy_6x49 {
     struct {
         uint16_t unknown_a1;
         uint16_t unknown_a2;
-    } entries[14];
+    } entries[0];
 } PACKED subcmd_bb_subtract_PB_energy_6x49_t;
 
 // 0x4A: Fully shield attack

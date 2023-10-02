@@ -169,9 +169,8 @@ static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
 static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
     __try {
         ssize_t rv, total = 0;
-        void* tmp;
 
-        if (sendbuf == NULL || len == 0 || len > MAX_TMP_BUFF) {
+        if (sendbuf == NULL || len == 0 || len > MAX_PACKET_BUFF) {
             ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
             return 0;
         }
@@ -196,35 +195,6 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
 
                 total += rv;
             }
-        }
-
-        rv = len - total;
-
-        if (rv) {
-            /* Move out any already transferred data. */
-            if (c->sendbuf_start) {
-                memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-                    c->sendbuf_cur - c->sendbuf_start);
-                c->sendbuf_cur -= c->sendbuf_start;
-            }
-
-            /* See if we need to reallocate the buffer. */
-            if (c->sendbuf_cur + rv > c->sendbuf_size) {
-                tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-
-                /* If we can't allocate the space, bail. */
-                if (tmp == NULL) {
-                    ERR_LOG("realloc");
-                    return -1;
-                }
-
-                c->sendbuf_size = c->sendbuf_cur + rv;
-                c->sendbuf = (unsigned char*)tmp;
-            }
-
-            /* Copy what's left of the packet into the output buffer. */
-            memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-            c->sendbuf_cur += rv;
         }
 
         return 0;
@@ -268,8 +238,10 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
 
     //DBG_LOG("%s", c->ship->cfg->ship_host4);
 
-    memcpy(pkt->host4, c->ship->cfg->ship_host4, sizeof(pkt->host4));
-    memcpy(pkt->host6, c->ship->cfg->ship_host6, sizeof(pkt->host6));
+    //memcpy(pkt->host4, c->ship->cfg->ship_host4, sizeof(pkt->host4));
+    //pkt->host4[31] = "\0";
+    //if(c->ship->cfg->ship_host6)
+    //    memcpy(pkt->host6, c->ship->cfg->ship_host6, sizeof(pkt->host6));
 
     if(reply) {
         pkt->hdr.flags = htons(SHDR_RESPONSE);
@@ -1264,6 +1236,8 @@ static int handle_dc(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
         return handle_dc_mail(conn, (simple_mail_pkt*)dc);
     }
 
+    ERR_LOG("无效V1版本接入");
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
     return -2;
 }
 
@@ -1276,6 +1250,8 @@ static int handle_pc(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
         return handle_pc_mail(conn, (simple_mail_pkt*)dc);
     }
 
+    ERR_LOG("无效V2版本接入");
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
     return -2;
 }
 
@@ -1295,8 +1271,8 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case BB_GUILD_COMMAND:
         return handle_bb_guild(conn, pkt);
 
-    default:
-        break;
+    //default:
+    //    break;
     }
 
     switch (type) {
@@ -1306,14 +1282,16 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case GUILD_SEARCH_REPLY_TYPE:
         return handle_bb_greply(conn, (bb_guild_reply_pkt*)bb, block);
 
-    default:
-        /* Warn the ship that sent the packet, then drop it
-         警告发送包裹的船，然后丢弃它
-        */
-        return 0;
+    //default:
+    //    /* Warn the ship that sent the packet, then drop it
+    //     警告发送包裹的船，然后丢弃它
+    //    */
+    //    return 0;
     }
 
-    //return -2;
+    ERR_LOG("无效BB版本接入");
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    return -2;
 }
 
 static void menu_code_sort(uint16_t* codes, int count) {
@@ -3387,6 +3365,15 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
                 if (flags & SHDR_RESPONSE) {
                     return 0;
                 }
+#ifdef DEBUG
+                /* TODO 未完成 */
+                shipgate_ping_t* pkt2 = (shipgate_ping_t*)pkt;
+
+                //ship->cfg->shipgate_host = pkt2->host4;
+
+                DBG_LOG("0x%X %s  %s %d", pkt2->hdr.flags, pkt2->host4, pkt2->host6, pkt2->port);
+
+#endif // DEBUG
 
                 return shipgate_send_ping(conn, 1);
 
@@ -3565,7 +3552,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
         }
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
-        sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_TMP_BUFF - c->recvbuf_cur);
+        sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
 
         //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
 
@@ -3579,7 +3566,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
             }
             else if (sz < 0) {
                 ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-                ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
+                ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
             }
 
             return sz;
@@ -3615,6 +3602,8 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
                 rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
                     ERR_LOG("处理数据包出错，rv = %d", rv);
+                    shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
+                    print_ascii_hex(errl, errpkt, errpkt->pkt_len);
                     break;
                 }
 

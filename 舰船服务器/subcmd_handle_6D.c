@@ -303,13 +303,17 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
     /* 检测玩家的魔法是否合规 */
     if (!char_class_is_android(src->equip_flags)) {
         for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+            if (pkt->tech.all[i] == 0xFF)
+                continue;
+
             if (pkt->tech.all[i] > max_tech_level[i].max_lvl[character->dress_data.ch_class]) {
                 /* 移除不合规的法术 */
                 character->tech.all[i] = 0xFF;
-                send_msg(src, MSG1_TYPE, "%s %s %s%d高于%d %s", __(src, "\tE\tC4法术"), get_technique_comment(i)
+                send_msg(src, TEXT_MSG_TYPE, "%s %s %s%d 高于 %d %s", __(src, "\tE\tC4法术"), get_technique_comment(i)
                     , __(src, "\tE\tC4等级"), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]
                     , __(src, "\tE\tC4已被清除!")
                 );
+                ERR_LOG("法术 %s 等级%d 高于 %d 已被清除!", get_technique_comment(i), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]);
                 pkt2.tech.all[i] = character->tech.all[i];
             }else
                 pkt2.tech.all[i] = character->tech.all[i];

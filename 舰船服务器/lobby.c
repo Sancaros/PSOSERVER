@@ -1955,6 +1955,11 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
     while ((i = STAILQ_FIRST(&l->pkt_queue))) {
         STAILQ_REMOVE_HEAD(&l->pkt_queue, qentry);
 
+        if (!i) {
+            ERR_LOG("%s 未找到房间数据包 %s", get_lobby_leader_describe(l), l->name);
+            continue;
+        }
+
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
         if (rv == 0) {

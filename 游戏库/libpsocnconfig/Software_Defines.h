@@ -58,12 +58,7 @@ static server_map_st server_name[] = {
 
 uint32_t server_name_num;
 
-
-#define MAX_TMP_BUFF 64000
-#define MAX_PACKET_BUFF ( MAX_TMP_BUFF * 16 )
-
 char windows[4096];
-char dp[MAX_PACKET_BUFF];
 
 void parse_version(uint8_t* maj, uint8_t* min, uint8_t* mic,
 	const char* ver);

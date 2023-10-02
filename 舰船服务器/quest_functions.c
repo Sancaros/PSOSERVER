@@ -20,6 +20,8 @@
 #include <string.h>
 #include <SFMT.h>
 
+#include <f_logs.h>
+
 #include "clients.h"
 #include "lobby.h"
 #include "quest_functions.h"

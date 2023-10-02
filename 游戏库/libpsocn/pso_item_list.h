@@ -4537,7 +4537,7 @@ static bbitem_map_t bbitem_list_cn[] = {
     { BBItem_AKIKOS_WOK, "秋子婶婶的中华锅" },
     { BBItem_TOY_HAMMER, "玩具锤" },
     { BBItem_ELYSION, "魔法剑" },
-    { BBItem_RED_SABER, "红色剑" },
+    { BBItem_RED_SABER, "红色光剑" },
     { BBItem_METEOR_CUDGEL, "流星棍" },
     { BBItem_MONKEY_KING_BAR, "如意金箍棒" },
     { BBItem_BLACK_KING_BAR, "苍黑如意棒" },
