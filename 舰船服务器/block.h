@@ -85,6 +85,22 @@ struct block {
 typedef struct block block_t;
 #endif
 
+//#define LOCK_RWLOCK(lock) \
+//    do { \
+//        int ret = pthread_rwlock_rdlock(lock); \
+//        if (ret != 0) { \
+//            ERR_LOG("pthread_rwlock_rdlock ´íÎó: %d", ret); \
+//        } \
+//    } while (0)
+//
+//#define UNLOCK_RWLOCK(lock) \
+//    do { \
+//        int ret = pthread_rwlock_unlock(lock); \
+//        if (ret != 0) { \
+//            ERR_LOG("pthread_rwlock_unlock ´íÎó: %d", ret); \
+//        } \
+//    } while (0)
+
 block_t *block_server_start(ship_t *s, int b, uint16_t port);
 void block_server_stop(block_t *b);
 int block_process_pkt(ship_client_t *c, uint8_t *pkt);

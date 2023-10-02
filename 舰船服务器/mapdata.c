@@ -845,7 +845,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (rare_monster)
                 acc = 1;
             gen[count].bp_entry = 0x49 + acc;
-            gen[count].rt_index = 0x01 + acc;
+            gen[count].pt_index = 0x01 + acc;
             break;
 
         case 0x0041:    /* Rappies */
@@ -864,11 +864,11 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (ep == LOBBY_EPISODE_4) {   /* Del Rappy & Sand Rappy */
                 if (alt) {
                     gen[count].bp_entry = 0x17 + acc;
-                    gen[count].rt_index = 0x11 + acc;
+                    gen[count].pt_index = 0x11 + acc;
                 }
                 else {
                     gen[count].bp_entry = 0x05 + acc;
-                    gen[count].rt_index = 0x11 + acc;
+                    gen[count].pt_index = 0x11 + acc;
                 }
             }
             else {
@@ -876,45 +876,45 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                     gen[count].bp_entry = 0x19;
 
                     if (ep == LOBBY_EPISODE_1) {
-                        gen[count].rt_index = 0x06;
+                        gen[count].pt_index = 0x06;
                     }
                     else {
                         if (ship != NULL) {
                             switch (ship->game_event)
                             {
                             case 0x01:
-                                gen[count].rt_index = 0x4F; // St. Rappy
+                                gen[count].pt_index = 0x4F; // St. Rappy
                                 break;
                             case 0x04:
-                                gen[count].rt_index = 0x51; // Easter Rappy
+                                gen[count].pt_index = 0x51; // Easter Rappy
                                 break;
                             case 0x05:
-                                gen[count].rt_index = 0x50; // Halo Rappy
+                                gen[count].pt_index = 0x50; // Halo Rappy
                                 break;
                             default:
-                                gen[count].rt_index = 0x33; // Love Rappy
+                                gen[count].pt_index = 0x33; // Love Rappy
                                 break;
                             }
                         }
                         else
-                            gen[count].rt_index = -1;
+                            gen[count].pt_index = -1;
                     }
                 }
                 else {
                     gen[count].bp_entry = 0x18;
-                    gen[count].rt_index = 0x05;
+                    gen[count].pt_index = 0x05;
                 }
             }
             break;
 
         case 0x0042:    /* Monest + 30 Mothmants */
             gen[count].bp_entry = 0x01;
-            gen[count].rt_index = 0x04;
+            gen[count].pt_index = 0x04;
 
             for (j = 0; j < 30; ++j) {
                 ++count;
                 gen[count].bp_entry = 0x00;
-                gen[count].rt_index = 0x03;
+                gen[count].pt_index = 0x03;
                 gen[count].area = area;
             }
             break;
@@ -927,18 +927,18 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (rare_monster)
                 acc = 1;
             gen[count].bp_entry = 0x02 + acc;
-            gen[count].rt_index = 0x07 + acc;
+            gen[count].pt_index = 0x07 + acc;
             break;
 
         case 0x0044:    /* Booma family */
             acc = me.skin % 3;
             gen[count].bp_entry = 0x4B + acc;
-            gen[count].rt_index = 0x09 + acc;
+            gen[count].pt_index = 0x09 + acc;
             break;
 
         case 0x0060:    /* Grass Assassin */
             gen[count].bp_entry = 0x4E;
-            gen[count].rt_index = 0x0C;
+            gen[count].pt_index = 0x0C;
             break;
 
         case 0x0061:    /* Del Lily, Poison Lily, Nar Lily */
@@ -954,26 +954,26 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             }
             if (ep == 2 && alt) {
                 gen[count].bp_entry = 0x25;
-                gen[count].rt_index = 0x53;
+                gen[count].pt_index = 0x53;
             }
             else {
                 acc = (me.rare_rate & default_rare_rates.nar_lily) ? 1 : 0;
                 if (rare_monster)
                     acc = 1;
                 gen[count].bp_entry = 0x04 + acc;
-                gen[count].rt_index = 0x0D + acc;
+                gen[count].pt_index = 0x0D + acc;
             }
             break;
 
         case 0x0062:    /* Nano Dragon */
             gen[count].bp_entry = 0x1A;
-            gen[count].rt_index = 0x0F;
+            gen[count].pt_index = 0x0F;
             break;
 
         case 0x0063:    /* Shark Family */
             acc = me.skin % 3;
             gen[count].bp_entry = 0x4F + acc;
-            gen[count].rt_index = 0x10 + acc;
+            gen[count].pt_index = 0x10 + acc;
             break;
 
         case 0x0064:    /* Slime + 4 clones */
@@ -991,7 +991,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (rare_monster)
                 acc = 1;
             gen[count].bp_entry = 0x30 - acc;
-            gen[count].rt_index = 0x13 + acc;
+            gen[count].pt_index = 0x13 + acc;
 
             for (j = 0; j < 4; ++j) {
                 ++count;
@@ -1006,14 +1006,14 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 if (rare_monster)
                     acc = 1;
                 gen[count].bp_entry = 0x30 - acc;
-                gen[count].rt_index = 0x13 + acc;
+                gen[count].pt_index = 0x13 + acc;
             }
             break;
 
         case 0x0065:    /* Pan Arms, Migium, Hidoom */
             for (j = 0; j < 3; ++j) {
                 gen[count + j].bp_entry = 0x31 + j;
-                gen[count + j].rt_index = 0x15 + j;
+                gen[count + j].pt_index = 0x15 + j;
                 gen[count + j].area = area;
             }
 
@@ -1023,12 +1023,12 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0080:    /* Dubchic & Gilchic */
             acc = me.skin & 0x01;
             gen[count].bp_entry = 0x1B + acc;
-            gen[count].rt_index = (0x18 + acc) << acc;
+            gen[count].pt_index = (0x18 + acc) << acc;
             break;
 
         case 0x0081:    /* Garanz */
             gen[count].bp_entry = 0x1D;
-            gen[count].rt_index = 0x19;
+            gen[count].pt_index = 0x19;
             break;
 
         case 0x0082:    /* Sinow Beat & Sinow Gold */
@@ -1040,11 +1040,11 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 acc = 1;
             if (acc) {
                 gen[count].bp_entry = 0x13;
-                gen[count].rt_index = 0x1B;
+                gen[count].pt_index = 0x1B;
             }
             else {
                 gen[count].bp_entry = 0x06;
-                gen[count].rt_index = 0x1A;
+                gen[count].pt_index = 0x1A;
             }
 
             if (!n_clones)
@@ -1053,17 +1053,17 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x0083:    /* Canadine */
             gen[count].bp_entry = 0x07;
-            gen[count].rt_index = 0x1C;
+            gen[count].pt_index = 0x1C;
             break;
 
         case 0x0084:    /* Canadine Group */
             gen[count].bp_entry = 0x09;
-            gen[count].rt_index = 0x1D;
+            gen[count].pt_index = 0x1D;
 
             for (j = 0; j < 8; ++j) {
                 ++count;
                 gen[count].bp_entry = 0x08;
-                gen[count].rt_index = 0x1C;
+                gen[count].pt_index = 0x1C;
                 gen[count].area = area;
             }
             break;
@@ -1073,28 +1073,28 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x00A0:    /* Delsaber */
             gen[count].bp_entry = 0x52;
-            gen[count].rt_index = 0x1E;
+            gen[count].pt_index = 0x1E;
             break;
 
         case 0x00A1:    /* Chaos Sorcerer */
             gen[count].bp_entry = 0x0A;
-            gen[count].rt_index = 0x1F;
+            gen[count].pt_index = 0x1F;
 
             /* Bee L */
             gen[count + 1].bp_entry = 0x0B;
-            gen[count + 1].rt_index = 0x00;
+            gen[count + 1].pt_index = 0x00;
             gen[count + 1].area = area;
 
             /* Bee R */
             gen[count + 2].bp_entry = 0x0C;
-            gen[count + 2].rt_index = 0x00;
+            gen[count + 2].pt_index = 0x00;
             gen[count + 2].area = area;
             count += 2;
             break;
 
         case 0x00A2:    /* Dark Gunner */
             gen[count].bp_entry = 0x1E;
-            gen[count].rt_index = 0x22;
+            gen[count].pt_index = 0x22;
             break;
 
         case 0x00A3:    /* Death Gunner? */
@@ -1102,51 +1102,51 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x00A4:    /* Chaos Bringer */
             gen[count].bp_entry = 0x0D;
-            gen[count].rt_index = 0x24;
+            gen[count].pt_index = 0x24;
             break;
 
         case 0x00A5:    /* Dark Belra */
             gen[count].bp_entry = 0x0E;
-            gen[count].rt_index = 0x25;
+            gen[count].pt_index = 0x25;
             break;
 
         case 0x00A6:    /* Dimenian Family */
             acc = me.skin % 3;
             gen[count].bp_entry = 0x53 + acc;
-            gen[count].rt_index = 0x29 + acc;
+            gen[count].pt_index = 0x29 + acc;
             break;
 
         case 0x00A7:    /* Bulclaw + 4 Claws */
             gen[count].bp_entry = 0x1F;
-            gen[count].rt_index = 0x28;
+            gen[count].pt_index = 0x28;
 
             for (j = 0; j < 4; ++j) {
                 ++count;
                 gen[count].bp_entry = 0x20;
-                gen[count].rt_index = 0x26;
+                gen[count].pt_index = 0x26;
                 gen[count].area = area;
             }
             break;
 
         case 0x00A8:    /* Claw */
             gen[count].bp_entry = 0x20;
-            gen[count].rt_index = 0x26;
+            gen[count].pt_index = 0x26;
             break;
 
         case 0x00C0:    /* Dragon or Gal Gryphon */
             if (ep == 1) {
                 gen[count].bp_entry = 0x12;
-                gen[count].rt_index = 0x2C;
+                gen[count].pt_index = 0x2C;
             }
             else {
                 gen[count].bp_entry = 0x1E;
-                gen[count].rt_index = 0x4D;
+                gen[count].pt_index = 0x4D;
             }
             break;
 
         case 0x00C1:    /* De Rol Le */
             gen[count].bp_entry = 0x0F;
-            gen[count].rt_index = 0x2D;
+            gen[count].pt_index = 0x2D;
             break;
 
         case 0x00C2:    /* Vol Opt (form 1) */
@@ -1154,7 +1154,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x00C5:    /* Vol Opt (form 2) */
             gen[count].bp_entry = 0x25;
-            gen[count].rt_index = 0x2E;
+            gen[count].pt_index = 0x2E;
             break;
 
         case 0x00C8:    /* Dark Falz (3 forms) + 510 Darvants */
@@ -1162,38 +1162,38 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             for (j = 0; j < 510; ++j) {
                 gen[count].bp_entry = 0x35;
                 gen[count].area = area;
-                gen[count++].rt_index = 0;
+                gen[count++].pt_index = 0;
             }
 
             /* The forms are backwards in their ordering... */
             gen[count].bp_entry = 0x38;
             gen[count].area = area;
-            gen[count++].rt_index = 0x2F;
+            gen[count++].pt_index = 0x2F;
 
             gen[count].bp_entry = 0x37;
             gen[count].area = area;
-            gen[count++].rt_index = 0x2F;
+            gen[count++].pt_index = 0x2F;
 
             gen[count].bp_entry = 0x36;
             gen[count].area = area;
-            gen[count].rt_index = 0x2F;
+            gen[count].pt_index = 0x2F;
             break;
 
         case 0x00CA:    /* Olga Flow */
             gen[count].bp_entry = 0x2C;
-            gen[count].rt_index = 0x4E;
+            gen[count].pt_index = 0x4E;
             count += 512;
             break;
 
         case 0x00CB:    /* Barba Ray */
             gen[count].bp_entry = 0x0F;
-            gen[count].rt_index = 0x49;
+            gen[count].pt_index = 0x49;
             count += 47;
             break;
 
         case 0x00CC:    /* Gol Dragon */
             gen[count].bp_entry = 0x12;
-            gen[count].rt_index = 0x4C;
+            gen[count].pt_index = 0x4C;
             count += 5;
             break;
 
@@ -1203,11 +1203,11 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin >= 0x01 ? 1 : 0;
             if (acc) {
                 gen[count].bp_entry = 0x13;
-                gen[count].rt_index = 0x3F;
+                gen[count].pt_index = 0x3F;
             }
             else {
                 gen[count].bp_entry = 0x06;
-                gen[count].rt_index = 0x3E;
+                gen[count].pt_index = 0x3E;
             }
 
             count += 4; /* Add 4 clones which are never used... */
@@ -1216,7 +1216,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x00D5:    /* Merillia & Meriltas */
             acc = me.skin & 0x01;
             gen[count].bp_entry = 0x4B + acc;
-            gen[count].rt_index = 0x34 + acc;
+            gen[count].pt_index = 0x34 + acc;
             break;
 
         case 0x00D6:    /* Mericus, Merikle, or Mericarol */
@@ -1226,59 +1226,59 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             else
                 gen[count].bp_entry = 0x3A;
 
-            gen[count].rt_index = 0x38 + acc;
+            gen[count].pt_index = 0x38 + acc;
             break;
 
         case 0x00D7:    /* Ul Gibbon & Zol Gibbon */
             acc = me.skin & 0x01;
             gen[count].bp_entry = 0x3B + acc;
-            gen[count].rt_index = 0x3B + acc;
+            gen[count].pt_index = 0x3B + acc;
             break;
 
         case 0x00D8:    /* Gibbles */
             gen[count].bp_entry = 0x3D;
-            gen[count].rt_index = 0x3D;
+            gen[count].pt_index = 0x3D;
             break;
 
         case 0x00D9:    /* Gee */
             gen[count].bp_entry = 0x07;
-            gen[count].rt_index = 0x36;
+            gen[count].pt_index = 0x36;
             break;
 
         case 0x00DA:    /* Gi Gue */
             gen[count].bp_entry = 0x1A;
-            gen[count].rt_index = 0x37;
+            gen[count].pt_index = 0x37;
             break;
 
         case 0x00DB:    /* Deldepth */
             gen[count].bp_entry = 0x30;
-            gen[count].rt_index = 0x47;
+            gen[count].pt_index = 0x47;
             break;
 
         case 0x00DC:    /* Delbiter */
             gen[count].bp_entry = 0x0D;
-            gen[count].rt_index = 0x48;
+            gen[count].pt_index = 0x48;
             break;
 
         case 0x00DD:    /* Dolmolm & Dolmdarl */
             acc = me.skin & 0x01;
             gen[count].bp_entry = 0x4F + acc;
-            gen[count].rt_index = 0x40 + acc;
+            gen[count].pt_index = 0x40 + acc;
             break;
 
         case 0x00DE:    /* Morfos */
             gen[count].bp_entry = 0x41;
-            gen[count].rt_index = 0x42;
+            gen[count].pt_index = 0x42;
             break;
 
         case 0x00DF:    /* Recobox & Recons */
             gen[count].bp_entry = 0x41;
-            gen[count].rt_index = 0x43;
+            gen[count].pt_index = 0x43;
 
             for (j = 1; j <= n_clones; ++j) {
                 ++count;
                 gen[count].bp_entry = 0x42;
-                gen[count].rt_index = 0x44;
+                gen[count].pt_index = 0x44;
                 gen[count].area = area;
             }
 
@@ -1289,24 +1289,24 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x00E0:    /* Epsilon, Sinow Zoa & Zele */
             if (ep == 2 && alt) {
                 gen[count].bp_entry = 0x23;
-                gen[count].rt_index = 0x54;
+                gen[count].pt_index = 0x54;
                 count += 4;
             }
             else {
                 acc = me.skin & 0x01;
                 gen[count].bp_entry = 0x43 + acc;
-                gen[count].rt_index = 0x45 + acc;
+                gen[count].pt_index = 0x45 + acc;
             }
             break;
 
         case 0x00E1:    /* Ill Gill */
             gen[count].bp_entry = 0x26;
-            gen[count].rt_index = 0x52;
+            gen[count].pt_index = 0x52;
             break;
 
         case 0x0110:    /* Astark */
             gen[count].bp_entry = 0x09;
-            gen[count].rt_index = 0x01;
+            gen[count].pt_index = 0x01;
             break;
 
         case 0x0111:    /* Satellite Lizard & Yowie */
@@ -1322,7 +1322,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             else
                 gen[count].bp_entry = 0x0D + acc;
 
-            gen[count].rt_index = 0x02 + acc;
+            gen[count].pt_index = 0x02 + acc;
             break;
 
         case 0x0112:    /* Merissa A/AA */
@@ -1337,12 +1337,12 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (rare_monster)
                 acc = 1;
             gen[count].bp_entry = 0x19 + acc;
-            gen[count].rt_index = 0x04 + acc;
+            gen[count].pt_index = 0x04 + acc;
             break;
 
         case 0x0113:    /* Girtablulu */
             gen[count].bp_entry = 0x1F;
-            gen[count].rt_index = 0x06;
+            gen[count].pt_index = 0x06;
             break;
 
         case 0x0114:    /* Zu & Pazuzu */
@@ -1361,12 +1361,12 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             else
                 gen[count].bp_entry = 0x07 + acc;
 
-            gen[count].rt_index = 7 + acc;
+            gen[count].pt_index = 7 + acc;
             break;
 
         case 0x0115:    /* Boota Family */
             acc = me.skin % 0x03;
-            gen[count].rt_index = 0x09 + acc;
+            gen[count].pt_index = 0x09 + acc;
             if (me.skin & 0x02)
                 gen[count].bp_entry = 0x03;
             else
@@ -1385,18 +1385,18 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (rare_monster)
                 acc = 1;
             gen[count].bp_entry = 0x0F + acc;
-            gen[count].rt_index = 0x0C + acc;
+            gen[count].pt_index = 0x0C + acc;
             break;
 
         case 0x0117:    /* Goran Family */
             acc = me.skin % 3;
             gen[count].bp_entry = 0x11 + acc;
             if (me.skin & 0x02)
-                gen[count].rt_index = 0x0F;
+                gen[count].pt_index = 0x0F;
             else if (me.skin & 0x01)
-                gen[count].rt_index = 0x10;
+                gen[count].pt_index = 0x10;
             else
-                gen[count].rt_index = 0x0E;
+                gen[count].pt_index = 0x0E;
             break;
 
         case 0x0119: /* Saint Million, Shambertin, & Kondrieu */
@@ -1412,14 +1412,14 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             }
 
             if (me.rare_rate & default_rare_rates.kondrieu || rare_monster)
-                gen[count].rt_index = 0x15;
+                gen[count].pt_index = 0x15;
             else
-                gen[count].rt_index = 0x13 + acc;
+                gen[count].pt_index = 0x13 + acc;
             break;
 
         default:
-            gen[count].rt_index = (uint8_t)me.base_type;
-            gen[count].bp_entry = gen[count].rt_index;
+            gen[count].pt_index = (uint8_t)me.base_type;
+            gen[count].bp_entry = gen[count].pt_index;
 #ifdef VERBOSE_DEBUGGING1
             ERR_LOG("Î´ÖªµĞÈË ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", me.base_type, me.rt_index, me.skin, me.num_children);
 #endif
@@ -1429,7 +1429,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         /* Increment the counter, as needed */
         if (n_clones) {
             for (j = 0; j < n_clones; ++j, ++count) {
-                gen[count + 1].rt_index = gen[count].rt_index;
+                gen[count + 1].pt_index = gen[count].pt_index;
                 gen[count + 1].bp_entry = gen[count].bp_entry;
                 gen[count + 1].area = area;
             }
@@ -2570,19 +2570,19 @@ int gc_load_game_enemies(lobby_t *l) {
         if(en->enemies[i].bp_entry == 0x37 && l->difficulty) {
             en->enemies[i].bp_entry = 0x38;
         }
-        else if(en->enemies[i].rt_index == (uint8_t)-1) {
+        else if(en->enemies[i].pt_index == (uint8_t)-1) {
             switch(l->event) {
                 case LOBBY_EVENT_CHRISTMAS:
-                    en->enemies[i].rt_index = 79;
+                    en->enemies[i].pt_index = 79;
                     break;
                 case LOBBY_EVENT_EASTER:
-                    en->enemies[i].rt_index = 81;
+                    en->enemies[i].pt_index = 81;
                     break;
                 case LOBBY_EVENT_HALLOWEEN:
-                    en->enemies[i].rt_index = 80;
+                    en->enemies[i].pt_index = 80;
                     break;
                 default:
-                    en->enemies[i].rt_index = 51;
+                    en->enemies[i].pt_index = 51;
                     break;
             }
         }
@@ -2608,6 +2608,8 @@ int bb_load_game_enemies(lobby_t* l) {
 
     /* Figure out the parameter set that will be in use first... */
     l->bb_params = battle_params[solo][l->episode - 1][l->difficulty];
+
+    DBG_LOG("episode %d", l->episode);
 
     /* Figure out the total number of enemies that the game will have... */
     for (i = 0; i < 0x20; i += 2) {
@@ -2703,19 +2705,19 @@ int bb_load_game_enemies(lobby_t* l) {
         if (en->enemies[i].bp_entry == 0x37 && l->difficulty) {
             en->enemies[i].bp_entry = 0x38;
         }
-        else if (en->enemies[i].rt_index == (uint8_t)-1) {
+        else if (en->enemies[i].pt_index == (uint8_t)-1) {
             switch (l->event) {
             case LOBBY_EVENT_CHRISTMAS:
-                en->enemies[i].rt_index = 79;
+                en->enemies[i].pt_index = 79;
                 break;
             case LOBBY_EVENT_EASTER:
-                en->enemies[i].rt_index = 81;
+                en->enemies[i].pt_index = 81;
                 break;
             case LOBBY_EVENT_HALLOWEEN:
-                en->enemies[i].rt_index = 80;
+                en->enemies[i].pt_index = 80;
                 break;
             default:
-                en->enemies[i].rt_index = 51;
+                en->enemies[i].pt_index = 51;
                 break;
             }
         }
@@ -3115,19 +3117,19 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
         if(l->map_enemies->enemies[i].bp_entry == 0x37 && l->difficulty) {
             l->map_enemies->enemies[i].bp_entry = 0x38;
         }
-        else if(l->map_enemies->enemies[i].rt_index == (uint8_t)-1) {
+        else if(l->map_enemies->enemies[i].pt_index == (uint8_t)-1) {
             switch(l->event) {
                 case LOBBY_EVENT_CHRISTMAS:
-                    l->map_enemies->enemies[i].rt_index = 79;
+                    l->map_enemies->enemies[i].pt_index = 79;
                     break;
                 case LOBBY_EVENT_EASTER:
-                    l->map_enemies->enemies[i].rt_index = 81;
+                    l->map_enemies->enemies[i].pt_index = 81;
                     break;
                 case LOBBY_EVENT_HALLOWEEN:
-                    l->map_enemies->enemies[i].rt_index = 80;
+                    l->map_enemies->enemies[i].pt_index = 80;
                     break;
                 default:
-                    l->map_enemies->enemies[i].rt_index = 51;
+                    l->map_enemies->enemies[i].pt_index = 51;
                     break;
             }
         }

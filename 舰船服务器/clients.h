@@ -29,7 +29,7 @@
 
 #include <time.h>
 #include <inttypes.h>
-#include <pthread.h>
+#include "pthreadv2.h"
 #include <queue.h>
 #include <WinSock_Defines.h>
 
@@ -346,6 +346,22 @@ extern pthread_key_t recvbuf_key;
 
 /* The key used for the thread-specific send buffer. */
 extern pthread_key_t sendbuf_key;
+
+//#define LOCK_CMUTEX(data) \
+//    do { \
+//        int ret = pthread_mutex_lock(&(data)->mutex); \
+//        if (ret != 0) { \
+//            ERR_LOG("%s pthread_mutex_lock ´íÎó: %d", get_player_describe((ship_client_t*)data), ret); \
+//        } \
+//    } while (0)
+//
+//#define UNLOCK_CMUTEX(data) \
+//    do { \
+//        int ret = pthread_mutex_unlock(&(data)->mutex); \
+//        if (ret != 0) { \
+//            ERR_LOG("%s pthread_mutex_unlock ´íÎó: %d", get_player_describe((ship_client_t*)data), ret); \
+//        } \
+//    } while (0)
 
 /* Possible values for the type field of ship_client_t */
 #define CLIENT_TYPE_SHIP        0

@@ -1728,17 +1728,19 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
     pthread_mutex_unlock(&c->mutex);
 
-    /* Log the connection. */
-    char ipstr[INET6_ADDRSTRLEN];
-    my_ntop(&c->ip_addr, ipstr);
-    DC_LOG("%s(舰仓%02d[%02d]):%s连接(%s:%d)"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , get_player_describe(c)
-        , ipstr
-        , c->sock
-    );
+    if (c->cur_lobby) {
+        /* Log the connection. */
+        char ipstr[INET6_ADDRSTRLEN];
+        my_ntop(&c->ip_addr, ipstr);
+        DC_LOG("%s(舰仓%02d[%02d]):%s连接(%s:%d)"
+            , ship->cfg->ship_name
+            , c->cur_block->b
+            , c->cur_block->num_clients
+            , get_player_describe(c)
+            , ipstr
+            , c->sock
+        );
+    }
 
     return 0;
 }

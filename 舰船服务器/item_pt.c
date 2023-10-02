@@ -711,8 +711,9 @@ int pt_bb_enabled(void) {
 }
 
 size_t get_pt_index(uint8_t episode, size_t pt_index) {
-	size_t ep4_pt_index_offset = 0x58;//87 Item_PT EP4 enemy_index 差值
-	return (episode == GAME_TYPE_EPISODE_3 ? (pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (pt_index - ep4_pt_index_offset) : pt_index);
+	size_t ep4_pt_index_offset = 0x57;//87 Item_PT EP4 enemy_index 差值
+	size_t new_pt_index = pt_index;
+	return (episode == GAME_TYPE_EPISODE_3 ? (new_pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index);
 }
 
 int get_pt_data_area_bb(uint8_t episode, int cur_area) {
@@ -2609,7 +2610,7 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 		"mid: %d (max: %d), pt: %d (%d), area: %d (%d), quest: %" PRIu32
 		"section: %d, difficulty: %d\n",
 		c->guildcard, mid, l->map_enemies->enemy_count, req->pt_index,
-		enemy->rt_index, area + 1, rarea, l->qid, section, l->difficulty);
+		enemy->pt_index, area + 1, rarea, l->qid, section, l->difficulty);
 
 	if (enemy->drop_done) {
 		LOGV(l, "Drop already done.\n");
@@ -3826,7 +3827,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	uint16_t mid;
 	game_enemy_t* enemy;
 	int csr = 0;
-	uint8_t pt_index = req->rt_index;
+	uint8_t pt_index = req->pt_index;
 	size_t ep_pt_index = get_pt_index(l->episode, pt_index);
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
@@ -4027,7 +4028,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
 				"%d ep_pt_index %d episode %d", ent->enemy_item_classes[ep_pt_index],
-				req->rt_index, ep_pt_index, l->episode);
+				req->pt_index, ep_pt_index, l->episode);
 			return 0;
 		}
 
@@ -4302,7 +4303,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, uint8_t secti
 	uint16_t mid;
 	game_enemy_t* enemy;
 	int csr = 0;
-	uint8_t pt_index = req->rt_index;
+	uint8_t pt_index = req->pt_index;
 	size_t ep_pt_index = get_pt_index(l->episode, pt_index);
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
@@ -4521,7 +4522,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 	float f1, f2;
 	sfmt_t* rng = &src->sfmt_rng;
 	int csr = 0;
-	uint8_t pt_index = req->rt_index;
+	uint8_t pt_index = req->pt_index;
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {

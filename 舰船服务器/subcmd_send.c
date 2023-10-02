@@ -508,7 +508,7 @@ int subcmd_send_lobby_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) 
 
     /* Ìî³äÊ£ÓàÊı¾İ */
     gen.data.area = req->area;
-    gen.data.from_enemy = /*0x02*/req->rt_index != 0x30;
+    gen.data.from_enemy = /*0x02*/req->pt_index != 0x30;
     gen.data.request_id = req->entity_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
@@ -534,7 +534,7 @@ int subcmd_send_lobby_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) 
 
 int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, ship_client_t* dest) {
     uint32_t mid = LE16(req->entity_id);
-    uint32_t pti = req->rt_index;
+    uint32_t pti = req->pt_index;
     lobby_t* l = c->cur_lobby;
     uint32_t qdrop = 0xFFFFFFFF;
 
@@ -588,7 +588,7 @@ int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, cons
 
     /* Ìî³äÊ£ÓàÊı¾İ */
     gen.data.area = req->area;
-    gen.data.from_enemy = req->rt_index != 0x30;   /* Probably not right... but whatever. */
+    gen.data.from_enemy = req->pt_index != 0x30;   /* Probably not right... but whatever. */
     gen.data.request_id = req->entity_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
@@ -651,7 +651,7 @@ int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, co
 
     /* Ìî³äÊ£ÓàÊı¾İ */
     gen.data.area = req->area;
-    gen.data.from_enemy = req->rt_index != 0x30;   /* Probably not right... but whatever. */
+    gen.data.from_enemy = req->pt_index != 0x30;   /* Probably not right... but whatever. */
     gen.data.request_id = req->entity_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
@@ -920,7 +920,7 @@ int subcmd_bb_send_coren_reward(ship_client_t* dest, uint32_t flags, item_t item
 
     /* Ìî³ä¸±Ö¸ÁîÊı¾İ */
     pkt.shdr.type = SUBCMD62_COREN_ACT_RESULT;
-    pkt.shdr.size = pkt_size / 4;
+    pkt.shdr.size = (pkt_size - sizeof(bb_pkt_hdr_t)) / 4;
     pkt.shdr.client_id = dest->client_id;
 
     pkt.item_data = item;

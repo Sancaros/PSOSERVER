@@ -1023,7 +1023,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     c->infoboard = (char*)c->pl->bb.infoboard;
     if (!&c->pl->bb.records) {
         c->records->bb = c->pl->bb.records;
-        c->records->bb.challenge.title_color = encode_xrgb1555(c->pl->bb.records.challenge.title_color);
+        //c->records->bb.challenge.title_color = encode_xrgb1555(c->pl->bb.records.challenge.title_color);
         //c->records->bb.challenge.rank_title = encrypt_challenge_rank_text()
     }
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
@@ -1096,44 +1096,44 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             c->flags |= CLIENT_FLAG_SENT_MOTD;
         }
         else {
-            if (c->cur_lobby)
+            if (c->cur_lobby) {
                 shipgate_send_lobby_chg(&ship->sg, c->guildcard,
                     c->cur_lobby->lobby_id, c->cur_lobby->name);
+
+                if (send_bb_quest_data1(c)) {
+                    pthread_mutex_unlock(&c->mutex);
+                    return -2;
+                }
+
+                /* 这里无法给自己发数据 */
+                send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+
+            }
             else
                 ERR_LOG("shipgate_send_lobby_chg 错误");
         }
-
-        if (send_bb_quest_data1(c)) {
-            pthread_mutex_unlock(&c->mutex);
-            return -2;
-        }
-
-        if (c->cur_lobby) {
-            /* 这里无法给自己发数据 */
-            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-        }
-        else
-            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
 
         /* Send a ping so we know when they're done loading in. This is useful
            for sending the MOTD as well as enforcing always-legit mode. */
         send_simple(c, PING_TYPE, 0);
     }
 
-    /* Log the connection. */
-    char ipstr[INET6_ADDRSTRLEN];
-    my_ntop(&c->ip_addr, ipstr);
-    DC_LOG("%s(舰仓%02d[%02d]):%s连接(%s:%d)"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , get_player_describe(c)
-        , ipstr
-        , c->sock
-    );
-
     pthread_mutex_unlock(&c->mutex);
+
+    if (c->cur_lobby) {
+        /* Log the connection. */
+        char ipstr[INET6_ADDRSTRLEN];
+        my_ntop(&c->ip_addr, ipstr);
+        DC_LOG("%s(舰仓%02d[%02d]):%s连接(%s:%d)"
+            , ship->cfg->ship_name
+            , c->cur_block->b
+            , c->cur_block->num_clients
+            , get_player_describe(c)
+            , ipstr
+            , c->sock
+        );
+    }
 
     return 0;
 }
@@ -3038,6 +3038,18 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             type, c_cmd_name(type, 0), len, flags, c->guildcard);
         print_ascii_hex(dbgl, pkt, len);
 #endif // DEBUG
+        if (type == GAME_SUBCMD60_TYPE || 
+            type == GAME_SUBCMD6C_TYPE || 
+            type == GAME_SUBCMD62_TYPE ||
+            type == GAME_SUBCMD6D_TYPE
+            ) {
+            subcmd_bb_pkt_t* subpkt = (subcmd_bb_pkt_t*)pkt;
+            DBG_LOG("舰仓:BB指令 0x%04X 副指令 0x%02X  %s",
+                subpkt->hdr.pkt_type, subpkt->type, get_player_describe(c));
+        }
+        else
+            DBG_LOG("舰仓:BB指令 0x%04X  %s",
+                type, get_player_describe(c));
 
         if (c->game_data->err.has_error) {
             send_msg(c, BB_SCROLL_MSG_TYPE,

@@ -58,7 +58,7 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix);
 
 /* 发送全球消息 */
 int global_message(ship_client_t* c, uint16_t type, int prefix, const char* fmt, ...);
-int announce_message(ship_client_t* c, uint16_t type, const char* fmt, ...);
+int announce_message(ship_client_t* src, int srcnosend, uint16_t type, const char* fmt, ...);
 
 int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f);
 

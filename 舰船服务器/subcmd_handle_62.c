@@ -1208,7 +1208,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->rt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
 
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
@@ -1241,12 +1241,13 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
 
-        //game_enemy_t* en = &l->map_enemies->enemies[mid];
-        //if (pkt->rt_index != en->rt_index) {
-        //    ERR_LOG("命令参数 rt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
-        //        pkt->rt_index, mid, en->rt_index);
-        //}
-        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->rt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
+        game_enemy_t* en = &l->map_enemies->enemies[mid];
+        if (get_pt_index(l->episode, pkt->pt_index) != en->pt_index) {
+            ERR_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
+                pkt->pt_index, mid, en->pt_index);
+        }
+
+        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);
             return 0;
@@ -2272,12 +2273,8 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-        ERR_LOG("%s 尝试获取错误的任务美赛塔奖励!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
-    }
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_quest_reward_meseta_t), 0x02))
+        return -2;
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -2694,7 +2691,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     int rv = 0;
 
     static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
-    static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
+    static const uint8_t max_tech_lvl[4] = { 4,  7, 10, 15 };
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 
     if (!in_game(src)) {
@@ -2779,17 +2776,14 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
             rv |= subcmd_send_bb_create_inv_item(src, iitem.data, amount);
 
-            rv |= send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得物品奖励\n安慰奖: %d 美赛塔.",
+            rv |= send_msg(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得物品奖励\n安慰奖: %d 美赛塔.",
                 currentDayOfWeek,
                 menu_choice_price[menu_choice],
                 get_player_name(src->pl, src->version, false),
                 amount
             );
 
-            rv |= subcmd_bb_send_coren_reward(src, 0, result_item);
-
-            rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-
+            rv |= subcmd_bb_send_coren_reward(src, 1, result_item);
             return rv;
         }
 
@@ -2897,6 +2891,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             case ITEM_SUBTYPE_UNIT://插件
                 if (err = pmt_lookup_unit_bb(iitem.data.datal[0], &pmt_unit)) {
                     ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
+                    UNLOCK_CMUTEX(src);
                     return -1;
                 }
 
@@ -2933,7 +2928,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     rv |= subcmd_send_bb_create_inv_item(src, iitem.data, 1);
 
-    rv |= send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n恭喜 %s 抽奖获得了\n\tE\tC6%s.",
+    rv |= send_msg(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n恭喜 %s 抽奖获得了\n\tE\tC6%s.",
         currentDayOfWeek,
         menu_choice_price[menu_choice],
         get_player_name(src->pl, src->version, false),
@@ -2941,7 +2936,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     );
 
     if (is_item_rare(&iitem.data))
-        rv |= announce_message(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
+        rv |= announce_message(src, true, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
             "恭喜 %s 在 \tE\tC4%d \tE\tC7美赛塔档次抽奖获得了 "
             "\tE\tC6%s.",
             currentDayOfWeek,
@@ -2949,9 +2944,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             menu_choice_price[menu_choice],
             get_item_describe(&iitem.data, src->version)
         );
-    rv |= subcmd_bb_send_coren_reward(src, 0, result_item);
 
-    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    rv |= subcmd_bb_send_coren_reward(src, 1, result_item);
 
     return rv;
 }

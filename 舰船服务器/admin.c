@@ -49,17 +49,17 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
         b = ship->blocks[j];
 
         if(b && b->run) {
-            pthread_rwlock_rdlock(&b->lock);
+            LOCK_RWLOCK(&b->lock);
 
             /* Look for the requested user */
             TAILQ_FOREACH(i, b->clients, qentry) {
-                pthread_mutex_lock(&i->mutex);
+                LOCK_CMUTEX(i);
 
                 /* Disconnect them if we find them */
                 if(i->guildcard == gc) {
                     if(c->privilege <= i->privilege) {
-                        pthread_mutex_unlock(&i->mutex);
-                        pthread_rwlock_unlock(&b->lock);
+                        UNLOCK_CMUTEX(i);
+                        UNLOCK_RWLOCK(&b->lock);
                         return send_txt(c, "%s", __(c, "\tE\tC7你很棒棒哦."));
                     }
 
@@ -74,15 +74,15 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
                     }
 
                     i->flags |= CLIENT_FLAG_DISCONNECTED;
-                    pthread_mutex_unlock(&i->mutex);
-                    pthread_rwlock_unlock(&b->lock);
+                    UNLOCK_CMUTEX(i);
+                    UNLOCK_RWLOCK(&b->lock);
                     return 0;
                 }
 
-                pthread_mutex_unlock(&i->mutex);
+                UNLOCK_CMUTEX(i);
             }
 
-            pthread_rwlock_unlock(&b->lock);
+            UNLOCK_RWLOCK(&b->lock);
         }
     }
 
@@ -308,23 +308,15 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix) {
         b = ship->blocks[i];
 
         if(b && b->run) {
-            pthread_rwlock_rdlock(&b->lock);
-
             /* Send the message to each player. */
             TAILQ_FOREACH(i2, b->clients, qentry) {
-                pthread_mutex_lock(&i2->mutex);
-
                 if(i2->pl) {
                     if(prefix) {
                         send_txt(i2, "%s\n%s", __(i2, "\tE\tC7全服消息:"), message2);
                     }else
                         send_txt(i2, "%s", message2);
                 }
-
-                pthread_mutex_unlock(&i2->mutex);
             }
-
-            pthread_rwlock_unlock(&b->lock);
         }
     }
 
@@ -343,27 +335,19 @@ int global_message(ship_client_t* c, uint16_t type, int prefix, const char* fmt,
         b = ship->blocks[i];
 
         if (b && b->run) {
-            pthread_rwlock_rdlock(&b->lock);
-
             /* Send the message to each player. */
             TAILQ_FOREACH(i2, b->clients, qentry) {
-                pthread_mutex_lock(&i2->mutex);
-
-                va_start(args, fmt);
-
                 if (i2->pl) {
+                    va_start(args, fmt);
+
                     if (prefix) {
                         send_msg(i2, type, "%s %s", __(i2, "\tE\tC7全服消息:"), fmt, args);
                     }else
                         send_msg(i2, type, "%s", fmt, args);
+
+                    va_end(args);
                 }
-
-                va_end(args);
-
-                pthread_mutex_unlock(&i2->mutex);
             }
-
-            pthread_rwlock_unlock(&b->lock);
         }
     }
 
@@ -371,10 +355,10 @@ int global_message(ship_client_t* c, uint16_t type, int prefix, const char* fmt,
 }
 
 /* 发送全球消息 */
-int announce_message(ship_client_t* c, uint16_t type, const char* fmt, ...) {
+int announce_message(ship_client_t* src, int srcnosend, uint16_t type, const char* fmt, ...) {
     block_t* b;
     uint32_t i;
-    ship_client_t* i2;
+    ship_client_t* dest;
     va_list args;
 
     /* Go through each block and send the message to anyone that is alive. */
@@ -382,24 +366,21 @@ int announce_message(ship_client_t* c, uint16_t type, const char* fmt, ...) {
         b = ship->blocks[i];
 
         if (b && b->run) {
-            pthread_rwlock_rdlock(&b->lock);
-
             /* Send the message to each player. */
-            TAILQ_FOREACH(i2, b->clients, qentry) {
-                pthread_mutex_lock(&i2->mutex);
+            TAILQ_FOREACH(dest, b->clients, qentry) {
 
-                va_start(args, fmt);
+                if (dest->pl) {
+                    if (srcnosend)
+                        if (dest == src)
+                            continue;
 
-                if (i2->pl) {
-                    send_msg2(i2, type, fmt, args);
+                    va_start(args, fmt);
+
+                    send_msg2(dest, type, fmt, args);
+
+                    va_end(args);
                 }
-
-                va_end(args);
-
-                pthread_mutex_unlock(&i2->mutex);
             }
-
-            pthread_rwlock_unlock(&b->lock);
         }
     }
 
@@ -467,9 +448,8 @@ int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
 
     /* Log the event to the log file */
     if(c) {
-        SHIPS_LOG("舰船计划于 %" PRIu32 " 分钟后 %s 操作:"
-              "%"PRIu32".", when, restart ? "重启" : "关闭",
-              c->guildcard);
+        SHIPS_LOG("舰船计划于 %" PRIu32 " 分钟后 %s 操作:%s.", when, restart ? "重启" : "关闭",
+              get_player_describe(c));
     }
     else {
         SHIPS_LOG("舰船服务器收到关闭指令.");

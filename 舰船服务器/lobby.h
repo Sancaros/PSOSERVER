@@ -139,7 +139,7 @@ struct lobby {
     uint8_t v2;
     uint8_t section;
     uint8_t event;
-    uint8_t episode;
+    uint8_t episode; /* BB 1 2 3 */
 
     uint8_t max_chal;
     uint8_t legit_check_passed;
@@ -218,6 +218,22 @@ typedef struct lobby lobby_t;
 #endif
 
 TAILQ_HEAD(lobby_queue, lobby);
+
+//#define LOCK_LMUTEX(lobby) \
+//    do { \
+//        int ret = pthread_mutex_lock(&(lobby)->mutex); \
+//        if (ret != 0) { \
+//            ERR_LOG("%s pthread_mutex_lock ´íÎó: %d", get_lobby_describe((lobby_t*)lobby), ret); \
+//        } \
+//    } while (0)
+//
+//#define UNLOCK_LMUTEX(lobby) \
+//    do { \
+//        int ret = pthread_mutex_unlock(&(lobby)->mutex); \
+//        if (ret != 0) { \
+//            ERR_LOG("%s pthread_mutex_unlock ´íÎó: %d", get_lobby_describe((lobby_t*)lobby), ret); \
+//        } \
+//    } while (0)
 
 /* Possible values for the type parameter. */
 #define LOBBY_TYPE_LOBBY              0x00000001
@@ -324,6 +340,9 @@ TAILQ_HEAD(lobby_queue, lobby);
 #define LOBBY_QFLAG_JOIN        (1 << 2)
 #define LOBBY_QFLAG_SYNC_REGS   (1 << 3)
 
+/* ÓÃÓÚ´òÓ¡´óÌüÃèÊö */
+static char lobby_des[512];
+
 /* The required level for various difficulties. */
 const static int game_required_level[4] = { 1, 20, 40, 80 };
 
@@ -400,6 +419,8 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang);
 void lobby_print_info(lobby_t *l, FILE *fp);
 
 void lobby_print_info2(ship_client_t* src);
+
+char* get_lobby_describe(lobby_t* l);
 
 #ifdef ENABLE_LUA
 #include <lua.h>

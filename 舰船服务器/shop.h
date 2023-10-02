@@ -67,7 +67,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子);
 item_t create_bb_shop_items(uint32_t 商店类型, uint8_t 难度, uint8_t 物品索引, sfmt_t* 随机因子);
 size_t price_for_item(const item_t* item);
 
-// Item list for Good Luck quest...祝你好运任务的物品清单
+/*祝你好运任务的物品清单*/
 const static uint32_t good_luck[] = {
 	0x00004C00,
 	0x00004500,

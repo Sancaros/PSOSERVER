@@ -124,27 +124,18 @@ typedef struct bb_pkt_hdr {
 /* DC V3 GC XBOX客户端错误数据头 4字节 */
 typedef struct dc_err_pkt_hdr {
     dc_pkt_hdr_t hdr;
-    uint8_t type; //subcmd 指令
-    uint8_t size;
-    uint16_t params;
     uint8_t data[0];
 } PACKED dc_err_pkt_hdr_t;
 
 /* PC 客户端错误数据头 4字节 */
 typedef struct pc_err_pkt_hdr {
     pc_pkt_hdr_t hdr;
-    uint8_t type; //subcmd 指令
-    uint8_t size;
-    uint16_t params;
     uint8_t data[0];
 } PACKED pc_err_pkt_hdr_t;
 
 /* BB 客户端错误数据头 8字节 */
 typedef struct bb_err_pkt_hdr {
     bb_pkt_hdr_t hdr;
-    uint8_t type; //subcmd 指令
-    uint8_t size;
-    uint16_t params;
     uint8_t data[0];
 } PACKED bb_err_pkt_hdr_t;
 

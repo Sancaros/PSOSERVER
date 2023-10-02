@@ -58,6 +58,25 @@ static FILE *logfp = NULL;
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
+char* get_difficulty_describe(uint8_t difficulty) {
+    switch (difficulty) {
+    case GAME_TYPE_DIFFICULTY_NORMARL:
+        return "普通";
+
+    case GAME_TYPE_DIFFICULTY_HARD:
+        return "困难";
+
+    case GAME_TYPE_DIFFICULTY_VERY_HARD:
+        return "极难";
+
+    case GAME_TYPE_DIFFICULTY_ULTIMATE:
+        return "极限";
+    }
+
+    return "未知";
+}
+
+
 static int td(ship_client_t *c, lobby_t *l, void *req);
 
 lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev) {
@@ -283,6 +302,25 @@ void lobby_print_info2(ship_client_t* src) {
 
     //if(!l->challenge && !l->battle && !l->lobby_create && !l->oneperson && l->leader_id == src->client_id)
     //    send_bb_game_type_sel(src);
+}
+
+char* get_lobby_describe(lobby_t* l) {
+    if (!l)
+        return "房间不存在";
+
+    /* 初始化角色描述内存 */
+    memset(lobby_des, 0, sizeof(lobby_des));
+
+    sprintf(lobby_des, "%s %s (%s:%s:%s:%s)"
+        , l->name
+        , get_player_name(l->clients[l->leader_id]->pl, l->version, false)
+        , l->episode == 1 ? "EP1" : l->episode == 2 ? "EP2" : "EP4"
+        , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "普通"
+        , get_difficulty_describe(l->difficulty)
+        , l->drop_pso2 == true ? l->drop_psocn == true ? "随机" : "独立" : "默认"
+    );
+
+    return lobby_des;
 }
 
 lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,

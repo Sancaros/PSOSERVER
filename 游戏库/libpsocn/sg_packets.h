@@ -64,40 +64,40 @@ typedef struct shipgate_error {
     uint8_t data[4096];
 } PACKED shipgate_error_pkt;
 
-typedef struct shipgate_error_hdr {
-    shipgate_hdr_t hdr;
-    uint32_t error_code;
-    uint32_t guildcard;
-    uint32_t slot;
-    uint32_t block;
-    uint32_t target_gc;
-    uint32_t reserved;
-} PACKED shipgate_error_hdr_pkt;
+//typedef struct shipgate_error_hdr {
+//    shipgate_hdr_t hdr;
+//    uint32_t error_code;
+//    uint32_t guildcard;
+//    uint32_t slot;
+//    uint32_t block;
+//    uint32_t target_gc;
+//    uint32_t reserved;
+//} PACKED shipgate_error_hdr_pkt;
 
 /* Error packet in reply to character data send or character request */
 typedef struct shipgate_cdata_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t guildcard;
     uint32_t slot;
 } PACKED shipgate_cdata_err_pkt;
 
 /* Error packet in reply to character backup send or character backup request */
 typedef struct shipgate_cbkup_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t guildcard;
     uint32_t block;
 } PACKED shipgate_cbkup_err_pkt;
 
 /* Error packet in reply to gm login */
 typedef struct shipgate_gm_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t guildcard;
     uint32_t block;
 } PACKED shipgate_gm_err_pkt;
 
 /* Error packet in reply to ban */
 typedef struct shipgate_ban_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t req_gc;
     uint32_t target;
     uint32_t until;
@@ -106,21 +106,21 @@ typedef struct shipgate_ban_err {
 
 /* Error packet in reply to a block login */
 typedef struct shipgate_blogin_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t guildcard;
     uint32_t blocknum;
 } PACKED shipgate_blogin_err_pkt;
 
 /* Error packet in reply to a add/remove friend */
 typedef struct shipgate_friend_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t user_gc;
     uint32_t friend_gc;
 } PACKED shipgate_friend_err_pkt;
 
 /* Error packet in reply to a schunk */
 typedef struct shipgate_schunk_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint8_t type;
     uint8_t reserved[3];
     char filename[32];
@@ -128,7 +128,7 @@ typedef struct shipgate_schunk_err {
 
 /* Error packet in reply to a quest flag packet (either get or set) */
 typedef struct shipgate_qflag_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t guildcard;
     uint32_t block;
     uint32_t flag_id;
@@ -137,7 +137,7 @@ typedef struct shipgate_qflag_err {
 
 /* Error packet in reply to a ship control packet */
 typedef struct shipgate_sctl_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t ctl;
     uint32_t acc;
     uint32_t reserved1;
@@ -146,7 +146,7 @@ typedef struct shipgate_sctl_err {
 
 /* Error packet used in response to various user commands */
 typedef struct shipgate_user_err {
-    shipgate_error_hdr_pkt base;
+    shipgate_error_pkt base;
     uint32_t gc;
     uint32_t block;
     char message[0];
