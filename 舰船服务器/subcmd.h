@@ -2981,7 +2981,7 @@ typedef struct subcmd_bb_guild_master_trans1 {
     uint16_t master_name[0x000C];
     uint8_t unknow1[24];
     uint16_t guild_name[0x000E];
-    uint8_t unknow2[0]; /* ???????? 未知 00 00 E3 23*/
+    uint8_t unknow2[4]; /* ???????? 未知 00 00 E3 23*/
 } PACKED subcmd_bb_guild_master_trans1_t;
 
 // 0xCE: subcmd_bb_guild_master_trans2
@@ -2993,7 +2993,7 @@ typedef struct subcmd_bb_guild_master_trans2 {
     uint16_t master_name[0x000C];
     uint8_t unknow1[24];
     uint16_t guild_name[0x000E];
-    uint8_t unknow2[0]; /* ???????? 未知 00 00 E3 23*/
+    uint8_t unknow2[4]; /* ???????? 未知 00 00 E3 23*/
 } PACKED subcmd_bb_guild_master_trans2_t;
 
 //[2023年05月02日 13:30:08:506] 调试(subcmd-bb.c 5292): 暂未完成 0x60: 0xCF

@@ -173,6 +173,9 @@ bool in_lobby(ship_client_t* src) {
     }
 
     if (l->type != LOBBY_TYPE_LOBBY) {
+        ERR_LOG("%s 不在大厅中!", get_player_describe(src));
+        ERR_LOG("当前房间信息:");
+        ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
         return false;
     }
 
@@ -183,6 +186,7 @@ bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
     uint16_t pkt_type = 0;
     uint8_t pkt_subtype = 0, pkt_size = 0;
     size_t pkt_len = 0;
+    lobby_t* l = src->cur_lobby;
 
     switch (src->version)
     {
@@ -221,6 +225,8 @@ bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
 
 err_all:
     ERR_LOG("%s 发送损坏的数据指令 0x%04X 0x%02X!", get_player_describe(src), pkt_type, pkt_subtype);
+    ERR_LOG("当前房间信息:");
+    ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
     print_ascii_hex(errl, pkt, pkt_len);
     return false;
 }

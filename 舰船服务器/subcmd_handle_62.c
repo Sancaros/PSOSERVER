@@ -2315,11 +2315,8 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
-        ERR_LOG("%s 尝试获取错误的任务物品奖励!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_quest_reward_item_t), 0x06)) {
+        return -2;
     }
 
     //( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
@@ -2355,11 +2352,8 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     char guild_name_text[24];
     char master_name_text[24];
 
-    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("%s 发送错误的公会转让数据包!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_guild_master_trans1_t), 0x17)) {
+        return -2;
     }
 
     istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
@@ -2389,11 +2383,8 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     char master_name_text[24];
     dest->guild_master_exfer = false;
 
-    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("%s 发送错误的公会转让数据包!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_guild_master_trans2_t), 0x17)) {
+        return -2;
     }
 
     istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
@@ -2700,19 +2691,18 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t iitem = { 0 };
     errno_t err = 0;
     uint8_t 难度 = l->difficulty, 章节 = l->episode, 挑战 = l->challenge;
+    int rv = 0;
 
     static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
     static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 
-    if (!in_game(src))
+    if (!in_game(src)) {
         return -1;
+    }
 
-    if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
-        ERR_LOG("%s 发送损坏的物数据!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_coren_act_t), 0x04)) {
+        return -2;
     }
 
     //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
@@ -2784,20 +2774,23 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             if (!add_iitem(src, iitem)) {
                 ERR_LOG("%s 背包空间不足, 无法获得物品!",
                     get_player_describe(src));
-                pthread_mutex_lock(&src->mutex);
                 return -1;
             }
 
-            subcmd_send_bb_create_inv_item(src, iitem.data, amount);
+            rv |= subcmd_send_bb_create_inv_item(src, iitem.data, amount);
 
-            send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得物品奖励\n安慰奖: %d 美赛塔.",
+            rv |= send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得物品奖励\n安慰奖: %d 美赛塔.",
                 currentDayOfWeek,
                 menu_choice_price[menu_choice],
                 get_player_name(src->pl, src->version, false),
                 amount
             );
 
-            return subcmd_bb_send_coren_reward(src, 0, result_item);
+            rv |= subcmd_bb_send_coren_reward(src, 0, result_item);
+
+            rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
+            return rv;
         }
 
     }
@@ -2938,9 +2931,9 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    subcmd_send_bb_create_inv_item(src, iitem.data, 1);
+    rv |= subcmd_send_bb_create_inv_item(src, iitem.data, 1);
 
-    send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n恭喜 %s 抽奖获得了\n\tE\tC6%s.",
+    rv |= send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n恭喜 %s 抽奖获得了\n\tE\tC6%s.",
         currentDayOfWeek,
         menu_choice_price[menu_choice],
         get_player_name(src->pl, src->version, false),
@@ -2948,7 +2941,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     );
 
     if (is_item_rare(&iitem.data))
-        announce_message(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
+        rv |= announce_message(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
             "恭喜 %s 在 \tE\tC4%d \tE\tC7美赛塔档次抽奖获得了 "
             "\tE\tC6%s.",
             currentDayOfWeek,
@@ -2956,8 +2949,11 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             menu_choice_price[menu_choice],
             get_item_describe(&iitem.data, src->version)
         );
+    rv |= subcmd_bb_send_coren_reward(src, 0, result_item);
 
-    return subcmd_bb_send_coren_reward(src, 0, result_item);
+    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
+    return rv;
 }
 
 // 定义函数指针数组

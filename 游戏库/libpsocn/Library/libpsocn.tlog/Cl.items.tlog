@@ -1,12 +1,14 @@
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_crash_handle.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_crash_handle.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_items.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_items.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_menu.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_menu.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_message.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_message.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_pack.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_pack.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_ping.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_ping.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_player.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_player.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_StringReader.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_StringReader.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_version.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_version.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_cmd_name.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_cmd_name.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_timer.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_timer.obj
-E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\pso_text.c;E:\PSOBB\PSOSERVER\PSOSERVER\游戏库\libpsocn\Library\pso_text.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_crash_handle.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_crash_handle.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_items.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_items.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_menu.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_menu.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_message.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_message.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_pack.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_pack.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_ping.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_ping.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_player.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_player.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_StringReader.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_StringReader.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_version.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_version.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_cmd_name.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_cmd_name.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_timer.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_timer.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_text.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_text.obj
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.ixx;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\std.ixx.obj
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.compat.ixx;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\std.compat.ixx.obj
