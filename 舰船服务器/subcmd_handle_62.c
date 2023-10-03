@@ -1087,10 +1087,8 @@ int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt->shdr.size != 0x03)
-        return -1;
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_pick_up_item_req_t), 0x03))
+        return -2;
 
     if (src->cur_area != area) {
         ERR_LOG("%s picked up item in area they are "
@@ -1118,10 +1116,10 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    /* Sanity check... Make sure the size of the subcommand and the client id
-       match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x14) || pkt->shdr.size != 0x03 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_pick_up_t), 0x03))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送错误的拾取数据!", get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
@@ -1181,12 +1179,25 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_itemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t iitem = { 0 };
-    uint16_t mid = pkt->entity_id;
     int rv = 0;
-    uint8_t section = 0;
+    uint8_t section = 0, pt_index = pkt->pt_index;
+    uint16_t mid = LE16(pkt->entity_id);
 
     if (!in_game(src))
         return -1;
+
+    if (mid > l->map_enemies->enemy_count) {
+        ITEM_LOG("%s 请求无效敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", get_player_describe(src), mid,
+            l->map_enemies->enemy_count, l->qid);
+        return 0;
+    }
+
+    /* Grab the map enemy to make sure it hasn't already dropped something. */
+    game_enemy_t* enemy = &l->map_enemies->enemies[mid];
+    if (enemy->drop_done)
+        return 0;
+
+    enemy->drop_done = 1;
 
     /* 独立掉落模式 */
     if (l->drop_pso2) {
@@ -1208,7 +1219,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
 
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
@@ -1227,6 +1238,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
             print_item_data(&iitem.data, l->version);
 #endif // DEBUG
+            ITEM_LOG("%s 请求敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", get_player_describe(p2), mid,
+                l->map_enemies->enemy_count, l->qid);
+            print_item_data(&lt->iitem.data, l->version);
 
             rv = subcmd_send_bb_drop_item(p2, pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
@@ -1240,14 +1254,14 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         if (!l->map_enemies) {
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
-
-        game_enemy_t* en = &l->map_enemies->enemies[mid];
-        if (get_pt_index(l->episode, pkt->pt_index) != en->pt_index) {
-            ERR_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
-                pkt->pt_index, mid, en->pt_index);
+        
+        uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->bp_entry);
+        if (get_pt_index(l->episode, pt_index) != enemy->rt_index) {
+            ERR_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X expected_rt_index %02X",
+                pt_index, mid, enemy->rt_index, expected_rt_index);
         }
 
-        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
+        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);
             return 0;
@@ -1265,6 +1279,10 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
         print_item_data(&iitem.data, l->version);
 #endif // DEBUG
+
+        ITEM_LOG("%s 请求敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", get_player_describe(src), mid,
+            l->map_enemies->enemy_count, l->qid);
+        print_item_data(&lt->iitem.data, l->version);
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);

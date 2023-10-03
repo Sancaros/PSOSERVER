@@ -2610,7 +2610,7 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 		"mid: %d (max: %d), pt: %d (%d), area: %d (%d), quest: %" PRIu32
 		"section: %d, difficulty: %d\n",
 		c->guildcard, mid, l->map_enemies->enemy_count, req->pt_index,
-		enemy->pt_index, area + 1, rarea, l->qid, section, l->difficulty);
+		enemy->rt_index, area + 1, rarea, l->qid, section, l->difficulty);
 
 	if (enemy->drop_done) {
 		LOGV(l, "Drop already done.\n");

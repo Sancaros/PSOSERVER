@@ -196,8 +196,8 @@ typedef struct PSOEnemy {
 
 /* Enemy data as used in the game. */
 typedef struct game_enemy {
-    uint32_t bp_entry;
-    uint8_t pt_index;
+    uint8_t bp_entry;
+    uint8_t rt_index;
     uint8_t clients_hit;
     uint8_t last_client;
     uint8_t drop_done;

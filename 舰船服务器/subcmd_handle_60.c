@@ -678,7 +678,7 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
 
         script_execute(ScriptActionEnemyHit, src, SCRIPT_ARG_PTR, src,
             SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_UINT32, en->bp_entry,
-            SCRIPT_ARG_UINT8, en->pt_index, SCRIPT_ARG_UINT8,
+            SCRIPT_ARG_UINT8, en->rt_index, SCRIPT_ARG_UINT8,
             en->clients_hit, SCRIPT_ARG_END);
 
         /* If the kill flag is set, mark it as dead and update the client's
@@ -688,7 +688,7 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
 
             script_execute(ScriptActionEnemyKill, src, SCRIPT_ARG_PTR, src,
                 SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_UINT32,
-                en->bp_entry, SCRIPT_ARG_UINT8, en->pt_index,
+                en->bp_entry, SCRIPT_ARG_UINT8, en->rt_index,
                 SCRIPT_ARG_UINT8, en->clients_hit, SCRIPT_ARG_END);
 
             if (en->bp_entry < 0x60 && !(l->flags & LOBBY_FLAG_HAS_NPC))
@@ -3218,6 +3218,7 @@ static int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We don't care about these in lobbies. */
     if (in_lobby(src)) {
+        print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 

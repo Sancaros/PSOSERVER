@@ -765,7 +765,21 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint
                     return -4;
                 }
 
-                hostbuf[hostlen - 1] = '\0';
+                size_t hostlen = strlen(hostbuf);
+                if (hostlen >= MAX_BUFF_LENGTH) {
+                    // 超出了长度限制
+                    hostbuf[MAX_BUFF_LENGTH - 1] = '\0';  // 在末尾加上终止符
+                    // 处理超出限制的情况，例如报告错误或进行其他处理
+                    ERR_LOG("Error: %d Hostname exceeds maximum length", sock);
+                    return -4;
+                }
+                else {
+                    hostbuf[hostlen - 1] = '\0';
+                    // 在长度限制内，可以继续处理
+                    // 进行相应的操作
+                    DBG_LOG("Hostname: %s", hostbuf);
+                }
+
                 i = len;
 
                 /* 查看请求的主机是否在我们的列表中.如果是,请回复.*/
