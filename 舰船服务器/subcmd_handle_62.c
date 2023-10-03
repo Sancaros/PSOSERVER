@@ -1240,6 +1240,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
             ITEM_LOG("%s 请求敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", get_player_describe(p2), mid,
                 l->map_enemies->enemy_count, l->qid);
+            ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, p2->cur_area);
             print_item_data(&lt->iitem.data, l->version);
 
             rv = subcmd_send_bb_drop_item(p2, pkt, &lt->iitem);
@@ -1256,9 +1257,13 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         }
         
         uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->bp_entry);
-        if (get_pt_index(l->episode, pt_index) != enemy->rt_index) {
-            ERR_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X expected_rt_index %02X",
-                pt_index, mid, enemy->rt_index, expected_rt_index);
+        if (pt_index == enemy->rt_index) {
+            DBG_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期匹配 rt_index %02X enemy->bp_entry 0x%02X expected_rt_index %02X",
+                pt_index, mid, enemy->rt_index, enemy->bp_entry, expected_rt_index);
+        }
+        else {
+            ERR_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X enemy->bp_entry 0x%02X expected_rt_index %02X",
+                pt_index, mid, enemy->rt_index, enemy->bp_entry, expected_rt_index);
         }
 
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
@@ -1282,6 +1287,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
         ITEM_LOG("%s 请求敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", get_player_describe(src), mid,
             l->map_enemies->enemy_count, l->qid);
+        ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
         print_item_data(&lt->iitem.data, l->version);
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, pkt, &lt->iitem);

@@ -644,6 +644,19 @@ char* get_item_describe(const item_t* item, int version) {
 				, item->datab[5]
 			);
 		}
+
+	case ITEM_TYPE_MESETA:
+		sprintf(item_des, "%s x%d"
+			, item_get_name(item, version, 0)
+			, item->data2l
+		);
+		break;
+
+	default:
+		sprintf(item_des, "Î´½âÎöÎïÆ· %s 0x%08X"
+			, item_get_name(item, version, 0)
+			, item->datal[0]
+		);
 		break;
 
 	}

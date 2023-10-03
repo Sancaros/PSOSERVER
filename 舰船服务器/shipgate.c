@@ -191,7 +191,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //print_ascii_hex(errl, sendbuf, len);
-                    return 0;
+                    return -1;
                 }
 
                 total += rv;
@@ -3570,7 +3570,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
                 ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
             }
 
-            return 0;
+            return -1;
         }
 
         sz += c->recvbuf_cur;

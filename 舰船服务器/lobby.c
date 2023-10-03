@@ -245,7 +245,7 @@ void lobby_print_info(lobby_t *l, FILE *fp) {
            (int)l->v2);
     fdebug(fp, DBG_LOGS, "         对战/挑战: %d/%d\n",
            (int)l->battle, (int)l->challenge);
-    fdebug(fp, DBG_LOGS, "         难度: %d\n", (int)l->difficulty);
+    fdebug(fp, DBG_LOGS, "         难度: %s\n", get_difficulty_describe(l->difficulty));
     fdebug(fp, DBG_LOGS, "         敌人: %p\n", l->map_enemies);
     fdebug(fp, DBG_LOGS, "         实例: %p\n", l->map_objs);
 
@@ -276,7 +276,7 @@ void lobby_print_info2(ship_client_t* src) {
     send_msg(src, TEXT_MSG_TYPE, "模式: %s", (int)l->battle == 1 ? __(src, "\tE\tC6对战模式") :
         (int)l->challenge == 1 ? __(src, "\tE\tC8挑战模式") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人模式") :
         __(src, "\tE\tC7普通模式"));
-    send_msg(src, TEXT_MSG_TYPE, "难度: %d", (int)l->difficulty);
+    send_msg(src, TEXT_MSG_TYPE, "难度: %s", get_difficulty_describe(l->difficulty));
     send_msg(src, TEXT_MSG_TYPE, "经验: %d 倍", l->exp_mult > 0 ? l->exp_mult : 1);
     //send_msg(src, TEXT_MSG_TYPE, "敌人: %p", l->map_enemies);
     //send_msg(src, TEXT_MSG_TYPE, "实例: %p", l->map_objs);

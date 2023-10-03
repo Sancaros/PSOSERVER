@@ -5916,7 +5916,7 @@ int handle_pkt(ship_t* c) {
             }
 
             free_safe(recvbuf);
-            return 0;
+            return -1;
         }
 
         sz += c->recvbuf_cur;

@@ -3196,7 +3196,7 @@ static int sub60_52_dc(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     /* We don't care about these in lobbies. */
-    if (in_lobby(src)) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
     }
 
@@ -3217,8 +3217,7 @@ static int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     /* We don't care about these in lobbies. */
-    if (in_lobby(src)) {
-        print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+    if (l->type == LOBBY_TYPE_LOBBY) {
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
@@ -4250,7 +4249,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We can't get these in lobbies without someone messing with something
    that they shouldn't be... Disconnect anyone that tries. */
-    if (in_lobby(src))
+    if (!in_game(src))
         return -1;
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_sync_reg_t), 0x03)) {
