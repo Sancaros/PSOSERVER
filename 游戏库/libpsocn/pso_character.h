@@ -318,6 +318,26 @@ const enum SectionIDs {
     SID_MAX //颜色ID最大数值
 };
 
+typedef struct section_ids_ {
+    enum SectionIDs id;
+    char cn_name[8];
+    char en_name[12];
+    char color_id[2];
+} section_ids_t;
+
+static section_ids_t section_ids[] = {
+    {SID_Viridia,   "铬绿",   "Viridia",   "0"},
+    {SID_Greennill, "翠绿",   "Greennill", "2"},
+    {SID_Skyly,     "天青",   "Skyly",     "3"},
+    {SID_Bluefull,  "纯蓝",   "Bluefull",  "1"},
+    {SID_Pinkal,    "淡紫",   "Pinkal",    "9"},
+    {SID_Purplenum, "粉红",   "Purplenum", "8"},
+    {SID_Redria,    "真红",   "Redria",    "4"},
+    {SID_Oran,      "橙黄",   "Oran",      "a"},
+    {SID_Yellowboze,"金黄",   "Yellowboze","6"},
+    {SID_Whitill,   "羽白",   "Whitill",   "7"}
+};
+
 // 职业定义
 const enum Character_Classes {
     CLASS_HUMAR, //人类男猎人

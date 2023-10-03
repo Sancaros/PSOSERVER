@@ -473,6 +473,7 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
 #ifdef DEBUG
     DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
 #endif // DEBUG
+    DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
 
     /* Grab a handle to that file. */
     hnd = pso_gsl_file_lookup(a, filename);

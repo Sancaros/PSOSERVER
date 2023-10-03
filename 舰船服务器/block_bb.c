@@ -60,6 +60,8 @@ extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 extern time_t srv_time;
 
+/* Player levelup data */
+extern bb_level_table_t bb_char_stats;
 extern psocn_bb_mode_char_t default_mode_char;
 /* 已改为数据库载入 */
 extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
@@ -404,19 +406,23 @@ static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
 
     if (l) {
         switch (item_id) {
+        case ITEM_ID_PL_INFO:
+            update_bb_mat_use(c);
+            send_bb_player_info_list(c);
+            break;
+
         case ITEM_ID_PL_SECTION:
             send_bb_player_section_list(c);
-            return 0;
+            break;
 
         case ITEM_ID_LAST:
+            send_bb_player_menu_list(c);
             break;
 
         case ITEM_ID_DISCONNECT:
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7菜单关闭."));
 
         default:
-            //DBG_LOG("返回上一级");
-            send_bb_player_menu_list(c);
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4菜单没写完!请联系程序员开工!"));
         }
 
@@ -430,25 +436,67 @@ static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
 static int bb_process_player_section_menu(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
 
-    if(!l)
-        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
-
     psocn_bb_char_t* character = &c->bb_pl->character;
 
     uint8_t new_section = (uint8_t)item_id;
-    if(new_section < 0 || new_section > 9)
-        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!颜色ID超出界限!"));
+    if (new_section < 0 || new_section > 9) {
+        send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4发生错误!颜色ID超出界限!"));
+        return send_bb_player_section_list(c);
+    }
 
-    if(new_section == character->dress_data.section)
-        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7您当前已经是该颜色ID!"));
+    if(new_section == character->dress_data.section) {
+        send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7您当前已经是该颜色ID!"));
+        return send_bb_player_section_list(c);
+    }
 
     character->dress_data.section = new_section;
 
-    send_msg(c, MSG_BOX_TYPE, "%s%d \n请至大厅切换服务器后生效.", __(c, "\tE\tC7您当前颜色ID修改为 !")
-        , character->dress_data.section);
+    send_msg(c, BB_SCROLL_MSG_TYPE, "%s \tE\tC%s%s.", __(c, "\tE\tC7您当前颜色ID修改为")
+        , section_ids[character->dress_data.section].color_id, section_ids[character->dress_data.section].cn_name);
 
     /* All's well in the world if we get here. */
-    return send_bb_player_section_list(c);
+    return send_ship_list(c, ship, ship->cfg->menu_code);
+}
+
+static int bb_process_player_info_list_menu(ship_client_t* c, uint32_t item_id) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l) {
+        switch (item_id) {
+        case ITEM_ID_PL_BASE_INFO:
+            show_bb_player_info(c);
+            break;
+
+        case ITEM_ID_PL_TECH_INFO:
+            show_player_tech_info(c);
+            break;
+
+        case ITEM_ID_PL_INV_INFO:
+            show_player_inv_info(c);
+            break;
+
+        //case ITEM_ID_PL_BANK_INFO:
+        //    break;
+
+        //case ITEM_ID_PL_CBANK_INFO:
+        //    break;
+
+        case ITEM_ID_LAST:
+            send_bb_player_menu_list(c);
+            break;
+
+        case ITEM_ID_DISCONNECT:
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7菜单关闭."));
+
+        default:
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4菜单没写完!请联系程序员开工!"));
+        }
+
+        /* All's well in the world if we get here. */
+        return 0;
+    }
+
+    return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
 }
 
 static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id) {
@@ -795,6 +843,9 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
     case MENU_ID_PL_SECTION:
         return bb_process_player_section_menu(c, item_id);
 
+    case MENU_ID_PL_INFO_LIST:
+        return bb_process_player_info_list_menu(c, item_id);
+
     default:
         if (script_execute(ScriptActionUnknownMenu, c, SCRIPT_ARG_PTR, c,
             SCRIPT_ARG_UINT32, menu_id, SCRIPT_ARG_UINT32,
@@ -1034,6 +1085,8 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 
     /* 测试用 */
     c->ch_class = c->pl->bb.character.dress_data.ch_class;
+    /* 更新玩家用药情况 */
+    update_bb_mat_use(c);
 
 #ifdef DEBUG
 

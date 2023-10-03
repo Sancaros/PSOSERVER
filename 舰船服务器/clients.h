@@ -110,6 +110,13 @@ typedef struct client_game_data {
     item_t shop_items[0x14];
     size_t shop_items_price[0x14];
 
+
+    uint32_t atpmats_used; //改为多种结构
+    uint32_t mstmats_used; //改为多种结构
+    uint32_t evpmats_used; //改为多种结构
+    uint32_t dfpmats_used; //改为多种结构
+    uint32_t lckmats_used; //改为多种结构
+
     uint32_t expboost; //用于开启房间经验倍率的开关 l->exp_mult
     uint32_t death;
 
@@ -494,9 +501,10 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits);
 
 psocn_bank_t* get_client_bank_bb(ship_client_t* src);
 inventory_t* get_client_inv_bb(ship_client_t* src);
+inventory_t* get_client_inv_nobb(ship_client_t* src);
+inventory_t* get_player_inv(ship_client_t* src);
 trade_inv_t* get_client_trade_inv_bb(ship_client_t* src);
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src);
-inventory_t* get_client_inv_nobb(ship_client_t* src);
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src);
 ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id);
 lobby_t* get_client_lobby(ship_client_t* src);
@@ -506,6 +514,66 @@ uint8_t get_player_msg_color_set(ship_client_t* src);
 uint8_t get_player_section(ship_client_t* src);
 uint8_t get_lobby_leader_section(lobby_t* l);
 uint8_t get_bb_max_tech_level(ship_client_t* src, int tech);
+void update_bb_mat_use(ship_client_t* src);
+void show_bb_player_info(ship_client_t* src);
+void show_player_tech_info(ship_client_t* src);
+void show_player_inv_info(ship_client_t* src);
+/* 检测玩家是否在有效的游戏房间中 */
+inline bool in_game(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l) {
+        ERR_LOG("%s 不在有效大厅中!", get_player_describe(src));
+        return false;
+    }
+
+    if (src->version != CLIENT_VERSION_EP3) {
+
+        if (l->type != LOBBY_TYPE_GAME) {
+            ERR_LOG("%s 不在游戏房间中!", get_player_describe(src));
+            ERR_LOG("当前房间信息:");
+            ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+            return false;
+        }
+
+    }
+    else {
+
+        if (l->type != LOBBY_TYPE_EP3_GAME) {
+            ERR_LOG("%s 不在EP3游戏房间中!", get_player_describe(src));
+            ERR_LOG("当前房间信息:");
+            ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/* 检测玩家是否在有效的大厅中 */
+inline bool in_lobby(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l) {
+        ERR_LOG("%s 不在有效大厅中!", get_player_describe(src));
+        return false;
+    }
+
+    if (l->type != LOBBY_TYPE_LOBBY) {
+        ERR_LOG("%s 不在大厅中!", get_player_describe(src));
+        ERR_LOG("当前房间信息:");
+        ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+        return false;
+    }
+
+    return true;
+}
+//
+///* 检测玩家是否在有效的游戏房间中 */
+//inline bool in_game(ship_client_t* src);
+//
+///* 检测玩家是否在有效的大厅中 */
+//inline bool in_lobby(ship_client_t* src);
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type);
 

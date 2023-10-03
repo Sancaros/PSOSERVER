@@ -13455,6 +13455,10 @@ int send_bb_player_section_list(ship_client_t* dest) {
     bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
     uint16_t len = 0x100;
     size_t i = 0;
+    char tmp_shipname[0x20] = { 0 };
+
+    if (in_game(dest))
+        return send_msg(dest, MSG1_TYPE, "%s", __(dest, "\tE\tC4无法在房间中使用!"));
 
     /* 初始化数据包 */
     memset(menu, 0, len);
@@ -13466,7 +13470,44 @@ int send_bb_player_section_list(ship_client_t* dest) {
         menu->entries[i].menu_id = LE32(pso_player_section_menu[i]->menu_id);
         menu->entries[i].item_id = LE32(pso_player_section_menu[i]->item_id);
         menu->entries[i].flags = LE16(pso_player_section_menu[i]->flag);
-        istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_section_menu[i]->name, 0x20);
+        if (pso_player_section_menu[i]->item_id == get_player_section(dest)) {
+            sprintf_s(tmp_shipname, sizeof(tmp_shipname), "当前:%s", pso_player_section_menu[i]->name);
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_shipname, 0x20);
+        }
+        else {
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_section_menu[i]->name, 0x20);
+        }
+        len += 0x2C;
+    }
+
+    /* 填充数据头 */
+    menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+    menu->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
+    menu->hdr.flags = i - 1;
+
+    /* 加密并发送 */
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)menu);
+}
+
+/* 玩家菜单修改颜色ID函数 */
+int send_bb_player_info_list(ship_client_t* dest) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
+    uint16_t len = 0x100;
+    size_t i = 0;
+    char tmp_shipname[0x20] = { 0 };
+
+    /* 初始化数据包 */
+    memset(menu, 0, len);
+
+    len = 0;
+
+    /* 填充菜单实例 */
+    for (i = 0; i < _countof(pso_player_info_menu); ++i) {
+        menu->entries[i].menu_id = LE32(pso_player_info_menu[i]->menu_id);
+        menu->entries[i].item_id = LE32(pso_player_info_menu[i]->item_id);
+        menu->entries[i].flags = LE16(pso_player_info_menu[i]->flag);
+        istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_info_menu[i]->name, 0x20);
         len += 0x2C;
     }
 

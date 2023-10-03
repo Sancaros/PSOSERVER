@@ -49,17 +49,11 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
         b = ship->blocks[j];
 
         if(b && b->run) {
-            LOCK_RWLOCK(&b->lock);
-
             /* Look for the requested user */
             TAILQ_FOREACH(i, b->clients, qentry) {
-                LOCK_CMUTEX(i);
-
                 /* Disconnect them if we find them */
                 if(i->guildcard == gc) {
                     if(c->privilege <= i->privilege) {
-                        UNLOCK_CMUTEX(i);
-                        UNLOCK_RWLOCK(&b->lock);
                         return send_txt(c, "%s", __(c, "\tE\tC7你很棒棒哦."));
                     }
 
@@ -74,15 +68,9 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
                     }
 
                     i->flags |= CLIENT_FLAG_DISCONNECTED;
-                    UNLOCK_CMUTEX(i);
-                    UNLOCK_RWLOCK(&b->lock);
                     return 0;
                 }
-
-                UNLOCK_CMUTEX(i);
             }
-
-            UNLOCK_RWLOCK(&b->lock);
         }
     }
 
@@ -190,9 +178,9 @@ int refresh_quests(ship_client_t *c, msgfunc f) {
         return -1;
 
     if(!load_quests(ship, ship->cfg, 0))
-        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7成功刷新任务文件."));
+        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7成功刷新任务文件."));
     else
-        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7未设置任务文件2."));
+        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4未设置任务文件2."));
 }
 
 int refresh_gms(ship_client_t *c, msgfunc f) {
@@ -205,20 +193,20 @@ int refresh_gms(ship_client_t *c, msgfunc f) {
         /* Try to read the GM file. This will clean out the old list as
          well, if needed. */
         if(gm_list_read(ship->cfg->gm_file, ship)) {
-            return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7无法读取 GM 列表."));
+            return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4无法读取 GM 列表."));
         }
 
-        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7成功刷新 GM 列表."));
+        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7成功刷新 GM 列表."));
     }
     else {
-        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7未设置 GM 列表."));
+        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7未设置 GM 列表."));
     }
 }
 
 int refresh_limits(ship_client_t *c, msgfunc f) {
     psocn_limits_t *l, *def = NULL;
     int i;
-    struct limits_queue lq;
+    struct limits_queue lq = { 0 };
     psocn_ship_t *s = ship->cfg;
     limits_entry_t *ent;
 
@@ -312,9 +300,9 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix) {
             TAILQ_FOREACH(i2, b->clients, qentry) {
                 if(i2->pl) {
                     if(prefix) {
-                        send_txt(i2, "%s\n%s", __(i2, "\tE\tC7全服消息:"), message2);
+                        send_msg(i2, BB_SCROLL_MSG_TYPE, "%s%s", __(i2, "\tE\tC7全服消息:"), message2);
                     }else
-                        send_txt(i2, "%s", message2);
+                        send_msg(i2, BB_SCROLL_MSG_TYPE, "%s", message2);
                 }
             }
         }
@@ -403,46 +391,21 @@ int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
         b = ship->blocks[i];
 
         if(b && b->run) {
-            pthread_rwlock_rdlock(&b->lock);
-
             /* Send the message to each player. */
             TAILQ_FOREACH(i2, b->clients, qentry) {
-                pthread_mutex_lock(&i2->mutex);
-
                 if(i2->pl) {
                     if(i2 != c) {
-                        send_msg(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
+                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
                             __(i2, "\tE\tC7舰船将于"), when,
                             __(i2, "分钟后"), restart ? "重启" : "关闭");
-                       /* if(restart) {
-                            send_txt(i2, "%s %" PRIu32 " %s",
-                                     __(i2, "\tE\tC7舰船将于"), when,
-                                     __(i2, "分钟后重启."));
-                        }
-                        else {
-                            send_txt(i2, "%s %" PRIu32 " %s%s.",
-                                     __(i2, "\tE\tC7舰船将于"), when,
-                                     __(i2, "分钟后", restart ? "重启" : "关闭"));
-                        }*/
                     }
                     else {
-                        f(i2, MSG1_TYPE, "%s %" PRIu32 " %s%s.",
-                            __(i2, "\tE\tC7舰船将于"), when, __(i2, "分钟后"), restart ? "重启" : "关闭");
-                        //if(restart) {
-                        //    f(i2, "%s %" PRIu32 " %s%s.",
-                        //        __(i2, "\tE\tC7舰船将于"), when, __(i2, "分钟后"), restart ? "重启" : "关闭");
-                        //}
-                        //else {
-                        //    f(i2, "%s %" PRIu32 " %s",
-                        //      __(i2, "\tE\tC7舰船将于"), when, __(i2, "分钟后关闭."));
-                        //}
+                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
+                            __(i2, "\tE\tC7舰船将于"), when,
+                            __(i2, "分钟后"), restart ? "重启" : "关闭");
                     }
                 }
-
-                pthread_mutex_unlock(&i2->mutex);
             }
-
-            pthread_rwlock_unlock(&b->lock);
         }
     }
 

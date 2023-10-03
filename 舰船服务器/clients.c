@@ -1551,9 +1551,24 @@ void print_quest_info(ship_client_t* src) {
 
 inventory_t* get_client_inv_bb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u BB背包数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
+        DBG_LOG("GC %u BB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
     return src->mode == 0 ? &src->bb_pl->character.inv : &src->mode_pl->bb.inv;
+}
+
+inventory_t* get_client_inv_nobb(ship_client_t* src) {
+    if (src->mode) {
+        DBG_LOG("GC %u NOBB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
+    }
+
+    return src->mode == 0 ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
+}
+
+inventory_t* get_player_inv(ship_client_t* src) {
+    if (src->version == CLIENT_VERSION_BB)
+        return get_client_inv_bb(src);
+    else
+        return get_client_inv_nobb(src);
 }
 
 trade_inv_t* get_client_trade_inv_bb(ship_client_t* src) {
@@ -1569,14 +1584,6 @@ psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
     }
 
     return src->mode == 0 ? &src->bb_pl->character : &src->mode_pl->bb;
-}
-
-inventory_t* get_client_inv_nobb(ship_client_t* src) {
-    if (src->mode) {
-        DBG_LOG("GC %u NOBB背包数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
-    }
-
-    return src->mode == 0 ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
 }
 
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
@@ -1713,6 +1720,162 @@ uint8_t get_bb_max_tech_level(ship_client_t* src, int tech) {
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     return max_tech_level[tech].max_lvl[character->dress_data.ch_class];
+}
+
+void update_bb_mat_use(ship_client_t* src) {
+    uint16_t atp_base = 0, mst_base = 0, evp_base = 0, hp_base = 0, dfp_base = 0, ata_base = 0;
+    psocn_bb_char_t* character_bb = get_client_char_bb(src);
+    uint8_t ch_class = character_bb->dress_data.ch_class;
+    psocn_pl_stats_t* startingData = &bb_char_stats.start_stats[ch_class];
+
+    atp_base = startingData->atp;
+    mst_base = startingData->mst;
+    evp_base = startingData->evp;
+    hp_base = startingData->hp;
+    dfp_base = startingData->dfp;
+    ata_base = startingData->ata;
+
+    for (size_t x = 0; x < character_bb->disp.level; x++) {
+        atp_base += bb_char_stats.levels[ch_class][x].atp;
+        mst_base += bb_char_stats.levels[ch_class][x].mst;
+        evp_base += bb_char_stats.levels[ch_class][x].evp;
+        hp_base += bb_char_stats.levels[ch_class][x].hp;
+        dfp_base += bb_char_stats.levels[ch_class][x].dfp;
+        ata_base += bb_char_stats.levels[ch_class][x].ata;
+    }
+
+    src->game_data->atpmats_used = (character_bb->disp.stats.atp - atp_base) / 2;
+    src->game_data->mstmats_used = (character_bb->disp.stats.mst - mst_base) / 2;
+    src->game_data->evpmats_used = (character_bb->disp.stats.evp - evp_base) / 2;
+    src->game_data->dfpmats_used = (character_bb->disp.stats.dfp - dfp_base) / 2;
+    src->game_data->lckmats_used = (character_bb->disp.stats.lck - 10) / 2;
+}
+
+void show_bb_player_info(ship_client_t* src) {
+    psocn_bb_char_t* character = get_client_char_bb(src);
+    uint8_t ch_class = character->dress_data.ch_class;
+
+    send_msg(src, MSG_BOX_TYPE,
+        "-----------------------玩家信息-----------------------\n"
+        "玩家名称: %s\n"
+        "当前职业: %s\n"
+        "当前等级: Lv%d 经验:%d 钱包:%d美赛塔\n"
+        "背包数量: %d 语言: %u\n"
+        "嗑药情况: HP药:%u TP药:%u 攻药:%d 智药:%d 闪药:%d 防药:%d 运药:%d\n"
+        , get_player_describe(src)
+        , pso_class[ch_class].cn_name
+        , character->disp.level + 1
+        , character->disp.exp
+        , character->disp.meseta
+        , character->inv.item_count
+        , character->inv.language
+        , character->inv.hpmats_used
+        , character->inv.tpmats_used
+        , src->game_data->atpmats_used
+        , src->game_data->mstmats_used
+        , src->game_data->evpmats_used
+        , src->game_data->dfpmats_used
+        , src->game_data->lckmats_used
+    );
+}
+
+void show_player_tech_info(ship_client_t* src) {
+    psocn_bb_char_t* character = get_client_char_bb(src);
+    uint8_t ch_class = character->dress_data.ch_class;
+    uint8_t tech_level = 0;
+    char tmp_msg[2048] = { 0 };
+    char data_str[100] = { 0 };
+
+    if (char_class_is_android(src->equip_flags)) {
+        send_msg(src, MSG_BOX_TYPE,
+            "-----------------------玩家法术-----------------------\n"
+            "玩家名称: %s\n"
+            "当前职业: %s\n"
+            "\tE\tCG你是个机器人啊~请自重~\n"
+            , get_player_describe(src)
+            , pso_class[ch_class].cn_name
+        );
+    }
+    else {
+        sprintf_s(tmp_msg, sizeof(tmp_msg),
+            "-----------------------玩家法术-----------------------\n"
+            "玩家名称: %s\n"
+            "当前职业: %s\n"
+            , get_player_describe(src)
+            , pso_class[ch_class].cn_name
+        );
+
+        for (int i = 0; i < MAX_PLAYER_TECHNIQUES; ++i) {
+            if (max_tech_level[i].max_lvl[ch_class] == 0 ) {
+                // 将要写入的数据格式化为字符串
+                sprintf_s(data_str, sizeof(data_str),
+                    "%d.%s \tE\tC4无法学习\tE\tC7 |"
+                    , i
+                    , get_technique_comment(i)
+                );
+            }
+            else {
+                if (character->tech.all[i] == 0xFF) {
+                    sprintf_s(data_str, sizeof(data_str),
+                        "%d.%s \tE\tCG未学习\tE\tC7 |"
+                        , i
+                        , get_technique_comment(i)
+                    );
+                }
+                else {
+                    tech_level = character->tech.all[i] + 1;
+                    // 将要写入的数据格式化为字符串
+                    sprintf_s(data_str, sizeof(data_str),
+                        "%d.%s Lv%d |"
+                        , i
+                        , get_technique_comment(i)
+                        , tech_level
+                    );
+                }
+            }
+
+            // 每追加5个数据后插入换行符
+            if ((i + 1) % 4 == 0) {
+                strcat_s(data_str, sizeof(data_str), "\n");
+            }
+
+            // 将格式化后的数据追加到 tmp_msg 字符数组中
+            strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+        }
+
+        send_msg(src, MSG_BOX_TYPE, "%s", tmp_msg);
+    }
+}
+
+void show_player_inv_info(ship_client_t* src) {
+    inventory_t* inv = get_player_inv(src);
+    char tmp_msg[2048] = { 0 };
+    char data_str[100] = { 0 };
+
+    sprintf_s(tmp_msg, sizeof(tmp_msg),
+        "-----------------------玩家背包-----------------------\n"
+        "玩家名称: %s\n"
+        "背包数量: %d\n"
+        , get_player_describe(src)
+        , inv->item_count
+    );
+
+    for (int i = 0; i < inv->item_count; ++i) {
+        // 将要写入的数据格式化为字符串
+        sprintf_s(data_str, sizeof(data_str), "%d.%s |", i
+            , item_get_name(&inv->iitems[i].data, src->version, src->language_code)
+        );
+
+        // 每追加5个数据后插入换行符
+        if ((i + 1) % 5 == 0) {
+            strcat_s(data_str, sizeof(data_str), "\n");
+        }
+
+        // 将格式化后的数据追加到 tmp_msg 字符数组中
+        strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+    }
+
+    send_msg(src, MSG_BOX_TYPE, "%s", tmp_msg);
 }
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {

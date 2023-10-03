@@ -343,9 +343,13 @@ int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2)
 
 int send_bb_error_menu_list(ship_client_t* dest);
 
+/* 玩家菜单 */
 int send_bb_player_menu_list(ship_client_t* dest);
 
 /* 玩家菜单修改颜色ID函数 */
 int send_bb_player_section_list(ship_client_t* dest);
+
+/* 玩家信息菜单 */
+int send_bb_player_info_list(ship_client_t* dest);
 
 #endif /* !SHIP_PACKETS_H */

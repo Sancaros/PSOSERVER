@@ -122,65 +122,6 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
         return NULL;
     }
 }
-//
-///* Possible values for the type parameter. */
-//#define LOBBY_TYPE_LOBBY              0x00000001
-//#define LOBBY_TYPE_GAME               0x00000002
-//#define LOBBY_TYPE_EP3_GAME           0x00000004
-//#define LOBBY_TYPE_PERSISTENT         0x00000008
-//// Flags used only for games
-//#define LOBBY_TYPE_CHEATS_ENABLED     0x00000100
-
-/* 检测玩家是否在有效的游戏房间中 */
-bool in_game(ship_client_t* src) {
-    lobby_t* l = src->cur_lobby;
-
-    if (!l) {
-        ERR_LOG("%s 不在有效大厅中!", get_player_describe(src));
-        return false;
-    }
-
-    if (src->version != CLIENT_VERSION_EP3) {
-
-        if (l->type != LOBBY_TYPE_GAME) {
-            ERR_LOG("%s 不在游戏房间中!", get_player_describe(src));
-            ERR_LOG("当前房间信息:");
-            ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
-            return false;
-        }
-
-    }
-    else {
-
-        if (l->type != LOBBY_TYPE_EP3_GAME) {
-            ERR_LOG("%s 不在EP3游戏房间中!", get_player_describe(src));
-            ERR_LOG("当前房间信息:");
-            ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
-            return false;
-        }
-    }
-
-    return true;
-}
-
-/* 检测玩家是否在有效的大厅中 */
-bool in_lobby(ship_client_t* src) {
-    lobby_t* l = src->cur_lobby;
-
-    if (!l) {
-        ERR_LOG("%s 不在有效大厅中!", get_player_describe(src));
-        return false;
-    }
-
-    if (l->type != LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 不在大厅中!", get_player_describe(src));
-        ERR_LOG("当前房间信息:");
-        ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
-        return false;
-    }
-
-    return true;
-}
 
 bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
     uint16_t pkt_type = 0;

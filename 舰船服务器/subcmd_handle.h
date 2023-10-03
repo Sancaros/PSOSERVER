@@ -34,12 +34,6 @@ typedef struct subcmd_handle_func {
 // 使用函数指针直接调用相应的处理函数
 subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version);
 
-/* 检测玩家是否在有效的游戏房间中 */
-bool in_game(ship_client_t* src);
-
-/* 检测玩家是否在有效的大厅中 */
-bool in_lobby(ship_client_t* src);
-
 /* 检测数据包是否有效 */
 bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size);
 
