@@ -644,6 +644,7 @@ char* get_item_describe(const item_t* item, int version) {
 				, item->datab[5]
 			);
 		}
+		break;
 
 	case ITEM_TYPE_MESETA:
 		sprintf(item_des, "%s x%d"

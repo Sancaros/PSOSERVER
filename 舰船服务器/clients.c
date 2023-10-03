@@ -1697,6 +1697,23 @@ uint8_t get_player_section(ship_client_t* src) {
     return section_id;
 }
 
+char* get_player_section_describe(ship_client_t* src, uint8_t section, bool overwrite) {
+    uint8_t section_id = get_player_section(src);
+    if (overwrite)
+        section_id = section;
+
+    if (section_id > 9) {
+        ERR_LOG("%s 的颜色ID %d 超出界限, 改为 0", get_player_describe(src), section_id);
+        /* 如果超出界限 则恢复默认值 0 */
+        section_id = 0;
+    }
+
+    if (src->language_code == 0)
+        return section_ids[get_player_section(src)].cn_name;
+    else
+        return section_ids[get_player_section(src)].en_name;
+}
+
 uint8_t get_lobby_leader_section(lobby_t* l) {
     if (!l)
         return 0;

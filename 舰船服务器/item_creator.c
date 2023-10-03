@@ -121,7 +121,7 @@ uint8_t get_rand_from_weighted_tables_2d_vertical(sfmt_t* rng,
 		return 0;
 	}
 
-	return get_rand_from_weighted_tables(rng, &table[0], offset, X, Y);
+	return get_rand_from_weighted_tables(rng, table, offset, X, Y);
 }
 
 void generate_common_weapon_bonuses(sfmt_t* rng,
@@ -379,7 +379,7 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 	clear_inv_item(item);
 
 	uint8_t tool_class = get_rand_from_weighted_tables_2d_vertical(rng,
-		&ent->tool_class_prob_table, area_norm, 28, 10);
+		ent->tool_class_prob_table, area_norm, 28, 10);
 
 	if (tool_class == 0x1A) {
 		/* 如果到底了 则让它掉落PD 这是PD的PMT索引ID */
@@ -863,7 +863,7 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 			item_class = ent->enemy_item_classes[enemy_type];
 			break;
 		default:
-			ERR_LOG("无效的物品类行列式");
+			ERR_LOG("无效的物品类型列式");
 		}
 
 #ifdef DEBUG

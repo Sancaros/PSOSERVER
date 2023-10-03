@@ -936,7 +936,7 @@ static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_de_rolLe_boss_act_t), 0x02))
         return -2;
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X.", __(src, "\tE\tC6DR BOSS"), action, stage);
+    //send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X.", __(src, "\tE\tC6DR BOSS"), action, stage);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -953,8 +953,8 @@ static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_de_rolLe_boss_sact_t), 0x03))
         return -2;
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊:0x%08X.", __(src, "\tE\tC6DR BOSS2"),
-        action, stage, unused);
+    //send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊:0x%08X.", __(src, "\tE\tC6DR BOSS2"),
+    //    action, stage, unused);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -970,8 +970,8 @@ static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_VolOptBossActions_6x15_t), 0x03))
         return -2;
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Vol Opt BOSS1"),
-        unknown_a2, unknown_a3, unknown_a4, unknown_a5);
+    //send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Vol Opt BOSS1"),
+    //    unknown_a2, unknown_a3, unknown_a4, unknown_a5);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -986,8 +986,8 @@ static int sub60_16_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_VolOptBossActions_6x16_t), 0x03))
         return -2;
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Vol Opt BOSS2"),
-        pkt->unknown_a2, pkt->unknown_a3, pkt->unknown_a4, pkt->unknown_a5);
+    //send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Vol Opt BOSS2"),
+    //    pkt->unknown_a2, pkt->unknown_a3, pkt->unknown_a4, pkt->unknown_a5);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -1015,8 +1015,8 @@ static int sub60_18_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_dragon_special_act_t), 0x03))
         return -2;
 
-    send_txt(src, "%s\n参数1:%f\n参数2:%f\n特殊1:0x%08X\n特殊2:0x%08X.", __(src, "\tE\tC6Dragon BOSS"),
-        pkt->unknown_a1, pkt->unknown_a2, pkt->unknown_a1, pkt->unknown_a2);
+    //send_txt(src, "%s\n参数1:%f\n参数2:%f\n特殊1:0x%08X\n特殊2:0x%08X.", __(src, "\tE\tC6Dragon BOSS"),
+    //    pkt->unknown_a1, pkt->unknown_a2, pkt->unknown_a1, pkt->unknown_a2);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -1031,8 +1031,8 @@ static int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_DarkFalzActions_6x19_t), 0x04))
         return -2;
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Dark Falz BOSS"),
-        pkt->unknown_a2, pkt->unknown_a3, pkt->unknown_a4, pkt->unused);
+    //send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Dark Falz BOSS"),
+    //    pkt->unknown_a2, pkt->unknown_a3, pkt->unknown_a4, pkt->unused);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5653,7 +5653,7 @@ static int sub60_9F_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    send_txt(src, "%s\n动作:0x%04X\n位置:x %f z %f.", __(src, "\tE\tC6GG BOSS"), pkt->unknown_a1, pkt->x, pkt->z);
+    //send_txt(src, "%s\n动作:0x%04X\n位置:x %f z %f.", __(src, "\tE\tC6GG BOSS"), pkt->unknown_a1, pkt->x, pkt->z);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5669,20 +5669,20 @@ static int sub60_A0_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    send_txt(src, "%s\n"
-        "位置:x:%f y:%f z:%f\n"
-        "动作:%d\n"
-        "阶段:0x%02X 0x%02X.",
-        "未知:%d\n%d\n%d\n%d.",
-        __(src, "\tE\tC6GG BOSS SP"),
-        pkt->x, pkt->y, pkt->z,
-        pkt->unknown_a1,
-        pkt->unknown_a2, pkt->unknown_a3,
-        pkt->unknown_a4[0],
-        pkt->unknown_a4[1],
-        pkt->unknown_a4[2],
-        pkt->unknown_a4[3]
-    );
+    //send_txt(src, "%s\n"
+    //    "位置:x:%f y:%f z:%f\n"
+    //    "动作:%d\n"
+    //    "阶段:0x%02X 0x%02X.",
+    //    "未知:%d\n%d\n%d\n%d.",
+    //    __(src, "\tE\tC6GG BOSS SP"),
+    //    pkt->x, pkt->y, pkt->z,
+    //    pkt->unknown_a1,
+    //    pkt->unknown_a2, pkt->unknown_a3,
+    //    pkt->unknown_a4[0],
+    //    pkt->unknown_a4[1],
+    //    pkt->unknown_a4[2],
+    //    pkt->unknown_a4[3]
+    //);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -6818,7 +6818,7 @@ static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X.", __(src, "\tE\tC6SM BOSS"), pkt->unknown_a1, pkt->unknown_a2);
+    //send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X.", __(src, "\tE\tC6SM BOSS"), pkt->unknown_a1, pkt->unknown_a2);
 
     //[2023年07月28日 21:42:58:852] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
     //[2023年07月28日 21:42:58:871] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC

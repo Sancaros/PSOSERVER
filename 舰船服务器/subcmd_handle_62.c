@@ -1238,7 +1238,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
             print_item_data(&iitem.data, l->version);
 #endif // DEBUG
-            ITEM_LOG("%s 请求敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", get_player_describe(p2), mid,
+            ITEM_LOG("%s %s 请求%s掉落 (%d -- max: %d, 任务=%" PRIu32 ")!"
+                , get_player_describe(p2)
+                , get_player_section_describe(p2, section, true), get_enemy_name(l->episode, l->difficulty, enemy->rt_index), mid,
                 l->map_enemies->enemy_count, l->qid);
             ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, p2->cur_area);
             print_item_data(&lt->iitem.data, l->version);
@@ -1256,7 +1258,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
         
-        uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->bp_entry);
+        uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
         if (pt_index == enemy->rt_index) {
             DBG_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期匹配 rt_index %02X enemy->bp_entry 0x%02X expected_rt_index %02X",
                 pt_index, mid, enemy->rt_index, enemy->bp_entry, expected_rt_index);
@@ -1285,7 +1287,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         print_item_data(&iitem.data, l->version);
 #endif // DEBUG
 
-        ITEM_LOG("%s 请求敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", get_player_describe(src), mid,
+        ITEM_LOG("%s %s 请求%s掉落 (%d -- max: %d, 任务=%" PRIu32 ")!"
+            , get_player_describe(src)
+            , get_player_section_describe(src, section, false), get_enemy_name(l->episode, l->difficulty, enemy->rt_index), mid,
             l->map_enemies->enemy_count, l->qid);
         ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
         print_item_data(&lt->iitem.data, l->version);
@@ -1402,6 +1406,11 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
             print_item_data(&iitem.data, l->version);
 #endif // DEBUG
+            ITEM_LOG("%s %s 请求ignore_def %d 区域 %d 箱子掉落 (任务=%" PRIu32 ")!"
+                , get_player_describe(p2)
+                , get_player_section_describe(p2, section, false), pkt->ignore_def, pkt->area, l->qid);
+            ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, p2->cur_area);
+            print_item_data(&iitem.data, l->version);
 
             rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
@@ -1438,6 +1447,11 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
         print_item_data(&iitem.data, l->version);
 #endif // DEBUG
+        ITEM_LOG("%s %s 请求ignore_def %d 区域 %d 箱子掉落 (任务=%" PRIu32 ")!"
+            , get_player_describe(src)
+            , get_player_section_describe(src, section, false), pkt->ignore_def, pkt->area, l->qid);
+        ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+        print_item_data(&iitem.data, l->version);
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);

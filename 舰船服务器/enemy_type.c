@@ -272,8 +272,8 @@ const char* name_for_enum(EnemyType type) {
     case ENEMY_ZU_ALT:
         return "ZU_ALT";
     default:
-        ERR_LOG("无效 enemy type");
-        return "无效 enemy type";
+        ERR_LOG("无效敌人 %d", type);
+        return "无效敌人";
     }
 }
 
@@ -416,6 +416,12 @@ EnemyType name_for_enemy_type(const char* name) {
 
     ERR_LOG("Error: Unknown enemy type %s", name);
     return 0;
+}
+
+char* enemy_str(game_enemy_t* enemy) {
+    snprintf(enemy_desc, sizeof(enemy_desc), "[Map::game_enemy %s clients_hit=%02hhX 最后击倒ID=%hu]",
+        name_for_enum(enemy->bp_entry), enemy->clients_hit, enemy->last_client);
+    return enemy_desc;
 }
 
 uint8_t rare_table_index_for_enemy_type(EnemyType enemy_type) {
@@ -1104,4 +1110,8 @@ uint8_t battle_param_index_for_enemy_type(Episode episode, EnemyType enemy_type)
     }
     ERR_LOG("fallthrough case in battle param lookup");
     return 0xFF;
+}
+
+const char* get_enemy_name(uint8_t episode, uint8_t difficulty, int rt_index) {
+    return episode == 3 ? mobnames_ep4_cn[rt_index] : difficulty == 3 ? mobnames_ult_cn[rt_index] : mobnames_cn[rt_index];
 }

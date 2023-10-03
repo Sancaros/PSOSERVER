@@ -3091,18 +3091,18 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             type, c_cmd_name(type, 0), len, flags, c->guildcard);
         print_ascii_hex(dbgl, pkt, len);
 #endif // DEBUG
-        if (type == GAME_SUBCMD60_TYPE || 
-            type == GAME_SUBCMD6C_TYPE || 
-            type == GAME_SUBCMD62_TYPE ||
-            type == GAME_SUBCMD6D_TYPE
-            ) {
-            subcmd_bb_pkt_t* subpkt = (subcmd_bb_pkt_t*)pkt;
-            DBG_LOG("½¢²Ö:BBÖ¸Áî 0x%04X ¸±Ö¸Áî 0x%02X  %s",
-                subpkt->hdr.pkt_type, subpkt->type, get_player_describe(c));
-        }
-        else
-            DBG_LOG("½¢²Ö:BBÖ¸Áî 0x%04X  %s",
-                type, get_player_describe(c));
+        //if (type == GAME_SUBCMD60_TYPE || 
+        //    type == GAME_SUBCMD6C_TYPE || 
+        //    type == GAME_SUBCMD62_TYPE ||
+        //    type == GAME_SUBCMD6D_TYPE
+        //    ) {
+        //    subcmd_bb_pkt_t* subpkt = (subcmd_bb_pkt_t*)pkt;
+        //    DBG_LOG("½¢²Ö:BBÖ¸Áî 0x%04X ¸±Ö¸Áî 0x%02X  %s",
+        //        subpkt->hdr.pkt_type, subpkt->type, get_player_describe(c));
+        //}
+        //else
+        //    DBG_LOG("½¢²Ö:BBÖ¸Áî 0x%04X  %s",
+        //        type, get_player_describe(c));
 
         if (c->game_data->err.has_error) {
             send_msg(c, BB_SCROLL_MSG_TYPE,
