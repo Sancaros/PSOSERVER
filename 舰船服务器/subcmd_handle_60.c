@@ -2278,7 +2278,7 @@ static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_GAME) {
         if (!l->challenge && !l->battle && !src->mode) {
             subcmd_send_bb_set_exp_rate(src, ship->cfg->globla_exp_mult);
-            src->need_save_data = 1;
+            src->need_save_data = true;
         }
         lobby_print_info2(src);
     }

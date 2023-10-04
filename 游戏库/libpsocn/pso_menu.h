@@ -199,12 +199,14 @@ static pso_menu_t pso_error_menu[][4] = {
 
 /* 玩家菜单 Item IDs */
 #define ITEM_ID_PL_INFO         0x00000001
-
+//////////////////////////////////////////////////
 #define ITEM_ID_PL_BASE_INFO    0x00000001
 #define ITEM_ID_PL_TECH_INFO    0x00000002
 #define ITEM_ID_PL_INV_INFO     0x00000003
 #define ITEM_ID_PL_BANK_INFO    0x00000004
 #define ITEM_ID_PL_CBANK_INFO   0x00000005
+#define ITEM_ID_PL_BACKUP_INFO  0x00000006
+//////////////////////////////////////////////////
 
 #define ITEM_ID_PL_SECTION      0x00000002
 #define ITEM_ID_PL_SHOP         0x00000003
@@ -229,6 +231,7 @@ static pso_menu_t pso_player_info_menu[][4] = {
     {"背包信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_INV_INFO,   0x0004},
     {"银行信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BANK_INFO,  0x0004},
     {"公共银行",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_CBANK_INFO, 0x0004},
+    {"数据备份",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BACKUP_INFO,0x0004},
     {"上级菜单",     MENU_ID_PL_INFO_LIST,   ITEM_ID_LAST,          0x0000},
     {"关闭菜单",     MENU_ID_PL_INFO_LIST,   ITEM_ID_DISCONNECT,    0x0004}
 };

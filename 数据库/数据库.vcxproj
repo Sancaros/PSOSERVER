@@ -43,6 +43,7 @@
     <ClCompile Include="shipgate_query.c" />
     <ClCompile Include="common_query.c" />
     <ClCompile Include="character_techniques_query.c" />
+    <ClCompile Include="character_full_data_query.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

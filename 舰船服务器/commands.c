@@ -325,7 +325,8 @@ static int handle_refresh(ship_client_t *c, const char *params) {
 /* 用法: /save slot */
 static int handle_save(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
-    uint32_t slot;
+    uint32_t slot = 0;
+    uint16_t data_len = 0;
 
     /* Don't allow this if they have the protection flag on. */
     if(c->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -337,32 +338,59 @@ static int handle_save(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
     }
 
-    /* Not valid for Blue Burst clients */
-    if(c->version == CLIENT_VERSION_BB) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
-    }
+    ///* Not valid for Blue Burst clients */
+    //if(c->version == CLIENT_VERSION_BB) {
+    //    return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
+    //}
 
     /* Figure out the slot requested */
     errno = 0;
-    slot = (uint32_t)strtoul(params, NULL, 10);
+    if (!params || params[0] == '\0')
+        slot = c->sec_data.slot;
+    else
+        slot = (uint32_t)strtoul(params, NULL, 10);
 
     if(errno || slot > 4 || slot < 1) {
         /* Send a message saying invalid slot */
         return send_txt(c, "%s", __(c, "\tE\tC7无效角色插槽."));
     }
 
-    /* Adjust so we don't go into the Blue Burst character data */
-    slot += 4;
+    if (c->version == CLIENT_VERSION_BB) {
+        /* Is it a Blue Burst character or not? */
+        if (data_len > 1056) {
+            data_len = PSOCN_STLENGTH_BB_DB_CHAR;
 
-    /* Send the character data to the shipgate */
-    if(shipgate_send_cdata(&ship->sg, c->guildcard, slot, c->pl, 1052,
-                           c->cur_block->b)) {
-        /* Send a message saying we couldn't save */
-        return send_txt(c, "%s", __(c, "\tE\tC7无法保存角色数据."));
+            /* Send the character data to the shipgate */
+            if (shipgate_send_cdata(&ship->sg, c->guildcard, slot, c->bb_pl, data_len,
+                c->cur_block->b)) {
+                /* Send a message saying we couldn't save */
+                return send_txt(c, "%s", __(c, "\tE\tC7无法保存角色数据."));
+            }
+
+            /* 将玩家选项数据存入数据库 */
+            if (shipgate_send_bb_opts(&ship->sg, c)) {
+                /* Send a message saying we couldn't save */
+                return send_txt(c, "%s", __(c, "\tE\tC7无法保存角色选项数据."));
+            }
+        }
+    }
+    else {
+        /* Adjust so we don't go into the Blue Burst character data */
+        slot += 4;
+
+        data_len = 1052;
+
+        /* Send the character data to the shipgate */
+        if (shipgate_send_cdata(&ship->sg, c->guildcard, slot, c->pl, data_len,
+            c->cur_block->b)) {
+            /* Send a message saying we couldn't save */
+            return send_txt(c, "%s", __(c, "\tE\tC7无法保存角色数据."));
+        }
     }
 
     /* An error or success message will be sent when the shipgate gets its
        response. */
+    send_txt(c, "%s", __(c, "\tE\tC7保存角色完成."));
     return 0;
 }
 
@@ -2932,7 +2960,10 @@ static int handle_restorebk(ship_client_t *c, const char *params) {
     if(c->version == CLIENT_VERSION_BB) {
         //return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
         /* Send the request to the shipgate. */
-        strncpy((char*)c->game_info.name, c->pl->bb.character.dress_data.gc_string, sizeof(c->game_info.name));
+        char tmp_name[32] = { 0 };
+        istrncpy16_raw(ic_utf16_to_utf8, tmp_name, (char*)&c->pl->bb.character.name.char_name, 32, 10);
+
+        strncpy((char*)c->game_info.name, tmp_name, sizeof(c->game_info.name));
         c->game_info.name[31] = 0;
 
     }
@@ -2959,7 +2990,7 @@ static int handle_enablebk(ship_client_t *c, const char *params) {
 
     /* Make sure the user is logged in */
     if(!(c->flags & CLIENT_FLAG_LOGGED_IN)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7你需要登录"
+        return send_txt(c, "%s", __(c, "\tE\tC4你需要登录"
                                     "才可以使用该指令."));
     }
 
@@ -2967,7 +2998,8 @@ static int handle_enablebk(ship_client_t *c, const char *params) {
     shipgate_send_user_opt(&ship->sg, c->guildcard, c->cur_block->b,
                            USER_OPT_ENABLE_BACKUP, 1, &enable);
     c->flags |= CLIENT_FLAG_AUTO_BACKUP;
-    return send_txt(c, "%s", __(c, "\tE\tC7Character backups enabled."));
+    c->game_data->auto_backup = true;
+    return send_txt(c, "%s", __(c, "\tE\tC6角色自动备份已开启."));
 }
 
 /* 用法 /disablebk */
@@ -2984,7 +3016,8 @@ static int handle_disablebk(ship_client_t *c, const char *params) {
     shipgate_send_user_opt(&ship->sg, c->guildcard, c->cur_block->b,
                            USER_OPT_ENABLE_BACKUP, 1, &enable);
     c->flags &= ~(CLIENT_FLAG_AUTO_BACKUP);
-    return send_txt(c, "%s", __(c, "\tE\tC7Character backups disabled."));
+    c->game_data->auto_backup = false;
+    return send_txt(c, "%s", __(c, "\tE\tC4角色自动备份已关闭."));
 }
 
 /* 用法: /exp amount */

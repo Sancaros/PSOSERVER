@@ -120,6 +120,8 @@ typedef struct client_game_data {
     uint32_t expboost; //用于开启房间经验倍率的开关 l->exp_mult
     uint32_t death;
 
+    bool auto_backup;
+
     int gm_debug;
     int gm_drop_rare;
 
@@ -277,7 +279,7 @@ struct ship_client {
     time_t login_time;
     time_t save_time;
 
-    int need_save_data;
+    bool need_save_data;
 
     bb_client_config_pkt sec_data;
     psocn_bb_db_char_t *bb_pl;

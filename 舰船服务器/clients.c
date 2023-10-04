@@ -363,7 +363,7 @@ ship_client_t* client_create_connection(int sock, int version, int type,
 
         rv->isvip = 0;
         rv->mode = 0;
-        rv->need_save_data = 0;
+        rv->need_save_data = false;
         rv->bank_type = false;
 
         /* Create the mutex */
@@ -672,7 +672,8 @@ void client_send_bb_data(ship_client_t* c) {
         /* If the client was on Blue Burst, update their db character */
         if (c->version == CLIENT_VERSION_BB &&
             !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
-            c->need_save_data = 0;
+
+            c->need_save_data = false;
 
             /* 将游戏时间存储入人物数据 */
             c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;

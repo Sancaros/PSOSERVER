@@ -481,6 +481,16 @@ static int bb_process_player_info_list_menu(ship_client_t* c, uint32_t item_id) 
         //case ITEM_ID_PL_CBANK_INFO:
         //    break;
 
+        case ITEM_ID_PL_BACKUP_INFO:
+            if (c->game_data->auto_backup)
+                c->game_data->auto_backup = false;
+            else
+                c->game_data->auto_backup = true;
+
+            update_bb_mat_use(c);
+            send_bb_player_info_list(c);
+            break;
+
         case ITEM_ID_LAST:
             send_bb_player_menu_list(c);
             break;
@@ -1507,6 +1517,8 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
 
     /* See if this person is a GM. */
     c->privilege = is_gm(c->guildcard, ship);
+
+    c->game_data->auto_backup = true;
 
     /* Copy in the security data */
     memcpy(&c->sec_data, &pkt->var.new_clients.cfg, sizeof(bb_client_config_pkt));

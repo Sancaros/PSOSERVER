@@ -13423,6 +13423,7 @@ int send_bb_player_menu_list(ship_client_t* dest) {
     bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
     uint16_t len = 0x100;
     size_t i = 0;
+    char tmp_char[0x20] = { 0 };
 
     /* 初始化数据包 */
     memset(menu, 0, len);
@@ -13453,7 +13454,7 @@ int send_bb_player_section_list(ship_client_t* dest) {
     bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
     uint16_t len = 0x100;
     size_t i = 0;
-    char tmp_shipname[0x20] = { 0 };
+    char tmp_char[0x20] = { 0 };
 
     if (in_game(dest))
         return send_msg(dest, MSG1_TYPE, "%s", __(dest, "\tE\tC4无法在房间中使用!"));
@@ -13469,8 +13470,8 @@ int send_bb_player_section_list(ship_client_t* dest) {
         menu->entries[i].item_id = LE32(pso_player_section_menu[i]->item_id);
         menu->entries[i].flags = LE16(pso_player_section_menu[i]->flag);
         if (pso_player_section_menu[i]->item_id == get_player_section(dest)) {
-            sprintf_s(tmp_shipname, sizeof(tmp_shipname), "当前:%s", pso_player_section_menu[i]->name);
-            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_shipname, 0x20);
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前颜色]", pso_player_section_menu[i]->name);
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
         }
         else {
             istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_section_menu[i]->name, 0x20);
@@ -13493,7 +13494,7 @@ int send_bb_player_info_list(ship_client_t* dest) {
     bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
     uint16_t len = 0x100;
     size_t i = 0;
-    char tmp_shipname[0x20] = { 0 };
+    char tmp_char[0x20] = { 0 };
 
     /* 初始化数据包 */
     memset(menu, 0, len);
@@ -13505,7 +13506,20 @@ int send_bb_player_info_list(ship_client_t* dest) {
         menu->entries[i].menu_id = LE32(pso_player_info_menu[i]->menu_id);
         menu->entries[i].item_id = LE32(pso_player_info_menu[i]->item_id);
         menu->entries[i].flags = LE16(pso_player_info_menu[i]->flag);
-        istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_info_menu[i]->name, 0x20);
+        switch (pso_player_info_menu[i]->item_id)
+        {
+        case ITEM_ID_PL_BACKUP_INFO:
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前:%s]"
+                , pso_player_info_menu[i]->name
+                , dest->game_data->auto_backup == true ? "开启" : "关闭"
+            );
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
+            break;
+
+        default:
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_info_menu[i]->name, 0x20);
+            break;
+        }
         len += 0x2C;
     }
 

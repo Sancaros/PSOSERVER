@@ -235,9 +235,9 @@ static void* block_thd(void* d) {
             }
 
             /* 默认间隔5秒存储一次数据 */
-            if ((it->save_time < srv_time) && (it->need_save_data)) {
+            if ((it->save_time + 5 < srv_time) && (it->need_save_data)) {
                 client_send_bb_data(it);
-                it->need_save_data = 1;
+                it->need_save_data = true;
             }
 
             /* Check if their timeout expired to login after getting a
@@ -1092,7 +1092,10 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
-    strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.gc_string, sizeof(c->game_info.name));
+    char tmp_name[32] = { 0 };
+    istrncpy16_raw(ic_utf16_to_utf8, tmp_name, (char*)&c->pl->bb.character.name.char_name, 32, 10);
+
+    strncpy((char*)c->game_info.name, tmp_name, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
     c->mode = 0;
@@ -1100,11 +1103,13 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     c->game_data->expboost = 0;
 
     /* 备份临时数据 TODO BB版本未完成 */
-    if (c->version != CLIENT_VERSION_BB &&
-        (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, &c->game_info, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR)) {
-            DBG_LOG("备份临时数据 版本 %d", c->version);
-            return rv;
+    if (c->version == CLIENT_VERSION_BB) {
+        if ((c->flags & CLIENT_FLAG_AUTO_BACKUP) || c->game_data->auto_backup) {
+            //DBG_LOG("%s 自动备份中", get_player_describe(c));
+            if (shipgate_send_cbkup(&ship->sg, &c->game_info, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR)) {
+                DBG_LOG("%s 备份临时数据 版本 %d", get_player_describe(c), c->version);
+                return rv;
+            }
         }
     }
 

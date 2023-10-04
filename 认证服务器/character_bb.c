@@ -544,6 +544,13 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
             if (db_get_dress_data(c->guildcard, pkt->slot, &mc.dress_data, 0)) {
                 SQLERR_LOG("无法更新玩家外观数据 (GC %"
                     PRIu32 ", 槽位 %" PRIu8 "), 读取原始数据.", c->guildcard, pkt->slot);
+                if (db_get_orignal_char_full_data(c->guildcard, pkt->slot, char_data, 0)) {
+                    SQLERR_LOG("无法读取原始外观数据 (GC %"
+                        PRIu32 ", 槽位 %" PRIu8 "), 读取原始数据.", c->guildcard, pkt->slot);
+
+
+                    return -2;
+                }
                 /* XXXX: 未完成给客户端发送一个错误信息 */
                 
                 mc.dress_data = char_data->character.dress_data;

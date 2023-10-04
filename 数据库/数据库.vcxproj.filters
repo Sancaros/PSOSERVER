@@ -83,5 +83,8 @@
     <ClCompile Include="character_default_mode_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="character_full_data_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
