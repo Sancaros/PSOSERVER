@@ -4177,7 +4177,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
                     }
                     else {
                         memcpy(pkt->entries[count].ch_name,
-                            &cl->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+                            cl->bb_pl->character.name.char_name, BB_CHARACTER_CHAR_NAME_WLENGTH);
                     }
 
                     if (l) {

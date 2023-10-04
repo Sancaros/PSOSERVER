@@ -4380,10 +4380,10 @@ static int handle_clients(ship_t* c, shipgate_block_clients_pkt* pkt) {
             memset(name, 0, 64);
             in = 32;
             out = 64;
-            inptr = (char*)&pkt->entries[i].ch_name[2];
+            inptr = (char*)&pkt->entries[i].ch_name[0];
             outptr = name;
 
-            istrncpy16_raw(ic_utf16_to_utf8, outptr, &pkt->entries[i].ch_name[2], out, in);
+            istrncpy16_raw(ic_utf16_to_utf8, outptr, inptr, out, in);
 
             //iconv(ic_utf16_to_utf8, &inptr, &in, &outptr, &out);
         }
