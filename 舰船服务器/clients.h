@@ -447,6 +447,8 @@ static const char language_codes[][3] = {
     "cn", "tc", "jp", "en", "de", "fr", "es", "kr"
 };
 
+const char* get_server_DayOfWeek_desc(void);
+
 /* 用于打印角色描述 */
 static char char_des[512];
 
@@ -524,6 +526,9 @@ void update_bb_mat_use(ship_client_t* src);
 void show_bb_player_info(ship_client_t* src);
 void show_player_tech_info(ship_client_t* src);
 void show_player_inv_info(ship_client_t* src);
+void show_player_bank_info(ship_client_t* src);
+void show_player_common_bank_info(ship_client_t* src);
+void show_coren_reward_info(ship_client_t* src, uint32_t week, uint32_t index);
 /* 检测玩家是否在有效的游戏房间中 */
 inline bool in_game(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;

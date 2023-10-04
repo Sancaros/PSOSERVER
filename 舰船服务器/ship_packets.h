@@ -352,4 +352,7 @@ int send_bb_player_section_list(ship_client_t* dest);
 /* 玩家信息菜单 */
 int send_bb_player_info_list(ship_client_t* dest);
 
+/* 科伦奖励 */
+int send_bb_coren_dayreward_list(ship_client_t* dest);
+
 #endif /* !SHIP_PACKETS_H */

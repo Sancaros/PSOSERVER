@@ -43,6 +43,7 @@
 #include "records.h"
 #include "handle_player_items.h"
 #include "subcmd_handle.h"
+#include <pso_items_coren_reward_list.h>
 
 extern char ship_host4[32];
 extern char ship_host6[128];
@@ -5249,7 +5250,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
     size_t in, out;
     char* inptr;
     char* outptr;
-    char tm[4096] = { 0 };
+    char tm[65500] = { 0 };
 
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
@@ -5268,7 +5269,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
 
     /* Do the formatting */
     vsnprintf(tm, 4096, fmt, args);
-    tm[4095] = '\0';
+    tm[65549] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
@@ -13465,16 +13466,16 @@ int send_bb_player_section_list(ship_client_t* dest) {
     len = 0;
 
     /* 填充菜单实例 */
-    for (i = 0; i < _countof(pso_player_section_menu); ++i) {
-        menu->entries[i].menu_id = LE32(pso_player_section_menu[i]->menu_id);
-        menu->entries[i].item_id = LE32(pso_player_section_menu[i]->item_id);
-        menu->entries[i].flags = LE16(pso_player_section_menu[i]->flag);
-        if (pso_player_section_menu[i]->item_id == get_player_section(dest)) {
-            sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前颜色]", pso_player_section_menu[i]->name);
+    for (i = 0; i < _countof(pso_player_menu_section); ++i) {
+        menu->entries[i].menu_id = LE32(pso_player_menu_section[i]->menu_id);
+        menu->entries[i].item_id = LE32(pso_player_menu_section[i]->item_id);
+        menu->entries[i].flags = LE16(pso_player_menu_section[i]->flag);
+        if (pso_player_menu_section[i]->item_id == get_player_section(dest)) {
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前颜色]", pso_player_menu_section[i]->name);
             istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
         }
         else {
-            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_section_menu[i]->name, 0x20);
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_menu_section[i]->name, 0x20);
         }
         len += 0x2C;
     }
@@ -13502,22 +13503,22 @@ int send_bb_player_info_list(ship_client_t* dest) {
     len = 0;
 
     /* 填充菜单实例 */
-    for (i = 0; i < _countof(pso_player_info_menu); ++i) {
-        menu->entries[i].menu_id = LE32(pso_player_info_menu[i]->menu_id);
-        menu->entries[i].item_id = LE32(pso_player_info_menu[i]->item_id);
-        menu->entries[i].flags = LE16(pso_player_info_menu[i]->flag);
-        switch (pso_player_info_menu[i]->item_id)
+    for (i = 0; i < _countof(pso_player_menu_info); ++i) {
+        menu->entries[i].menu_id = LE32(pso_player_menu_info[i]->menu_id);
+        menu->entries[i].item_id = LE32(pso_player_menu_info[i]->item_id);
+        menu->entries[i].flags = LE16(pso_player_menu_info[i]->flag);
+        switch (pso_player_menu_info[i]->item_id)
         {
         case ITEM_ID_PL_BACKUP_INFO:
             sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前:%s]"
-                , pso_player_info_menu[i]->name
+                , pso_player_menu_info[i]->name
                 , dest->game_data->auto_backup == true ? "开启" : "关闭"
             );
             istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
             break;
 
         default:
-            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_info_menu[i]->name, 0x20);
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_menu_info[i]->name, 0x20);
             break;
         }
         len += 0x2C;
@@ -13530,4 +13531,88 @@ int send_bb_player_info_list(ship_client_t* dest) {
 
     /* 加密并发送 */
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)menu);
+}
+
+int send_bb_coren_dayreward_list(ship_client_t* dest) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
+    uint16_t len = 0x100;
+    size_t i = 0;
+    char tmp_char[0x20] = { 0 };
+
+    // 获取当前系统时间
+    SYSTEMTIME time;
+    GetLocalTime(&time);
+
+    // 获取当前是星期几（星期天 = 0, 星期一 = 1, 星期二 = 2, ..., 星期六 = 6）
+    // 将数字转换为对应的星期几文本
+    const char* weekDays[] = { "星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+    const char* currentDayOfWeek = weekDays[time.wDayOfWeek];
+
+    /* 初始化数据包 */
+    memset(menu, 0, len);
+
+    len = 0;
+
+    /* 填充菜单实例 */
+    for (i = 0; i < _countof(pso_player_menu_coren); ++i) {
+        menu->entries[i].menu_id = LE32(pso_player_menu_coren[i]->menu_id);
+        menu->entries[i].item_id = LE32(pso_player_menu_coren[i]->item_id);
+        menu->entries[i].flags = LE16(pso_player_menu_coren[i]->flag);
+        switch (pso_player_menu_coren[i]->item_id)
+        {
+        case ITEM_ID_PL_COREN_TODAY:
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[%s]"
+                , pso_player_menu_coren[i]->name
+                , get_server_DayOfWeek_desc()
+            );
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
+            break;
+
+        case ITEM_ID_PL_COREN_DAR:
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[国庆]"
+                , pso_player_menu_coren[i]->name
+            );
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
+            break;
+
+        case ITEM_ID_PL_COREN_LIST_1:
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[%d %d %d]"
+                , pso_player_menu_coren[i]->name
+                , weekly_reward_percent[0][time.wDayOfWeek][0], weekly_reward_percent[0][time.wDayOfWeek][1], weekly_reward_percent[0][time.wDayOfWeek][2]
+            );
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
+            break;
+
+        case ITEM_ID_PL_COREN_LIST_2:
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[%d %d %d]"
+                , pso_player_menu_coren[i]->name
+                , weekly_reward_percent[1][time.wDayOfWeek][0], weekly_reward_percent[1][time.wDayOfWeek][1], weekly_reward_percent[1][time.wDayOfWeek][2]
+            );
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
+            break;
+
+        case ITEM_ID_PL_COREN_LIST_3:
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[%d %d %d]"
+                , pso_player_menu_coren[i]->name
+                , weekly_reward_percent[2][time.wDayOfWeek][0], weekly_reward_percent[2][time.wDayOfWeek][1], weekly_reward_percent[2][time.wDayOfWeek][2]
+            );
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
+            break;
+
+        default:
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_menu_coren[i]->name, 0x20);
+            break;
+        }
+        len += 0x2C;
+    }
+
+    /* 填充数据头 */
+    menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+    menu->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
+    menu->hdr.flags = i - 1;
+
+    /* 加密并发送 */
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)menu);
+
 }

@@ -49,6 +49,7 @@
 #include <lauxlib.h>
 #endif
 #include "mag_bb.h"
+#include <pso_items_coren_reward_list.h>
 
 /* Player levelup data */
 extern bb_level_table_t bb_char_stats;
@@ -60,6 +61,16 @@ extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 #endif
 
 #define UNUSED __attribute__((unused))
+
+const char* get_server_DayOfWeek_desc(void) {
+    // 获取当前系统时间
+    SYSTEMTIME time;
+    GetLocalTime(&time);
+    // 获取当前是星期几（星期天 = 0, 星期一 = 1, 星期二 = 2, ..., 星期六 = 6）
+    // 将数字转换为对应的星期几文本
+    const char* weekDays[] = { "星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+    return weekDays[time.wDayOfWeek];
+}
 
 /* The key for accessing our thread-specific receive buffer. */
 pthread_key_t recvbuf_key;
@@ -1788,7 +1799,9 @@ void show_bb_player_info(ship_client_t* src) {
         "当前职业: %s\n"
         "当前等级: Lv%d 经验:%d 钱包:%d美赛塔\n"
         "背包数量: %d 语言: %u\n"
+        "银行数量: 角色:%d 公共:%d\n"
         "嗑药情况: HP药:%u TP药:%u 攻药:%d 智药:%d 闪药:%d 防药:%d 运药:%d\n"
+        "挑战模式: 详情未完成\n"
         , get_player_describe(src)
         , pso_class[ch_class].cn_name
         , character->disp.level + 1
@@ -1796,6 +1809,7 @@ void show_bb_player_info(ship_client_t* src) {
         , character->disp.meseta
         , character->inv.item_count
         , character->inv.language
+        , src->bb_pl->bank.item_count, src->common_bank->item_count
         , character->inv.hpmats_used
         , character->inv.tpmats_used
         , src->game_data->atpmats_used
@@ -1810,7 +1824,7 @@ void show_player_tech_info(ship_client_t* src) {
     psocn_bb_char_t* character = get_client_char_bb(src);
     uint8_t ch_class = character->dress_data.ch_class;
     uint8_t tech_level = 0;
-    char tmp_msg[2048] = { 0 };
+    char tmp_msg[4096] = { 0 };
     char data_str[100] = { 0 };
 
     if (char_class_is_android(src->equip_flags)) {
@@ -1836,7 +1850,7 @@ void show_player_tech_info(ship_client_t* src) {
             if (max_tech_level[i].max_lvl[ch_class] == 0 ) {
                 // 将要写入的数据格式化为字符串
                 sprintf_s(data_str, sizeof(data_str),
-                    "%d.%s \tE\tC4无法学习\tE\tC7 |"
+                    "%d.%s \tE\tC4无法学习\tE\tC7"
                     , i
                     , get_technique_comment(i)
                 );
@@ -1844,7 +1858,7 @@ void show_player_tech_info(ship_client_t* src) {
             else {
                 if (character->tech.all[i] == 0xFF) {
                     sprintf_s(data_str, sizeof(data_str),
-                        "%d.%s \tE\tCG未学习\tE\tC7 |"
+                        "%d.%s \tE\tCG未学习\tE\tC7"
                         , i
                         , get_technique_comment(i)
                     );
@@ -1853,7 +1867,7 @@ void show_player_tech_info(ship_client_t* src) {
                     tech_level = character->tech.all[i] + 1;
                     // 将要写入的数据格式化为字符串
                     sprintf_s(data_str, sizeof(data_str),
-                        "%d.%s Lv%d |"
+                        "%d.%s Lv%d"
                         , i
                         , get_technique_comment(i)
                         , tech_level
@@ -1861,9 +1875,21 @@ void show_player_tech_info(ship_client_t* src) {
                 }
             }
 
+            // 计算剩余可用空间
+            size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
+
+            // 检查剩余空间是否足够
+            if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
+                break;  // 停止追加数据
+            }
+
             // 每追加5个数据后插入换行符
             if ((i + 1) % 4 == 0) {
                 strcat_s(data_str, sizeof(data_str), "\n");
+            }
+            else {
+                // 在格式化后的数据后面追加 | 符号
+                strcat_s(data_str, sizeof(data_str), " | ");
             }
 
             // 将格式化后的数据追加到 tmp_msg 字符数组中
@@ -1876,26 +1902,170 @@ void show_player_tech_info(ship_client_t* src) {
 
 void show_player_inv_info(ship_client_t* src) {
     inventory_t* inv = get_player_inv(src);
-    char tmp_msg[2048] = { 0 };
+    char tmp_msg[4096] = { 0 };
     char data_str[100] = { 0 };
 
     sprintf_s(tmp_msg, sizeof(tmp_msg),
         "-----------------------玩家背包-----------------------\n"
         "玩家名称: %s\n"
-        "背包数量: %d\n"
+        "背包数据: %d 件物品 %d 美赛塔\n"
         , get_player_describe(src)
-        , inv->item_count
+        , inv->item_count, src->bb_pl->character.disp.meseta
     );
 
     for (int i = 0; i < inv->item_count; ++i) {
         // 将要写入的数据格式化为字符串
-        sprintf_s(data_str, sizeof(data_str), "%d.%s |", i
+        sprintf_s(data_str, sizeof(data_str), "%d.%s", i
             , item_get_name(&inv->iitems[i].data, src->version, src->language_code)
         );
+
+        // 计算剩余可用空间
+        size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
+
+        // 检查剩余空间是否足够
+        if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
+            break;  // 停止追加数据
+        }
 
         // 每追加5个数据后插入换行符
         if ((i + 1) % 5 == 0) {
             strcat_s(data_str, sizeof(data_str), "\n");
+        }
+        else {
+            // 在格式化后的数据后面追加 | 符号
+            strcat_s(data_str, sizeof(data_str), " | ");
+        }
+
+        // 将格式化后的数据追加到 tmp_msg 字符数组中
+        strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+    }
+
+    send_msg(src, MSG_BOX_TYPE, "%s", tmp_msg);
+}
+
+void show_player_bank_info(ship_client_t* src) {
+    psocn_bank_t* bank = get_client_bank_bb(src);
+    char tmp_msg[4096] = { 0 };
+    char data_str[100] = { 0 };
+
+    sprintf_s(tmp_msg, sizeof(tmp_msg),
+        "-----------------------玩家银行-----------------------\n"
+        "玩家名称: %s\n"
+        "银行数据: %d 件物品 %d 美赛塔\n"
+        , get_player_describe(src)
+        , bank->item_count, bank->meseta
+    );
+
+    for (size_t i = 0; i < bank->item_count; ++i) {
+        // 将要写入的数据格式化为字符串
+        sprintf_s(data_str, sizeof(data_str), "%d.%s", i
+            , item_get_name(&bank->bitems[i].data, src->version, src->language_code)
+        );
+
+        // 计算剩余可用空间
+        size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
+
+        // 检查剩余空间是否足够
+        if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
+            break;  // 停止追加数据
+        }
+
+        // 每追加5个数据后插入换行符
+        if ((i + 1) % 5 == 0) {
+            strcat_s(data_str, sizeof(data_str), "\n");
+        }
+        else {
+            // 在格式化后的数据后面追加 | 符号
+            strcat_s(data_str, sizeof(data_str), " | ");
+        }
+
+        // 将格式化后的数据追加到 tmp_msg 字符数组中
+        strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+    }
+
+    send_msg(src, MSG_BOX_TYPE, "%s", tmp_msg);
+}
+
+void show_player_common_bank_info(ship_client_t* src) {
+    psocn_bank_t* bank = src->common_bank;
+    char tmp_msg[4096] = { 0 };
+    char data_str[100] = { 0 };
+
+    sprintf_s(tmp_msg, sizeof(tmp_msg),
+        "-----------------------公共银行-----------------------\n"
+        "玩家名称: %s\n"
+        "银行数据: %d 件物品 %d 美赛塔\n"
+        , get_player_describe(src)
+        , bank->item_count, bank->meseta
+    );
+
+    for (size_t i = 0; i < bank->item_count; ++i) {
+        // 将要写入的数据格式化为字符串
+        sprintf_s(data_str, sizeof(data_str), "%d.%s", i
+            , item_get_name(&bank->bitems[i].data, src->version, src->language_code)
+        );
+
+        // 计算剩余可用空间
+        size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
+
+        // 检查剩余空间是否足够
+        if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
+            break;  // 停止追加数据
+        }
+
+        // 每追加5个数据后插入换行符
+        if ((i + 1) % 5 == 0) {
+            strcat_s(data_str, sizeof(data_str), "\n");
+        }
+        else {
+            // 在格式化后的数据后面追加 | 符号
+            strcat_s(data_str, sizeof(data_str), " | ");
+        }
+
+        // 将格式化后的数据追加到 tmp_msg 字符数组中
+        strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+    }
+
+    send_msg(src, MSG_BOX_TYPE, "%s", tmp_msg);
+}
+
+void show_coren_reward_info(ship_client_t* src, uint32_t week, uint32_t index) {
+    char tmp_msg[4096] = { 0 };
+    char data_str[100] = { 0 };
+    Coren_Reward_List_t reward_list = { 0 };
+    reward_list.rewards = day_reward_list[week][index];
+    size_t count = ARRAYSIZE(day_reward_list[week][index]);
+
+    sprintf_s(tmp_msg, sizeof(tmp_msg),
+        "-----------------------%s 科伦奖励列表-----------------------\n"
+        "数量: %d\n"
+        , get_server_DayOfWeek_desc()
+        , count
+    );
+
+    for (size_t i = 0; i < count; ++i) {
+        item_t tmp_i = { 0 };
+        tmp_i.datal[0] = reward_list.rewards[i];
+        // 将要写入的数据格式化为字符串
+        sprintf_s(data_str, sizeof(data_str), "%d.%s", i + 1
+            , item_get_name(&tmp_i, src->version, src->language_code)
+        );
+
+        // 计算剩余可用空间
+        size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
+
+        // 检查剩余空间是否足够
+        if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
+            break;  // 停止追加数据
+        }
+
+        // 每追加5个数据后插入换行符
+        if ((i + 1) % 5 == 0) {
+            strcat_s(data_str, sizeof(data_str), "\n");
+        }
+        else {
+            // 在格式化后的数据后面追加 | 符号
+            strcat_s(data_str, sizeof(data_str), " | ");
         }
 
         // 将格式化后的数据追加到 tmp_msg 字符数组中

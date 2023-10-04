@@ -83,11 +83,6 @@ typedef struct pso_menu {
 #define ITEM_ID_DISCONNECT      0xFFFFFFFE
 #define ITEM_ID_LAST            0xFFFFFFFF
 
-/* Submenus of the Player menu. */
-#define MENU_ID_PL_INFO         0x00000021
-#define MENU_ID_PL_SECTION      0x00000022
-#define MENU_ID_PL_INFO_LIST    0x00000023
-
 /* GM Options Item IDs */
 #define ITEM_ID_GM_REF_QUESTS   0x00000001
 #define ITEM_ID_GM_REF_GMS      0x00000002
@@ -197,9 +192,15 @@ static pso_menu_t pso_error_menu[][4] = {
     {"不然他不懂",   MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004}
 };
 
+/* Submenus of the Player menu. */
+#define MENU_ID_PL_INFO         0x00000021
+#define MENU_ID_PL_SECTION      0x00000022
+#define MENU_ID_PL_INFO_LIST    0x00000023
+#define MENU_ID_PL_CORE         0x00000024
+
 /* 玩家菜单 Item IDs */
-#define ITEM_ID_PL_INFO         0x00000001
 //////////////////////////////////////////////////
+#define ITEM_ID_PL_INFO         0x00000001
 #define ITEM_ID_PL_BASE_INFO    0x00000001
 #define ITEM_ID_PL_TECH_INFO    0x00000002
 #define ITEM_ID_PL_INV_INFO     0x00000003
@@ -211,7 +212,16 @@ static pso_menu_t pso_error_menu[][4] = {
 #define ITEM_ID_PL_SECTION      0x00000002
 #define ITEM_ID_PL_SHOP         0x00000003
 #define ITEM_ID_PL_EXCHAGE      0x00000004
+
+//////////////////////////////////////////////////
 #define ITEM_ID_PL_COREN        0x00000005
+#define ITEM_ID_PL_COREN_TODAY  0x00000001
+#define ITEM_ID_PL_COREN_DAR    0x00000002
+#define ITEM_ID_PL_COREN_LIST_1 0x00000003
+#define ITEM_ID_PL_COREN_LIST_2 0x00000004
+#define ITEM_ID_PL_COREN_LIST_3 0x00000005
+//////////////////////////////////////////////////
+
 #define ITEM_ID_PL_LAST         0xFFFFFFFF
 
 static pso_menu_t pso_player_menu[][4] = {
@@ -224,7 +234,7 @@ static pso_menu_t pso_player_menu[][4] = {
     {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0004}
 };
 
-static pso_menu_t pso_player_info_menu[][4] = {
+static pso_menu_t pso_player_menu_info[][4] = {
     {"DATABASE/US",  MENU_ID_DATABASE,       MENU_ID_PL_INFO_LIST,  0x0004},
     {"基础信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BASE_INFO,  0x0004},
     {"法术信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_TECH_INFO,  0x0004},
@@ -236,7 +246,7 @@ static pso_menu_t pso_player_info_menu[][4] = {
     {"关闭菜单",     MENU_ID_PL_INFO_LIST,   ITEM_ID_DISCONNECT,    0x0004}
 };
 
-static pso_menu_t pso_player_section_menu[][4] = {
+static pso_menu_t pso_player_menu_section[][4] = {
     {"DATABASE/US",       MENU_ID_DATABASE, MENU_ID_PL_SECTION   , 0x0004},
     {"铬绿(Viridia)",     MENU_ID_PL_SECTION,   0, 0x0004},
     {"翠绿(Greennill)",   MENU_ID_PL_SECTION,   1, 0x0004},
@@ -250,6 +260,17 @@ static pso_menu_t pso_player_section_menu[][4] = {
     {"羽白(Whitill)",     MENU_ID_PL_SECTION,   9, 0x0004},
     {"上级菜单",          MENU_ID_PLAYER,  ITEM_ID_LAST, 0x0000},
     {"关闭菜单",          MENU_ID_PLAYER,  ITEM_ID_DISCONNECT, 0x0004}
+};
+
+static pso_menu_t pso_player_menu_coren[][4] = {
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PL_CORE, 0x0004},
+    {"当前日期",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_TODAY, 0x0004},
+    {"当前爆率",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_DAR, 0x0004},
+    {"1K奖励",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_1, 0x0004},
+    {"1W奖励",    MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_2, 0x0004},
+    {"10W奖励",   MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_3, 0x0004},
+    {"上级菜单",     MENU_ID_PLAYER,   ITEM_ID_LAST, 0x0000},
+    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0004}
 };
 
 #endif /* !PSO_MENU_HAVE_MENU */

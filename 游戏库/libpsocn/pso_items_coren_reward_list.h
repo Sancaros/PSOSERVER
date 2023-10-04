@@ -52,11 +52,11 @@ typedef struct Coren_Reward_List {
 } Coren_Reward_List_t;
 
 /* 选项卡费用 没啥用 */
-uint32_t menu_choice_price[3] = {
+static uint32_t menu_choice_price[3] = {
 	1000, 10000, 100000
 };
 
-uint32_t weekly_reward_percent[3][7][3] = {
+static uint32_t weekly_reward_percent[3][7][3] = {
 	//1000 美赛塔
 	{
 		{20, 0, 0},  // Day 7
@@ -89,7 +89,7 @@ uint32_t weekly_reward_percent[3][7][3] = {
 	}
 };
 
-uint32_t 国庆_weekly_reward_percent[3][7][3] = {
+static uint32_t 国庆_weekly_reward_percent[3][7][3] = {
 	//1000 美赛塔
 	{
 		{40, 0, 0},  // Day 7
@@ -126,7 +126,7 @@ uint32_t 国庆_weekly_reward_percent[3][7][3] = {
 #define TOTAL_COREN_ITEMS 25
 
 /* 科伦奖励列表 */
-uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
+static uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 	/* 星期天 */
 	{
 		//1000 美赛塔 奖励:杂物 最大奖励 7种药 扩展插槽 替身娃娃

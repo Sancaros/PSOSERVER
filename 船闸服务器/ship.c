@@ -3455,12 +3455,12 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
 
                 return -2;
             }
-            db_update_char_disp(&bb_data->character.disp, gc, slot, PSOCN_DB_SAVE_CHAR);
-            db_update_char_dress_data(&bb_data->character.dress_data, gc, slot, PSOCN_DB_SAVE_CHAR);
+            db_update_char_disp(&bb_data->character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_dress_data(&bb_data->character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_name(&bb_data->character.name, gc, slot);
-            db_update_char_techniques(&bb_data->character.tech, gc, slot, PSOCN_DB_SAVE_CHAR);
-            db_update_char_b_records(&bb_data->b_records, gc, slot, PSOCN_DB_SAVE_CHAR);
-            db_update_char_c_records(&bb_data->c_records, gc, slot, PSOCN_DB_SAVE_CHAR);
+            db_update_char_techniques(&bb_data->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_b_records(&bb_data->b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_c_records(&bb_data->c_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
         }
 
         //repair_client_character_data(&bb_data->character);

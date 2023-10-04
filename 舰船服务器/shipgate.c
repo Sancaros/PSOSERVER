@@ -3538,13 +3538,11 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 
         if (c == NULL) {
             ERR_LOG("非法舰闸链接");
-            free_safe(recvbuf);
             return -1; // 参数合法性检查
         }
 
         if (!c->session) {
             ERR_LOG("非法舰闸session");
-            free_safe(recvbuf);
             return -1; // 错误检查，确保 c->session 不为空
         }
 
@@ -3644,7 +3642,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
             c->recvbuf_size = 0;
         }
 
-        return rv;
+        return 0;
     }
 
     __except (crash_handler(GetExceptionInformation())) {

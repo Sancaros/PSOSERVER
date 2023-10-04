@@ -415,6 +415,10 @@ static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
             send_bb_player_section_list(c);
             break;
 
+        case ITEM_ID_PL_COREN:
+            send_bb_coren_dayreward_list(c);
+            break;
+
         case ITEM_ID_LAST:
             send_bb_player_menu_list(c);
             break;
@@ -433,7 +437,7 @@ static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
     return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
 }
 
-static int bb_process_player_section_menu(ship_client_t* c, uint32_t item_id) {
+static int bb_process_player_menu_section(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
 
     psocn_bb_char_t* character = &c->bb_pl->character;
@@ -458,7 +462,7 @@ static int bb_process_player_section_menu(ship_client_t* c, uint32_t item_id) {
     return send_ship_list(c, ship, ship->cfg->menu_code);
 }
 
-static int bb_process_player_info_list_menu(ship_client_t* c, uint32_t item_id) {
+static int bb_process_player_menu_info_list(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
 
     if (l) {
@@ -475,11 +479,13 @@ static int bb_process_player_info_list_menu(ship_client_t* c, uint32_t item_id) 
             show_player_inv_info(c);
             break;
 
-        //case ITEM_ID_PL_BANK_INFO:
-        //    break;
+        case ITEM_ID_PL_BANK_INFO:
+            show_player_bank_info(c);
+            break;
 
-        //case ITEM_ID_PL_CBANK_INFO:
-        //    break;
+        case ITEM_ID_PL_CBANK_INFO:
+            show_player_common_bank_info(c);
+            break;
 
         case ITEM_ID_PL_BACKUP_INFO:
             if (c->game_data->auto_backup)
@@ -489,6 +495,53 @@ static int bb_process_player_info_list_menu(ship_client_t* c, uint32_t item_id) 
 
             update_bb_mat_use(c);
             send_bb_player_info_list(c);
+            break;
+
+        case ITEM_ID_LAST:
+            send_bb_player_menu_list(c);
+            break;
+
+        case ITEM_ID_DISCONNECT:
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7菜单关闭."));
+
+        default:
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4菜单没写完!请联系程序员开工!"));
+        }
+
+        /* All's well in the world if we get here. */
+        return 0;
+    }
+
+    return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
+}
+
+static int bb_process_player_menu_coren(ship_client_t* c, uint32_t item_id) {
+    lobby_t* l = c->cur_lobby;
+
+    // 获取当前系统时间
+    SYSTEMTIME time;
+    GetLocalTime(&time);
+
+    if (l) {
+        switch (item_id) {
+        case ITEM_ID_PL_COREN_TODAY:
+            send_bb_coren_dayreward_list(c);
+            break;
+
+        case ITEM_ID_PL_COREN_DAR:
+            send_bb_coren_dayreward_list(c);
+            break;
+
+        case ITEM_ID_PL_COREN_LIST_1:
+            show_coren_reward_info(c, time.wDayOfWeek, 0);
+            break;
+
+        case ITEM_ID_PL_COREN_LIST_2:
+            show_coren_reward_info(c, time.wDayOfWeek, 1);
+            break;
+
+        case ITEM_ID_PL_COREN_LIST_3:
+            show_coren_reward_info(c, time.wDayOfWeek, 2);
             break;
 
         case ITEM_ID_LAST:
@@ -858,10 +911,13 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return bb_process_player_menu(c, item_id);
 
     case MENU_ID_PL_SECTION:
-        return bb_process_player_section_menu(c, item_id);
+        return bb_process_player_menu_section(c, item_id);
 
     case MENU_ID_PL_INFO_LIST:
-        return bb_process_player_info_list_menu(c, item_id);
+        return bb_process_player_menu_info_list(c, item_id);
+
+    case MENU_ID_PL_CORE:
+        return bb_process_player_menu_coren(c, item_id);
 
     default:
         if (script_execute(ScriptActionUnknownMenu, c, SCRIPT_ARG_PTR, c,
