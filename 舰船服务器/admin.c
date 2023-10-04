@@ -33,6 +33,23 @@
 #include "ship_packets.h"
 #include "utils.h"
 
+int get_gm_priv(ship_client_t* c) {
+    send_txt(c, "%s", __(c, "\tE\tC7正在尝试获取GM权限."));
+    GM_LOG("%s 正在尝试获取GM权限", get_player_describe(c));
+    if (((c->privilege & CLIENT_PRIV_LOCAL_GM) ||
+        (c->privilege & CLIENT_PRIV_GLOBAL_GM) ||
+        (c->privilege & CLIENT_PRIV_LOCAL_ROOT) ||
+        (c->privilege & CLIENT_PRIV_GLOBAL_ROOT) ||
+        (c->privilege & (CLIENT_PRIV_TESTER | CLIENT_PRIV_LOCAL_GM))) && 
+        !(c->flags & CLIENT_FLAG_LOGGED_IN)
+        )
+        return shipgate_send_usrlogin(&ship->sg, c->guildcard, c->cur_block->b,
+            c->username, c->password, 0, 0);
+
+    GM_LOG("%s 正在获取GM权限失败, 权限不足", get_player_describe(c));
+    return send_txt(c, "%s", __(c, "\tE\tC4权限不足."));
+}
+
 int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
     block_t *b;
     ship_client_t *i;
@@ -40,6 +57,7 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
 
     /* Make sure we don't have anyone trying to escalate their privileges. */
     if(!LOCAL_GM(c)) {
+        GM_LOG("%s 正在尝试获取 本地GM 权限", get_player_describe(c));
         return -1;
     }
 
@@ -77,6 +95,7 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
     /* If the requester is a global GM, forward the request to the shipgate,
        since it wasn't able to be done on this ship. */
     if(GLOBAL_GM(c)) {
+        GM_LOG("%s 正在尝试获取 全服GM 权限", get_player_describe(c));
         shipgate_send_kick(&ship->sg, c->guildcard, gc, reason);
     }
 
@@ -174,18 +193,21 @@ void clean_quests(ship_t *s) {
 
 int refresh_quests(ship_client_t *c, msgfunc f) {
     /* Make sure we don't have anyone trying to escalate their privileges. */
-    if(!LOCAL_GM(c))
+    if (!LOCAL_GM(c)) {
+        GM_LOG("%s 正在尝试获取 本地GM 权限", get_player_describe(c));
         return -1;
+    }
 
     if(!load_quests(ship, ship->cfg, 0))
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7成功刷新任务文件."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7成功刷新任务文件."));
     else
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4未设置任务文件2."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未设置任务文件2."));
 }
 
 int refresh_gms(ship_client_t *c, msgfunc f) {
     /* Make sure we don't have anyone trying to escalate their privileges. */
     if(!LOCAL_ROOT(c)) {
+        GM_LOG("%s 正在尝试获取 本地管理 权限", get_player_describe(c));
         return -1;
     }
 
@@ -193,13 +215,13 @@ int refresh_gms(ship_client_t *c, msgfunc f) {
         /* Try to read the GM file. This will clean out the old list as
          well, if needed. */
         if(gm_list_read(ship->cfg->gm_file, ship)) {
-            return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4无法读取 GM 列表."));
+            return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC4无法读取 GM 列表."));
         }
 
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7成功刷新 GM 列表."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7成功刷新 GM 列表."));
     }
     else {
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7未设置 GM 列表."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7未设置 GM 列表."));
     }
 }
 
@@ -211,8 +233,10 @@ int refresh_limits(ship_client_t *c, msgfunc f) {
     limits_entry_t *ent;
 
     /* Make sure we don't have anyone trying to escalate their privileges. */
-    if(!LOCAL_GM(c))
+    if (!LOCAL_GM(c)) {
+        GM_LOG("%s 正在尝试获取 本地GM 权限", get_player_describe(c));
         return -1;
+    }
 
     /* Make sure we had limits configured in the first place... */
     if(!s->limits_count)
@@ -285,7 +309,8 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix) {
     char message2[4096] = { 0 };
 
     /* Make sure we don't have anyone trying to escalate their privileges. */
-    if(c && !LOCAL_GM(c)) {
+    if (c && !LOCAL_GM(c)) {
+        GM_LOG("%s 正在尝试获取 本地GM 权限", get_player_describe(c));
         return -1;
     }
 
@@ -383,6 +408,7 @@ int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
 
     /* Make sure we don't have anyone trying to escalate their privileges. */
     if(c && !LOCAL_ROOT(c)) {
+        GM_LOG("%s 正在尝试获取 本地管理 权限", get_player_describe(c));
         return -1;
     }
 
@@ -432,6 +458,7 @@ int global_ban(ship_client_t *c, uint32_t gc, uint32_t l, const char *reason) {
 
     /* Make sure we don't have anyone trying to escalate their privileges. */
     if(!GLOBAL_GM(c)) {
+        GM_LOG("%s 正在尝试获取 全服GM 权限", get_player_describe(c));
         return -1;
     }
 
@@ -526,6 +553,7 @@ int global_ban(ship_client_t *c, uint32_t gc, uint32_t l, const char *reason) {
     /* Since the requester is a global GM, forward the kick request to the
        shipgate, since it wasn't able to be done on this ship. */
     if(GLOBAL_GM(c)) {
+        GM_LOG("%s 正在尝试获取 全服GM 权限", get_player_describe(c));
         shipgate_send_kick(&ship->sg, c->guildcard, gc, reason);
     }
 

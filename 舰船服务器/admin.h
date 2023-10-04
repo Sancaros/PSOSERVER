@@ -20,6 +20,7 @@
 
 #include <psoconfig.h>
 #include "clients.h"
+#include "f_logs.h"
 
 /* Some macros for commonly used privilege checks. */
 #define LOCAL_GM(c) \
@@ -44,6 +45,8 @@
 
 //typedef int (*msgfunc)(ship_client_t *, const char *, ...);
 typedef int (*msgfunc)(ship_client_t*, uint16_t, const char*, ...);
+
+int get_gm_priv(ship_client_t* c);
 
 int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason);
 

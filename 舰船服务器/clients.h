@@ -209,6 +209,9 @@ struct ship_client {
 
     struct sockaddr_storage ip_addr;
 
+    char username[48];
+    char password[48];
+
     uint32_t guildcard;
     uint32_t menu_id;
     uint32_t preferred_lobby_id;

@@ -59,7 +59,7 @@ static int handle_gmdebug(ship_client_t* c, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the floor requested */
@@ -88,7 +88,7 @@ static int handle_shipwarp(ship_client_t* c, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -121,7 +121,7 @@ static int handle_warp(ship_client_t *c, const char *params) {
 
     ///* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -154,7 +154,7 @@ static int handle_warpall(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -187,7 +187,7 @@ static int handle_kill(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -295,7 +295,7 @@ static int handle_max_level(ship_client_t *c, const char *params) {
 static int handle_refresh(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Not valid for Blue Burst clients */
@@ -431,7 +431,7 @@ static int handle_bstat(ship_client_t *c, const char *params) {
 static int handle_bcast(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     return broadcast_message(c, params, 1);
@@ -445,7 +445,7 @@ static int handle_tmsg(ship_client_t* c, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(c)) {
-        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Copy over the item data. */
@@ -527,7 +527,7 @@ static int handle_item(ship_client_t *src, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(src)) {
-        return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     pthread_mutex_lock(&l->mutex);
@@ -603,7 +603,7 @@ static int handle_item1(ship_client_t* src, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -643,7 +643,7 @@ static int handle_item2(ship_client_t* src, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -674,7 +674,7 @@ static int handle_item3(ship_client_t* src, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -705,7 +705,7 @@ static int handle_item4(ship_client_t *src, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -735,7 +735,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     pthread_mutex_lock(&l->mutex);
@@ -791,7 +791,7 @@ static int handle_event(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Grab the event number */
@@ -917,7 +917,7 @@ static int handle_clinfo(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Copy over the item data. */
@@ -946,7 +946,7 @@ static int handle_gban_d(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a global GM. */
     if(!GLOBAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -974,7 +974,7 @@ static int handle_gban_w(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a global GM. */
     if(!GLOBAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -1002,7 +1002,7 @@ static int handle_gban_m(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a global GM. */
     if(!GLOBAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -1030,7 +1030,7 @@ static int handle_gban_p(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a global GM. */
     if(!GLOBAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -1055,7 +1055,7 @@ static int handle_gban_p(ship_client_t *c, const char *params) {
 static int handle_list(ship_client_t *c, const char *params) {
     /* Make sure the requester is a local GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Pass off to the player list code... */
@@ -1219,7 +1219,7 @@ static int handle_log(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local root. */
     if(!LOCAL_ROOT(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -1264,7 +1264,7 @@ static int handle_endlog(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local root. */
     if(!LOCAL_ROOT(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -1462,7 +1462,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -1509,7 +1509,7 @@ static int handle_invuln(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
         pthread_mutex_unlock(&c->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* See if we're turning the flag off. */
@@ -1534,7 +1534,7 @@ static int handle_inftp(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
         pthread_mutex_unlock(&c->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* See if we're turning the flag off. */
@@ -1560,7 +1560,7 @@ static int handle_smite(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -1618,7 +1618,7 @@ static int handle_teleport(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -1723,7 +1723,7 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     do_lobby = params && !strcmp(params, "l");
@@ -1838,7 +1838,7 @@ static int handle_dbgbank(ship_client_t *src, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
     
     if(!params || params[0] == '\0') {
@@ -1898,7 +1898,7 @@ static int handle_dbgbank(ship_client_t *src, const char *params) {
 static int handle_showdcpc(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Check if the client is on PSOGC */
@@ -1927,7 +1927,7 @@ static int handle_allowgc(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a team, not a lobby. */
@@ -1974,7 +1974,7 @@ static int handle_ws(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Copy over the item data. */
@@ -2199,7 +2199,7 @@ static int handle_stfu(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -2231,7 +2231,7 @@ static int handle_unstfu(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -2331,7 +2331,7 @@ static int handle_gameevent(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Grab the event number */
@@ -2356,7 +2356,7 @@ static int handle_ban_d(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -2414,7 +2414,7 @@ static int handle_ban_w(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -2474,7 +2474,7 @@ static int handle_ban_m(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -2535,7 +2535,7 @@ static int handle_ban_p(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -2592,7 +2592,7 @@ static int handle_unban(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Figure out the user requested */
@@ -2704,7 +2704,7 @@ static int handle_friends(ship_client_t *c, const char *params) {
 static int handle_gbc(ship_client_t *c, const char *params) {
     /* Make sure the requester is a Global GM. */
     if(!GLOBAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure there's a message to send */
@@ -2735,7 +2735,7 @@ static int handle_override(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a lobby, not a team */
@@ -2838,7 +2838,7 @@ static int handle_search(ship_client_t *c, const char *params) {
 static int handle_gm(ship_client_t *c, const char *params) {
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     return send_gm_menu(c, MENU_ID_GM);
@@ -2851,7 +2851,7 @@ static int handle_maps(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Read in the maps string, one character at a time. Any undefined entries
@@ -2994,7 +2994,7 @@ static int handle_exp(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* Make sure that the requester is in a team, not a lobby */
@@ -3026,7 +3026,7 @@ static int handle_level(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     if(c->version == CLIENT_VERSION_BB) {
@@ -3174,7 +3174,7 @@ static int handle_trackinv(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     /* Make sure that the requester is in a plain old lobby. */
     if(l->type != LOBBY_TYPE_LOBBY)
@@ -3221,7 +3221,7 @@ static int handle_ep3music(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     /* Make sure that the requester is in a lobby, not a team */
     if(l->type != LOBBY_TYPE_LOBBY)
@@ -3301,7 +3301,7 @@ static int handle_dsdrops(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     if(c->version == CLIENT_VERSION_BB)
         return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
@@ -3400,7 +3400,7 @@ static int handle_noevent(ship_client_t *c, const char *params) {
 /* 用法: /lflags */
 static int handle_lflags(ship_client_t *c, const char *params) {
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     return send_txt(c, "\tE\tC7%08x", c->cur_lobby->flags);
 }
@@ -3408,7 +3408,7 @@ static int handle_lflags(ship_client_t *c, const char *params) {
 /* 用法: /cflags */
 static int handle_cflags(ship_client_t *c, const char *params) {
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     return send_txt(c, "\tE\tC7%08x", c->flags);
 }
@@ -3426,7 +3426,7 @@ static int handle_t(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
 
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     if(!(str = _strdup(params)))
         return send_txt(c, "%s", __(c, "\tE\tC7内部服务器错误."));
@@ -3496,7 +3496,7 @@ static int handle_quest(ship_client_t *c, const char *params) {
     int rv;
 
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     /* Make sure that the requester is in a team, not a lobby. */
     if(l->type != LOBBY_TYPE_GAME)
@@ -3641,7 +3641,7 @@ static int handle_teamlog(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     /* Make sure that the requester is in a team, not a lobby. */
     if(l->type != LOBBY_TYPE_GAME)
@@ -3668,7 +3668,7 @@ static int handle_eteamlog(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     /* Make sure that the requester is in a team, not a lobby. */
     if(l->type != LOBBY_TYPE_GAME)
@@ -3699,7 +3699,7 @@ static int handle_ib(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     if(!(str = _strdup(params))) {
@@ -3821,7 +3821,7 @@ static int handle_logme(ship_client_t *c, const char *params) {
 #else
     /* Make sure the requester has permission to do this */
     if(!IS_TESTER(c))
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
 
     if(*params) {
         if(!strcmp(params, "off")) {
@@ -3890,15 +3890,10 @@ static int handle_pso2(ship_client_t* src, const char* params) {
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+        return get_gm_priv(src);
     }
 
     int count;
-
-    /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(src)) {
-        return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC7权限不足."));
-    }
 
     /* Copy over the item data. */
     count = sscanf(params, "%X,%X,%X,%X", &item[0], &item[1], &item[2],
@@ -4002,7 +3997,7 @@ static int handle_cheat(ship_client_t* c, const char* params) {
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(c)) {
         pthread_mutex_unlock(&c->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return get_gm_priv(c);
     }
 
     /* See if we're turning the flag off. */
@@ -4038,11 +4033,11 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
 
     pthread_mutex_lock(&src->mutex);
 
-    ///* Make sure the requester is a GM. */
-    //if (!LOCAL_GM(src)) {
-    //    pthread_mutex_unlock(&src->mutex);
-    //    return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
-    //}
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        pthread_mutex_unlock(&src->mutex);
+        return get_gm_priv(src);
+    }
 
     /* Copy over the item data. */
     count = sscanf(params, "%hX, %hX, %[0-9A-Fa-f]", &opcode[0], &opcode[1], data);

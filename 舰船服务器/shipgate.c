@@ -1628,7 +1628,8 @@ static int handle_usrlogin(shipgate_conn_t* conn,
             i->privilege |= ntohl(pkt->priv);
             i->flags |= CLIENT_FLAG_LOGGED_IN;
             i->flags &= ~CLIENT_FLAG_GC_PROTECT;
-            send_txt(i, "%s %u", __(i, "\tE\tC7欢迎回来."), gc);
+            send_txt(i, "%s\n%s", __(i, "\tE\tC8欢迎回来."), get_player_describe(i));
+            GM_LOG("%s 已获取管理权限", get_player_describe(i));
             break;
         }
     }

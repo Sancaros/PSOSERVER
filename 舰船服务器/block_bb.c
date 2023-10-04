@@ -1511,6 +1511,9 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
     /* Copy in the security data */
     memcpy(&c->sec_data, &pkt->var.new_clients.cfg, sizeof(bb_client_config_pkt));
 
+    memcpy(c->username, pkt->username, sizeof(c->username));
+    memcpy(c->password, pkt->password, sizeof(c->password));
+
     if (c->sec_data.cfg.magic != CLIENT_CONFIG_MAGIC) {
         send_bb_security(c, 0, LOGIN_93BB_FORCED_DISCONNECT, 0, NULL, 0);
         return -1;
