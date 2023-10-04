@@ -340,7 +340,7 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
+            return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
         }
 
         //TODO 这里要判断类型
@@ -508,12 +508,15 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
     case MENU_ID_GM:
         switch (item_id) {
         case ITEM_ID_GM_REF_QUESTS:
+            GM_LOG("%s 使用权限刷新任务列表", get_player_describe(c));
             return refresh_quests(c, send_msg);
 
         case ITEM_ID_GM_REF_GMS:
+            GM_LOG("%s 使用权限刷新GM列表", get_player_describe(c));
             return refresh_gms(c, send_msg);
 
         case ITEM_ID_GM_REF_LIMITS:
+            GM_LOG("%s 使用权限刷新限制列表", get_player_describe(c));
             return refresh_limits(c, send_msg);
 
         case ITEM_ID_GM_RESTART:
@@ -534,6 +537,7 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
     case MENU_ID_GM_GAME_EVENT:
         if (item_id < 7) {
             ship->game_event = (uint8_t)item_id;
+            GM_LOG("%s 使用权限修改房间节日事件为 %d", get_player_describe(c), ship->game_event);
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7房间节日事件已设置."));
         }
 
@@ -543,6 +547,7 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
         if (item_id < 15) {
             ship->lobby_event = (uint8_t)item_id;
             update_lobby_event();
+            GM_LOG("%s 使用权限修改大厅节日事件为 %d", get_player_describe(c), ship->lobby_event);
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7大厅节日事件已设置."));
         }
 
@@ -554,11 +559,13 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
         case LOBBY_SET_NONE:
             c->game_data->gm_drop_rare = 0;
             c->cur_lobby->drop_rare = 0;
-            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4房间恢复默认设置!"));
+            GM_LOG("%s 使用权限修改掉落模式为 %d", get_player_describe(c), c->game_data->gm_drop_rare);
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7房间恢复默认掉落!"));
 
         case LOBBY_SET_DROP_RARE:
             c->game_data->gm_drop_rare = 1;
             c->cur_lobby->drop_rare = 1;
+            GM_LOG("%s 使用权限修改掉落模式为 %d", get_player_describe(c), c->game_data->gm_drop_rare);
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4全局稀有掉落已设置!"));
 
         default:
@@ -1189,6 +1196,94 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     }
 
     return 0;
+}
+
+/* 0x0098 输出完整玩家角色*/
+static int bb_process_char_leave_game(ship_client_t* c, bb_char_data_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+    uint32_t v;
+    int i, version = c->version;
+
+    pthread_mutex_lock(&c->mutex);
+
+    /* 要完善更合理的角色数据检测...
+       TODO: This should probably be more thorough and done as part of the
+       client_check_character() function. */
+       /* If they already had character data, then check if it's still sane. */
+    if (c->pl->bb.character.dress_data.gc_string[0]) {
+        i = client_check_character(c, &pkt->data, version);
+        if (i) {
+            ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+                " 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
+                c->guildcard, i);
+            if (c->cur_lobby) {
+                ERR_LOG("        房间: %s (类型: 难度:%d,对战模式:%d,挑战模式:%d,V2:%d)",
+                    c->cur_lobby->name, c->cur_lobby->difficulty,
+                    c->cur_lobby->battle, c->cur_lobby->challenge,
+                    c->cur_lobby->v2);
+            }
+        }
+    }
+
+    v = LE32(pkt->data.bb.character.disp.level + 1);
+    if (v > MAX_PLAYER_LEVEL) {
+        send_msg(c, MSG_BOX_TYPE, __(c, "\tE不允许作弊玩家进入\n"
+            "这个服务器.\n\n"
+            "这条信息将会上报至\n"
+            "管理员处."));
+        ERR_LOG("%s(%d): 检测到无效级别的角色!\n"
+            "        GC %" PRIu32 ", 等级: %" PRIu32 "",
+            ship->cfg->ship_name, c->cur_block->b,
+            c->guildcard, v);
+        return -1;
+    }
+
+    if (pkt->data.bb.autoreply[0]) {
+        /* 复制自动回复数据 */
+        client_set_autoreply(c, pkt->data.bb.autoreply,
+            len - 4 - sizeof(bb_player_t));
+    }
+
+    /* 复制玩家数据至统一结构, 并设置指针. */
+    memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
+    /* 初始化 模式角色数据 */
+    memset(&c->mode_pl->bb, 0, PSOCN_STLENGTH_BB_CHAR2);
+    c->infoboard = (char*)c->pl->bb.infoboard;
+    if (!&c->pl->bb.records) {
+        c->records->bb = c->pl->bb.records;
+        //c->records->bb.challenge.title_color = encode_xrgb1555(c->pl->bb.records.challenge.title_color);
+        //c->records->bb.challenge.rank_title = encrypt_challenge_rank_text()
+    }
+    memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
+
+    /* 将背包数据复制至玩家数据结构中 */
+    memcpy(c->iitems, c->pl->bb.character.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
+    c->item_count = (int)c->pl->bb.character.inv.item_count;
+
+    /* 测试用 */
+    c->ch_class = c->pl->bb.character.dress_data.ch_class;
+    /* 更新玩家用药情况 */
+    update_bb_mat_use(c);
+
+#ifdef DEBUG
+
+    DBG_LOG("c->ch_class %d", c->ch_class);
+
+#endif // DEBUG
+
+    /* 重新对库存数据进行编号, 以便后期进行数据交换 */
+    for (i = 0; i < c->item_count; ++i) {
+        v = 0x00210000 | i;
+        c->iitems[i].data.item_id = LE32(v);
+    }
+
+    /* Remove the client from the lobby they're in, which will force the
+       0x84 sent later to act like we're adding them to any lobby
+        将客户端从其所在的大厅中删除，
+        这将强制稍后发送的0x84表现为我们正在将其添加到任何大厅中 . */
+    pthread_mutex_unlock(&c->mutex);
+    return lobby_remove_player_bb(c);
 }
 
 /* Process a client's done bursting signal. */
@@ -1910,7 +2005,7 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
 #endif // DEBUG
 
         if (src->mode) {
-            memcpy(&src->mode_pl->bb, &char_data.character, 1220);
+            memcpy(&src->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
 #ifdef DEBUG
             DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
             return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
@@ -1918,9 +2013,9 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
             return -3;
 #endif // DEBUG
         }
-        else {
-            memcpy(&src->bb_pl->character, &char_data.character, 1220);
-        }
+        //else {
+        //    memcpy(&src->bb_pl->character, &char_data.character, 1220);
+        //}
 
         /* BB has this in two places for now... */
         /////////////////////////////////////////////////////////////////////////////////////
@@ -3268,7 +3363,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
             /* 0x0098 152*/
         case LEAVE_GAME_PL_DATA_TYPE:
-            return bb_process_char(c, (bb_char_data_pkt*)pkt);
+            return bb_process_char_leave_game(c, (bb_char_data_pkt*)pkt);
 
             /* 0x00A0 160*/
         case SHIP_LIST_TYPE:

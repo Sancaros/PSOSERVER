@@ -448,7 +448,6 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 				new_area = area;
 			break;
 		}
-		case GAME_TYPE_EPISODE_3:
 		case GAME_TYPE_EPISODE_4:
 			// TODO: Figure out remaps for Episode 4 (if there are any)
 			new_area = area + 1;
@@ -650,7 +649,7 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 
 	// Note: The original code uses 0xFFFFFFFF as the maximum here. We use
 	// 0x100000000 instead, which makes all rare items SLIGHTLY more rare.
-	if ((drop_rare = sfmt_genrand_real1(rng)) >= expand_rate(drop.probability)) {
+	if ((drop_rare = sfmt_genrand_real1(rng)) >= expand_rate(drop.probability) && !l->drop_rare) {
 #ifdef DEBUG
 
 		DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
@@ -840,7 +839,7 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 
 	uint8_t type_drop_prob = ent->enemy_type_drop_probs[enemy_type];
 	uint8_t drop_sample = rand_int(rng, 100);
-	if (drop_sample >= type_drop_prob) {
+	if (drop_sample >= type_drop_prob && !l->drop_rare) {
 #ifdef DEBUG
 		DBG_LOG("enemy_type %d Drop not chosen (%hhu vs. %hhu)", enemy_type, drop_sample, type_drop_prob);
 #endif // DEBUG
@@ -863,7 +862,7 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 			item_class = ent->enemy_item_classes[enemy_type];
 			break;
 		default:
-			ERR_LOG("无效的物品类型列式");
+			ERR_LOG("无效的物品类型列式 %d", item_class_determinant);
 		}
 
 #ifdef DEBUG
@@ -920,7 +919,7 @@ item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_
 		return item;
 	}
 
-	item = on_monster_item_drop_with_norm_area(l, ent, rng, get_pt_index(l->episode, enemy_type), area, section_id);
+	item = on_monster_item_drop_with_norm_area(l, ent, rng, enemy_type, area, section_id);
 	return item;
 }
 

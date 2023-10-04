@@ -589,7 +589,7 @@ static int handle_item(ship_client_t *src, const char *params) {
         item_get_name(&src->new_item, src->version, 0),
         __(src, "\tE\tC6设置成功, 立即生成."));
 
-    ITEM_LOG("%s 使用权限制造:", get_player_describe(src));
+    GM_LOG("%s 使用权限制造:", get_player_describe(src));
     print_item_data(&src->new_item, l->version);
 
     return 0;
@@ -626,7 +626,7 @@ static int handle_item1(ship_client_t* src, const char* params) {
 
     src->new_item.datal[0] = SWAP32(item);
 
-    ITEM_LOG("%s 使用权限修改 item1:", get_player_describe(src));
+    GM_LOG("%s 使用权限修改 item1:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s %s %s",
@@ -660,7 +660,7 @@ static int handle_item2(ship_client_t* src, const char* params) {
 
     src->new_item.datal[1] = SWAP32(item);
 
-    ITEM_LOG("%s 使用权限修改 item2:", get_player_describe(src));
+    GM_LOG("%s 使用权限修改 item2:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item2 设置成功."));
@@ -691,7 +691,7 @@ static int handle_item3(ship_client_t* src, const char* params) {
 
     src->new_item.datal[2] = SWAP32(item);
 
-    ITEM_LOG("%s 使用权限修改 item3:", get_player_describe(src));
+    GM_LOG("%s 使用权限修改 item3:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item3 设置成功."));
@@ -722,7 +722,7 @@ static int handle_item4(ship_client_t *src, const char *params) {
 
     src->new_item.data2l = SWAP32(item);
 
-    ITEM_LOG("%s 使用权限修改 item4:", get_player_describe(src));
+    GM_LOG("%s 使用权限修改 item4:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item4 设置成功."));
@@ -779,7 +779,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         item_get_name(&src->new_item, src->version, 0),
         __(src, "\tE\tC6生成成功."));
 
-    ITEM_LOG("%s 使用权限制造:", get_player_describe(src));
+    GM_LOG("%s 使用权限制造:", get_player_describe(src));
     print_item_data(&src->new_item, l->version);
 
     return 0;
@@ -1681,35 +1681,35 @@ static void dumpinv_internal(ship_client_t *src) {
     if(v != CLIENT_VERSION_BB) {
         psocn_v1v2v3pc_char_t* character_v1 = get_client_char_nobb(src);
 
-        ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
-        ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
-        ITEM_LOG("等级: %u 经验: %u", character_v1->disp.level + 1, character_v1->disp.exp);
-        ITEM_LOG("钱包: %u", character_v1->disp.meseta);
-        ITEM_LOG("数量: %u", character_v1->inv.item_count);
+        GM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
+        GM_LOG("职业: %s 房间模式: %s", pso_class[character_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        GM_LOG("等级: %u 经验: %u", character_v1->disp.level + 1, character_v1->disp.exp);
+        GM_LOG("钱包: %u", character_v1->disp.meseta);
+        GM_LOG("数量: %u", character_v1->inv.item_count);
 
-        ITEM_LOG("------------------------------------------------------------");
+        GM_LOG("------------------------------------------------------------");
         for(i = 0; i < character_v1->inv.item_count; ++i) {
             print_iitem_data(&character_v1->inv.iitems[i], i, src->version);
         }
-        ITEM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("////////////////////////////////////////////////////////////");
     }
     else {
         psocn_bb_char_t* character_bb = get_client_char_bb(src);
 
-        ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
-        ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
-        ITEM_LOG("等级: %u 经验: %u", character_bb->disp.level + 1, character_bb->disp.exp);
-        ITEM_LOG("钱包: %u", character_bb->disp.meseta);
-        ITEM_LOG("数量: %u", character_bb->inv.item_count);
-        ITEM_LOG("HP药: %u TP药: %u 语言: %u", character_bb->inv.hpmats_used, character_bb->inv.tpmats_used, character_bb->inv.language);
+        GM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
+        GM_LOG("职业: %s 房间模式: %s", pso_class[character_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        GM_LOG("等级: %u 经验: %u", character_bb->disp.level + 1, character_bb->disp.exp);
+        GM_LOG("钱包: %u", character_bb->disp.meseta);
+        GM_LOG("数量: %u", character_bb->inv.item_count);
+        GM_LOG("HP药: %u TP药: %u 语言: %u", character_bb->inv.hpmats_used, character_bb->inv.tpmats_used, character_bb->inv.language);
 
-        ITEM_LOG("------------------------------------------------------------");
+        GM_LOG("------------------------------------------------------------");
         for (i = 0; i < character_bb->inv.item_count; ++i) {
             print_iitem_data(&character_bb->inv.iitems[i], i, src->version);
         }
-        ITEM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("////////////////////////////////////////////////////////////");
     }
     
 }
@@ -1737,16 +1737,16 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
             return send_txt(src, "%s", __(src, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
-        ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
+        GM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
             l->lobby_id);
 
-        ITEM_LOG("------------------------------------------------------------");
+        GM_LOG("------------------------------------------------------------");
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
-            ITEM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
+            GM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
             print_iitem_data(&j->iitem, find_litem_index(l, &j->iitem.data), src->version);
         }
-        ITEM_LOG("------------------------------------------------------------");
+        GM_LOG("------------------------------------------------------------");
 
         pthread_mutex_unlock(&l->mutex);
     }
@@ -1815,16 +1815,16 @@ static void dumpbank_internal(ship_client_t* src) {
 
         //istrncpy16_raw(ic_utf16_to_gb18030, name, &c->bb_pl->character.name.char_name[0], 64,
         //    BB_CHARACTER_CHAR_NAME_WLENGTH);
-        ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("玩家: %s 银行数据转储", get_player_describe(src));
-        ITEM_LOG("职业: %s 银行: %s 模式: %s", pso_class[character->dress_data.ch_class].cn_name, src->bank_type ? "公共" : "角色", src->mode ? "模式" : "普通");
-        ITEM_LOG("数量: %u 美赛塔 %u", bank->item_count, bank->meseta);
+        GM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("玩家: %s 银行数据转储", get_player_describe(src));
+        GM_LOG("职业: %s 银行: %s 模式: %s", pso_class[character->dress_data.ch_class].cn_name, src->bank_type ? "公共" : "角色", src->mode ? "模式" : "普通");
+        GM_LOG("数量: %u 美赛塔 %u", bank->item_count, bank->meseta);
 
-        ITEM_LOG("------------------------------------------------------------");
+        GM_LOG("------------------------------------------------------------");
         for (i = 0; i < bank->item_count; ++i) {
             print_bitem_data(&bank->bitems[i], i, src->version);
         }
-        ITEM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("////////////////////////////////////////////////////////////");
     }
     else {
         send_txt(src, "%s", __(src, "\tE\tC7仅限于BB使用."));

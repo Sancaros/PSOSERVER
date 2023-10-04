@@ -20,15 +20,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <f_logs.h>
 #include <SFMT.h>
 
 #include <AFS.h>
 #include <GSL.h>
 #include <PRS.h>
 
+#include "f_logs.h"
+
 #include "rtdata.h"
 #include "ship_packets.h"
+#include "lobby.h"
 
 char abbreviation_for_difficulty(uint8_t difficulty) {
     char abbreviation = '?';
@@ -294,7 +296,7 @@ int rt_read_bb(const char* fn) {
     pso_gsl_read_t* a;
     const char difficulties[4] = { 'n', 'h', 'v', 'u' };
     // 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
-    const char* game_type[4] = { "", "l" , "c", "bb" };
+    const char* game_ep_rt_index[4] = { "", "l" , "c", "bb" };
     char filename[32];
     uint32_t hnd;
     size_t sz = sizeof(rt_table_t);
@@ -328,7 +330,7 @@ int rt_read_bb(const char* fn) {
             for (颜色 = 0; 颜色 < 10; ++颜色) {
                 /* Figure out the name of the file in the archive that we're
                    looking for... */
-                snprintf(filename, 32, "ItemRT%s%c%d.rel", game_type[章节],
+                snprintf(filename, 32, "ItemRT%s%c%d.rel", game_ep_rt_index[章节],
                     tolower(abbreviation_for_difficulty(难度)), 颜色);
 
 #ifdef DEBUG
@@ -434,11 +436,13 @@ out:
     return rv;
 }
 
+const char* episodenames[] = { "章节 I", "章节 II", "挑战模式", "章节 IV" };
+
 rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
     pso_gsl_read_t* a;
     const char difficulties[4] = { 'n', 'h', 'v', 'u' };
     //EP1 0  NULL / EP2 1  l / CHALLENGE 2 c  / EP4 3 bb
-    const char* game_type[4] = { "", "l" , "c", "bb" };
+    const char* game_ep_rt_index[4] = { "", "l" , "c", "bb" };
     char filename[32];
     uint32_t hnd;
     size_t sz = sizeof(rt_table_t);
@@ -467,13 +471,13 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
     }
 
     /* 获取需要读取的文件名称 */
-    snprintf(filename, 32, "ItemRT%s%c%d.rel", game_type[章节],
+    snprintf(filename, 32, "ItemRT%s%c%d.rel", game_ep_rt_index[章节],
         tolower(abbreviation_for_difficulty(难度)), 颜色);
 
 #ifdef DEBUG
-    DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
+    DBG_LOG("%s | %s %s %s", filename, episodenames[章节], get_difficulty_describe(难度), get_section_describe(NULL, 颜色, true));
 #endif // DEBUG
-    DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
+    DBG_LOG("RT文件:%s | %s %s %s", filename, episodenames[章节], get_difficulty_describe(难度), get_section_describe(NULL, 颜色, true));
 
     /* Grab a handle to that file. */
     hnd = pso_gsl_file_lookup(a, filename);
@@ -634,32 +638,31 @@ uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
 }
 
 rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
-    uint8_t game_type = 0;//和游戏章节类型相关
+    uint8_t game_ep_rt_index = 0;//和游戏章节类型相关
     /* Grab the rare table for the game */
     //EP1 0  NULL / EP2 1  l /  CHALLENGE 2 c / EP4 3 bb
     if (challenge) {
-        game_type = 2;
+        game_ep_rt_index = 2;
     }
     else {
         switch (episode)
         {
         case GAME_TYPE_NORMAL:
         case GAME_TYPE_EPISODE_1:
-            game_type = 0;
+            game_ep_rt_index = 0;
             break;
         case GAME_TYPE_EPISODE_2:
-            game_type = 1;
+            game_ep_rt_index = 1;
             break;
-        case GAME_TYPE_EPISODE_3:
         case GAME_TYPE_EPISODE_4:
-            game_type = 3;
+            game_ep_rt_index = 3;
             break;
         }
     }
 
-    rt_table_t* tmp = rt_dynamics_read_bb(ship->cfg->bb_rtdata_file, game_type, difficulty, section);
+    rt_table_t* tmp = rt_dynamics_read_bb(ship->cfg->bb_rtdata_file, game_ep_rt_index, difficulty, section);
     if(!tmp)
-        return &bb_rtdata[game_type][difficulty][section];
+        return &bb_rtdata[game_ep_rt_index][difficulty][section];
 
     return tmp;
 }

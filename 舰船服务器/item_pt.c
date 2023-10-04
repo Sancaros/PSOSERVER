@@ -184,7 +184,7 @@ out:
 int pt_read_v3(const char* fn) {
 	pso_gsl_read_t* a;
 	const char difficulties[4] = { 'n', 'h', 'v', 'u' };
-	const char* episodes[4] = { "", "l" , "c", "cl" };
+	const char* game_ep_pt_index[4] = { "", "l" , "c", "cl" };
 	char filename[32];
 	uint32_t hnd;
 	const size_t sz = sizeof(fpt_v3_entry_t);
@@ -218,7 +218,7 @@ int pt_read_v3(const char* fn) {
 			for (颜色 = 0; 颜色 < 10; ++颜色) {
 				/* Figure out the name of the file in the archive that we're
 				   looking for... */
-				snprintf(filename, 32, "ItemPT%s%c%d.rel", episodes[章节],
+				snprintf(filename, 32, "ItemPT%s%c%d.rel", game_ep_pt_index[章节],
 					difficulties[难度], 颜色);
 
 				//printf("%s \n", filename);
@@ -326,7 +326,7 @@ int pt_read_bb(const char* fn) {
 	pso_gsl_read_t* a;
 	const char difficulties[4] = { 'n', 'h', 'v', 'u' };
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
-	const char* game_type[5] = { "", "l" , "c", "cl", "bb" };
+	const char* game_ep_pt_index[5] = { "", "l" , "c", "cl", "bb" };
 	char filename[32];
 	uint32_t hnd;
 	const size_t sz = sizeof(fpt_bb_entry_t);
@@ -360,7 +360,7 @@ int pt_read_bb(const char* fn) {
 			for (颜色 = 0; 颜色 < 10; ++颜色) {
 				/* Figure out the name of the file in the archive that we're
 				   looking for... */
-				snprintf(filename, 32, "ItemPT%s%c%d.rel", game_type[章节],
+				snprintf(filename, 32, "ItemPT%s%c%d.rel", game_ep_pt_index[章节],
 					tolower(abbreviation_for_difficulty(难度)), 颜色);
 
 				//printf("%s | ", filename);
@@ -497,7 +497,7 @@ pt_bb_entry_t* pt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色)
 	pso_gsl_read_t* a;
 	const char difficulties[4] = { 'n', 'h', 'v', 'u' };
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
-	const char* game_type[5] = { "", "l" , "c", "cl", "bb" };
+	const char* game_ep_pt_index[5] = { "", "l" , "c", "cl", "bb" };
 	char filename[32];
 	uint32_t hnd;
 	const size_t sz = sizeof(fpt_bb_entry_t);
@@ -526,7 +526,7 @@ pt_bb_entry_t* pt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色)
 	/* 现在读取特定的章节... */
 				/* Figure out the name of the file in the archive that we're
 				   looking for... */
-	snprintf(filename, 32, "ItemPT%s%c%d.rel", game_type[章节],
+	snprintf(filename, 32, "ItemPT%s%c%d.rel", game_ep_pt_index[章节],
 		tolower(abbreviation_for_difficulty(难度)), 颜色);
 
 #ifdef DEBUG
@@ -664,7 +664,7 @@ out:
 }
 
 pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
-	uint8_t game_type = 0;
+	uint8_t game_ep_pt_index = 0;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
@@ -673,27 +673,26 @@ pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t diffic
 	case GAME_TYPE_NORMAL:
 	case GAME_TYPE_EPISODE_1:
 		if (challenge)
-			game_type = 2;
+			game_ep_pt_index = 2;
 		else
-			game_type = 0;
+			game_ep_pt_index = 0;
 		break;
 
 	case GAME_TYPE_EPISODE_2:
 		if (challenge)
-			game_type = 3;
+			game_ep_pt_index = 3;
 		else
-			game_type = 1;
+			game_ep_pt_index = 1;
 		break;
 
-	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
-		game_type = 4;
+		game_ep_pt_index = 4;
 		break;
 	}
 
-	pt_bb_entry_t* tmp = pt_dynamics_read_bb(ship->cfg->bb_ptdata_file, game_type, difficulty, section);
+	pt_bb_entry_t* tmp = pt_dynamics_read_bb(ship->cfg->bb_ptdata_file, game_ep_pt_index, difficulty, section);
 	if (!tmp)
-		return &bb_ptdata[game_type][difficulty][section];
+		return &bb_ptdata[game_ep_pt_index][difficulty][section];
 
 	return tmp;
 }
@@ -711,9 +710,9 @@ int pt_bb_enabled(void) {
 }
 
 size_t get_pt_index(uint8_t episode, size_t pt_index) {
-	size_t ep4_pt_index_offset = 0x57;//87 Item_PT EP4 enemy_index 差值
-	size_t new_pt_index = pt_index - 1;
-	return (episode == GAME_TYPE_EPISODE_3 ? (new_pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index);
+	size_t ep4_pt_index_offset = 0x58;//88 Item_PT EP4 enemy_index 差值
+	size_t new_pt_index = pt_index;
+	return episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index;
 }
 
 int get_pt_data_area_bb(uint8_t episode, int cur_area) {
@@ -805,7 +804,6 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 	}
 	break;
 
-	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		area = cur_area + 1;
 		break;

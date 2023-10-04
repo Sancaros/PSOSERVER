@@ -845,6 +845,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (rare_monster)
                 acc = 1;
             gen[count].bp_entry = 0x49 + acc;
+            gen[count].pt_index = 0x01 + acc;
             gen[count].rt_index = 0x01 + acc;
             break;
 
@@ -861,13 +862,15 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             }
             if (rare_monster)
                 acc = 1;
-            if (ep == LOBBY_EPISODE_4) {   /* Del Rappy & Sand Rappy */
+            if (ep == GAME_TYPE_EPISODE_4) {   /* Del Rappy & Sand Rappy */
                 if (alt) {
                     gen[count].bp_entry = 0x17 + acc;
+                    gen[count].pt_index = 0x11 + acc;
                     gen[count].rt_index = 0x11 + acc;
                 }
                 else {
                     gen[count].bp_entry = 0x05 + acc;
+                    gen[count].pt_index = 0x11;
                     gen[count].rt_index = 0x11 + acc;
                 }
             }
@@ -875,7 +878,8 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 if (acc) { // Rag Rappy and Al Rappy (Love for Episode II)
                     gen[count].bp_entry = 0x19;
 
-                    if (ep == LOBBY_EPISODE_1) {
+                    if (ep == GAME_TYPE_EPISODE_1) {
+                        gen[count].pt_index = 0x06;
                         gen[count].rt_index = 0x06;
                     }
                     else {
@@ -883,15 +887,19 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                             switch (ship->game_event)
                             {
                             case 0x01:
+                                gen[count].pt_index = 0x4F;
                                 gen[count].rt_index = 0x4F; // St. Rappy
                                 break;
                             case 0x04:
+                                gen[count].pt_index = 0x51;
                                 gen[count].rt_index = 0x51; // Easter Rappy
                                 break;
                             case 0x05:
+                                gen[count].pt_index = 0x50;
                                 gen[count].rt_index = 0x50; // Halo Rappy
                                 break;
                             default:
+                                gen[count].pt_index = 0x33;
                                 gen[count].rt_index = 0x33; // Love Rappy
                                 break;
                             }
@@ -902,6 +910,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 }
                 else {
                     gen[count].bp_entry = 0x18;
+                    gen[count].pt_index = 0x05;
                     gen[count].rt_index = 0x05;
                 }
             }
@@ -1776,7 +1785,7 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
     char fn3[3][256] = { 0 };
     int size = ARRAYSIZE(fn3), i = 0;
     int srv[3] = { 0 };
-    int k, l, nmaps = 0, nvars, m;
+    int k, l, nmaps = 0, nvars, m, alt;
     FILE* fp;
     //FILE* fp2;
     long sz;
@@ -1940,9 +1949,15 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
 
 #endif // DEBUG
 
+            alt = 0;
+
+            if ((episode == GAME_TYPE_EPISODE_4 && area > 5) ||
+                (episode == GAME_TYPE_EPISODE_2 && area > 15))
+                alt = 1;
+
             /* Parse */
             if (parse_map(en, sz / 0x48, &tmp[k * nvars + l], episode + 1,
-                0, area, &sfmt)) {
+                alt, area, &sfmt)) {
                 free_safe(en);
                 return 9;
             }
@@ -2609,8 +2624,6 @@ int bb_load_game_enemies(lobby_t* l) {
     /* Figure out the parameter set that will be in use first... */
     l->bb_params = battle_params[solo][l->episode - 1][l->difficulty];
 
-    DBG_LOG("episode %d", l->episode);
-
     /* Figure out the total number of enemies that the game will have... */
     for (i = 0; i < 0x20; i += 2) {
         if (read_bb_map_set(solo, l->episode - 1, i >> 1, cfg->bb_map_dir)) {
@@ -2894,7 +2907,6 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
             alt = 0;
 
             if((episode == GAME_TYPE_EPISODE_4 && area > 5) || 
-                (episode == GAME_TYPE_EPISODE_3 && area > 5) || 
                 (episode == GAME_TYPE_EPISODE_2 && area > 15))
                 alt = 1;
 

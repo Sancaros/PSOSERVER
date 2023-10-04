@@ -567,9 +567,9 @@ void client_destroy_connection(ship_client_t* c,
 
         ship_dec_clients(ship);
 
-        //TODO 与目前存在空房间的设定冲突 待适配
-        /* If the client has a lobby sitting around that was created but not added
-           to the list of lobbies, destroy it */
+        ////TODO 与目前存在空房间的设定冲突 待适配
+        ///* If the client has a lobby sitting around that was created but not added
+        //   to the list of lobbies, destroy it */
         //if (c->create_lobby && c->create_lobby->lobby_create) {
         //    c->create_lobby->lobby_create = 0;
         //    lobby_destroy_noremove(c->create_lobby);
@@ -883,14 +883,14 @@ uint8_t* get_recvbuf(void) {
             return NULL;
         }
 
-        memset(recvbuf, 0, MAX_PACKET_BUFF);
-
         if (pthread_setspecific(recvbuf_key, recvbuf)) {
             ERR_LOG("pthread_setspecific");
             perror("pthread_setspecific");
             free_safe(recvbuf);
             return NULL;
         }
+
+        memset(recvbuf, 0, MAX_PACKET_BUFF);
     }
 
     return recvbuf;
@@ -1697,21 +1697,30 @@ uint8_t get_player_section(ship_client_t* src) {
     return section_id;
 }
 
-char* get_player_section_describe(ship_client_t* src, uint8_t section, bool overwrite) {
-    uint8_t section_id = get_player_section(src);
+char* get_section_describe(ship_client_t* src, uint8_t section, bool overwrite) {
+    uint8_t section_id = 0, language_code = 0;
+
+    if (src) {
+        section_id = get_player_section(src);
+        language_code = src->language_code;
+    }
+
     if (overwrite)
         section_id = section;
 
     if (section_id > 9) {
-        ERR_LOG("%s 的颜色ID %d 超出界限, 改为 0", get_player_describe(src), section_id);
+        if (src)
+            ERR_LOG("%s 的颜色ID %d 超出界限, 改为 0", get_player_describe(src), section_id);
+        else
+            ERR_LOG("颜色ID %d 超出界限, 改为 0", section_id);
         /* 如果超出界限 则恢复默认值 0 */
         section_id = 0;
     }
 
-    if (src->language_code == 0)
-        return section_ids[get_player_section(src)].cn_name;
+    if (language_code == 0)
+        return section_ids[section_id].cn_name;
     else
-        return section_ids[get_player_section(src)].en_name;
+        return section_ids[section_id].en_name;
 }
 
 uint8_t get_lobby_leader_section(lobby_t* l) {

@@ -512,7 +512,7 @@ char* get_player_describe(ship_client_t* src);
 char* get_lobby_leader_describe(lobby_t* l);
 uint8_t get_player_msg_color_set(ship_client_t* src);
 uint8_t get_player_section(ship_client_t* src);
-char* get_player_section_describe(ship_client_t* src, uint8_t section, bool overwrite);
+char* get_section_describe(ship_client_t* src, uint8_t section, bool overwrite);
 uint8_t get_lobby_leader_section(lobby_t* l);
 uint8_t get_bb_max_tech_level(ship_client_t* src, int tech);
 void update_bb_mat_use(ship_client_t* src);

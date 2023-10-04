@@ -1518,15 +1518,11 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t item_id = LE32(pkt->item_id);
     errno_t err;
 
-    pthread_mutex_lock(&src->mutex);
-
     if (!in_game(src)) {
-        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_use_item_t), 0x02)) {
-        pthread_mutex_unlock(&src->mutex);
         return -2;
     }
 
@@ -1534,18 +1530,15 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
         DBG_LOG("是否是NPC用了物品？");
 #endif // DEBUG
-        pthread_mutex_unlock(&src->mutex);
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     if ((err = player_use_item(src, item_id))) {
         ERR_LOG("%s 使用物品发生错误! 错误码 %d", get_player_describe(src), err);
-        pthread_mutex_unlock(&src->mutex);
         return -3;
     }
 
     subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    pthread_mutex_unlock(&src->mutex);
     return 0;
 }
 
@@ -2767,10 +2760,15 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    pthread_mutex_lock(&src->mutex);
     if (!in_game(src)) {
-        pthread_mutex_unlock(&src->mutex);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("是否是NPC用了物品？");
+#endif // DEBUG
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     if (char_class_is_android(src->equip_flags) ||
@@ -2781,16 +2779,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
             get_player_describe(src), pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
             max_tech_level[pkt->technique_number].tech_name);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        pthread_mutex_unlock(&src->mutex);
         return -1;
-    }
-
-    if (pkt->shdr.client_id != src->client_id) {
-#ifdef DEBUG
-        DBG_LOG("是否是NPC用了物品？");
-#endif // DEBUG
-        pthread_mutex_unlock(&src->mutex);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     size_t allowed_count = min(pkt->shdr.size - 2, 10);
@@ -2800,13 +2789,11 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
             get_player_describe(src), pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
             max_tech_level[pkt->technique_number].tech_name);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 
     check_aoe_timer(src, pkt);
     subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    pthread_mutex_unlock(&src->mutex);
     return 0;
 }
 
@@ -2832,15 +2819,19 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_used_tech_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    pthread_mutex_lock(&src->mutex);
     if (!in_game(src)) {
-        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_used_tech_t), 0x02)) {
-        pthread_mutex_unlock(&src->mutex);
         return -2;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("是否是NPC用了物品？");
+#endif // DEBUG
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     if (src->equip_flags & EQUIP_FLAGS_DROID ||
@@ -2850,29 +2841,18 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("%s 释放了违规的法术!",
             get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        pthread_mutex_unlock(&src->mutex);
         return -3;
     }
     
-    if (pkt->shdr.client_id != src->client_id) {
-#ifdef DEBUG
-        DBG_LOG("是否是NPC用了物品？");
-#endif // DEBUG
-        pthread_mutex_unlock(&src->mutex);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
-
     /* If we're in legit mode or the flag isn't set, then don't do anything. */
     if ((l->flags & LOBBY_FLAG_LEGIT_MODE) ||
         !(src->flags & CLIENT_FLAG_INFINITE_TP)) {
-        pthread_mutex_unlock(&src->mutex);
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     /* This aught to do it... */
     subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     send_lobby_mod_stat(l, src, SUBCMD60_STAT_TPUP, 255);
-    pthread_mutex_unlock(&src->mutex);
     return 0;
 }
 

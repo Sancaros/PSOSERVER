@@ -782,7 +782,6 @@ bool enemy_type_valid_for_episode(Episode episode, EnemyType enemy_type) {
         default:
             return false;
         }
-    case GAME_TYPE_EPISODE_3:
     case GAME_TYPE_EPISODE_4:
         switch (enemy_type) {
         case ENEMY_BOOTA:
@@ -1044,7 +1043,6 @@ uint8_t battle_param_index_for_enemy_type(Episode episode, EnemyType enemy_type)
             return 0xFF;
         }
         break;
-    case GAME_TYPE_EPISODE_3:
     case GAME_TYPE_EPISODE_4:
         switch (enemy_type) {
         case ENEMY_BOOTA:
@@ -1112,6 +1110,38 @@ uint8_t battle_param_index_for_enemy_type(Episode episode, EnemyType enemy_type)
     return 0xFF;
 }
 
-const char* get_enemy_name(uint8_t episode, uint8_t difficulty, int rt_index) {
-    return episode == 3 ? mobnames_ep4_cn[rt_index] : difficulty == 3 ? mobnames_ult_cn[rt_index] : mobnames_cn[rt_index];
+uint8_t fix_bp_entry_index() {
+
+    return 0;
+}
+
+const char* get_enemy_pt_name(uint8_t episode, uint8_t difficulty, uint8_t pt_index, game_enemy_t* enemy) {
+    /* 很奇怪 客户端返回的数值 缺少了表格中0表位 直接读取了1表位 太恶心了 */
+    uint8_t fix_pt_index = pt_index + 1;
+    const char* enemy_name_cn = mobnames_cn[fix_pt_index];
+
+    if (difficulty == 3)
+        enemy_name_cn = mobnames_ult_cn[fix_pt_index];
+
+    if (episode == 3)
+        if(difficulty == 3)
+            enemy_name_cn = mobnames_ep4_ult_cn[fix_pt_index];
+        else
+            enemy_name_cn = mobnames_ep4_cn[fix_pt_index];
+
+    const char* enemy_name_en = mobnames[fix_pt_index];
+
+    if (difficulty == 3)
+        enemy_name_en = mobnames_ult[fix_pt_index];
+
+    if (episode == 3)
+        if (difficulty == 3)
+            enemy_name_en = mobnames_ep4_ult[fix_pt_index];
+        else
+            enemy_name_en = mobnames_ep4[fix_pt_index];
+
+    snprintf(enemy_desc, sizeof(enemy_desc), "怪物: %s(%s PT%d RT%d BP%d) 击杀标志 %02hhX 最后击倒ID %hu",
+        enemy_name_cn, enemy_name_en, fix_pt_index, enemy->rt_index, enemy->bp_entry, enemy->clients_hit, enemy->last_client);
+
+    return enemy_desc;
 }

@@ -129,7 +129,7 @@ litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float 
 
     if (item_not_identification_bb(new_item->datal[0], new_item->datal[1])) {
         ERR_LOG("0x%08X 是未识别物品", new_item->datal[0]);
-        print_item_data(new_item, l->version);
+        print_item_data( new_item, l->version);
         return NULL;
     }
 
@@ -177,7 +177,7 @@ litem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, flo
 
     if (item_not_identification_bb(iitem->data.datal[0], iitem->data.datal[1])) {
         ERR_LOG("0x%08X 是未识别物品", iitem->data.datal[0]);
-        print_item_data(&iitem->data, l->version);
+        print_item_data( &iitem->data, l->version);
         return NULL;
     }
 
@@ -1801,7 +1801,7 @@ combintion_other:
 
         if (!combo_applied) {
             ERR_LOG("%s 不适用任何合成", get_player_describe(src));
-            print_item_data(&iitem->data, src->version);
+            print_item_data( &iitem->data, src->version);
         }
         break;
     }

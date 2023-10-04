@@ -62,7 +62,7 @@ enum Log_files_Num {
 	ITEMS_LOG, //½¢´¬
 	MYSQLERR_LOG, //µÇÂ½
 	QUESTERR_LOG, //½¢´¬
-	GM_LOG, //½¢´¬
+	GMC_LOG, //½¢´¬
 	DEBUG_LOG, //²¹¶¡ µÇÂ½ ½¢´¬
 	FILE_LOG, //²¹¶¡ µÇÂ½ ½¢´¬
 	HOST_LOG, //²¹¶¡ µÇÂ½ ½¢´¬
@@ -98,7 +98,7 @@ static log_map_st log_header[] = {
 	{ ITEMS_LOG,			"ÎïÆ·" }, //½¢´¬
 	{ MYSQLERR_LOG,			"Êı¾İ" }, //µÇÂ½
 	{ QUESTERR_LOG,			"ÈÎÎñ" }, //½¢´¬
-	{ GM_LOG,				"¹ÜÀí" }, //½¢´¬
+	{ GMC_LOG,				"¹ÜÀí" }, //½¢´¬
 	{ DEBUG_LOG,			"µ÷ÊÔ" }, //²¹¶¡ µÇÂ½ ½¢´¬
 	{ FILE_LOG,				"ÎÄ¼ş" }, //²¹¶¡ µÇÂ½ ½¢´¬
 	{ HOST_LOG,				"ÍøÂç" }, //²¹¶¡ µÇÂ½ ½¢´¬
@@ -134,7 +134,7 @@ extern int32_t login_log_console_show;
 extern int32_t item_log_console_show;
 extern int32_t mysqlerr_log_console_show;
 extern int32_t questerr_log_console_show;
-extern int32_t gm_log_console_show;
+extern int32_t gmc_log_console_show;
 extern int32_t debug_log_console_show;
 extern int32_t error_log_console_show;
 extern int32_t file_log_console_show;
@@ -317,7 +317,7 @@ do { \
 #define GM_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, gm_log_console_show, GM_LOG, __VA_ARGS__); \
+    flog(__LINE__, gmc_log_console_show, GMC_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
@@ -408,7 +408,6 @@ do {\
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
-
 //#define free_safe2(EXP)  if((EXP)!=NULL && \
 //                        (unsigned int)(EXP)>(unsigned int)0x00000000 && \
 //                        (unsigned int)(EXP)<(unsigned int)0xFFFFFFFF ){\
@@ -433,7 +432,13 @@ extern inline void errl(const char* message);
 
 extern inline void dbgl(const char* message);
 
+extern inline void gml(const char* message);
+
+extern inline void iteml(const char* message);
+
 extern inline void testl(const char* message);
+
+typedef void (*LogFunc)(const char*, ...);
 
 extern void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length);
 

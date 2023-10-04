@@ -56,7 +56,7 @@ int32_t login_log_console_show;
 int32_t item_log_console_show;
 int32_t mysqlerr_log_console_show;
 int32_t questerr_log_console_show;
-int32_t gm_log_console_show;
+int32_t gmc_log_console_show;
 int32_t debug_log_console_show;
 int32_t error_log_console_show;
 int32_t file_log_console_show;
@@ -86,6 +86,14 @@ inline void errl(const char* message) {
 
 inline void dbgl(const char* message) {
 	DBG_LOG("%s", message);
+}
+
+inline void gml(const char* message) {
+	GM_LOG("%s", message);
+}
+
+inline void iteml(const char* message) {
+	ITEM_LOG("%s", message);
 }
 
 inline void testl(const char* message) {
@@ -358,9 +366,9 @@ void load_log_config(void)
 					questerr_log_console_show = atoi(&config_data[0]);
 					break;
 
-				case GM_LOG:
+				case GMC_LOG:
 					// 控制台LOG显示开关
-					gm_log_console_show = atoi(&config_data[0]);
+					gmc_log_console_show = atoi(&config_data[0]);
 					break;
 
 				case DEBUG_LOG:

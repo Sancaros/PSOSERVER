@@ -37,7 +37,7 @@
     do { \
         int ret = pthread_mutex_lock(&(lobby)->mutex); \
         if (ret != 0) { \
-            ERR_LOG("%s pthread_mutex_lock ´íÎó: %d", get_lobby_describe((lobby_t*)lobby), ret); \
+            ERR_LOG("%s pthread_mutex_lock ´íÎó: %d", get_lobby_describe_leader((lobby_t*)lobby), ret); \
         } \
     } while (0)
 
@@ -45,7 +45,7 @@
     do { \
         int ret = pthread_mutex_unlock(&(lobby)->mutex); \
         if (ret != 0) { \
-            ERR_LOG("%s pthread_mutex_unlock ´íÎó: %d", get_lobby_describe((lobby_t*)lobby), ret); \
+            ERR_LOG("%s pthread_mutex_unlock ´íÎó: %d", get_lobby_describe_leader((lobby_t*)lobby), ret); \
         } \
     } while (0)
 

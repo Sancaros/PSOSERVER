@@ -1567,7 +1567,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                             if (item_not_identification_bb(tmpi->datal[0], tmpi->datal[1])) {
 #ifdef DEBUG
                                 ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
-                                print_bitem_data(&c->bb_pl->bank.bitems[i], i, c->version);
+                                print_bitem_data(iteml, &c->bb_pl->bank.bitems[i], i, c->version);
 #endif // DEBUG
                                 clear_bitem(&c->bb_pl->bank.bitems[i]);
                                 continue;

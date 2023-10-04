@@ -352,6 +352,8 @@ static const uint32_t bb_game_required_level[3][4] = {
       {1, 40, 80, 110}  // episode 4
 };
 
+char* get_difficulty_describe(uint8_t difficulty);
+
 lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev);
 lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                            uint8_t difficulty, uint8_t battle, uint8_t chal,
@@ -421,6 +423,7 @@ void lobby_print_info(lobby_t *l, FILE *fp);
 void lobby_print_info2(ship_client_t* src);
 
 char* get_lobby_describe(lobby_t* l);
+char* get_lobby_describe_leader(lobby_t* l);
 
 #ifdef ENABLE_LUA
 #include <lua.h>

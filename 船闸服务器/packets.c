@@ -106,12 +106,15 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //print_ascii_hex(errl, sendbuf, len);
+                    free_safe(sendbuf);
                     return -1;
                 }
 
                 total += rv;
             }
         }
+
+        free_safe(sendbuf);
 
         return 0;
     }

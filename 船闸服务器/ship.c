@@ -5943,6 +5943,7 @@ int handle_pkt(ship_t* c) {
                 rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
                     ERR_LOG("process_ship_pkt ´íÎó rv = %d", rv);
+                    free_safe(recvbuf);
                     //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
                     //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
                     break;

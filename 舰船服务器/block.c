@@ -235,7 +235,7 @@ static void* block_thd(void* d) {
             }
 
             /* 默认间隔5秒存储一次数据 */
-            if ((it->save_time + 5 < srv_time) && (it->need_save_data)) {
+            if ((it->save_time < srv_time) && (it->need_save_data)) {
                 client_send_bb_data(it);
                 it->need_save_data = 1;
             }
@@ -1769,8 +1769,8 @@ int process_change_lobby(ship_client_t* c, uint32_t item_id) {
     /* The requested lobby is non-existant? What to do... */
     if (req == NULL) {
         pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
-            __(c, "\tC7The lobby is non-\nexistant."));
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法切换大厅!"),
+            __(c, "\tC6大厅已不存在."));
     }
 
     rv = lobby_change_lobby(c, req);
@@ -1778,12 +1778,12 @@ int process_change_lobby(ship_client_t* c, uint32_t item_id) {
     pthread_rwlock_unlock(&c->cur_block->lobby_lock);
 
     if (rv == -1) {
-        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
-            __(c, "\tC7The lobby is full."));
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法切换大厅!"),
+            __(c, "\tC4大厅人数已满."));
     }
     else if (rv < 0) {
-        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
-            __(c, "\tC7Unknown error occurred."));
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s %d.", __(c, "\tE\tC4无法切换大厅!"),
+            __(c, "\tC8发生未知错误 错误码"), rv);
     }
     else {
         /* Send a ping so we know when they're done loading in. This is useful

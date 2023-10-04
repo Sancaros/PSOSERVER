@@ -1180,7 +1180,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     iitem_t iitem = { 0 };
     int rv = 0;
-    uint8_t section = 0, pt_index = pkt->pt_index;
+    uint8_t section = 0, pt_index = (uint8_t)get_pt_index(l->episode, pkt->pt_index);
     uint16_t mid = LE16(pkt->entity_id);
 
     if (!in_game(src))
@@ -1198,6 +1198,8 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
 
     enemy->drop_done = 1;
+
+    uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
 
     /* 独立掉落模式 */
     if (l->drop_pso2) {
@@ -1219,18 +1221,36 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
+            //if (pt_index != enemy->rt_index) {
+            //    //ERR_LOG("命令参数 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
+            //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
+            //    pt_index = enemy->rt_index;
 
+            //    //DBG_LOG("修正 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
+            //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
+            //}
+
+            ITEM_LOG("-----------------第 %d 个怪物掉落情况----------------- ", mid);
+            ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max: %d, 任务 %" PRIu32 ")!"
+                , get_player_describe(p2)
+                , get_section_describe(p2, section, true)
+                , pkt->area
+                , mid
+                , l->map_enemies->enemy_count
+                , l->qid);
+            ITEM_LOG("%s", get_enemy_pt_name(l->episode, l->difficulty, pt_index, enemy));
+            ITEM_LOG("%s", get_lobby_describe(l));
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
             if (is_item_empty(&iitem.data)) {
+                ITEM_LOG("未产生掉落");
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
 
-            //iitem.data.item_id = generate_item_id(l, 0xFF);
-
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
                 ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(p2));
+                print_item_data(&iitem.data, l->version);
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
@@ -1238,11 +1258,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
             print_item_data(&iitem.data, l->version);
 #endif // DEBUG
-            ITEM_LOG("%s %s 请求%s掉落 (%d -- max: %d, 任务=%" PRIu32 ")!"
-                , get_player_describe(p2)
-                , get_player_section_describe(p2, section, true), get_enemy_name(l->episode, l->difficulty, enemy->rt_index), mid,
-                l->map_enemies->enemy_count, l->qid);
-            ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, p2->cur_area);
             print_item_data(&lt->iitem.data, l->version);
 
             rv = subcmd_send_bb_drop_item(p2, pkt, &lt->iitem);
@@ -1257,28 +1272,36 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         if (!l->map_enemies) {
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
-        
-        uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
-        if (pt_index == enemy->rt_index) {
-            DBG_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期匹配 rt_index %02X enemy->bp_entry 0x%02X expected_rt_index %02X",
-                pt_index, mid, enemy->rt_index, enemy->bp_entry, expected_rt_index);
-        }
-        else {
-            ERR_LOG("命令参数 pt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X enemy->bp_entry 0x%02X expected_rt_index %02X",
-                pt_index, mid, enemy->rt_index, enemy->bp_entry, expected_rt_index);
-        }
 
+        //if (pt_index != enemy->rt_index) {
+        //    //ERR_LOG("命令参数 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
+        //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
+        //    enemy->rt_index = pt_index;
+        //    //DBG_LOG("修正 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
+        //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
+        //}
+
+        ITEM_LOG("-----------------第 %d 个怪物掉落情况----------------- ", mid);
+        ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max: %d, 任务 %" PRIu32 ")!"
+            , get_player_describe(src)
+            , get_section_describe(src, section, true)
+            , pkt->area
+            , mid
+            , l->map_enemies->enemy_count
+            , l->qid);
+        ITEM_LOG("%s", get_enemy_pt_name(l->episode, l->difficulty, pt_index, enemy));
+        ITEM_LOG("%s", get_lobby_describe(l));
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data)) {
+            ITEM_LOG("未产生掉落");
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
 
-        //iitem.data.item_id = generate_item_id(l, 0xFF);
-
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
             ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
+            print_item_data(&iitem.data, l->version);
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
@@ -1286,12 +1309,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
         print_item_data(&iitem.data, l->version);
 #endif // DEBUG
-
-        ITEM_LOG("%s %s 请求%s掉落 (%d -- max: %d, 任务=%" PRIu32 ")!"
-            , get_player_describe(src)
-            , get_player_section_describe(src, section, false), get_enemy_name(l->episode, l->difficulty, enemy->rt_index), mid,
-            l->map_enemies->enemy_count, l->qid);
-        ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
         print_item_data(&lt->iitem.data, l->version);
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, pkt, &lt->iitem);
@@ -1357,7 +1374,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bitemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
-    uint8_t drop_area = 0, section = 0;
+    uint8_t drop_area = pkt->area, section = 0;
 
     if (!in_game(src))
         return -1;
@@ -1370,9 +1387,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             if (!l->clients[i])
                 continue;
 
-            if (l->clients[i]->cur_area != src->cur_area) {
-                drop_area = src->cur_area;
-            }
+            //if (l->clients[i]->cur_area != src->cur_area) {
+            //    drop_area = src->cur_area;
+            //}
 
             ship_client_t* p2 = l->clients[i];
             pthread_mutex_lock(&p2->mutex);
@@ -1399,6 +1416,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
                 ERR_LOG("%s 无法将物品添加至游戏房间! pkt->ignore_def %d", get_player_describe(p2), pkt->ignore_def);
+                print_item_data(&iitem.data, l->version);
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
@@ -1408,9 +1426,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
             ITEM_LOG("%s %s 请求ignore_def %d 区域 %d 箱子掉落 (任务=%" PRIu32 ")!"
                 , get_player_describe(p2)
-                , get_player_section_describe(p2, section, false), pkt->ignore_def, pkt->area, l->qid);
-            ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, p2->cur_area);
-            print_item_data(&iitem.data, l->version);
+                , get_section_describe(p2, section, false), pkt->ignore_def, pkt->area, l->qid);
+            ITEM_LOG("%s", get_lobby_describe(l));
+            print_item_data(&lt->iitem.data, l->version);
 
             rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
@@ -1421,7 +1439,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
         section = get_lobby_leader_section(l);
-        drop_area = src->cur_area;
+        //drop_area = src->cur_area;
 
         if (pkt->ignore_def) {
             iitem.data = on_box_item_drop(l, &src->sfmt_rng, get_pt_data_area_bb(l->episode, drop_area), section);
@@ -1440,6 +1458,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
             ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
+            print_item_data(&iitem.data, l->version);
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
@@ -1449,9 +1468,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
         ITEM_LOG("%s %s 请求ignore_def %d 区域 %d 箱子掉落 (任务=%" PRIu32 ")!"
             , get_player_describe(src)
-            , get_player_section_describe(src, section, false), pkt->ignore_def, pkt->area, l->qid);
-        ITEM_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
-        print_item_data(&iitem.data, l->version);
+            , get_section_describe(src, section, false), pkt->ignore_def, pkt->area, l->qid);
+        ITEM_LOG("%s", get_lobby_describe(l));
+        print_item_data(&lt->iitem.data, l->version);
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
@@ -2814,12 +2833,12 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
             rv |= subcmd_send_bb_create_inv_item(src, iitem.data, amount);
 
-            rv |= send_msg(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得物品奖励\n安慰奖: %d 美赛塔.",
-                currentDayOfWeek,
-                menu_choice_price[menu_choice],
-                get_player_name(src->pl, src->version, false),
-                amount
-            );
+            //rv |= send_msg(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得物品奖励\n安慰奖: %d 美赛塔.",
+            //    currentDayOfWeek,
+            //    menu_choice_price[menu_choice],
+            //    get_player_name(src->pl, src->version, false),
+            //    amount
+            //);
 
             rv |= subcmd_bb_send_coren_reward(src, 1, result_item);
             return rv;
@@ -2966,15 +2985,15 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     rv |= subcmd_send_bb_create_inv_item(src, iitem.data, 1);
 
-    rv |= send_msg(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n恭喜 %s 抽奖获得了\n\tE\tC6%s.",
-        currentDayOfWeek,
-        menu_choice_price[menu_choice],
-        get_player_name(src->pl, src->version, false),
-        get_item_describe(&iitem.data, src->version)
-    );
+    //rv |= send_msg(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n恭喜 %s 抽奖获得了\n\tE\tC6%s.",
+    //    currentDayOfWeek,
+    //    menu_choice_price[menu_choice],
+    //    get_player_name(src->pl, src->version, false),
+    //    get_item_describe(&iitem.data, src->version)
+    //);
 
     if (is_item_rare(&iitem.data))
-        rv |= announce_message(src, true, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
+        rv |= announce_message(src, false, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
             "恭喜 %s 在 \tE\tC4%d \tE\tC7美赛塔档次抽奖获得了 "
             "\tE\tC6%s.",
             currentDayOfWeek,

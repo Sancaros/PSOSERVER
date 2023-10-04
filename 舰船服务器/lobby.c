@@ -76,7 +76,6 @@ char* get_difficulty_describe(uint8_t difficulty) {
     return "未知";
 }
 
-
 static int td(ship_client_t *c, lobby_t *l, void *req);
 
 lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev) {
@@ -311,11 +310,29 @@ char* get_lobby_describe(lobby_t* l) {
     /* 初始化角色描述内存 */
     memset(lobby_des, 0, sizeof(lobby_des));
 
-    sprintf(lobby_des, "%s %s (%s:%s:%s:%s)"
+    sprintf(lobby_des, "房间:%s (%s:%s:%s:%s)"
+        , l->name
+        , l->episode == 1 ? "EP1" : l->episode == 2 ? "EP2" : "EP4"
+        , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "团队"
+        , get_difficulty_describe(l->difficulty)
+        , l->drop_pso2 == true ? l->drop_psocn == true ? "随机" : "独立" : "默认"
+    );
+
+    return lobby_des;
+}
+
+char* get_lobby_describe_leader(lobby_t* l) {
+    if (!l)
+        return "房间不存在";
+
+    /* 初始化角色描述内存 */
+    memset(lobby_des, 0, sizeof(lobby_des));
+
+    sprintf(lobby_des, "房间:%s %s (%s:%s:%s:%s)"
         , l->name
         , get_player_name(l->clients[l->leader_id]->pl, l->version, false)
         , l->episode == 1 ? "EP1" : l->episode == 2 ? "EP2" : "EP4"
-        , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "普通"
+        , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "团队"
         , get_difficulty_describe(l->difficulty)
         , l->drop_pso2 == true ? l->drop_psocn == true ? "随机" : "独立" : "默认"
     );
@@ -969,23 +986,24 @@ static int td(ship_client_t *c, lobby_t *l, void *req) {
     r = sfmt_genrand_uint32(&c->cur_block->sfmt_rng);
 
     switch(l->difficulty) {
-        case 0:
+        case GAME_TYPE_DIFFICULTY_NORMARL:
             i[3] = r & 0x1F;
             break;
 
-        case 1:
+        case GAME_TYPE_DIFFICULTY_HARD:
             i[3] = r & 0x3F;
             break;
 
-        case 2:
+        case GAME_TYPE_DIFFICULTY_VERY_HARD:
             i[3] = r & 0x7F;
             break;
 
-        case 3:
+        case GAME_TYPE_DIFFICULTY_ULTIMATE:
             i[3] = r & 0xFF;
             break;
 
         default:
+            ERR_LOG("%s 难度错误 %d", get_player_describe(c), l->difficulty);
             return 0;
     }
 
@@ -1251,19 +1269,19 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
     /* 如果客户端不在房间中, 将他们新增至默认的可用的房间. */
     if(!l) {
         if(lobby_add_to_any(c, req)) {
-            ERR_LOG("%s lobby_add_to_any error", get_player_describe(c));
+            ERR_LOG("%s lobby_add_to_any 错误", get_player_describe(c));
             return -11;
         }
 
         l = c->cur_lobby;
 
         if(send_lobby_join(c, l)) {
-            ERR_LOG("%s send_lobby_join error", get_player_describe(c));
+            ERR_LOG("%s send_lobby_join 错误", get_player_describe(c));
             return -11;
         }
 
         if(send_lobby_add_player(l, c)) {
-            ERR_LOG("%s send_lobby_add_player error", get_player_describe(c));
+            ERR_LOG("%s send_lobby_add_player 错误", get_player_describe(c));
             return -11;
         }
 
@@ -1282,7 +1300,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
     if(l != req) {
         pthread_mutex_lock(&req->mutex);
     }
-
+    
     /* Don't allow HUcaseal, FOmar, or RAmarl characters in v1 games. */
     if(req->type == LOBBY_TYPE_GAME && req->version == CLIENT_VERSION_DCV1 &&
        c->pl->v1.character.dress_data.ch_class > DCPCClassMax) {

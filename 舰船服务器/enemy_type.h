@@ -149,7 +149,7 @@ typedef enum {
 	ENEMY_MAX
 } EnemyType;
 
-const static char* mobnames[] = {
+static const char* mobnames[] = {
 						"N/A", "Hildebear", "Hildeblue", "Mothmant", "Monest", "Rag Rappy", "Al Rappy", "Savage Wolf", "Barbarous Wolf", "Booma",
 						"Gobooma", "Gigobooma", "Grass Assassin", "Poison Lily", "Nar Lily", "Nano Dragon", "Evil Shark", "Pal Shark", "Guil Shark", "Pofuilly Slime",
 						"Pouilly Slime", "Pan Arms", "Migium", "Hidoom", "Dubchic", "Garanz", "Sinow Beat", "Sinow Gold", "Canadine", "Canane",
@@ -162,7 +162,7 @@ const static char* mobnames[] = {
 						"N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
 };
 
-const static char* mobnames_ult[] = {
+static const char* mobnames_ult[] = {
 						"N/A", "Hildelt", "Hildetorr", "Mothvert", "Mothvist", "El Rappy", "Pal Rappy", "Gulgus", "Gulgus-gue", "Bartle",
 						"Barble", "Tollaw", "Crimson Assassin", "Ob Lily", "Mil Lily", "Nano Dragon", "Vulmer", "Govulmer", "Melqueek", "Pofuilly Slime",
 						"Pouilly Slime", "Pan Arms", "Migium", "Hidoom", "Dubchich", "Baranz", "Sinow Blue", "Sinow Red", "Canabin", "Canune",
@@ -175,8 +175,7 @@ const static char* mobnames_ult[] = {
 						"N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
 };
 
-
-const static char* mobnames_ep4[] = {
+static const char* mobnames_ep4[] = {
 						  "N/A","Astark", "Yowie", "Satellite Lizard", "Merissa A", "Merissa AA", "Girtablulu", "Zu", "Pazuzu", "Boota", "Za Boota",
 						  "Ba Boota", "Dorphon", "Dorphon Eclair", "Goran", "Goran Detonator", "Pyro Goran", "Sand Rappy", "Del Rappy", "Saint Million",
 						  "Shambertin", "Kondrieu", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
@@ -187,7 +186,18 @@ const static char* mobnames_ep4[] = {
 						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
 };
 
-const static char* mobnames_cn[] = {
+static const char* mobnames_ep4_ult[] = {
+						  "N/A","Astark", "Yowie", "Satellite Lizard", "Merissa A", "Merissa AA", "Girtablulu", "Zu", "Pazuzu", "Boota", "Ze Boota",
+						  "Ba Boota", "Dorphon", "Dorphon Eclair", "Goran", "Goran Detonator", "Pyro Goran", "Sand Rappy", "Del Rappy", "Saint Million",
+						  "Shambertin", "Kondrieu", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+};
+
+static const char* mobnames_cn[] = {
 							"N/A", "¿ñ±©¾ŞÔ³", "¿ñ±©°×Ô³", "ÎüÑª¾ŞÎÃ", "ÎüÑª¾ŞÎÃ³²", "»ÆÉ«À­±ÈÄñ", "À¶É«À­±ÈÄñ", "¿ñÀÇ", "¿ñÀÇÍõ", "×Ø¿ñĞÜ",
 							"»Æ¿ñĞÜ", "×Ï¿ñĞÜ", "¾Şó«òë", "¶¾ÁåÀ¼", "ºìÉ«ÁåÀ¼", "ÒíÁú", "ÂÌöèÄ§", "×ÏöèÄ§", "¿ñöèÄ§", "±ùÊ·À³Ä·",
 							"Ñ×Ê·À³Ä·", "ºÏÌå¹Ö", "±ù½£¹Ö", "»ğ½£¹Ö", "¿şÀÜ»ú±ø", "»ú¼×±¤Àİ", "À¶É«»ú¼×ÈÌÕß", "½ğÉ«»ú¼×ÈÌÕß", "µç×¦", "ºËĞÄµç×¦",
@@ -199,7 +209,8 @@ const static char* mobnames_cn[] = {
 							"ÄÏ¹ÏÀ­±ÈÄñ", "²Êµ°À­±ÈÄñ", "¶ñÁ­ËÀÉñ", "°µÁåÀ¼", "¶òÆÕÎ÷Â¡", "¶éÌìÁé", "âğÌìÁé", "¶òÆÕÎ÷¶Ü", "N/A", "N/A",
 							"N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
 };
-const static char* mobnames_ult_cn[] = {
+
+static const char* mobnames_ult_cn[] = {
 							"N/A", "À×±¬¾ŞÔ³", "°µºÚ¾ŞÔ³", "ÊÈÑª¾ŞÎÃ", "ÊÈÑª¾ŞÎÃ³²", "°×À­±ÈÄñ", "Æß²ÊÀ­±ÈÄñ", "½ÇÀÇ", "½ÇÀÇÍõ", "×ØÄ§¹ê",
 							"»ÆÄ§¹ê", "Ä§ó«òë", "ÊÈÑª¾Şó«òë", "±äÖÖÁåÀ¼", "ÒìÖÖÁåÀ¼", "Ç¿»¯ÒíÁú", "×ØöèĞÜ", "×ÏöèĞÜ", "±äÖÖöèĞÜ", "±ùÊ·À³Ä·",
 							"Ñ×Ê·À³Ä·", "Ç¿»¯ºÏÌå¹Ö", "±ù½£¹Ö", "»ğ½£¹Ö", "¿şÀÜ»ú½«", "³¬»ú¼×±¤Àİ", "×ÏÉ«»ú¼×ÈÌÕß", "ºìÉ«»ú¼×ÈÌÕß", "Ç¿»¯µç×¦",
@@ -212,7 +223,7 @@ const static char* mobnames_ult_cn[] = {
 							"N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
 };
 
-const static char* mobnames_ep4_cn[] = {
+static const char* mobnames_ep4_cn[] = {
 						  "N/A", "Òì¼×¾Şó«òë", "É°ÑÒòáòæ", "É³±©òáòæ", "ÃÄÓ°É³Ä§ £Á", "ÃÄÓ°É³Ä§ £Á£Á", "°µºÚÄ§ÑÛ¾Ş»¨", "¾ŞĞÍ»ğÏ¬Äñ", "±äÒìÁç½ÇÄñ", "±äÒìÖí", "¿ñÓ°±äÒìÖí",
 						  "¾Ş½Ç±äÒìÖí", "Ìú¼×¾ŞÏó", "°µºÚÌú¼×¾ŞÏó", "°µºÚµ¶Ä§", "°µºÚ¾ŞÄ§Íõ", "°µºÚ¿ñµ¶Ä§", "É³µØÀ­±ÈÄñ", "°µºÚÀ­±ÈÄñ", "Ê¥Ä§Áú",
 						  "É³°ØÁú", "¿Õ¼äÁú", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
@@ -222,7 +233,22 @@ const static char* mobnames_ep4_cn[] = {
 						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
 						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
 						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
-						  "N/A", "N/A", "N/A", "N/A" };
+						  "N/A", "N/A", "N/A", "N/A" 
+};
+
+
+static const char* mobnames_ep4_ult_cn[] = {
+						  "N/A", "Òì¼×¾Şó«òë", "É°ÑÒòáòæ", "É³±©òáòæ", "ÃÄÓ°É³Ä§ £Á", "ÃÄÓ°É³Ä§ £Á£Á", "°µºÚÄ§ÑÛ¾Ş»¨", "¾ŞĞÍ»ğÏ¬Äñ", "±äÒìÁç½ÇÄñ", "±äÒìÖí", "Âù¼×±äÒìÖí",
+						  "¾Ş½Ç±äÒìÖí", "Ìú¼×Õ½³µÏó", "°µºÚÌú¼×Õ½³µÏó", "°µºÚµ¶Ä§", "°µºÚ¾ŞÄ§Íõ", "°µºÚ¿ñµ¶Ä§", "É³µØÀ­±ÈÄñ", "°µºÚÀ­±ÈÄñ", "Ê¥Ä§Áú",
+						  "É³°ØÁú", "¿Õ¼äÁú", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+						  "N/A", "N/A", "N/A", "N/A" 
+};
 
 typedef struct {
 	const char* name;
@@ -251,6 +277,6 @@ bool enemy_type_valid_for_episode(Episode episode, EnemyType enemy_type);
 
 uint8_t battle_param_index_for_enemy_type(Episode episode, EnemyType enemy_type);
 
-const char* get_enemy_name(uint8_t episode, uint8_t difficulty, int rt_index);
+const char* get_enemy_pt_name(uint8_t episode, uint8_t difficulty, uint8_t pt_index, game_enemy_t* enemy);
 
 #endif // !ENEMY_TYPE_H
