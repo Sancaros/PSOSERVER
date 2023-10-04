@@ -177,19 +177,19 @@ static pso_menu_t pso_block_list_menu_last_dc[][4] = {
 };
 
 static pso_menu_t pso_guild_rank_list_bb[][4] = {
-    {"DATABASE/US", MENU_ID_DATABASE, MENU_ID_INITIAL, 0x0004},
-    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_SHIP, 0x0004},
-    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_INFO, 0x0004},
-    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_GM, 0x0004},
-    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_DISCONNECT, 0x0004}
+    {"DATABASE/US", MENU_ID_DATABASE, MENU_ID_INITIAL, 0x0000},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_SHIP, 0x0000},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_INFO, 0x0000},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_GM, 0x0000},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_DISCONNECT, 0x0000}
 };
 
 static pso_menu_t pso_error_menu[][4] = {
-    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_ERROR, 0x0004},
-    {"菜单错误",     MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
-    {"请联系管理员", MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
-    {"记得截图",     MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
-    {"不然他不懂",   MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004}
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_ERROR, 0x0000},
+    {"菜单错误",     MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0000},
+    {"请联系管理员", MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0000},
+    {"记得截图",     MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0000},
+    {"不然他不懂",   MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0000}
 };
 
 /* Submenus of the Player menu. */
@@ -225,52 +225,52 @@ static pso_menu_t pso_error_menu[][4] = {
 #define ITEM_ID_PL_LAST         0xFFFFFFFF
 
 static pso_menu_t pso_player_menu[][4] = {
-    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PLAYER, 0x0004},
-    {"玩家信息",     MENU_ID_PLAYER,   ITEM_ID_PL_INFO, 0x0004},
-    {"修改颜色ID",   MENU_ID_PLAYER,   ITEM_ID_PL_SECTION, 0x0004},
-    {"玩家商店",     MENU_ID_PLAYER,   ITEM_ID_PL_SHOP, 0x0004},
-    {"物品回收",     MENU_ID_PLAYER,   ITEM_ID_PL_EXCHAGE, 0x0004},
-    {"科伦奖励",     MENU_ID_PLAYER,   ITEM_ID_PL_COREN, 0x0004},
-    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0004}
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PLAYER, 0x0000},
+    {"玩家信息",     MENU_ID_PLAYER,   ITEM_ID_PL_INFO, 0x0000},
+    {"修改颜色ID",   MENU_ID_PLAYER,   ITEM_ID_PL_SECTION, 0x0000},
+    {"玩家商店",     MENU_ID_PLAYER,   ITEM_ID_PL_SHOP, 0x0000},
+    {"物品回收",     MENU_ID_PLAYER,   ITEM_ID_PL_EXCHAGE, 0x0000},
+    {"科伦奖励",     MENU_ID_PLAYER,   ITEM_ID_PL_COREN, 0x0000},
+    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0000}
 };
 
 static pso_menu_t pso_player_menu_info[][4] = {
-    {"DATABASE/US",  MENU_ID_DATABASE,       MENU_ID_PL_INFO_LIST,  0x0004},
-    {"基础信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BASE_INFO,  0x0004},
-    {"法术信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_TECH_INFO,  0x0004},
-    {"背包信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_INV_INFO,   0x0004},
-    {"银行信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BANK_INFO,  0x0004},
-    {"公共银行",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_CBANK_INFO, 0x0004},
-    {"数据备份",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BACKUP_INFO,0x0004},
+    {"DATABASE/US",  MENU_ID_DATABASE,       MENU_ID_PL_INFO_LIST,  0x0000},
+    {"基础信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BASE_INFO,  0x0000},
+    {"法术信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_TECH_INFO,  0x0000},
+    {"背包信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_INV_INFO,   0x0000},
+    {"银行信息",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BANK_INFO,  0x0000},
+    {"公共银行",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_CBANK_INFO, 0x0000},
+    {"数据备份",     MENU_ID_PL_INFO_LIST,   ITEM_ID_PL_BACKUP_INFO,0x0000},
     {"上级菜单",     MENU_ID_PL_INFO_LIST,   ITEM_ID_LAST,          0x0000},
-    {"关闭菜单",     MENU_ID_PL_INFO_LIST,   ITEM_ID_DISCONNECT,    0x0004}
+    {"关闭菜单",     MENU_ID_PL_INFO_LIST,   ITEM_ID_DISCONNECT,    0x0000}
 };
 
 static pso_menu_t pso_player_menu_section[][4] = {
-    {"DATABASE/US",       MENU_ID_DATABASE, MENU_ID_PL_SECTION   , 0x0004},
-    {"铬绿(Viridia)",     MENU_ID_PL_SECTION,   0, 0x0004},
-    {"翠绿(Greennill)",   MENU_ID_PL_SECTION,   1, 0x0004},
-    {"天青(Skyly)",       MENU_ID_PL_SECTION,   2, 0x0004},
-    {"纯蓝(Bluefull)",    MENU_ID_PL_SECTION,   3, 0x0004},
-    {"淡紫(Pinkal)",      MENU_ID_PL_SECTION,   4, 0x0004},
-    {"粉红(Purplenu)",    MENU_ID_PL_SECTION,   5, 0x0004},
-    {"真红(Redria)",      MENU_ID_PL_SECTION,   6, 0x0004},
-    {"橙黄(Oran)",        MENU_ID_PL_SECTION,   7, 0x0004},
-    {"金黄(Yellowboze)",  MENU_ID_PL_SECTION,   8, 0x0004},
-    {"羽白(Whitill)",     MENU_ID_PL_SECTION,   9, 0x0004},
+    {"DATABASE/US",       MENU_ID_DATABASE, MENU_ID_PL_SECTION   , 0x0000},
+    {"铬绿(Viridia)",     MENU_ID_PL_SECTION,   0, 0x0000},
+    {"翠绿(Greennill)",   MENU_ID_PL_SECTION,   1, 0x0000},
+    {"天青(Skyly)",       MENU_ID_PL_SECTION,   2, 0x0000},
+    {"纯蓝(Bluefull)",    MENU_ID_PL_SECTION,   3, 0x0000},
+    {"淡紫(Pinkal)",      MENU_ID_PL_SECTION,   4, 0x0000},
+    {"粉红(Purplenu)",    MENU_ID_PL_SECTION,   5, 0x0000},
+    {"真红(Redria)",      MENU_ID_PL_SECTION,   6, 0x0000},
+    {"橙黄(Oran)",        MENU_ID_PL_SECTION,   7, 0x0000},
+    {"金黄(Yellowboze)",  MENU_ID_PL_SECTION,   8, 0x0000},
+    {"羽白(Whitill)",     MENU_ID_PL_SECTION,   9, 0x0000},
     {"上级菜单",          MENU_ID_PLAYER,  ITEM_ID_LAST, 0x0000},
-    {"关闭菜单",          MENU_ID_PLAYER,  ITEM_ID_DISCONNECT, 0x0004}
+    {"关闭菜单",          MENU_ID_PLAYER,  ITEM_ID_DISCONNECT, 0x0000}
 };
 
 static pso_menu_t pso_player_menu_coren[][4] = {
-    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PL_CORE, 0x0004},
-    {"当前日期",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_TODAY, 0x0004},
-    {"当前爆率",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_DAR, 0x0004},
-    {"1K奖励",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_1, 0x0004},
-    {"1W奖励",    MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_2, 0x0004},
-    {"10W奖励",   MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_3, 0x0004},
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PL_CORE, 0x0000},
+    {"当前日期",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_TODAY, 0x0000},
+    {"当前爆率",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_DAR, 0x0000},
+    {"1K奖励",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_1, 0x0000},
+    {"1W奖励",    MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_2, 0x0000},
+    {"10W奖励",   MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_3, 0x0000},
     {"上级菜单",     MENU_ID_PLAYER,   ITEM_ID_LAST, 0x0000},
-    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0004}
+    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0000}
 };
 
 #endif /* !PSO_MENU_HAVE_MENU */

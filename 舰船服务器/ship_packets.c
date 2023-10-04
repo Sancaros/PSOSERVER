@@ -13473,7 +13473,7 @@ int send_bb_player_section_list(ship_client_t* dest) {
         menu->entries[i].item_id = LE32(pso_player_menu_section[i]->item_id);
         menu->entries[i].flags = LE16(pso_player_menu_section[i]->flag);
         if (pso_player_menu_section[i]->item_id == get_player_section(dest)) {
-            sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前颜色]", pso_player_menu_section[i]->name);
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前]", pso_player_menu_section[i]->name);
             istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
         }
         else {

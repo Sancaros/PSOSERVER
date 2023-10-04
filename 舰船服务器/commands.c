@@ -4163,19 +4163,6 @@ static int handle_resetquest(ship_client_t* c, const char* params) {
 
         c->reset_quest = false;
         return 0;
-        /* Do we have quests configured? */
-        //if (!TAILQ_EMPTY(&ship->qmap)) {
-        //    return send_quest_list(c, (int)c->quest_item_id, c->q_lang);
-        //}
-        //else {
-        //    return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未读取任务."));
-        //}
-        //return lobby_setup_quest(l, c, l->qid, c->language_code);
-        //for (int i = 0; i < l->max_clients; ++i) {
-        //    if (l->clients[i]) {
-        //        return send_quest(l, l->qid, c->language_code);
-        //    }
-        //}
     }
 
     return send_txt(c, "%s", __(c, "\tE\tC6当前不在任务中."));
