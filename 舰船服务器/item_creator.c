@@ -842,7 +842,7 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 
 	uint8_t type_drop_prob = ent->enemy_type_drop_probs[enemy_type];
 	uint8_t drop_sample = rand_int(rng, 100);
-	if (drop_sample >= type_drop_prob && !l->drop_rare && !l->clients[l->leader_id]->game_data->gm_drop_rare) {
+	if (drop_sample >= type_drop_prob && !l->drop_rare) {
 #ifdef DEBUG
 		DBG_LOG("enemy_type %d Drop not chosen (%hhu vs. %hhu)", enemy_type, drop_sample, type_drop_prob);
 #endif // DEBUG
