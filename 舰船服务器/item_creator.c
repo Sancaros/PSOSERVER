@@ -646,25 +646,27 @@ void generate_rare_weapon_bonuses(sfmt_t* rng, pt_bb_entry_t* ent, item_t* item,
 item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* rng, PackedDrop_t drop) {
 	item_t item = { 0 };
 	double drop_rare = 0;
-	if (drop.probability == 0) {
+	if (!drop.probability) {
 		return item;
 	}
 
 	// Note: The original code uses 0xFFFFFFFF as the maximum here. We use
 	// 0x100000000 instead, which makes all rare items SLIGHTLY more rare.
-	if ((drop_rare = sfmt_genrand_real1(rng)) >= expand_rate(drop.probability) && !l->drop_rare) {
+	if (!l->drop_rare) {
+		if ((drop_rare = sfmt_genrand_real1(rng)) >= expand_rate(drop.probability)) {
 #ifdef DEBUG
 
-		DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
+			DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
 
 #endif // DEBUG
-		return item;
+			return item;
+		}
+#ifdef DEBUG
+		else
+			DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
+
+#endif // DEBUG
 	}
-#ifdef DEBUG
-	else
-		DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
-
-#endif // DEBUG
 
 	item.datab[0] = drop.item_code[0];
 	item.datab[1] = drop.item_code[1];
@@ -707,7 +709,7 @@ item_t check_rare_specs_and_create_rare_box_item(lobby_t* l, pt_bb_entry_t* ent,
 		if (rare_specs->box_areas[x] == area_norm) {
 			PackedDrop_t spec = rare_specs->box_rares[x];
 
-			if (spec.probability == 0) {
+			if (!spec.probability) {
 #ifdef DEBUG
 				DBG_LOG("Area %d Box spec.probability %lf did not produce item %02hhX%02hhX%02hhX",
 					area_norm, spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
@@ -841,12 +843,14 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 #endif // DEBUG
 
 	uint8_t type_drop_prob = ent->enemy_type_drop_probs[enemy_type];
-	uint8_t drop_sample = rand_int(rng, 100);
-	if (drop_sample >= type_drop_prob && !l->drop_rare) {
+	if (!l->drop_rare) {
+		uint8_t drop_sample = rand_int(rng, 100);
+		if (drop_sample >= type_drop_prob) {
 #ifdef DEBUG
-		DBG_LOG("enemy_type %d Drop not chosen (%hhu vs. %hhu)", enemy_type, drop_sample, type_drop_prob);
+			DBG_LOG("enemy_type %d Drop not chosen (%hhu vs. %hhu)", enemy_type, drop_sample, type_drop_prob);
 #endif // DEBUG
-		return item;
+			return item;
+		}
 	}
 
 	item = check_rare_spec_and_create_rare_enemy_item(l, ent, rng, enemy_type, section_id);
