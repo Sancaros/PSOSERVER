@@ -1238,7 +1238,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 , mid
                 , l->map_enemies->enemy_count
                 , l->qid);
-            ITEM_LOG("%s", get_enemy_pt_name(l->episode, l->difficulty, pt_index, enemy));
+            ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
             ITEM_LOG("%s", get_lobby_describe(l));
             iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
             if (is_item_empty(&iitem.data)) {
@@ -1289,7 +1289,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             , mid
             , l->map_enemies->enemy_count
             , l->qid);
-        ITEM_LOG("%s", get_enemy_pt_name(l->episode, l->difficulty, pt_index, enemy));
+        ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
         ITEM_LOG("%s", get_lobby_describe(l));
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data)) {

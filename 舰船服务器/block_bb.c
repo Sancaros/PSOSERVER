@@ -340,7 +340,7 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
         }
 
         //TODO 这里要判断类型

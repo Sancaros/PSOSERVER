@@ -870,12 +870,12 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 }
                 else {
                     gen[count].bp_entry = 0x05 + acc;
-                    gen[count].pt_index = 0x11;
+                    gen[count].pt_index = 0x11 + acc;
                     gen[count].rt_index = 0x11 + acc;
                 }
             }
             else {
-                if (acc) { // Rag Rappy and Al Rappy (Love for Episode II)
+                if (acc) { // Rag Rappy 黄色拉比鸟 and Al Rappy 蓝色拉比鸟 (Love for Episode II)
                     gen[count].bp_entry = 0x19;
 
                     if (ep == GAME_TYPE_EPISODE_1) {
@@ -888,19 +888,19 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                             {
                             case 0x01:
                                 gen[count].pt_index = 0x4F;
-                                gen[count].rt_index = 0x4F; // St. Rappy
+                                gen[count].rt_index = 0x4F; // St. Rappy 圣诞拉比鸟
                                 break;
                             case 0x04:
                                 gen[count].pt_index = 0x51;
-                                gen[count].rt_index = 0x51; // Easter Rappy
+                                gen[count].rt_index = 0x51; // Easter Rappy 彩蛋拉比鸟
                                 break;
                             case 0x05:
                                 gen[count].pt_index = 0x50;
-                                gen[count].rt_index = 0x50; // Halo Rappy
+                                gen[count].rt_index = 0x50; // Halo Rappy 南瓜拉比鸟
                                 break;
                             default:
                                 gen[count].pt_index = 0x33;
-                                gen[count].rt_index = 0x33; // Love Rappy
+                                gen[count].rt_index = 0x33; // Love Rappy 爱之拉比鸟
                                 break;
                             }
                         }
