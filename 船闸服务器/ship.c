@@ -3448,25 +3448,30 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
 
         if (err) {
             err = 0;
-            if ((err |= db_get_orignal_char_full_data(gc, slot, bb_data, 0))) {
+            psocn_bb_db_char_t backupdata = { 0 };
+            if ((err |= db_get_orignal_char_full_data(gc, slot, &backupdata, 0))) {
                 SQLERR_LOG("无法读取原始外观数据 (GC %"
                     PRIu32 ", 槽位 %" PRIu8 "), 读取原始数据 错误码 %d.", gc, slot, err);
 
 
                 return -2;
             }
-            db_update_char_disp(&bb_data->character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR);
-            db_update_char_dress_data(&bb_data->character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
-            db_update_char_name(&bb_data->character.name, gc, slot);
-            db_update_char_techniques(&bb_data->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR);
-            db_update_char_b_records(&bb_data->b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
-            db_update_char_c_records(&bb_data->c_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_disp(&backupdata.character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_dress_data(&backupdata.character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_name(&backupdata.character.name, gc, slot);
+            db_update_char_techniques(&backupdata.character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_b_records(&backupdata.b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_c_records(&backupdata.c_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
+
+            /* 将临时数据发回舰船. */
+            rv = send_cdata(c, gc, slot, &backupdata, PSOCN_STLENGTH_BB_DB_CHAR, 0);
+        }
+        else {
+            /* 将数据发回舰船. */
+            rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
         }
 
         //repair_client_character_data(&bb_data->character);
-
-        /* 将数据发回舰船. */
-        rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
 
         /* 清理内存并结束 */
         free_safe(bb_data);

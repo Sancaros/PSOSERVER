@@ -114,6 +114,8 @@ int rt_v2_enabled(void);
 int rt_gc_enabled(void);
 int rt_bb_enabled(void);
 
+size_t get_rt_index(uint8_t episode, size_t rt_index);
+
 uint32_t rt_generate_v2_rare(ship_client_t* c, lobby_t* l, int rt_index,
     int area);
 uint32_t rt_generate_gc_rare(ship_client_t* c, lobby_t* l, int rt_index,

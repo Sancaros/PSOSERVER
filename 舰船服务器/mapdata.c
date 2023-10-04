@@ -862,7 +862,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             }
             if (rare_monster)
                 acc = 1;
-            if (ep == GAME_TYPE_EPISODE_4) {   /* Del Rappy & Sand Rappy */
+            if (ep == GAME_TYPE_EPISODE_3 || ep == GAME_TYPE_EPISODE_4) {   /* Del Rappy & Sand Rappy */
                 if (alt) {
                     gen[count].bp_entry = 0x17 + acc;
                     gen[count].pt_index = 0x11 + acc;
@@ -1951,7 +1951,8 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
 
             alt = 0;
 
-            if ((episode == GAME_TYPE_EPISODE_4 && area > 5) ||
+            if ((episode == GAME_TYPE_EPISODE_3 && area > 5) ||
+                (episode == GAME_TYPE_EPISODE_4 && area > 5) ||
                 (episode == GAME_TYPE_EPISODE_2 && area > 15))
                 alt = 1;
 
@@ -2906,7 +2907,8 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
             area = LE32(hdr->area);
             alt = 0;
 
-            if((episode == GAME_TYPE_EPISODE_4 && area > 5) || 
+            if ((episode == GAME_TYPE_EPISODE_3 && area > 5) || 
+                (episode == GAME_TYPE_EPISODE_4 && area > 5) || 
                 (episode == GAME_TYPE_EPISODE_2 && area > 15))
                 alt = 1;
 

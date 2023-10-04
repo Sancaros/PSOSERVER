@@ -421,7 +421,8 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 				break;
 			}
 			break;
-		case GAME_TYPE_EPISODE_2: {
+
+		case GAME_TYPE_EPISODE_2:
 			static const uint8_t area_subs[] = {
 				0x01, // 13 (VR Temple Alpha)
 				0x02, // 14 (VR Temple Beta)
@@ -447,11 +448,13 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 			}else
 				new_area = area;
 			break;
-		}
+
+		case GAME_TYPE_EPISODE_3:
 		case GAME_TYPE_EPISODE_4:
 			// TODO: Figure out remaps for Episode 4 (if there are any)
 			new_area = area + 1;
 			break;
+
 		default:
 			ERR_LOG("%s 无效章节 %d 区域 %d", get_lobby_leader_describe(l), l->episode, area);
 			new_area = 1;
@@ -839,7 +842,7 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 
 	uint8_t type_drop_prob = ent->enemy_type_drop_probs[enemy_type];
 	uint8_t drop_sample = rand_int(rng, 100);
-	if (drop_sample >= type_drop_prob && !l->drop_rare) {
+	if (drop_sample >= type_drop_prob && !l->drop_rare && !l->clients[l->leader_id]->game_data->gm_drop_rare) {
 #ifdef DEBUG
 		DBG_LOG("enemy_type %d Drop not chosen (%hhu vs. %hhu)", enemy_type, drop_sample, type_drop_prob);
 #endif // DEBUG

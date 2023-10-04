@@ -1180,7 +1180,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     iitem_t iitem = { 0 };
     int rv = 0;
-    uint8_t section = 0, pt_index = (uint8_t)get_pt_index(l->episode, pkt->pt_index);
+    uint8_t section = 0, pt_index = (uint8_t)get_pt_index(l->episode, pkt->pt_index - 1), drop_area = pkt->area;
     uint16_t mid = LE16(pkt->entity_id);
 
     if (!in_game(src))
@@ -1208,10 +1208,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             if (!l->clients[i])
                 continue;
 
-            if (l->clients[i]->cur_area != src->cur_area) {
-                l->clients[i]->cur_area = src->cur_area;
-            }
-
             ship_client_t* p2 = l->clients[i];
             pthread_mutex_lock(&p2->mutex);
             psocn_bb_char_t* p2_char = get_client_char_bb(p2);
@@ -1234,20 +1230,20 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max: %d, 任务 %" PRIu32 ")!"
                 , get_player_describe(p2)
                 , get_section_describe(p2, section, true)
-                , pkt->area
+                , drop_area
                 , mid
                 , l->map_enemies->enemy_count
                 , l->qid);
             ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
             ITEM_LOG("%s", get_lobby_describe(l));
-            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), section);
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
             if (is_item_empty(&iitem.data)) {
                 ITEM_LOG("未产生掉落");
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
 
-            litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
+            litem_t* lt = add_new_litem_locked(l, &iitem.data, drop_area, pkt->x, pkt->z);
             if (!lt) {
                 ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(p2));
                 print_item_data(&iitem.data, l->version);
@@ -1285,20 +1281,20 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max: %d, 任务 %" PRIu32 ")!"
             , get_player_describe(src)
             , get_section_describe(src, section, true)
-            , pkt->area
+            , drop_area
             , mid
             , l->map_enemies->enemy_count
             , l->qid);
         ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
         ITEM_LOG("%s", get_lobby_describe(l));
-        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
+        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
         if (is_item_empty(&iitem.data)) {
             ITEM_LOG("未产生掉落");
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
 
-        litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
+        litem_t* lt = add_new_litem_locked(l, &iitem.data, drop_area, pkt->x, pkt->z);
         if (!lt) {
             ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
             print_item_data(&iitem.data, l->version);
@@ -1386,10 +1382,6 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         for (int i = 0; i < l->max_clients; ++i) {
             if (!l->clients[i])
                 continue;
-
-            //if (l->clients[i]->cur_area != src->cur_area) {
-            //    drop_area = src->cur_area;
-            //}
 
             ship_client_t* p2 = l->clients[i];
             pthread_mutex_lock(&p2->mutex);

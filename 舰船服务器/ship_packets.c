@@ -6162,6 +6162,7 @@ uint32_t check_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint8_t episode,
         case GAME_TYPE_EPISODE_2:
             break;
 
+        case GAME_TYPE_EPISODE_3:
         case GAME_TYPE_EPISODE_4:
             break;
         }
@@ -6197,6 +6198,7 @@ uint32_t check_government_quest_stat(uint32_t qid, uint8_t government, uint8_t e
                     show_quest = 0;
             break;
 
+        case GAME_TYPE_EPISODE_3:
         case GAME_TYPE_EPISODE_4:
             qid -= 701;
             qid += 0x2BC;

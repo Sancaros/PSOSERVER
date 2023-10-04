@@ -685,6 +685,7 @@ pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t diffic
 			game_ep_pt_index = 1;
 		break;
 
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		game_ep_pt_index = 4;
 		break;
@@ -710,9 +711,10 @@ int pt_bb_enabled(void) {
 }
 
 size_t get_pt_index(uint8_t episode, size_t pt_index) {
-	size_t ep4_pt_index_offset = 0x58;//88 Item_PT EP4 enemy_index ≤Ó÷µ
+	size_t ep4_pt_index_offset = 0x57;//87 Item_PT EP4 enemy_index ≤Ó÷µ
 	size_t new_pt_index = pt_index;
-	return episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index;
+
+	return (episode == GAME_TYPE_EPISODE_3 ? (new_pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index);
 }
 
 int get_pt_data_area_bb(uint8_t episode, int cur_area) {
@@ -804,6 +806,7 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 	}
 	break;
 
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		area = cur_area + 1;
 		break;

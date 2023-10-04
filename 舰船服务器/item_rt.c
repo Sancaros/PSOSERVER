@@ -475,9 +475,8 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
         tolower(abbreviation_for_difficulty(难度)), 颜色);
 
 #ifdef DEBUG
-    DBG_LOG("%s | %s %s %s", filename, episodenames[章节], get_difficulty_describe(难度), get_section_describe(NULL, 颜色, true));
-#endif // DEBUG
     DBG_LOG("RT文件:%s | %s %s %s", filename, episodenames[章节], get_difficulty_describe(难度), get_section_describe(NULL, 颜色, true));
+#endif // DEBUG
 
     /* Grab a handle to that file. */
     hnd = pso_gsl_file_lookup(a, filename);
@@ -557,6 +556,12 @@ int rt_gc_enabled(void) {
 
 int rt_bb_enabled(void) {
     return have_bbrt;
+}
+
+size_t get_rt_index(uint8_t episode, size_t rt_index) {
+    size_t ep4_rt_index_offset = 0x57;//87 Item_RT EP4 enemy_index 差值
+    size_t new_rt_index = rt_index;
+    return (episode == GAME_TYPE_EPISODE_3 ? (new_rt_index - ep4_rt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (new_rt_index - ep4_rt_index_offset) : new_rt_index);
 }
 
 uint32_t rt_generate_v2_rare(ship_client_t *src, lobby_t *l, int rt_index,
@@ -654,6 +659,7 @@ rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficul
         case GAME_TYPE_EPISODE_2:
             game_ep_rt_index = 1;
             break;
+        case GAME_TYPE_EPISODE_3:
         case GAME_TYPE_EPISODE_4:
             game_ep_rt_index = 3;
             break;

@@ -782,6 +782,7 @@ bool enemy_type_valid_for_episode(Episode episode, EnemyType enemy_type) {
         default:
             return false;
         }
+    case GAME_TYPE_EPISODE_3:
     case GAME_TYPE_EPISODE_4:
         switch (enemy_type) {
         case ENEMY_BOOTA:
@@ -1043,7 +1044,8 @@ uint8_t battle_param_index_for_enemy_type(Episode episode, EnemyType enemy_type)
             return 0xFF;
         }
         break;
-    case GAME_TYPE_EPISODE_4:
+        case GAME_TYPE_EPISODE_3:
+        case GAME_TYPE_EPISODE_4:
         switch (enemy_type) {
         case ENEMY_BOOTA:
             return 0x00;
@@ -1127,7 +1129,7 @@ const char* get_lobby_mob_describe(lobby_t* l, uint8_t pt_index, uint8_t languag
     }
 
     if (l->episode == 3) {
-        fix_pt_index = pt_index + 1;
+        fix_pt_index = pt_index;
 
         if (l->difficulty == 3) {
             enemy_name_cn = pt_index_raw_mobnames_ep4_ult_cn[fix_pt_index];
@@ -1159,15 +1161,23 @@ char* get_enemy_describe(lobby_t* l, uint8_t pt_index, const char* enemy_name_cn
 }
 
 const char* get_lobby_enemy_pt_name_with_enemy(lobby_t* l, uint8_t pt_index, game_enemy_t* enemy) {
+    /* 从0位开始计算 */
+    uint8_t new_pt_index = pt_index + 1;
     /* 很奇怪 客户端返回的数值 缺少了表格中0表位 直接读取了1表位 太恶心了 */
-    const char* enemy_name_cn = get_lobby_mob_describe(l, pt_index, 0);
-    const char* enemy_name_en = get_lobby_mob_describe(l, pt_index, 1);
+    const char* enemy_name_cn = get_lobby_mob_describe(l, new_pt_index, 0);
+    const char* enemy_name_en = get_lobby_mob_describe(l, new_pt_index, 1);
 
-    return get_enemy_describe(l, pt_index, enemy_name_cn, enemy_name_en, enemy);
+    return get_enemy_describe(l, new_pt_index, enemy_name_cn, enemy_name_en, enemy);
 }
 
 const char* get_lobby_enemy_pt_name_with_mid(lobby_t* l, uint8_t pt_index, uint16_t mid) {
+    /* 从0位开始计算 */
+    uint8_t new_pt_index = pt_index + 1;
     game_enemy_t* enemy = &l->map_enemies->enemies[mid];
 
-    return get_lobby_enemy_pt_name_with_enemy(l, pt_index, enemy);
+    /* 很奇怪 客户端返回的数值 缺少了表格中0表位 直接读取了1表位 太恶心了 */
+    const char* enemy_name_cn = get_lobby_mob_describe(l, new_pt_index, 0);
+    const char* enemy_name_en = get_lobby_mob_describe(l, new_pt_index, 1);
+
+    return get_enemy_describe(l, new_pt_index, enemy_name_cn, enemy_name_en, enemy);
 }
