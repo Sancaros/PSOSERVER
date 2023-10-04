@@ -1192,9 +1192,9 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
 
                 if (i->guildcard) {
                     if (i->auth)
-                        AUTH_LOG("GC %" PRIu32 " 进入跃迁轨道 (%s:%d) %s", i->guildcard, ipstr, i->sock, client_type[i->version].ver_name);
+                        AUTH_LOG("%s 进入跃迁轨道 (%s:%d)", get_lplayer_describe(i), ipstr, i->sock);
                     else
-                        AUTH_LOG("GC %" PRIu32 " 断开认证 (%s:%d) %s", i->guildcard, ipstr, i->sock, client_type[i->version].ver_name);
+                        AUTH_LOG("%s 断开认证 (%s:%d)", get_lplayer_describe(i), ipstr, i->sock);
                 }
 #ifdef DEBUG
                 else {

@@ -80,7 +80,7 @@ extern monster_event_t* events;
 extern uint32_t script_count;
 extern ship_script_t* scripts;
 
-//static uint8_t recvbuf[MAX_PACKET_BUFF];
+static uint8_t recvbuf[MAX_PACKET_BUFF];
 
 /* 公会相关 */
 static uint8_t default_guild_flag[2048];
@@ -5850,13 +5850,13 @@ static inline ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
 uint8_t* get_sg_recvbuf(void) {
-    uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+    //uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
-    if (!recvbuf) {
-        ERR_LOG("malloc");
-        perror("malloc");
-        return NULL;
-    }
+    //if (!recvbuf) {
+    //    ERR_LOG("malloc");
+    //    perror("malloc");
+    //    return NULL;
+    //}
 
     memset(recvbuf, 0, MAX_PACKET_BUFF);
 
@@ -5885,13 +5885,13 @@ int handle_pkt(ship_t* c) {
 
         if (c == NULL) {
             ERR_LOG("非法舰船链接");
-            free_safe(recvbuf);
+            //free_safe(recvbuf);
             return -1; // 参数合法性检查
         }
 
         if (!c->session) {
             ERR_LOG("非法舰船session");
-            free_safe(recvbuf);
+            //free_safe(recvbuf);
             return -1; // 错误检查，确保 c->session 不为空
         }
 
@@ -5915,7 +5915,7 @@ int handle_pkt(ship_t* c) {
                 ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
             }
 
-            free_safe(recvbuf);
+            //free_safe(recvbuf);
             return -1;
         }
 
@@ -5943,10 +5943,10 @@ int handle_pkt(ship_t* c) {
                 rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
                     ERR_LOG("process_ship_pkt 错误 rv = %d", rv);
-                    free_safe(recvbuf);
+                    //free_safe(recvbuf);
                     //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
                     //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
-                    break;
+                    return -1;
                 }
 
                 rbp += pkt_sz;
@@ -5968,7 +5968,7 @@ int handle_pkt(ship_t* c) {
 
                 if (!tmp) {
                     ERR_LOG("realloc");
-                    free_safe(recvbuf);
+                    //free_safe(recvbuf);
                     return -1;
                 }
 
@@ -5986,7 +5986,7 @@ int handle_pkt(ship_t* c) {
             c->recvbuf_size = 0;
         }
 
-        free_safe(recvbuf);
+        //free_safe(recvbuf);
 
         return rv;
     }

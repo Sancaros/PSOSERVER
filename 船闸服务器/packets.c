@@ -33,18 +33,18 @@
 #include "ship.h"
 #include <pso_pack.h>
 
-//static uint8_t sendbuf[MAX_PACKET_BUFF];
+static uint8_t sendbuf[MAX_PACKET_BUFF];
 
 /* 获取 sendbuf 动态内存数据. */
 uint8_t* get_sg_sendbuf(void) {
-    uint8_t* sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+    //uint8_t* sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
-    /* If we haven't initialized the sendbuf pointer yet for this thread, then
-       we need to do that now. */
-    if (!sendbuf) {
-        ERR_LOG("malloc");
-        return NULL;
-    }
+    ///* If we haven't initialized the sendbuf pointer yet for this thread, then
+    //   we need to do that now. */
+    //if (!sendbuf) {
+    //    ERR_LOG("malloc");
+    //    return NULL;
+    //}
 
     memset(sendbuf, 0, MAX_PACKET_BUFF);
 
@@ -106,7 +106,7 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //print_ascii_hex(errl, sendbuf, len);
-                    free_safe(sendbuf);
+                    //free_safe(sendbuf);
                     return -1;
                 }
 
@@ -114,7 +114,7 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
             }
         }
 
-        free_safe(sendbuf);
+        //free_safe(sendbuf);
 
         return 0;
     }

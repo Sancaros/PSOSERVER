@@ -452,6 +452,8 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->create_time = time(NULL);
     l->flags = LOBBY_FLAG_ONLY_ONE;
     l->oneperson = single_player;
+    /* 保证房间红盒模式 TODO 是否不要开启全局红盒模式 开发个人红盒模式 */
+    l->drop_rare = c->game_data->gm_drop_rare;
 
     if(l->oneperson)
         l->flags |= LOBBY_FLAG_SINGLEPLAYER;

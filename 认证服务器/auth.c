@@ -840,3 +840,19 @@ void cleanup_i18n(void) {
     }
 #endif
 }
+
+char* get_lplayer_describe(login_client_t* src) {
+    if (!src)
+        return "玩家不存在";
+
+    /* 初始化角色描述内存 */
+    memset(char_des, 0, sizeof(char_des));
+
+    sprintf(char_des, "GC %d (%d:%s)"
+        , src->guildcard
+        , src->sec_data.slot
+        , client_type[src->version].ver_name
+    );
+
+    return char_des;
+}

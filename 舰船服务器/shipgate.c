@@ -3604,9 +3604,9 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
                 rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
                     ERR_LOG("处理数据包出错，rv = %d", rv);
-                    shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
-                    print_ascii_hex(errl, errpkt, errpkt->pkt_len);
-                    break;
+                    //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
+                    //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
+                    return -1;
                 }
 
                 rbp += pkt_sz;

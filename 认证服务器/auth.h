@@ -220,6 +220,9 @@ static const char language_codes[][3] = {
 TAILQ_HEAD(client_queue, login_client);
 extern struct client_queue clients;
 
+/* 用于打印角色描述 */
+static char char_des[512];
+
 extern psocn_dbconn_t conn;
 extern psocn_config_t *cfg;
 extern psocn_srvconfig_t* srvcfg;
@@ -263,6 +266,8 @@ int process_login_packet_dc(login_client_t* c, void* pkt);
 
 void init_i18n(void);
 void cleanup_i18n(void);
+
+char* get_lplayer_describe(login_client_t* src);
 
 /* In bblogin.c */
 int process_login_packet_bb(login_client_t* c, void* pkt);
