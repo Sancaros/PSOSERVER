@@ -791,8 +791,6 @@ static int send_timestamp_bb(ship_client_t* c) {
     /* 填充时间戳 */
     get_local_time(pkt->timestamp);
 
-    print_ascii_hex(dbgl, pkt, BB_TIMESTAMP_LENGTH);
-
     /* 将数据包发送出去 */
     return crypt_send(c, BB_TIMESTAMP_LENGTH, sendbuf);
 }

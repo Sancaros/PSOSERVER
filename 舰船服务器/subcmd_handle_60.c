@@ -3209,7 +3209,7 @@ static int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 需要判断在大厅的话 给个标志 是否在创建房间 选择模式时取消了 */
 
-    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
 
     /* We don't care about these in lobbies. */
     if (l->type == LOBBY_TYPE_LOBBY) {
