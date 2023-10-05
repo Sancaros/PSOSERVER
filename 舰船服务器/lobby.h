@@ -418,6 +418,8 @@ void lobby_send_kill_counts(lobby_t *l);
 /* Set up lobby information for a quest being loaded. */
 int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang);
 
+int quick_set_quest(lobby_t* l, ship_client_t* c, uint32_t qid);
+
 void lobby_print_info(lobby_t *l, FILE *fp);
 
 void lobby_print_info2(ship_client_t* src);

@@ -2007,6 +2007,9 @@ static int handle_quest(ship_client_t* c, const char* params) {
     if (!LOCAL_GM(c))
         return get_gm_priv(c);
 
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        return send_txt(c, "%s", __(c, "\tE\tC4任务中无法使用."));
+
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME)
         return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
@@ -2032,28 +2035,29 @@ static int handle_quest(ship_client_t* c, const char* params) {
     /* Done with this... */
     free_safe(str);
 
-    pthread_rwlock_rdlock(&ship->qlock);
+    rv = quick_set_quest(l, c, quest_id);
+    //pthread_rwlock_rdlock(&ship->qlock);
 
-    /* Do we have quests configured? */
-    if (!TAILQ_EMPTY(&ship->qmap)) {
-        /* Find the quest first, since someone might be doing something
-           stupid... */
-        quest_map_elem_t* e = quest_lookup(&ship->qmap, quest_id);
+    ///* Do we have quests configured? */
+    //if (!TAILQ_EMPTY(&ship->qmap)) {
+    //    /* Find the quest first, since someone might be doing something
+    //       stupid... */
+    //    quest_map_elem_t* e = quest_lookup(&ship->qmap, quest_id);
 
-        /* If the quest isn't found, bail out now. */
-        if (!e) {
-            rv = send_txt(c, __(c, "\tE\tC7无效任务ID."));
-            pthread_rwlock_unlock(&ship->qlock);
-            return rv;
-        }
+    //    /* If the quest isn't found, bail out now. */
+    //    if (!e) {
+    //        rv = send_txt(c, __(c, "\tE\tC7无效任务ID."));
+    //        pthread_rwlock_unlock(&ship->qlock);
+    //        return rv;
+    //    }
 
-        rv = lobby_setup_quest(l, c, quest_id, CLIENT_LANG_CHINESE_S);
-    }
-    else {
-        rv = send_txt(c, "%s", __(c, "\tE\tC4任务未设置."));
-    }
+    //    rv = lobby_setup_quest(l, c, quest_id, CLIENT_LANG_CHINESE_S);
+    //}
+    //else {
+    //    rv = send_txt(c, "%s", __(c, "\tE\tC4任务未设置."));
+    //}
 
-    pthread_rwlock_unlock(&ship->qlock);
+    //pthread_rwlock_unlock(&ship->qlock);
 
     return rv;
 }

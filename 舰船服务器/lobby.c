@@ -2438,6 +2438,61 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
     return rv;
 }
 
+int quick_set_quest(lobby_t* l, ship_client_t* c, uint32_t qid) {
+    int rv;
+    char name[65], passwd[65];
+    lobby_t* l2 = l;
+
+
+    /* 创建游戏房间结构. */
+    if (!l2) {
+        l2 = lobby_create_game(c->cur_block, name, passwd, 0,
+            0, 0, 0, c->version,
+            get_player_section(c), 0, 0, c,
+            0, 1);
+
+        if (!(c->flags & CLIENT_FLAG_IS_NTE)) {
+            c->create_lobby = l2;
+            return send_bb_game_type_sel(c);
+        }
+
+        if (join_game(c, l2)) {
+            /* Something broke, destroy the created lobby before anyone tries to
+               join it. */
+            pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
+            lobby_destroy(l2);
+            pthread_rwlock_unlock(&c->cur_block->lobby_lock);
+        }
+
+        /* TODO 还需要写一个跳转函数 且!l2还需要增加一个判断开关*/
+    }
+
+    pthread_rwlock_rdlock(&ship->qlock);
+
+    /* Do we have quests configured? */
+    if (!TAILQ_EMPTY(&ship->qmap)) {
+        /* Find the quest first, since someone might be doing something
+           stupid... */
+        quest_map_elem_t* e = quest_lookup(&ship->qmap, qid);
+
+        /* If the quest isn't found, bail out now. */
+        if (!e) {
+            rv = send_txt(c, __(c, "\tE\tC7无效任务ID."));
+            pthread_rwlock_unlock(&ship->qlock);
+            return rv;
+        }
+
+        rv = lobby_setup_quest(l2, c, qid, c->language_code);
+    }
+    else {
+        rv = send_txt(c, "%s", __(c, "\tE\tC4任务未设置."));
+    }
+
+    pthread_rwlock_unlock(&ship->qlock);
+
+    return 0;
+}
+
 #ifdef ENABLE_LUA
 
 static int lobby_id_lua(lua_State *l) {
