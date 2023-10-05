@@ -12910,7 +12910,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 填充数据头 */
         menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
-        menu->hdr.pkt_type = LE16(BLOCK_LIST_TYPE);
+        menu->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
         menu->hdr.flags = i - 1;
 
         /* 加密并发送 */
@@ -13413,7 +13413,7 @@ int send_bb_error_menu_list(ship_client_t* dest) {
 
     /* 填充数据头 */
     menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
-    menu->hdr.pkt_type = LE16(BLOCK_LIST_TYPE);
+    menu->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
     menu->hdr.flags = i - 1;
 
     /* 加密并发送 */
