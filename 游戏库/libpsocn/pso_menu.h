@@ -225,13 +225,13 @@ static pso_menu_t pso_error_menu[][4] = {
 #define ITEM_ID_PL_LAST         0xFFFFFFFF
 
 static pso_menu_t pso_player_menu[][4] = {
-    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PLAYER, 0x0000},
-    {"玩家信息",     MENU_ID_PLAYER,   ITEM_ID_PL_INFO, 0x0000},
-    {"修改颜色ID",   MENU_ID_PLAYER,   ITEM_ID_PL_SECTION, 0x0000},
-    {"玩家商店",     MENU_ID_PLAYER,   ITEM_ID_PL_SHOP, 0x0000},
-    {"物品回收",     MENU_ID_PLAYER,   ITEM_ID_PL_EXCHAGE, 0x0000},
-    {"科伦奖励",     MENU_ID_PLAYER,   ITEM_ID_PL_COREN, 0x0000},
-    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0000}
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PLAYER,      0x0000},
+    {"玩家信息",     MENU_ID_PLAYER,   ITEM_ID_PL_INFO,     0x0000},
+    {"修改颜色ID",   MENU_ID_PLAYER,   ITEM_ID_PL_SECTION,  0x0000},
+    {"玩家商店",     MENU_ID_PLAYER,   ITEM_ID_PL_SHOP,     0x0000},
+    {"物品回收",     MENU_ID_PLAYER,   ITEM_ID_PL_EXCHAGE,  0x0000},
+    {"科伦奖励",     MENU_ID_PLAYER,   ITEM_ID_PL_COREN,    0x0000},
+    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT,  0x0000}
 };
 
 static pso_menu_t pso_player_menu_info[][4] = {
@@ -263,14 +263,14 @@ static pso_menu_t pso_player_menu_section[][4] = {
 };
 
 static pso_menu_t pso_player_menu_coren[][4] = {
-    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PL_CORE, 0x0000},
-    {"当前日期",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_TODAY, 0x0000},
-    {"当前爆率",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_DAR, 0x0000},
-    {"1K奖励",     MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_1, 0x0000},
-    {"1W奖励",    MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_2, 0x0000},
-    {"10W奖励",   MENU_ID_PL_CORE,   ITEM_ID_PL_COREN_LIST_3, 0x0000},
-    {"上级菜单",     MENU_ID_PLAYER,   ITEM_ID_LAST, 0x0000},
-    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0000}
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PL_CORE,         0x0000},
+    {"当前日期",     MENU_ID_PL_CORE,  ITEM_ID_PL_COREN_TODAY,  0x0000},
+    {"当前爆率",     MENU_ID_PL_CORE,  ITEM_ID_PL_COREN_DAR,    0x0000},
+    {"1K奖励",       MENU_ID_PL_CORE,  ITEM_ID_PL_COREN_LIST_1, 0x0000},
+    {"1W奖励",       MENU_ID_PL_CORE,  ITEM_ID_PL_COREN_LIST_2, 0x0000},
+    {"10W奖励",      MENU_ID_PL_CORE,  ITEM_ID_PL_COREN_LIST_3, 0x0000},
+    {"上级菜单",     MENU_ID_PLAYER,   ITEM_ID_LAST,            0x0000},
+    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT,      0x0000}
 };
 
 #endif /* !PSO_MENU_HAVE_MENU */

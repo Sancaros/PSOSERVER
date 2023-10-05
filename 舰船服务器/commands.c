@@ -3913,123 +3913,10 @@ static int handle_clean(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC6清空指令不正确\n参数为[inv/bank]."));
 }
 
-/* 用法: /pso2 item1,item2,item3,item4*/
-static int handle_pso2(ship_client_t* src, const char* params) {
-    lobby_t* l = src->cur_lobby;
-    litem_t* litem;
-    subcmd_drop_stack_t dc = { 0 };
-    subcmd_bb_drop_stack_t bb = { 0 };
-    uint32_t item[4] = { 0, 0, 0, 0 };
-
-    /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(src)) {
-        return get_gm_priv(src);
-    }
-
-    int count;
-
-    /* Copy over the item data. */
-    count = sscanf(params, "%X,%X,%X,%X", &item[0], &item[1], &item[2],
-        &item[3]);
-
-    if (count == EOF || count == 0) {
-        return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
-    }
-
-    clear_inv_item(&src->new_item);
-
-    /* Copy over the item data. */
-    src->new_item.datal[0] = SWAP32(item[0]);
-    src->new_item.datal[1] = SWAP32(item[1]);
-    src->new_item.datal[2] = SWAP32(item[2]);
-    src->new_item.data2l = SWAP32(item[3]);
-
-    print_item_data(&src->new_item, src->version);
-
-    send_txt(src, "%s %s %s",
-        __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version, 0),
-        __(src, "\tE\tC6 new_item 设置成功."));
-
-    /* Make sure that the requester is in a team, not a lobby. */
-    if (l->type != LOBBY_TYPE_GAME) {
-        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
-    }
-
-    /* Make sure there's something set with /item */
-    if (!src->new_item.datal[0]) {
-        return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."),
-            __(src, "\tE\tC7/item code1,code2,code3,code4."));
-    }
-
-    /* If we're on Blue Burst, add the item to the lobby's inventory first. */
-    if (l->version == CLIENT_VERSION_BB) {
-        litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
-
-        if (!litem) {
-            ERR_LOG("GC %" PRIu32 " 房间中的物品列表内存空间已满!",
-                src->guildcard);
-            return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或物品代码有误, 生成失败."));
-        }
-    }
-    else {
-        ++l->item_player_id[src->client_id];
-    }
-
-    /* Generate the packet to drop the item */
-    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
-    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
-    dc.hdr.flags = 0;
-
-    dc.shdr.type = SUBCMD60_DROP_STACK;
-    dc.shdr.size = 0x0A;
-    dc.shdr.client_id = src->client_id;
-
-
-    bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
-    bb.hdr.flags = 0;
-
-    bb.shdr.type = SUBCMD60_DROP_STACK;
-    bb.shdr.size = 0x09;
-    bb.shdr.client_id = src->client_id;
-
-    dc.area = LE16(src->cur_area);
-    bb.area = LE32(src->cur_area);
-    bb.x = dc.x = src->x;
-    bb.z = dc.z = src->z;
-    bb.data = dc.data = src->new_item;
-    bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
-    bb.two = dc.two = LE32(0x00000002);
-
-    /* Clear the set item */
-    clear_inv_item(&src->new_item);
-
-    /* Send the packet to everyone in the lobby */
-    switch (src->version) {
-    case CLIENT_VERSION_DCV1:
-    case CLIENT_VERSION_DCV2:
-    case CLIENT_VERSION_PC:
-    case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_EP3:
-    case CLIENT_VERSION_XBOX:
-        return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
-
-    case CLIENT_VERSION_BB:
-        return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
-
-    default:
-        return 0;
-    }
-}
-
 /* 用法: /cheat [off] */
 static int handle_cheat(ship_client_t* c, const char* params) {
-    pthread_mutex_lock(&c->mutex);
-
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(c)) {
-        pthread_mutex_unlock(&c->mutex);
         return get_gm_priv(c);
     }
 
@@ -4041,21 +3928,21 @@ static int handle_cheat(ship_client_t* c, const char* params) {
         c->flags &= ~CLIENT_FLAG_INFINITE_TP;
         c->flags &= ~CLIENT_FLAG_INVULNERABLE;
         c->cur_lobby->flags &= ~LOBBY_TYPE_CHEATS_ENABLED;
-        pthread_mutex_unlock(&c->mutex);
+        return send_txt(c, "%s", __(c, "\tE\tC4作弊模式关闭."));
+    }
+    else if (!strcmp(params, "on")) {
 
-        return send_txt(c, "%s", __(c, "\tE\tC7作弊模式关闭."));
+        /* Set the flag since we're turning it on. */
+        c->options.infinite_hp = true;
+        c->options.infinite_tp = true;
+        c->options.switch_assist = true;
+        c->flags |= CLIENT_FLAG_INFINITE_TP;
+        c->flags |= CLIENT_FLAG_INVULNERABLE;
+        c->cur_lobby->flags |= LOBBY_TYPE_CHEATS_ENABLED;
+        return send_txt(c, "%s", __(c, "\tE\tC6作弊模式开启."));
     }
 
-    /* Set the flag since we're turning it on. */
-    c->cur_lobby->flags |= LOBBY_TYPE_CHEATS_ENABLED;
-    c->flags |= CLIENT_FLAG_INFINITE_TP;
-    c->flags |= CLIENT_FLAG_INVULNERABLE;
-    c->options.infinite_hp = true;
-    c->options.infinite_tp = true;
-    c->options.switch_assist = true;
-
-    pthread_mutex_unlock(&c->mutex);
-    return send_txt(c, "%s", __(c, "\tE\tC7作弊模式开启."));
+    return send_txt(c, "%s", __(c, "\tE\tC4作弊模式开关:on /off."));
 }
 
 /* 用法: /cmdc [opcode1, opcode2] */
