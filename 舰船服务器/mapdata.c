@@ -836,7 +836,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.hildeblue)*/) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.hildeblue)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -854,7 +854,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.rappy)*/) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.rappy)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -955,7 +955,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if ((rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)*/) {
+            else if ((rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -991,7 +991,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)*/) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1006,7 +1006,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 ++count;
                 gen[count].area = area;
                 rare_monster = false;
-                if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)*/) {
+                if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)) {
                     rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                     //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                     rare_enemy_count++;
