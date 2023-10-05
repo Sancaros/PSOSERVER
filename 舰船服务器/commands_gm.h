@@ -55,10 +55,7 @@ static int handle_gm(ship_client_t* c, const char* params) {
         return get_gm_priv(c);
     }
 
-    if (in_lobby(c))
-        return send_gm_menu(c, MENU_ID_GM);
-
-    return send_txt(c, "%s", __(c, "\tE\tC4无法在房间使用该指令."));
+    return send_gm_menu(c, MENU_ID_GM);
 }
 
 /* 用法: /debug [0/1]*/
