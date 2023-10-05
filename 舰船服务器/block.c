@@ -2745,7 +2745,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
             c->create_lobby = NULL;
 
             /* Add the user to the lobby... */
-            if (dc_join_game(c, l)) {
+            if (join_game(c, l)) {
                 /* Something broke, destroy the created lobby before anyone
                    tries to join it. */
                 pthread_rwlock_wrlock(&c->cur_block->lobby_lock);

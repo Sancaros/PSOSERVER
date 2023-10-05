@@ -15,10 +15,7 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <time.h>
-
 #include "pso_timer.h"
-#include "f_logs.h"
 
 int time_check(time_t c_time, uint32_t check_value) {
 	int v = 0;

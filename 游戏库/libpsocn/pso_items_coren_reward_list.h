@@ -19,6 +19,8 @@
 #define COREN_REWARD_LISH_H
 #include <stdint.h>
 
+#include "items.h"
+
 /*[2021年12月22日 02:35] 截获(15466) : 指令 0x"e2" 未被游戏进行接收处理. (数据如下)
 
 	[2021年12月22日 02:35] 截获(15466) :

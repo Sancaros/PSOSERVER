@@ -1394,37 +1394,28 @@ typedef struct bb_open_quest_file_confirmation {
 // 5E: 无效或未解析指令
 // 5F: 无效或未解析指令
 
+// 60：广播命令
+// 内部名称：SndPsoData
+// 当客户端发送此命令时，服务器应将其转发给所有玩家
+// 在同一个游戏/大厅，除了最初发送命令的玩家。
+// 有关内容的详细信息，请参阅ReceiveSubcommands或下面的子命令索引。
+// 此命令中的数据长度最多可达0x400字节。如果它更大，
+// 客户端将表现出未定义的行为。
 
-// 60: Broadcast command
-// Internal name: SndPsoData
-// When a client sends this command, the server should forward it to all players
-// in the same game/lobby, except the player who originally sent the command.
-// See ReceiveSubcommands or the subcommand index below for details on contents.
-// The data in this command may be up to 0x400 bytes in length. If it's larger,
-// the client will exhibit undefined behavior.
-
-// 61 (C->S): Player data
-// Internal name: SndCharaDataV2 (SndCharaData in DCv1)
-// See the PSOPlayerData structs in Player.hh for this command's format.
-// header.flag specifies the format version, which is related to (but not
-// identical to) the game's major version. For example, the format version is 01
-// on DC v1, 02 on PSO PC, 03 on PSO GC, XB, and BB, and 04 on Episode 3.
-// Upon joining a game, the client assigns inventory item IDs sequentially as
-// (0x00010000 + (0x00200000 * lobby_client_id) + x). So, for example, player
-// 3's 8th item's ID would become 0x00610007. The item IDs from the last game
-// the player was in will appear in their inventory in this command.
-// Note: If the client is in a game at the time this command is received, the
-// inventory sent by the client only includes items that would not disappear if
-// the client crashes! Essentially, it reflects the saved state of the player's
-// character rather than the live state.
-// 61 (C->S): 玩家数据
-// 内部名称：SndCharaDataV2（DCv1中的SndCharaData）
-// 有关此命令格式的信息，请参见Player.hh中的PSOPlayerData结构。
-// header.flag指定了格式版本，与游戏的主要版本相关（但不完全相同）。
-// 例如，在DC v1上，格式版本为01，在PSO PC上为02，在PSO GC、XB和BB上为03，在Episode 3上为04。
-// 加入游戏时，客户端将物品ID顺序分配为（0x00010000 +（0x00200000 * lobby_client_id）+ x）。
-// 因此，例如，Player 3的第8个物品的ID将变为0x00610007。玩家上次所在游戏的物品ID将出现在他们的库存中。
-// 注意：如果在接收到该命令时，客户端正在游戏中，则客户端发送的库存仅包括在客户端崩溃时不会消失的物品！实际上，它反映了玩家角色的保存状态，而不是实时状态。
+//61（C->S）：玩家数据
+//内部名称：SndCharaDataV2（DCv1中的SndChara Data）
+//有关此命令的格式，请参阅Player.hh中的PSOPlayerData结构。
+//header.flag指定格式版本，该版本与
+//与）游戏的主要版本相同。例如，格式版本为01
+//DC v1上，PSO PC上02，PSO GC、XB和BB上03，第3集04。
+//加入游戏后，客户端将库存项目ID按顺序分配为
+//（0x00010000+（0x00200000*lobby_client_id）+x）。例如，玩家
+//3的第8个项目的ID将变为0x00610007。上次游戏中的物品ID
+//玩家将出现在他们的库存中。
+//注意：如果客户端在收到此命令时正在游戏中，则
+//客户发送的库存只包括在以下情况下不会消失的物品
+//客户端崩溃！本质上，它反映了玩家的保存状态
+//性格而非活动状态。
 
 //struct PlayerRecordsEntry_DC {
 //    /* 00 */ uint32_t client_id;
@@ -1521,32 +1512,30 @@ typedef struct bb_open_quest_file_confirmation {
 //    /* 082C */ char16_t auto_reply[0];
 //} PACKED;
 
-// 62: Target command
-// Internal name: SndPsoData2
-// When a client sends this command, the server should forward it to the player
-// identified by header.flag in the same game/lobby, even if that player is the
-// player who originally sent it.
-// See ReceiveSubcommands or the subcommand index below for details on contents.
-// The data in this command may be up to 0x400 bytes in length. If it's larger,
-// the client will exhibit undefined behavior.
+//62：目标命令
+//内部名称：SndPsoData2
+//当客户端发送此命令时，服务器应将其转发给玩家
+//由同一游戏/大厅中的header.flag标识，即使该玩家是
+//最初发送的玩家。
+//有关内容的详细信息，请参阅ReceiveSubcommands或下面的子命令索引。
+//此命令中的数据长度最多可达0x400字节。如果它更大，
+//客户端将表现出未定义的行为。
 
 // 63: 无效或未解析指令
 
 #ifdef PLAYER_H
 
-// 64 (S->C): Join game
-// Internal name: RcvStartGame3
-
-// This is sent to the joining player; the other players get a 65 instead.
-// Note that (except on Episode 3) this command does not include the player's
-// disp or inventory data. The clients in the game are responsible for sending
-// that data to each other during the join process with 60/62/6C/6D commands.
-
-// Curiously, this command is named RcvStartGame3 internally, while 0E is named
-// RcvStartGame. The string RcvStartGame2 appears in the DC versions, but it
-// seems the relevant code was deleted - there are no references to the string.
-// Based on the large gap between commands 0E and 64, we can't guess at which
-// command number RcvStartGame2 might have been.
+//64（S->C）：加入游戏
+//内部名称：RcvStartGame3
+//这将发送给加入的玩家；其他玩家得到65指令。
+//注意（第3集除外）此命令不包括玩家的
+//disp或库存数据。游戏中的客户端负责发送
+//该数据在具有60/62/6C/6D命令的联接过程期间相互传递。
+//奇怪的是，这个命令在内部被命名为RcvStartGame3，而0E则被命名为
+//RcvStartGame。字符串RcvStartGame2出现在DC版本中，但它
+//相关代码似乎已被删除-没有对该字符串的引用。
+//基于命令0E和64之间的巨大差距，我们无法猜测
+//命令号RcvStartGame2可能是。
 typedef struct dcnte_game_join {
     dc_pkt_hdr_t hdr;
     uint8_t client_id;
@@ -1963,21 +1952,21 @@ typedef struct bb_lobby_leave {
 // 6A: Invalid command
 // 6B: Invalid command
 
-// 6C: Broadcast command
-// Internal name: RcvPsoDataLong and SndPsoDataLong
-// Same format and usage as 60 command, but with no size limit.
+//6C：广播命令
+//内部名称：RcvSoDataLong和SndPsoDataLong
+//与60命令的格式和用法相同，但没有大小限制。
 
-// 6D: Target command
-// Internal name: RcvPsoDataLong and SndPsoDataLong2
-// Same format and usage as 62 command, but with no size limit.
+//6D：目标命令
+//内部名称：RcvSoDataLong和SndPsoDataLong2
+//与62命令的格式和用法相同，但没有大小限制。
 
 // 6E: Invalid command
 
-// 6F (C->S): Set game status
-// Internal name: SndBurstEnd
-// This command is sent when a player is done loading and other players can then
-// join the game. On BB, this command is sent as 016F if a quest is in progress
-// and the game should not be joined by anyone else.
+//6F（C->S）：设置游戏状态
+//内部名称：SndBurstEnd
+//此命令是在玩家完成加载后发送的，然后其他玩家可以
+//加入游戏。在BB上，如果任务正在进行，则此命令将作为016F发送
+//其他人不应该加入游戏。
 typedef struct bb_done_burst {
     union {
         dc_pkt_hdr_t dc;
@@ -2014,22 +2003,41 @@ typedef struct bb_done_quest_burst {
 // 7E: 无效或未解析指令
 // 7F: 无效或未解析指令
 
-// 80 (S->C): Ignored (PC/V3)
-// TODO: Check if this command exists on DC v1/v2.
-//struct S_Unknown_PC_V3_80 {
-//    uint32_t which; // Expected to be in the range 00-0B... maybe client ID?
-//    uint32_t unknown_a1; // Could be player_tag
-//    uint32_t unknown_a2; // Could be guild_card_number
-//} PACKED;
+//80:有效但被忽略（所有版本）
+//内部名称：RcvGenerateID和SndGenerateID
+//此命令似乎用于为给定玩家设置下一个物品ID
+//插槽。PSOV3及以后版本接受此命令，但完全忽略它。尤其是
+//除了DC NTE之外，没有任何版本的PSO发送过此命令-很可能是
+//用于实现某些项ID同步语义，这些语义后来更改为
+//把领导者当作真理的源泉。
+typedef struct C_GenerateID_DCNTE_80 {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
+    uint32_t id;
+    uint8_t unused1; // Always 0
+    uint8_t unused2; // Always 0
+    uint16_t unused3; // Always 0
+    uint8_t unused4[4]; // Client sends uninitialized data here
+} PACKED C_GenerateID_DCNTE_80_t;
 
-// 81: Simple mail
-// Format is the same in both directions. The server should forward the command
-// to the player with to_guild_card_number, if they are online. If they are not
-// online, the server may store it for later delivery, send their auto-reply
-// message back to the original sender, or simply drop the message.
-// On GC (and probably other versions too) the unused space after the text
-// contains uninitialized memory when the client sends this command. newserv
-// clears the uninitialized data for security reasons before forwarding.
+struct S_GenerateID_DC_PC_V3_80 {
+    bb_pkt_hdr_t bb;
+    uint32_t client_id; // = 0
+    uint32_t unused;
+    uint32_t next_item_id;
+} PACKED;
+
+//81：简单邮件
+//内部名称：RcvChatMessage和SndChatMessage
+//两个方向的格式相同。服务器应转发命令
+//to_guild_card_number的玩家，如果他们在线的话。如果不是
+//在线时，服务器可能会将其存储以备稍后交付，并发送自动回复
+//将消息返回给原始发件人，或者简单地丢弃该消息。
+//在GC（可能还有其他版本）中，文本后面未使用的空间
+//当客户端发送此命令时，包含未初始化的内存。newserv
+//出于安全原因，在转发之前清除未初始化的数据。
 typedef struct dc_simple_mail {
     dc_pkt_hdr_t hdr;
     uint32_t player_tag;
@@ -2096,15 +2104,21 @@ typedef struct simple_mail {
 
 // 82: 无效或未解析指令
 
-// 83 (S->C): Lobby menu
-// This sets the menu item IDs that the client uses for the lobby teleport menu.
-// The client expects 15 items here; sending more or fewer items does not change
-// the lobby count on the client. If fewer entries are sent, the menu item IDs
-// for some lobbies will not be set, and the client will likely send 84 commands
-// that don't make sense if the player chooses one of lobbies with unset IDs.
-// On Episode 3, the client expects 20 entries instead of 15. The CARD lobbies
-// are the last five entries, even though they appear at the top of the list on
-// the player's screen.
+//83（S->C）：大堂菜单
+//内部名称：RcvRoomInfo
+//奇怪的是，DC版本中有一个SndRoomInfo字符串。也许在
+//早期（NTE之前）构建，客户端必须从
+//服务器，SndRoomInfo是执行此操作的命令
+//命令必须在DC NTE之前删除。
+//此命令设置客户端用于大厅的菜单项ID
+//传送机菜单。在DCv1上，客户端期望此处有10个条目；在所有其他
+//除了第3集之外的版本，客户期望这里有15个项目；在第3集，
+//客户希望这里有20件商品。发送更多或更少的项目不会
+//更改客户端的大厅计数。如果发送的条目较少，则菜单
+//某些大厅的项目ID将不会设置，客户端可能会发送
+//如果玩家选择一个带有
+//未设置的ID。在第三集中，CARD大厅是最后五个入口，甚至
+//尽管它们出现在玩家屏幕上列表的顶部。
 typedef struct dc_lobby_list {
     union {                     /* The flags field says the entry count */
         dc_pkt_hdr_t dc;
@@ -2126,17 +2140,22 @@ typedef struct bb_lobby_list {
     } entries[0];
 } PACKED bb_lobby_list_pkt;
 
-// 84 (C->S): Choose lobby same as bb_select_pkt
+//// Command is a list of these; header.flag is the entry count (10, 15 or 20)
+//struct S_LobbyListEntry_83 {
+//    le_uint32_t menu_id = 0;
+//    le_uint32_t item_id = 0;
+//    le_uint32_t unused = 0;
+//} __packed__;
+
+//84（C->S）：选择大厅
+//内部名称：SndRoomChange
 
 // 85: 无效或未解析指令
 // 86: 无效或未解析指令
 // 87: 无效或未解析指令
 
-// 88 (C->S): License check (DC NTE only)
-// The server should respond with an 88 command.
-// The first packet sent by the Dreamcast Network Trial Edition. Note that the
-// serial number and access key are both 16-character strings with NUL
-// terminators at the end.
+//88（C->S）：许可证检查（仅限DC NTE）
+//服务器应该以88命令进行响应。
 typedef struct dcnte_login_88 {
     dc_pkt_hdr_t hdr;
     char serial_number[17];
@@ -2290,9 +2309,15 @@ typedef struct dc_login_90 {
 // Behaves exactly the same as 9A (S->C). No arguments except header.flag.
 
 // 91 (S->C): Start encryption at login server (legacy; non-BB only)
+// Internal name: RcvPsoRegistConnect
 // Same format and usage as 17 command, except the client will respond with a 90
 // command. On versions that support it, this is strictly less useful than the
-// 17 command.
+// 17 command. Curiously, this command appears to have been implemented after
+// the 17 command since it's missing from the DC NTE version, but the 17 command
+// is named RcvPsoRegistConnectV2 whereas 91 is simply RcvPsoRegistConnect. It's
+// likely that after DC NTE, Sega simply changed the command numbers for this
+// group of commands from 88-8F to 90-A1 (so DC NTE's 89 command became the 91
+// command in all later versions).
 
 // 92 (C->S): Register (DC)
 //struct C_RegisterV1_DC_92 {
@@ -2307,6 +2332,7 @@ typedef struct dc_login_90 {
 //} PACKED;
 
 // 92 (S->C): Register result (non-BB)
+// Internal name: RcvPsoRegist
 // Same format and usage as 9C (S->C) command.
 
 // 93 (C->S): Log in (DCv1)
@@ -2372,21 +2398,44 @@ typedef struct bb_login_93 {
 // 94: 无效或未解析指令
 
 // 95 (S->C): Request player data
+// Internal name: RcvRecognition
 // No arguments
 // For some reason, some servers send high values in the header.flag field here.
-// From what I can tell, that field appears to be completely unused by the
-// client - sending zero works just fine. The original Sega servers had some
-// uninitialized memory bugs, of which that may have been one, and other private
-// servers may have just duplicated Sega's behavior verbatim.
+// The header.flag field is completely unused by the client, however - sending
+// zero works just fine. The original Sega servers had some uninitialized memory
+// bugs, of which that may have been one, and other private servers may have
+// just duplicated Sega's behavior verbatim.
 // Client will respond with a 61 command.
 
 // 96 (C->S): Character save information
-// TODO: Check if this command exists on DC v1/v2.
+// Internal name: SndSaveCountCheck
+typedef struct dc_char_save_info_nobb_96 {
+    dc_pkt_hdr_t hdr;
+    // The creation timestamp is the number of seconds since 12:00AM on 1 January
+    // 2000. Instead of computing this directly from the TBR (on PSO GC), the game
+    // uses localtime(), then converts that to the desired timestamp. The leap
+    // year correction in the latter phase of this computation seems incorrect; it
+    // adds a day in 2002, 2006, etc. instead of 2004, 2008, etc. See
+    // compute_psogc_timestamp in SaveFileFormats.cc for details.
+    uint32_t creation_timestamp;
+    // This field counts certain events on a per-character basis. One of the
+    // relevant events is the act of sending a 96 command; another is the act of
+    // receiving a 97 command (to which the client responds with a B1 command).
+    // Presumably Sega's original implementation could keep track of this value
+    // for each character and could therefore tell if a character had connected to
+    // an unofficial server between connections to Sega's servers.
+    uint32_t event_counter;
+} PACKED dc_char_save_info_nobb_pkt;
+
 typedef struct bb_char_save_info_V3_BB_96 {
     bb_pkt_hdr_t hdr;
-    // This field appears to be a checksum or random stamp of some sort; it seems
-    // to be unique and constant per character.
-    uint32_t unknown_a1;
+    // The creation timestamp is the number of seconds since 12:00AM on 1 January
+    // 2000. Instead of computing this directly from the TBR (on PSO GC), the game
+    // uses localtime(), then converts that to the desired timestamp. The leap
+    // year correction in the latter phase of this computation seems incorrect; it
+    // adds a day in 2002, 2006, etc. instead of 2004, 2008, etc. See
+    // compute_psogc_timestamp in SaveFileFormats.cc for details.
+    uint32_t creation_timestamp;
     // This field counts certain events on a per-character basis. One of the
     // relevant events is the act of sending a 96 command; another is the act of
     // receiving a 97 command (to which the client responds with a B1 command).

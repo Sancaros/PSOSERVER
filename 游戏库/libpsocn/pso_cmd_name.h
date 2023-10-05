@@ -83,7 +83,7 @@ static cmd_map_st c_cmd_names[] = {
     { DONE_BURSTING_TYPE, "DONE_BURSTING_TYPE", "客户端至服务器指令" },
     { DONE_BURSTING_TYPE01, "DONE_BURSTING_TYPE01", "完成跃迁" },
     { CLIENT_UNKNOW_77, "CLIENT_UNKNOW_77", "未知77" },
-    { CLIENT_UNKNOW_81, "CLIENT_UNKNOW_81", "未知81" },
+    { CLIENT_UNKNOW_80, "CLIENT_UNKNOW_80", "未知80" },
     { SIMPLE_MAIL_TYPE, "SIMPLE_MAIL_TYPE", "客户端至服务器指令" },
     { LOBBY_LIST_TYPE, "LOBBY_LIST_TYPE", "大厅房间信息板数据包" },
     { LOBBY_CHANGE_TYPE, "LOBBY_CHANGE_TYPE", "客户端至服务器指令" },

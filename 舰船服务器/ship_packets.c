@@ -30,6 +30,7 @@
 #include <database.h>
 #include <f_logs.h>
 #include <f_iconv.h>
+#include <pso_timer.h>
 #include <pso_menu.h>
 #include <pso_pack.h>
 #include <pso_packet_length.h>
@@ -743,8 +744,6 @@ int send_redirect6(ship_client_t *c, char* host6, const uint8_t ip[16], uint16_t
 static int send_timestamp_dc(ship_client_t *c) {
     uint8_t *sendbuf = get_sendbuf();
     dc_timestamp_pkt *pkt = (dc_timestamp_pkt *)sendbuf;
-    SYSTEMTIME rawtime;
-    GetLocalTime(&rawtime);
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
@@ -766,11 +765,8 @@ static int send_timestamp_dc(ship_client_t *c) {
         pkt->hdr.pc.pkt_len = LE16(DC_TIMESTAMP_LENGTH);
     }
 
-    /* Fill in the timestamp */
-    sprintf(pkt->timestamp, "%u:%02u:%02u: %02u:%02u:%02u.%03u",
-        rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-        rawtime.wHour, rawtime.wMinute, rawtime.wSecond,
-            rawtime.wMilliseconds);
+    /* 填充时间戳 */
+    get_local_time(pkt->timestamp);
 
     /* 将数据包发送出去 */
     return crypt_send(c, DC_TIMESTAMP_LENGTH, sendbuf);
@@ -779,26 +775,23 @@ static int send_timestamp_dc(ship_client_t *c) {
 static int send_timestamp_bb(ship_client_t* c) {
     uint8_t* sendbuf = get_sendbuf();
     bb_timestamp_pkt* pkt = (bb_timestamp_pkt*)sendbuf;
-    SYSTEMTIME rawtime;
-    GetLocalTime(&rawtime);
 
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
 
-    /* Wipe the packet */
+    /* 初始化数据包 */
     memset(pkt, 0, BB_TIMESTAMP_LENGTH);
 
     /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(TIMESTAMP_TYPE);
     pkt->hdr.pkt_len = LE16(BB_TIMESTAMP_LENGTH);
 
-    /* Fill in the timestamp */
-    sprintf(pkt->timestamp, "%u:%02u:%02u: %02u:%02u:%02u.%03u",
-        rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-        rawtime.wHour, rawtime.wMinute, rawtime.wSecond,
-        rawtime.wMilliseconds);
+    /* 填充时间戳 */
+    get_local_time(pkt->timestamp);
+
+    print_ascii_hex(dbgl, pkt, BB_TIMESTAMP_LENGTH);
 
     /* 将数据包发送出去 */
     return crypt_send(c, BB_TIMESTAMP_LENGTH, sendbuf);

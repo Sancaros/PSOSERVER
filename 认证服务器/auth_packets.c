@@ -610,7 +610,6 @@ int send_selective_redirect(login_client_t *c) {
 static int send_timestamp_dc(login_client_t *c) {
     uint8_t* sendbuf = get_sendbuf();
 	dc_timestamp_pkt* pkt = (dc_timestamp_pkt*)sendbuf;
-	SYSTEMTIME rawtime;
 
 	/* Wipe the packet */
 	memset(pkt, 0, DC_TIMESTAMP_LENGTH);
@@ -627,18 +626,8 @@ static int send_timestamp_dc(login_client_t *c) {
 		pkt->hdr.pc.pkt_len = LE16(DC_TIMESTAMP_LENGTH);
 	}
 
-	/* Get the timestamp */
-	//gettimeofday(&rawtime, NULL);
-    GetLocalTime(&rawtime);
-
-	/* Get UTC */
-	//gmtime(&rawtime.tv_sec, &cooked);
-
-	/* Fill in the timestamp */
-	sprintf(pkt->timestamp, "%u:%02u:%02u: %02u:%02u:%02u.%03u",
-		rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-		rawtime.wHour, rawtime.wMinute, rawtime.wSecond,
-		rawtime.wMilliseconds);
+    /* 填充时间戳 */
+    get_local_time(pkt->timestamp);
 
 	/* 将数据包发送出去 */
 	return crypt_send(c, DC_TIMESTAMP_LENGTH, sendbuf);
@@ -647,9 +636,6 @@ static int send_timestamp_dc(login_client_t *c) {
 static int send_timestamp_bb(login_client_t *c) {
     uint8_t* sendbuf = get_sendbuf();
     bb_timestamp_pkt* pkt = (bb_timestamp_pkt*)sendbuf;
-    /*struct timeval rawtime;
-    struct tm cooked;*/
-    SYSTEMTIME rawtime;
 
     /* Wipe the packet */
     memset(pkt, 0, BB_TIMESTAMP_LENGTH);
@@ -658,18 +644,8 @@ static int send_timestamp_bb(login_client_t *c) {
     pkt->hdr.pkt_type = LE16(TIMESTAMP_TYPE);
     pkt->hdr.pkt_len = LE16(BB_TIMESTAMP_LENGTH);
 
-    /* Get the timestamp */
-    //gettimeofday(&rawtime, NULL);
-    GetLocalTime(&rawtime);
-
-    /* Get UTC */
-    //gmtime(&rawtime.tv_sec);
-
-    /* Fill in the timestamp */
-    sprintf(pkt->timestamp, "%u:%02u:%02u: %02u:%02u:%02u.%03u",
-        rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-        rawtime.wHour, rawtime.wMinute, rawtime.wSecond,
-        rawtime.wMilliseconds);
+    /* 填充时间戳 */
+    get_local_time(pkt->timestamp);
 
     /* 将数据包发送出去 */
     return crypt_send(c, BB_TIMESTAMP_LENGTH, sendbuf);

@@ -3571,10 +3571,10 @@ static int handle_quest(ship_client_t *c, const char *params) {
                return rv;
            }
 
-           rv = lobby_setup_quest(l, c, quest_id, CLIENT_LANG_ENGLISH);
+           rv = lobby_setup_quest(l, c, quest_id, CLIENT_LANG_CHINESE_S);
     }
     else {
-        rv = send_txt(c, "%s", __(c, "\tE\tC4Quests not\nconfigured."));
+        rv = send_txt(c, "%s", __(c, "\tE\tC4任务未设置."));
     }
 
     pthread_rwlock_unlock(&ship->qlock);
@@ -4030,6 +4030,11 @@ static int handle_bank(ship_client_t* c, const char* params) {
 /* 用法: /rsquset TODO 未完成*/
 static int handle_resetquest(ship_client_t* c, const char* params) {
     lobby_t* l = c->cur_lobby;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        return get_gm_priv(c);
+    }
 
     if (l->flags & LOBBY_FLAG_QUESTING) {
 

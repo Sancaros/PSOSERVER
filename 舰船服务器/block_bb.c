@@ -282,9 +282,9 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
 
 static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
-    l->lobby_create = 1;
 
     if (l) {
+        l->lobby_create = 1;
         switch (item_id) {
         case 0:
             l->version = CLIENT_VERSION_BB;
@@ -326,7 +326,7 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
 #endif // DEBUG
             break;
 
-        default:
+        case 0xFF:
             l->lobby_create = 0;
 #ifdef DEBUG
             DBG_LOG("返回上一级");
@@ -335,7 +335,6 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
         }
 
         //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
-
         if (!l->lobby_create) {
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
@@ -354,21 +353,26 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
 
 static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
-    l->drop_pso2 = false;
-    l->drop_psocn = false;
 
     if (l) {
+        l->drop_pso2 = false;
+        l->drop_psocn = false;
+        l->lobby_create = 0;
+
         switch (item_id) {
         case 0:
+            l->lobby_create = 1;
             //DBG_LOG("默认掉落模式");
             break;
 
         case 1:
+            l->lobby_create = 1;
             //DBG_LOG("PSO2掉落模式");
             l->drop_pso2 = true;
             break;
 
         case 2:
+            l->lobby_create = 1;
             //l->v2 = 0;
             //l->version = CLIENT_VERSION_DCV1;
             //DBG_LOG("随机掉落模式");
@@ -376,9 +380,18 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
             l->drop_psocn = true;
             break;
 
-        default:
+        case 0xFF:
+            l->lobby_create = 0;
             //DBG_LOG("返回上一级");
             return send_bb_game_type_sel(c);
+        }
+        
+        //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
+        if (!l->lobby_create) {
+            pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
+            lobby_destroy(l);
+            pthread_rwlock_unlock(&c->cur_block->lobby_lock);
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
         }
 
         c->create_lobby = NULL;

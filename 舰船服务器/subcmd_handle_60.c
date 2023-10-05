@@ -1691,6 +1691,17 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
+    /* Are we on Pioneer 2? If so, record the item they just dropped. */
+    if (src->cur_area == 0) {
+        if (src->p2_drops_max < 30) {
+            src->p2_drops[src->p2_drops_max++] = LE32(pkt->item_id);
+        }
+        else {
+            ERR_LOG("%s 掉落太多物品在先驱者2号!"
+                "这有可能会造成服务器故障!", get_player_describe(src));
+        }
+    }
+
     inventory_t* inv = get_client_inv_bb(src);
 
     /* 在玩家背包中查找物品. */
@@ -3196,8 +3207,18 @@ static int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_menu_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
+    /* 需要判断在大厅的话 给个标志 是否在创建房间 选择模式时取消了 */
+
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
     /* We don't care about these in lobbies. */
     if (l->type == LOBBY_TYPE_LOBBY) {
+        lobby_t* l2 = src->create_lobby;
+        if (l2 != NULL && l2 && !l2->lobby_create) {
+            pthread_rwlock_wrlock(&src->cur_block->lobby_lock);
+            lobby_destroy(l2);
+            pthread_rwlock_unlock(&src->cur_block->lobby_lock);
+        }
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
