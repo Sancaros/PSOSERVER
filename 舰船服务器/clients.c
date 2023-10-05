@@ -2076,26 +2076,46 @@ void show_coren_reward_info(ship_client_t* src, uint32_t week, uint32_t index) {
     send_msg(src, MSG_BOX_TYPE, "%s", tmp_msg);
 }
 
-void show_help_msg(ship_client_t* src) {
+void show_game_cmd_help_msg(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;
 
-    if (!l)
-        return;
-
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        send_msg(src, MSG_BOX_TYPE,
-            "-----------------------指令菜单-----------------------\n"
-            "玩家名称: %s\n"
-            "当前职业: %s\n"
-            "当前等级: Lv%d 经验:%d 钱包:%d美赛塔\n"
-            "背包数量: %d 语言: %u\n"
-            "银行数量: 角色:%d 公共:%d\n"
-            "嗑药情况: HP药:%u TP药:%u 攻药:%d 智药:%d 闪药:%d 防药:%d 运药:%d\n"
-            "挑战模式: 详情未完成\n"
-        );
+    if (l) {
+        if (l->type == LOBBY_TYPE_LOBBY) {
+            send_msg(src, MSG_BOX_TYPE,
+                "-----------------------房间指令菜单-----------------------\n"
+                "/npc 召唤npc跟随作战, \n"
+                "/ignore 忽略房间中某一位玩家\n"
+                "/quit 快速断开游戏\n"
+                //"/trackkill 杀敌数跟踪\n"
+                "/bank 切换公共仓库\n"
+                "/qr 非任务情况下返回先驱者2号\n"
+                "/lb 快速返回舰仓\n"
+                "/clean [inv/bank] 用于清理背包 银行数据 慎用！！！！\n"
+            );
+        }
     }
 
-    send_txt(src, "%s", __(src, "\tE\tC4无法在房间使用该指令."));
+    send_txt(src, "%s", __(src, "\tE\tC4无法使用该指令."));
+}
+
+void show_lobby_cmd_help_msg(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+
+    if (l) {
+        if (l->type == LOBBY_TYPE_LOBBY) {
+            send_msg(src, MSG_BOX_TYPE,
+                "-----------------------大厅指令菜单-----------------------\n"
+                "/pl 玩家专属菜单,功能性菜单\n"
+                //"/save slot 保存某一个槽位角色的数据, slot范围 0 - 3\n"
+                //"/restore slot 从备份数据中恢复角色数据, slot范围 0 - 3 慎用\n"
+                //"/enablebk 当前已默认开启,开启自动备份功能1.\n"
+                //"/disablebk 当前已默认开启,取消自动备份功能1.\n"
+                "/noevent 取消个人节日设置,不会影响其他玩家.\n"
+            );
+        }
+    }
+
+    send_txt(src, "%s", __(src, "\tE\tC4无法使用该指令."));
 }
 
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {

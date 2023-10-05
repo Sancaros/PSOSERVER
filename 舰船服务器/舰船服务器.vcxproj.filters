@@ -257,6 +257,12 @@
     <ClInclude Include="commands_gm.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="commands_pl_game.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="commands_pl_lobby.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico">

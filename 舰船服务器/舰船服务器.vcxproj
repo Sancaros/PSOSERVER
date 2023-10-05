@@ -101,6 +101,8 @@
     <ClInclude Include="itemrt_remap.h" />
     <ClInclude Include="pthreadv2.h" />
     <ClInclude Include="commands_gm.h" />
+    <ClInclude Include="commands_pl_game.h" />
+    <ClInclude Include="commands_pl_lobby.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico" />

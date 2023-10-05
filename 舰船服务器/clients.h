@@ -530,6 +530,8 @@ void show_player_inv_info(ship_client_t* src);
 void show_player_bank_info(ship_client_t* src);
 void show_player_common_bank_info(ship_client_t* src);
 void show_coren_reward_info(ship_client_t* src, uint32_t week, uint32_t index);
+void show_game_cmd_help_msg(ship_client_t* src);
+void show_lobby_cmd_help_msg(ship_client_t* src);
 /* 检测玩家是否在有效的游戏房间中 */
 inline bool in_game(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;

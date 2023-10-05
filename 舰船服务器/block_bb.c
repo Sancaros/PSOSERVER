@@ -432,6 +432,14 @@ static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
             send_bb_coren_dayreward_list(c);
             break;
 
+        case ITEM_ID_PL_GCMD:
+            show_game_cmd_help_msg(c);
+            break;
+
+        case ITEM_ID_PL_LCMD:
+            show_lobby_cmd_help_msg(c);
+            break;
+
         case ITEM_ID_LAST:
             send_bb_player_menu_list(c);
             break;

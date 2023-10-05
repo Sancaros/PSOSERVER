@@ -48,6 +48,19 @@
 extern int sub62_06_dc(ship_client_t* s, ship_client_t* d,
     subcmd_dc_gcsend_t* pkt);
 
+/* 用法: /gm */
+static int handle_gm(ship_client_t* c, const char* params) {
+    /* Make sure the requester is a local GM, at least. */
+    if (!LOCAL_GM(c)) {
+        return get_gm_priv(c);
+    }
+
+    if (in_lobby(c))
+        return send_gm_menu(c, MENU_ID_GM);
+
+    return send_txt(c, "%s", __(c, "\tE\tC4无法在房间使用该指令."));
+}
+
 /* 用法: /debug [0/1]*/
 static int handle_gmdebug(ship_client_t* c, const char* params) {
     unsigned long param;
@@ -669,7 +682,6 @@ static int handle_ws(ship_client_t* c, const char* params) {
     send_pkt_dc(c, (dc_pkt_hdr_t*)p);
     return subcmd_handle_60(c, p);
 }
-
 
 /* 用法 /item item1,item2,item3,item4 */
 static int handle_item(ship_client_t* src, const char* params) {
@@ -1567,19 +1579,6 @@ static int handle_override(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC7Lobby restriction override on."));
 }
 
-/* 用法: /gm */
-static int handle_gm(ship_client_t* c, const char* params) {
-    /* Make sure the requester is a local GM, at least. */
-    if (!LOCAL_GM(c)) {
-        return get_gm_priv(c);
-    }
-
-    if (in_lobby(c))
-        return send_gm_menu(c, MENU_ID_GM);
-
-    return send_txt(c, "%s", __(c, "\tE\tC4无法在房间使用该指令."));
-}
-
 /* 用法: /maps [numeric string] */
 static int handle_maps(ship_client_t* c, const char* params) {
     uint32_t maps[32] = { 0 };
@@ -2329,4 +2328,44 @@ static int handle_resetquest(ship_client_t* c, const char* params) {
     }
 
     return send_txt(c, "%s", __(c, "\tE\tC6当前不在任务中."));
+}
+
+/* 用法 /login username password */
+static int handle_login(ship_client_t* c, const char* params) {
+    char username[32] = { 0 }, password[32] = { 0 };
+    int len = 0;
+    const char* ch = params;
+
+    /* Make sure the user isn't doing something stupid. */
+    if (!*params) {
+        return send_txt(c, "%s", __(c, "\tE\tC7请输入:\n"
+            "/login 用户名 密码\n"
+            "完成GM登录验证."));
+    }
+
+    /* Copy over the username/password. */
+    while (*ch != ' ' && len < 32) {
+        username[len++] = *ch++;
+    }
+
+    if (len == 32)
+        return send_txt(c, "%s", __(c, "\tE\tC7无效用户名."));
+
+    username[len] = '\0';
+
+    len = 0;
+    ++ch;
+
+    while (*ch != ' ' && *ch != '\0' && len < 32) {
+        password[len++] = *ch++;
+    }
+
+    if (len == 32)
+        return send_txt(c, "%s", __(c, "\tE\tC7无效密码."));
+
+    password[len] = '\0';
+
+    /* We'll get success/failure later from the shipgate. */
+    return shipgate_send_usrlogin(&ship->sg, c->guildcard, c->cur_block->b,
+        username, password, 0, 0);
 }

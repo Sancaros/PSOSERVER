@@ -221,6 +221,8 @@ static pso_menu_t pso_error_menu[][4] = {
 #define ITEM_ID_PL_COREN_LIST_2 0x00000004
 #define ITEM_ID_PL_COREN_LIST_3 0x00000005
 //////////////////////////////////////////////////
+#define ITEM_ID_PL_GCMD         0x00000006
+#define ITEM_ID_PL_LCMD         0x00000007
 
 #define ITEM_ID_PL_LAST         0xFFFFFFFF
 
@@ -231,6 +233,8 @@ static pso_menu_t pso_player_menu[][4] = {
     {"玩家商店",     MENU_ID_PLAYER,   ITEM_ID_PL_SHOP,     0x0000},
     {"物品回收",     MENU_ID_PLAYER,   ITEM_ID_PL_EXCHAGE,  0x0000},
     {"科伦奖励",     MENU_ID_PLAYER,   ITEM_ID_PL_COREN,    0x0000},
+    {"房间指令",     MENU_ID_PLAYER,   ITEM_ID_PL_GCMD,     0x0000},
+    {"大厅指令",     MENU_ID_PLAYER,   ITEM_ID_PL_LCMD,     0x0000},
     {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT,  0x0000}
 };
 
