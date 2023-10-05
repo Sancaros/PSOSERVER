@@ -2083,7 +2083,7 @@ void show_game_cmd_help_msg(ship_client_t* src) {
         if (l->type == LOBBY_TYPE_LOBBY) {
             send_msg(src, MSG_BOX_TYPE,
                 "-----------------------房间指令菜单-----------------------\n"
-                "/npc 召唤npc跟随作战, \n"
+                "/npc 召唤npc跟随作战, 任务和单人无效\n"
                 "/ignore 忽略房间中某一位玩家\n"
                 "/quit 快速断开游戏\n"
                 //"/trackkill 杀敌数跟踪\n"
