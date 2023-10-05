@@ -4467,7 +4467,7 @@ static int send_pc_game_list(ship_client_t *c, block_t *b) {
     pkt->entries[0].item_id = 0xFFFFFFFF;
     pkt->entries[0].flags = 0x04;
 
-    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_cn_name,
              0x20);
 
     pthread_rwlock_rdlock(&b->lobby_lock);
@@ -4742,7 +4742,7 @@ static int send_bb_game_list(ship_client_t *c, block_t *b) {
     pkt->entries[0].item_id = 0xFFFFFFFF;
     pkt->entries[0].flags = 0x04;
 
-    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_cn_name,
              0x20);
 
     pthread_rwlock_rdlock(&b->lobby_lock);
@@ -5114,7 +5114,7 @@ int send_bb_game_type_sel(ship_client_t* c) {
     }
 
     /* 填充数据头 */
-    pkt->hdr.pkt_type = LE16(SHIP_LIST_TYPE);
+    pkt->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
 
@@ -5145,7 +5145,7 @@ int send_bb_game_game_drop_set(ship_client_t* c) {
     }
 
     /* 填充数据头 */
-    pkt->hdr.pkt_type = LE16(SHIP_LIST_TYPE);
+    pkt->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
 

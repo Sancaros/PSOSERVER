@@ -2037,9 +2037,10 @@ void show_coren_reward_info(ship_client_t* src, uint32_t week, uint32_t index) {
     size_t count = ARRAYSIZE(day_reward_list[week][index]);
 
     sprintf_s(tmp_msg, sizeof(tmp_msg),
-        "-----------------------%s 科伦奖励列表-----------------------\n"
+        "-----------------------%s 科伦 \tE\tCG%d \tE\tC7奖励列表-----------------------\n"
         "数量: %d\n"
         , get_server_DayOfWeek_desc()
+        , menu_choice_price[index]
         , count
     );
 
