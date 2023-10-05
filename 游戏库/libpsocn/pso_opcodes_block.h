@@ -272,6 +272,7 @@
 #define BB_UPDATE_C_MODE_CONFIG         0x08ED  //无效或未解析指令
 //////////////////////////////////////////////////
 #define BB_SCROLL_MSG_TYPE              0x00EE  //顶部公告数据包
+#define CLIENT_UNKNOW_EF                0x00EF  //
 #define CLIENT_UNKNOW_F0                0x00F0
 #define CLIENT_UNKNOW_F1                0x00F1
 #define CLIENT_UNKNOW_F2                0x00F2

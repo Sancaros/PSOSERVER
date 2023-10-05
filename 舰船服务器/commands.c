@@ -2869,7 +2869,10 @@ static int handle_gm(ship_client_t *c, const char *params) {
         return get_gm_priv(c);
     }
 
-    return send_gm_menu(c, MENU_ID_GM);
+    if (in_lobby(c))
+        return send_gm_menu(c, MENU_ID_GM);
+
+    return send_txt(c, "%s", __(c, "\tE\tC4无法在房间使用该指令."));
 }
 
 /* 用法: /maps [numeric string] */
@@ -4078,7 +4081,11 @@ static int handle_quick_return(ship_client_t* c, const char* params) {
 
 /* 用法: /pl */
 static int handle_player_menu(ship_client_t* c, const char* params) {
-    return send_bb_player_menu_list(c);
+    if (in_lobby(c) || LOCAL_GM(c)) {
+        return send_bb_player_menu_list(c);
+    }
+
+    return send_txt(c, "%s", __(c, "\tE\tC4无法在房间使用该指令."));
 }
 
 static command_t cmds[] = {

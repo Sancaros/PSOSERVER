@@ -189,7 +189,6 @@ typedef union pkt_header {
 
 // 00: 无效或未解析指令
 // 01: 无效或未解析指令
-
 // 02 (服务器->客户端)：开始加密
 // 客户端将使用一个 02 命令作出回应。
 // 此命令后的所有命令将使用 PSO V2 加密方式进行加密。
@@ -312,12 +311,28 @@ typedef struct bb_security {
 // 一个小的消息框出现在右下角，玩家必须按下一个键才能继续。消息的最大长度为 0x200 字节。
 // 在 PSO 的内部，它被称为 RcvError，因为通常用于告诉玩家为什么他们无法做某事（例如加入一个已满的游戏）。
 // 这个格式被多个命令共享；对于除了 06 (服务器->客户端) 之外的所有命令，guild_card_number 字段未使用，应该为 0。
-
 struct SC_TextHeader_01_06_11_B0_EE {
     uint32_t unused;
     uint32_t guild_card_number;
     // Text immediately follows here (char[] on DC/V3, char16_t[] on PC/BB)
 } PACKED;
+
+typedef struct dc_msg01 {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
+    uint32_t client_id;
+    uint32_t guildcard;
+    char msg[0];
+} PACKED dc_msg01_pkt;
+
+typedef struct bb_msg01 {
+    bb_pkt_hdr_t hdr;
+    uint32_t client_id;
+    uint32_t guildcard;
+    uint16_t msg[0];
+} PACKED bb_msg01_pkt;
 
 // 02 (服务器->客户端)：开始加密（不适用于 BB 版本）
 // 内部名称：RcvPsoConnectV2
@@ -329,6 +344,9 @@ struct SC_TextHeader_01_06_11_B0_EE {
 // 下面的结构中的版权字段必须包含以下文本：
 // "DreamCast Lobby Server. Copyright SEGA Enterprises. 1999"
 // （上述文本在所有使用此命令的版本上都是必需的，包括那些不运行在 DreamCast 上的版本。）
+
+// 03 (客户端->服务器): 传统注册（非 BB 版本）
+// 内部名称: SndRegist
 
 struct S_ServerInitDefault_DC_PC_V3_02_17_91_9B {
     char copyright[0x40];
@@ -342,9 +360,6 @@ struct S_ServerInitWithAfterMessage_DC_PC_V3_02_17_91_9B {
     // newserv 在这里发送一条消息否认前面的版权声明。
     char after_message[];
 } PACKED;
-
-// 03 (客户端->服务器): 传统注册（非 BB 版本）
-// 内部名称: SndRegist
 
 /* The welcome packet for setting up encryption keys */
 typedef struct dc_welcome {
@@ -3134,11 +3149,13 @@ typedef struct patch_return {
 // BE: 无效或未解析指令
 // BF: 无效或未解析指令
 
-// C0 (C->S): Request choice search options
+// C0 (C->S): Request choice search options (DCv2 and later versions)
+// Internal name: GetChoiceList
 // No arguments
 // Server should respond with a C0 command (described below).
 
-// C0 (S->C): Choice search options
+// C0 (S->C): Choice search options (DCv2 and later versions)
+// Internal name: RcvChoiceList
 
 // Command is a list of these; header.flag is the entry count (incl. top-level).
 // template <typename ItemIDT, typename CharT>
@@ -3540,9 +3557,11 @@ typedef struct gc_gba_req {
 // This command is not valid on PSO GC Episodes 1&2 Trial Edition.
 // On PSO V3, this command does... something. The command isn't *completely*
 // ignored: it sets a global state variable, but it's not clear what that
-// variable does. That variable is also set when a D7 is sent by the client, so
-// it likely is related to GBA game loading in some way.
-// PSO BB completely ignores this command.
+// variable does. The variable is set to 0 when the client requests a GBA game
+// (by sending a D7 command), and set to 1 when the client receives a D7
+// command. The S->C D7 command may be used for declining a download or
+// signaling an error of some sort.
+// PSO BB accepts but completely ignores this command.
 
 // D8 (C->S): Info board request (V3/BB)
 // No arguments
@@ -4022,16 +4041,43 @@ typedef struct bb_char_preview {
 // E7 (S->C): Unknown (Episode 3)
 // Same format as E2 command.
 
+#ifdef PSOCN_CHARACTERS_H
+
 // E7: Save or load full player data (BB)
 // See export_bb_player_data() in Player.cc for format.
 // TODO: Verify full breakdown from send_E7 in BB disassembly.
-#ifdef PSOCN_CHARACTERS_H
-
 /* Blue Burst packet for sending the full character data and options */
 typedef struct bb_full_char {
     bb_pkt_hdr_t hdr;
     psocn_bb_full_char_t data;
 } PACKED bb_full_char_pkt;
+
+//struct SC_SyncCharacterSaveFile_BB_00E7 {
+//    bb_pkt_hdr_t hdr;
+//    /* 0000 */ PlayerInventory inventory; // From player data
+//    /* 034C */ PlayerDispDataBB disp; // From player data
+//    /* 04DC */ le_uint32_t unknown_a1;
+//    /* 04E0 */ le_uint32_t creation_timestamp;
+//    /* 04E4 */ le_uint32_t signature; // == 0xA205B064 (see SaveFileFormats.hh)
+//    /* 04E8 */ le_uint32_t play_time_seconds;
+//    /* 04EC */ le_uint32_t option_flags; // account
+//    /* 04F0 */ parray<uint8_t, 0x0208> quest_data1; // player
+//    /* 06F8 */ PlayerBank bank; // player
+//    /* 19C0 */ GuildCardBB guild_card;
+//    /* 1AC8 */ le_uint32_t unknown_a3;
+//    /* 1ACC */ parray<uint8_t, 0x04E0> symbol_chats; // account
+//    /* 1FAC */ parray<uint8_t, 0x0A40> shortcuts; // account
+//    /* 29EC */ ptext<char16_t, 0x00AC> auto_reply; // player
+//    /* 2B44 */ ptext<char16_t, 0x00AC> info_board; // player
+//    /* 2C9C */ PlayerRecords_Battle<false> battle_records;
+//    /* 2CB4 */ parray<uint8_t, 4> unknown_a4;
+//    /* 2CB8 */ PlayerRecordsBB_Challenge challenge_records;
+//    /* 2DF8 */ parray<uint8_t, 0x0028> tech_menu_config; // player
+//    /* 2E20 */ parray<uint8_t, 0x002C> unknown_a6;
+//    /* 2E4C */ parray<uint8_t, 0x0058> quest_data2; // player
+//    /* 2EA4 */ KeyAndTeamConfigBB key_config; // account
+//    /* 3994 */
+//} PACKED;
 
 #endif /* PSOCN_CHARACTERS_H */
 
@@ -4645,9 +4691,21 @@ typedef struct bb_info_reply_pkt bb_scroll_msg_pkt;
 //    parray<Entry, 0x14> entries;
 //} PACKED;
 
-// EF (S->C): Unknown (BB)
-// Has an unknown number of subcommands (00EF, 01EF, etc.)
-// Contents are plain text (char).
+// EF (S->C): Set or disable shutdown command (BB)
+// All variants of EF except 00EF cause the given Windows shell command to be
+// run (via ShellExecuteA) just before the game exits normally. There can be at
+// most one shutdown command at a time; a later EF command will overwrite the
+// previous EF command's effects. The 00EF command deletes the previous shutdown
+// command if any was present, causing no command to run when the game closes.
+// There is no indication to the player when a shutdown command has been set.
+
+// This command is likely just a vestigial debugging feature that Sega left in,
+// but it presents a fairly obvious security risk. There is no way for the
+// server to know whether an EF command it sent has actually executed on the
+// client, so newserv's proxy unconditionally blocks this command.
+struct S_SetShutdownCommand_BB_01EF {
+    char command[0x200];
+} PACKED;
 
 // F0 (S->C): Unknown (BB)
 typedef struct S_Unknown_BB_F0 {
@@ -4712,32 +4770,17 @@ typedef struct bb_redirect6 {
 /* The ship list packet send to tell clients what blocks are up */
 typedef struct dc_block_list {
     dc_pkt_hdr_t hdr;           /* The flags field says the entry count */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        char name[0x12];
-    } entries[0];
+    dc_menu_t entries[0];
 } PACKED dc_block_list_pkt;
 
 typedef struct pc_block_list {
     pc_pkt_hdr_t hdr;           /* The flags field says the entry count */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        uint16_t name[0x11];
-    } entries[0];
+    v3_menu_t entries[0];
 } PACKED pc_block_list_pkt;
 
 typedef struct bb_block_list {
     bb_pkt_hdr_t hdr;           /* The flags field says the entry count */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        uint16_t name[0x11];
-    } entries[0];
+    v3_menu_t entries[0];
 } PACKED bb_block_list_pkt;
 
 /* The packet used to send the quest list */
