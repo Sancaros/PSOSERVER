@@ -5571,7 +5571,7 @@ static int send_dc_quest_categories(ship_client_t *c, int lang) {
 
     /* Fall back to English if there's no list for this language... */
     if(!qlist->cat_count) {
-        lang = CLIENT_LANG_ENGLISH;
+        lang = CLIENT_LANG_CHINESE_S;
 
         if(l->version == CLIENT_VERSION_GC ||
            c->version == CLIENT_VERSION_EP3 ||
@@ -5684,7 +5684,7 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
 
     /* Fall back to English if there's no list for this language... */
     if(!qlist->cat_count) {
-        lang = CLIENT_LANG_ENGLISH;
+        lang = CLIENT_LANG_CHINESE_S;
 
         if(!l->v2)
             qlist = &ship->qlist[CLIENT_VERSION_DCV1][lang];
@@ -5768,7 +5768,7 @@ static int send_xbox_quest_categories(ship_client_t *c, int lang) {
 
     /* Fall back to English if there's no list for this language... */
     if(!qlist->cat_count) {
-        lang = CLIENT_LANG_ENGLISH;
+        lang = CLIENT_LANG_CHINESE_S;
         qlist = &ship->qlist[CLIENT_VERSION_GC][lang];
     }
 
@@ -5863,7 +5863,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
 
     /* Fall back to English if there's no list for this language... */
     if (!qlist->cat_count) {
-        lang = CLIENT_LANG_ENGLISH;
+        lang = CLIENT_LANG_CHINESE_S;
         qlist = &ship->qlist[CLIENT_VERSION_BB][lang];
     }
 
@@ -13277,44 +13277,18 @@ int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
 
     init_client_err(&c->game_data->err, true, err_type, err_subtype);
 
-    if (l->flags & LOBBY_FLAG_QUESTING) {
+    if (l->flags & LOBBY_FLAG_QUESTING || l->type == LOBBY_TYPE_GAME) {
 
-        send_warp(c, 1, false);
+        ERR_LOG("%s 玩家发生错误1 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_type, err_subtype);
+        print_ascii_hex(errl, data, err_len);
+        return send_warp(c, 0, false);
 
-#ifdef DEBUG
-
-        DBG_LOG("0x%zX 0x%zX", err_type, err_subtype);
-
-#endif // DEBUG
-
-        goto subcmd_err_handle;
     }
-    else {
-        if (c->game_data->err.has_error) {
-            send_msg(c, BB_SCROLL_MSG_TYPE,
-                "%s 错误指令:0x%zX 副指令:0x%zX",
-                __(c, "\tE\tC6数据出错,请联系管理员处理!"),
-                c->game_data->err.error_cmd_type,
-                c->game_data->err.error_subcmd_type
-            );
-        }
-
-        send_warp(c, 0, true);
-    }
-
-    ERR_LOG("%s 玩家发生错误1 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_type, err_subtype);
-    print_ascii_hex(errl, data, err_len);
-    return 0;
-
-subcmd_err_handle:
-    ERR_LOG("%s 玩家发生错误2 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_type, err_subtype);
-    print_ascii_hex(errl, data, err_len);
-    return 0;
 
 err_null:
-    ERR_LOG("%s 玩家发生错误3", get_player_describe(c));
+    ERR_LOG("%s 玩家发生错误2", get_player_describe(c));
+    print_ascii_hex(errl, data, err_len);
     return -1;
-
 }
 
 /* 物品兑换完成 */

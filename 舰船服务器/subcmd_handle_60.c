@@ -1296,6 +1296,21 @@ static int sub60_23_dc(ship_client_t* src, ship_client_t* dest,
                 break;
             }
         }
+
+        if (src->game_data->err.has_error) {
+            send_msg(src, BB_SCROLL_MSG_TYPE,
+                "%s 错误指令:0x%zX 副指令:0x%zX",
+                __(src, "\tE\tC6数据出错,请截图并联系管理员处理! 玩家请切换舰船刷新数据!"),
+                src->game_data->err.error_cmd_type,
+                src->game_data->err.error_subcmd_type
+            );
+
+            send_ship_list(src, ship, ship->cfg->menu_code);
+        }
+
+        /* 房间中返回大厅 */
+        if (src->game_data->lobby_return)
+            src->game_data->lobby_return = false;
     }
 
     rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
@@ -1316,6 +1331,21 @@ static int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
                 break;
             }
         }
+
+        if (src->game_data->err.has_error) {
+            send_msg(src, BB_SCROLL_MSG_TYPE,
+                "%s 错误指令:0x%zX 副指令:0x%zX",
+                __(src, "\tE\tC6数据出错,请截图并联系管理员处理! 玩家请切换舰船刷新数据!"),
+                src->game_data->err.error_cmd_type,
+                src->game_data->err.error_subcmd_type
+            );
+
+            send_ship_list(src, ship, ship->cfg->menu_code);
+        }
+
+        /* 房间中返回大厅 */
+        if (src->game_data->lobby_return)
+            src->game_data->lobby_return = false;
 
         /* 将房间中的玩家公会数据发送至新进入的客户端 */
         send_bb_guild_cmd(src, BB_GUILD_FULL_DATA);

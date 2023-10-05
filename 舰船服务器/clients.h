@@ -121,6 +121,7 @@ typedef struct client_game_data {
     uint32_t death;
 
     bool auto_backup;
+    bool lobby_return;
 
     int gm_debug;
     int gm_drop_rare;

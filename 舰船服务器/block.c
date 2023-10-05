@@ -3151,6 +3151,9 @@ int send_motd(ship_client_t* c) {
     int i, found = 0;
     psocn_info_file_t* f;
 
+    if (!in_lobby(c))
+        return send_txt(c, "%s", __(c, "\tE\tC4无法在游戏房间中使用"));
+
     switch (c->version) {
     case CLIENT_VERSION_DCV1:
         ver = PSOCN_INFO_V1;

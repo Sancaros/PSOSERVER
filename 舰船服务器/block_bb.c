@@ -1440,6 +1440,16 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
        the rest of the lobby, and continue on. */
     pthread_mutex_lock(&l->mutex);
 
+    if (c->game_data->err.has_error) {
+        pthread_mutex_unlock(&l->mutex);
+        return send_warp(c, 0, false);
+    }
+
+    if (c->game_data->lobby_return) {
+        pthread_mutex_unlock(&l->mutex);
+        return send_warp(c, 0, false);
+    }
+
     if (l->version == CLIENT_VERSION_BB) {
         /* TODO 解析稀有怪物列表 */
         if (l->map_enemies)
@@ -3290,16 +3300,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
 #endif // DEBUG_BB_BLOCK
 
-        if (c->game_data->err.has_error) {
-            send_msg(c, BB_SCROLL_MSG_TYPE,
-                "%s 错误指令:0x%zX 副指令:0x%zX",
-                __(c, "\tE\tC6数据出错,请联系管理员处理!"),
-                c->game_data->err.error_cmd_type,
-                c->game_data->err.error_subcmd_type
-            );
-
-            clean_client_err(&c->game_data->err);
-        }
 
         /* 整合为综合指令集 */
         switch (type & 0x00FF) {

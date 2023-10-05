@@ -30,6 +30,11 @@
 #define BB_SCROLL_MSG_TYPE              0x00EE //顶部公告数据包 ok
 */
 
+/* 服务器端信息指令说明
+以免以后忘记，只有 CHAT_TYPE TEXT_MSG_TYPE BB_SCROLL_MSG_TYPE 指令可以在游戏房间使用，其他弹窗类的指令，会造成房间无法进入
+因为客户端会把弹窗识别为报错
+*/
+
 /* 游戏房间指令定义 */
 #define GAME_TYPE_NORMAL                             0x00
 #define GAME_TYPE_EPISODE_1                          0x01

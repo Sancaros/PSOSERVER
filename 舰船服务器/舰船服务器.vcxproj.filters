@@ -254,6 +254,9 @@
     <ClInclude Include="pthreadv2.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="commands_gm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico">

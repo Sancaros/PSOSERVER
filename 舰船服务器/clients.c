@@ -2076,6 +2076,28 @@ void show_coren_reward_info(ship_client_t* src, uint32_t week, uint32_t index) {
     send_msg(src, MSG_BOX_TYPE, "%s", tmp_msg);
 }
 
+void show_help_msg(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l)
+        return;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        send_msg(src, MSG_BOX_TYPE,
+            "-----------------------指令菜单-----------------------\n"
+            "玩家名称: %s\n"
+            "当前职业: %s\n"
+            "当前等级: Lv%d 经验:%d 钱包:%d美赛塔\n"
+            "背包数量: %d 语言: %u\n"
+            "银行数量: 角色:%d 公共:%d\n"
+            "嗑药情况: HP药:%u TP药:%u 攻药:%d 智药:%d 闪药:%d 防药:%d 运药:%d\n"
+            "挑战模式: 详情未完成\n"
+        );
+    }
+
+    send_txt(src, "%s", __(src, "\tE\tC4无法在房间使用该指令."));
+}
+
 void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {
     err->has_error = has_error;
     err->error_cmd_type = error_cmd_type;
