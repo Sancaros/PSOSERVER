@@ -6969,7 +6969,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     size_t pt_itemid = find_iitem_code_stack_item_id(inv, 0x00041003);
     if (!pt_itemid) {
         ERR_LOG("%s !pt_itemid 玩家背包中没有光子点卷", get_player_describe(src));
-        send_msg(src, MSG1_TYPE, __(src, "\tE\tC4您的背包中没有光子点卷了!"));
+        send_msg(src, BB_SCROLL_MSG_TYPE, __(src, "\tE\tC4您的背包中没有光子点卷了!"));
         send_bb_item_exchange_gallon_result(src, 0x00000001, pkt->subcmd_code, pkt->unknown_a2);
         return 0;
     }

@@ -1753,7 +1753,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         if (&item == NULL) {
             create = false;
             send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4商店生成错误,菜单类型缺失,请联系管理员处理!"));
-            break;
+            return -1;
         }
 
         if (create) {
@@ -1905,7 +1905,8 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     if (character->disp.meseta < 100) {
         DBG_LOG("sub62_B8_bb 玩家没钱了 %d", character->disp.meseta);
-        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4你没钱啦"));
+        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4你没钱啦"));
+        return -1;
     }
 
     id_item_index = find_iitem_index(&character->inv, item_id);
@@ -1917,7 +1918,8 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("%s 发送无法鉴定的物品!",
             get_player_describe(src));
-        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
+        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
+        return -2;
     }
 
     subcmd_send_lobby_bb_delete_meseta(src, character, 100, false);
@@ -1927,13 +1929,15 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     if (id_result->data.item_id == EMPTY_STRING) {
         ERR_LOG("%s 未发送需要鉴定的物品!",
             get_player_describe(src));
-        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -4"));
+        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -4"));
+        return -3;
     }
 
     if (id_result->data.item_id != item_id) {
         ERR_LOG("%s 接受的物品ID与以前请求的物品ID不匹配 !",
             get_player_describe(src));
-        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
+        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
+        return -4;
     }
 
     /* 获取鉴定的物品结果 */
@@ -1942,7 +1946,8 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     if (player_tekker_item(src, &src->sfmt_rng, &src->game_data->identify_result.data)) {
         ERR_LOG("%s 发送无法鉴定的物品!",
             get_player_describe(src));
-        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
+        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
+        return -5;
     }
 
     src->drop_item_id = src->game_data->identify_result.data.item_id;
@@ -2213,7 +2218,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
             dest->guild_accept = false;
             DBG_LOG("被邀请方 GUILD ID %u", dest->bb_guild->data.guild_id);
             /* 到这就没了, 获取对方已经属于某个公会. */
-            send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
+            send_msg(src, TEXT_MSG_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
                 __(src, "\tC7对方已在公会中."));
         }
         else
@@ -2266,7 +2271,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
             if (src->bb_guild->data.guild_id != 0) {
                 DBG_LOG("被邀请方 GUILD ID %u", dest->bb_guild->data.guild_id);
                 /* 到这就没了, 获取对方已经属于某个公会. */
-                send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
+                send_msg(src, TEXT_MSG_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
                     __(src, "\tC7对方已在公会中."));
             }
             else
@@ -2392,8 +2397,9 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         ERR_LOG("GC %u 公会权限不足", get_player_describe(src));
-        return send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4公会权限不足!"),
+        send_msg(src, TEXT_MSG_TYPE, "%s\n\n%s", __(src, "\tE\tC4公会权限不足!"),
             __(src, "\tC7您无权进行此操作."));
+        return -1;
     }
 
     src->guild_master_exfer = trans_cmd;

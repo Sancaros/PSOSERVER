@@ -8367,14 +8367,14 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     if(!fp) {
         QERR_LOG("无法打开 qst 任务文件 %s: %s", filename,
               strerror(errno));
-        return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4任务错误:."), filename);
+        return send_msg(c, BB_SCROLL_MSG_TYPE, "%s%s", __(c, "\tE\tC4任务文件错误:."), filename);
     }
 
     /* Figure out how long the file is. */
 
     /* Go to where we'll be writing into the file table... */
     if (fseek(fp, 0, SEEK_END))
-        return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4任务fseek错误:."), filename);
+        return send_msg(c, BB_SCROLL_MSG_TYPE, "%s%s", __(c, "\tE\tC4任务fseek错误:."), filename);
 
     len = ftell(fp);
 
@@ -8397,7 +8397,7 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             QERR_LOG("读取 qst 任务文件错误 %s: %s", filename,
                   strerror(errno));
             fclose(fp);
-            return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4读取任务错误:."), filename);
+            return send_msg(c, BB_SCROLL_MSG_TYPE, "%s%s", __(c, "\tE\tC4读取任务错误:."), filename);
         }
 
         /* Make sure we read up to a header-size boundary. */
@@ -8413,7 +8413,7 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             QERR_LOG("发送 qst 任务文件错误 %s: %s", filename,
                   strerror(errno));
             fclose(fp);
-            return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4发送任务错误:."), filename);
+            return send_msg(c, BB_SCROLL_MSG_TYPE, "%s%s", __(c, "\tE\tC4发送任务错误:."), filename);
         }
 #ifdef DEBUG
 
@@ -12508,6 +12508,9 @@ int send_bb_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
     FILE* fp;
     char buf[4096];
     long len;
+
+    if (c->cur_lobby->type == LOBBY_TYPE_GAME)
+        return send_txt(c, "%s", __(c, "\tE\tC4无法在房间中使用."));
 
     /* The item_id should be the information the client wants. */
     if ((int)entry >= s->cfg->info_file_count) {

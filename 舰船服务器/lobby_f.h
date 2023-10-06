@@ -19,6 +19,36 @@
 #include "clients.h"
 #include "lobby.h"
 
+#define LOBBY_GM_MAKE_ITEM_LOG(c, item_id, area, item) \
+do { \
+    lobby_t* l = (c)->cur_lobby; \
+    if (l) { \
+        GM_LOG("---------区域 %d 物品ID 0x%08X GM权限制造--------- ", area, item_id); \
+        GM_LOG("%s %s 在区域 %d GM权限制造!" \
+            , get_player_describe(c) \
+            , get_section_describe(c, get_player_section(c), true) \
+            , (c)->cur_area \
+        ); \
+        if (l) \
+            GM_LOG("%s", get_lobby_describe(l)); \
+            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){\
+	            GM_LOG("物品: %s", get_item_describe(item, (c)->version));\
+                GM_LOG("编号: 0x%08X", item_id); \
+                GM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X", \
+                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
+                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
+                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
+                GM_LOG("----------------------------------------------------"); \
+            } else { \
+                GM_LOG("%s 存入无效物品", get_player_describe(c)); \
+                print_ascii_hex(gml, item, PSOCN_STLENGTH_ITEM); \
+            }\
+    } \
+    else \
+        ERR_LOG("%s 不在一个有效的房间内", get_player_describe(c)); \
+} while (0)
+
 #define LOBBY_BANK_DEPOSIT_ITEM_LOG(c, item_id, area, item) \
 do { \
     lobby_t* l = (c)->cur_lobby; \

@@ -875,7 +875,8 @@ int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_item
     if (num_items > ARRAY_SIZE(shop.items)) {
         ERR_LOG("GC %" PRIu32 " 获取商店物品超出限制! 数量 %d > %d",
             dest->guildcard, num_items, ARRAY_SIZE(shop.items));
-        return send_msg(dest, MSG1_TYPE, "%s", __(dest, "\tE\tC4商店生成错误,获取商店物品超出限制,请联系管理员处理!"));
+        send_msg(dest, MSG1_TYPE, "%s", __(dest, "\tE\tC4商店生成错误,获取商店物品超出限制,请联系管理员处理!"));
+        return -2;
     }
 
     uint16_t len = LE16(16) + num_items * PSOCN_STLENGTH_ITEM;
