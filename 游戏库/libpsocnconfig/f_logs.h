@@ -44,7 +44,7 @@ typedef SSIZE_T ssize_t;
 #include <pthread.h>
 
 #define MAX_TMP_BUFF 65536
-#define MAX_PACKET_BUFF ( MAX_TMP_BUFF * 2 )
+#define MAX_PACKET_BUFF MAX_TMP_BUFF
 
 char dp[MAX_PACKET_BUFF];
 

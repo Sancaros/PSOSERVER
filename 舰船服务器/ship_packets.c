@@ -3652,7 +3652,7 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     dc_chat_pkt *pkt = (dc_chat_pkt *)sendbuf;
     int len;
     iconv_t ic;
-    char tm[4096] = { 0 };
+    char tm[4096];
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -3665,14 +3665,9 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     /* Clear the packet header */
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
-    if (type == CHAT_TYPE || type == TEXT_MSG_TYPE || type == BB_SCROLL_MSG_TYPE)
-        len = 512;
-    else
-        len = 4096;
-
     /* Do the formatting */
-    vsnprintf(tm, len, fmt, args);
-    tm[len - 1] = '\0';
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
@@ -3701,13 +3696,13 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
 
     /* Convert the message to the appropriate encoding. */
     in = strlen(tm) + 1;
-    out = len;
+    out = 65520;
     inptr = tm;
     outptr = pkt->msg;
     iconv(ic, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
-    len -= out;
+    len = 65520 - out;
 
     /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
     pkt->msg[len++] = 0x00;
@@ -3744,7 +3739,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     uint8_t *sendbuf = get_sendbuf();
     bb_chat_pkt *pkt = (bb_chat_pkt *)sendbuf;
     int len;
-    char tm[4096] = { 0 };
+    char tm[4096];
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -3757,14 +3752,9 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     /* Clear the packet header */
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
-    if (type == CHAT_TYPE || type == TEXT_MSG_TYPE || type == BB_SCROLL_MSG_TYPE)
-        len = 512;
-    else
-        len = 4096;
-
     /* Do the formatting */
-    vsnprintf(tm, len, fmt, args);
-    tm[len - 1] = '\0';
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
@@ -3778,13 +3768,13 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
 
     /* Convert the message to the appropriate encoding. */
     in = strlen(tm) + 1;
-    out = len;
+    out = 65520;
     inptr = tm;
     outptr = (char *)pkt->msg;
     iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
-    len -= out;
+    len = 65520 - out + 0x10;
 
     /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
     sendbuf[len++] = 0x00;
@@ -3796,8 +3786,6 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     }
 
     wchar_add_color_tag(pkt->msg);
-
-    len += 0x10;
 
     pkt->hdr.pkt_type = LE16(type);
     pkt->hdr.flags = 0;
