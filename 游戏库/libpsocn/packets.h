@@ -473,7 +473,9 @@ typedef struct dc_chat {
         dc_pkt_hdr_t dc;
         pc_pkt_hdr_t pc;
     } hdr;
-    uint32_t client_id;
+    uint16_t client_id;
+    uint16_t unknow;
+    //uint32_t client_id;
     uint32_t guildcard;
     char msg[0];
 } PACKED dc_chat_pkt;
@@ -491,9 +493,11 @@ typedef struct dc_chat {
 // 这个字节的高 4 位似乎没有被使用，但通常非零且设置为值 4。
 // （这可能是为了确保该字段始终是有效的 ASCII 字符，并且不会意外终止聊天字符串。）
 // 在 newserv 中，我们称这个字节为 private_flags。
+// 16字节
 typedef struct bb_chat {
     bb_pkt_hdr_t hdr;
-    uint32_t client_id;
+    uint16_t client_id;
+    uint16_t unknow;
     uint32_t guildcard;
     uint16_t msg[0];
 } PACKED bb_chat_pkt;

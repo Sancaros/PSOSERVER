@@ -160,14 +160,14 @@ int send_guild_reply6(ship_client_t *c, ship_client_t *s);
 #endif
 
 /* Send a message to the client. */
-int send_msg1(ship_client_t *c, const char *fmt, ...) __printflike(2, 3);
+int send_msg1(ship_client_t *c, _Printf_format_string_ const char *fmt, ...) __printflike(2, 3);
 
 /* Send a text message to the client (i.e, for stuff related to commands). */
-int send_msg(ship_client_t* c, uint16_t type, const char* fmt, ...) __printflike(2, 3);
-int send_msg2(ship_client_t* c, uint16_t type, const char* fmt, va_list args);
+int send_msg(ship_client_t* c, uint16_t type, _Printf_format_string_ const char* fmt, ...) __printflike(2, 3);
+int send_msg2(ship_client_t* c, uint16_t type, _Printf_format_string_ const char* fmt, va_list args);
 
 /* Send a text message to the client (i.e, for stuff related to commands). */
-int send_txt(ship_client_t *c, const char *fmt, ...) __printflike(2, 3);
+int send_txt(ship_client_t *c, _Printf_format_string_ const char *fmt, ...) __printflike(2, 3);
 
 /* Send a packet to the client indicating information about the game they're
    joining. */
@@ -180,7 +180,7 @@ int send_game_list(ship_client_t *c, block_t *b);
 int send_info_list(ship_client_t *c, ship_t *s);
 
 /* Send a message box packet to the client. */
-int send_msg_box(ship_client_t *c, const char *fmt, ...) __printflike(2, 3);
+int send_msg_box(ship_client_t *c, _Printf_format_string_ const char *fmt, ...) __printflike(2, 3);
 
 /* Send the list of quest categories to the client. */
 int send_quest_categories(ship_client_t *c, int lang);

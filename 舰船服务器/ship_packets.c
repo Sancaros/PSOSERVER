@@ -2382,10 +2382,15 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     if(!sendbuf)
         return -1;
 
+    if (len > 0x100) {
+        DBG_LOG("%s 聊天超出限制 %d", get_player_describe(s), len);
+        return 0;
+    }
+
     tm = (char*)malloc(len);
 
     if (!tm) {
-        ERR_LOG("无法分配内存");
+        ERR_LOG("%s 无法分配聊天内存", get_player_describe(s));
         return -1;
     }
 
@@ -2444,7 +2449,8 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, len + sizeof(dc_chat_pkt));
 
     /* 填充数据并准备发送.. */
-    pkt->client_id = LE32(0x00010000);
+    //pkt->client_id = LE32(0x00010000);
+    pkt->client_id = LE16(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the message to the appropriate encoding. */
@@ -2485,10 +2491,15 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     if(!sendbuf)
         return -1;
 
+    if (len > 0x100) {
+        DBG_LOG("%s 聊天超出限制 %d", get_player_describe(s), len);
+        return 0;
+    }
+
     tm = (char*)malloc(len);
 
     if (!tm) {
-        ERR_LOG("无法分配内存");
+        ERR_LOG("%s 无法分配聊天内存", get_player_describe(s));
         return -1;
     }
 
@@ -2519,7 +2530,8 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, len + sizeof(dc_chat_pkt));
 
     /* Fill in the basics */
-    pkt->client_id = LE32(0x00010000);
+    //pkt->client_id = LE32(0x00010000);
+    pkt->client_id = LE16(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the message to the appropriate encoding. */
@@ -2560,10 +2572,15 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     if(!sendbuf)
         return -1;
 
+    if (len > 0x100) {
+        DBG_LOG("%s 聊天超出限制 %d", get_player_describe(s), len);
+        return 0;
+    }
+
     tm = (char*)malloc(len);
 
     if (!tm) {
-        ERR_LOG("无法分配内存");
+        ERR_LOG("%s 无法分配聊天内存", get_player_describe(s));
         return -1;
     }
 
@@ -2594,7 +2611,8 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, len + sizeof(bb_chat_pkt));
 
     /* Fill in the basics */
-    pkt->client_id = LE32(0x00010000);
+    //pkt->client_id = LE32(0x00010000);
+    pkt->client_id = LE16(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the message to the appropriate encoding. */
@@ -2603,7 +2621,7 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     free_safe(tm);
 
     /* Figure out how long the new string is. */
-    len = (strlen16_raw(pkt->msg) << 1) + 0x10;
+    len = (strlen16_raw(pkt->msg) << 1) + 0x12;
 
     /* 结尾添加截断字符 0x00*/
     sendbuf[len++] = 0x00;
@@ -2648,6 +2666,9 @@ int send_lobby_chat(lobby_t *l, ship_client_t *sender, const char *msg,
     }
 
     for(i = 0; i < l->max_clients; ++i) {
+        if (!l->clients[i])
+            continue;
+
         if(l->clients[i] != NULL) {
             pthread_mutex_lock(&l->clients[i]->mutex);
 
@@ -2702,7 +2723,8 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* Fill in the basics */
-    pkt->client_id = LE32(0x00010000);
+    //pkt->client_id = LE32(0x00010000);
+    pkt->client_id = LE16(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the name string first. */
@@ -2710,7 +2732,7 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     out = 65520;
     inptr = (char *)&s->pl->bb.character.name.char_name[0];
     outptr = pkt->msg;
-    iconv(ic_utf16_to_gb18030/*尝试GBK*/, &inptr, &in, &outptr, &out);
+    iconv(ic_utf16_to_utf8/*尝试GBK*/, &inptr, &in, &outptr, &out);
 
     if(!(c->flags & CLIENT_FLAG_IS_NTE)) {
         /* Add the separator */
@@ -2775,7 +2797,8 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* 填充数据头 */
-    pkt->client_id = LE32(0x00010000);
+    //pkt->client_id = LE32(0x00010000);
+    pkt->client_id = LE16(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
 
     strcpy16_raw(pkt->msg, &s->pl->bb.character.name.char_name[0]);
@@ -2850,7 +2873,10 @@ int send_lobby_bbchat(lobby_t *l, ship_client_t *sender, const uint8_t *msg,
     }
 
     for(i = 0; i < l->max_clients; ++i) {
-        if(l->clients[i] != NULL) {
+        if (!l->clients[i])
+            continue;
+
+        if(l->clients[i]) {
             pthread_mutex_lock(&l->clients[i]->mutex);
 
             /* Call the appropriate function. */
