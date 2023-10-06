@@ -194,7 +194,7 @@ do { \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 MDROPS_LOG("----------------------------------------------------"); \
             } else {\
-                MDROPS_LOG("%s %s 掉落无效物品", get_player_describe(c), get_lobby_enemy_pt_name_with_mid(l, pt_index, mid)); \
+                MDROPS_LOG("%s 掉落无效物品", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid)); \
                 print_ascii_hex(mdropl, item, PSOCN_STLENGTH_ITEM);\
             }\
     } \
@@ -226,7 +226,7 @@ do { \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 BDROPS_LOG("----------------------------------------------------"); \
             } else {\
-                BDROPS_LOG("%s 请求 %d 箱子掉落无效物品", get_player_describe(c), ignore_def); \
+                BDROPS_LOG("请求 %d 箱子掉落无效物品", ignore_def); \
                 print_ascii_hex(bdropl, item, PSOCN_STLENGTH_ITEM);\
             }\
     } \

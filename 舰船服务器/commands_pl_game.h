@@ -403,32 +403,6 @@ static int handle_normal(ship_client_t* c, const char* params) {
     return 0;
 }
 
-/* 用法: /shutdown minutes */
-static int handle_shutdown(ship_client_t* c, const char* params) {
-    uint32_t when;
-
-    /* Make sure the requester is a local root. */
-    if (!LOCAL_ROOT(c)) {
-        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
-    }
-
-    /* Figure out when we're supposed to shut down. */
-    errno = 0;
-    when = (uint32_t)strtoul(params, NULL, 10);
-
-    if (errno != 0) {
-        /* Send a message saying invalid time */
-        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7无效时间."));
-    }
-
-    /* Give everyone at least a minute */
-    if (when < 1) {
-        when = 1;
-    }
-
-    return schedule_shutdown(c, when, 0, send_msg);
-}
-
 /* 用法: /log guildcard */
 static int handle_log(ship_client_t* c, const char* params) {
     uint32_t gc;

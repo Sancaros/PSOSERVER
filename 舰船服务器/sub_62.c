@@ -1232,16 +1232,16 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
             LOBBY_MOB_DROPITEM_LOG(p2, mid, pt_index, drop_area, &iitem.data);
             if (is_item_empty(&iitem.data)) {
-                ITEM_LOG("未产生掉落");
                 pthread_mutex_unlock(&p2->mutex);
+                ITEM_LOG("未产生掉落");
                 continue;
             }
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, drop_area, pkt->x, pkt->z);
             if (!lt) {
+                pthread_mutex_unlock(&p2->mutex);
                 ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(p2));
                 print_item_data(&iitem.data, l->version);
-                pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
 
@@ -1265,40 +1265,18 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
         LOBBY_MOB_DROPITEM_LOG(src, mid, pt_index, drop_area, &iitem.data);
         if (is_item_empty(&iitem.data)) {
-            ITEM_LOG("未产生掉落");
             pthread_mutex_unlock(&src->mutex);
+            ITEM_LOG("未产生掉落");
             return 0;
         }
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, drop_area, pkt->x, pkt->z);
         if (!lt) {
+            pthread_mutex_unlock(&src->mutex);
             ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
             print_item_data(&iitem.data, l->version);
-            pthread_mutex_unlock(&src->mutex);
             return 0;
         }
-
-#ifdef DEBUG
-        //if (pt_index != enemy->rt_index) {
-//    //ERR_LOG("命令参数 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
-//    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
-//    enemy->rt_index = pt_index;
-//    //DBG_LOG("修正 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
-//    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
-//}
-
-//ITEM_LOG("-----------------第 %d 个怪物掉落情况----------------- ", mid);
-//ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max: %d, 任务 %" PRIu32 ")!"
-//    , get_player_describe(src)
-//    , get_section_describe(src, section, true)
-//    , drop_area
-//    , mid
-//    , l->map_enemies->enemy_count
-//    , l->qid);
-//ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
-//ITEM_LOG("%s", get_lobby_describe(l));
-        print_item_data(&lt->iitem.data, l->version);
-#endif // DEBUG
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
@@ -1403,9 +1381,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
+                pthread_mutex_unlock(&p2->mutex);
                 ERR_LOG("%s 无法将物品添加至游戏房间! pkt->ignore_def %d", get_player_describe(p2), pkt->ignore_def);
                 print_item_data(&iitem.data, l->version);
-                pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
 
@@ -1448,9 +1426,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
+            pthread_mutex_unlock(&src->mutex);
             ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
             print_item_data(&iitem.data, l->version);
-            pthread_mutex_unlock(&src->mutex);
             return 0;
         }
 
@@ -3073,20 +3051,17 @@ int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
             default:
                 rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
             }
+        } else if (l->subcmd_handle == NULL) {
 
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            print_ascii_hex(errl, pkt, LE16(pkt->hdr.dc.pkt_len));
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
+            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
         }
         else {
-
-            if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(errl, pkt, LE16(pkt->hdr.dc.pkt_len));
-                //UNK_CSPD(type, c->version, pkt);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-                rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
-            }
-            else
-                rv = l->subcmd_handle(src, dest, pkt);
+            rv = l->subcmd_handle(src, dest, pkt);
         }
 
 
@@ -3137,6 +3112,17 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 #endif // DEBUG
 
         l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+        if (!l->subcmd_handle) {
+
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            print_ascii_hex(errl, pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
+            rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
 
         /* If there's a burst going on in the lobby, delay most packets */
         if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -3145,33 +3131,14 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             switch (type) {
             case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
             case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
-
                 rv |= l->subcmd_handle(src, dest, pkt);
                 break;
 
             default:
-#ifdef DEBUG
-
-                DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
-
-#endif // DEBUG
                 rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
             }
-
-        }
-        else {
-
-            if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(errl, pkt, len);
-                //UNK_CSPD(type, c->version, pkt);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-                rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-            }
-            else {
-                rv = l->subcmd_handle(src, dest, pkt);
-            }
+        } else {
+            rv = l->subcmd_handle(src, dest, pkt);
         }
 
         pthread_mutex_unlock(&l->mutex);
@@ -3185,5 +3152,4 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
         (void)getchar();
         return -4;
     }
-
 }

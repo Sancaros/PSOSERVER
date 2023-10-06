@@ -7340,6 +7340,17 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
         //subcmd_bb_60size_check(src, pkt);
 
         l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+        if (!l->subcmd_handle) {
+
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("未知 %s 0x%02X 指令: 0x%02X", client_type[src->version].ver_name, hdr_type, type);
+            print_ascii_hex(dbgl, pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
+            rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
 
         /* If there's a burst going on in the lobby, delay most packets */
         if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -7354,25 +7365,10 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
                 break;
 
             default:
-#ifdef DEBUG
-
-                DBG_LOG("lobby_enqueue_pkt_bb 0x60 指令: 0x%02X", type);
-
-#endif // DEBUG
                 rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
             }
-        }
-        else {
-            if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 %s 0x%02X 指令: 0x%02X", client_type[src->version].ver_name, hdr_type, type);
-                print_ascii_hex(dbgl, pkt, len);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-                rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-            }
-            else {
-                rv = l->subcmd_handle(src, dest, pkt);
-            }
+        } else {
+            rv = l->subcmd_handle(src, dest, pkt);
         }
 
         pthread_mutex_unlock(&l->mutex);

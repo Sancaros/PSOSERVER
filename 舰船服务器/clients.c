@@ -129,7 +129,7 @@ ship_client_t* client_create_connection(int sock, int version, int type,
         /* Disable Nagle's algorithm */
         i = 1;
         if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (PCHAR)&i, sizeof(int)) < 0) {
-            perror("setsockopt");
+            ERR_LOG("setsockopt");
         }
 
         /* For the DC versions, set up friendly receive buffers that should ensure
@@ -141,29 +141,30 @@ ship_client_t* client_create_connection(int sock, int version, int type,
         case CLIENT_VERSION_DCV2:
             i = 32767;
             if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (PCHAR)&i, sizeof(int)) < 0) {
-                perror("setsockopt");
+                ERR_LOG("setsockopt");
             }
             break;
         }
 
         /* 当玩家进入舰仓时 初始化所有数据 */
         if (type == CLIENT_TYPE_BLOCK) {
-            rv->pl = (player_t*)malloc(sizeof(player_t));
+            rv->game_data =
+                (client_game_data_t*)malloc(sizeof(client_game_data_t));
 
-            if (!rv->pl) {
-                perror("malloc");
+            if (!rv->game_data) {
+                ERR_LOG("malloc");
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
             }
 
-            memset(rv->pl, 0, sizeof(player_t));
+            memset(rv->game_data, 0, sizeof(client_game_data_t));
 
             rv->enemy_kills = (uint32_t*)malloc(sizeof(uint32_t) * 0x60);
 
             if (!rv->enemy_kills) {
-                perror("malloc");
-                free_safe(rv->pl);
+                ERR_LOG("malloc");
+                free_safe(rv->game_data);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -171,61 +172,12 @@ ship_client_t* client_create_connection(int sock, int version, int type,
 
             memset(rv->enemy_kills, 0, sizeof(uint32_t) * 0x60);
 
-            rv->game_data =
-                (client_game_data_t*)malloc(sizeof(client_game_data_t));
-
-            if (!rv->game_data) {
-                perror("malloc");
-                free_safe(rv->pl);
-                free_safe(rv->enemy_kills);
-                free_safe(rv);
-                closesocket(sock);
-                return NULL;
-            }
-
-            memset(rv->game_data, 0, sizeof(client_game_data_t));
-            
-            rv->mode_pl =
-                (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
-
-            if (!rv->mode_pl) {
-                perror("malloc");
-                free_safe(rv->pl);
-                free_safe(rv->enemy_kills);
-                free_safe(rv->game_data);
-                free_safe(rv);
-                closesocket(sock);
-                return NULL;
-            }
-
-            memset(rv->mode_pl, 0, sizeof(psocn_mode_char_t));
-
-            rv->records =
-                (record_data_t*)malloc(sizeof(record_data_t));
-
-            if (!rv->records) {
-                perror("malloc");
-                free_safe(rv->pl);
-                free_safe(rv->enemy_kills);
-                free_safe(rv->game_data);
-                free_safe(rv->mode_pl);
-                free_safe(rv);
-                closesocket(sock);
-                return NULL;
-            }
-
-            memset(rv->records, 0, sizeof(record_data_t));
-
             rv->common_bank =
                 (psocn_bank_t*)malloc(sizeof(psocn_bank_t));
 
             if (!rv->common_bank) {
-                perror("malloc");
-                free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
-                free_safe(rv->mode_pl);
-                free_safe(rv->records);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -237,12 +189,9 @@ ship_client_t* client_create_connection(int sock, int version, int type,
                 (psocn_bank_t*)malloc(sizeof(psocn_bank_t));
 
             if (!rv->char_bank) {
-                perror("malloc");
-                free_safe(rv->pl);
+                ERR_LOG("malloc");
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
-                free_safe(rv->mode_pl);
-                free_safe(rv->records);
                 free_safe(rv->common_bank);
                 free_safe(rv);
                 closesocket(sock);
@@ -251,19 +200,69 @@ ship_client_t* client_create_connection(int sock, int version, int type,
 
             memset(rv->char_bank, 0, sizeof(psocn_bank_t));
 
+            rv->pl = (player_t*)malloc(sizeof(player_t));
+
+            if (!rv->pl) {
+                ERR_LOG("malloc");
+                free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
+                free_safe(rv->common_bank);
+                free_safe(rv->char_bank);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
+
+            memset(rv->pl, 0, sizeof(player_t));
+
+            rv->mode_pl =
+                (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
+
+            if (!rv->mode_pl) {
+                ERR_LOG("malloc");
+                free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
+                free_safe(rv->common_bank);
+                free_safe(rv->char_bank);
+                free_safe(rv->pl);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
+
+            memset(rv->mode_pl, 0, sizeof(psocn_mode_char_t));
+
+            rv->records =
+                (record_data_t*)malloc(sizeof(record_data_t));
+
+            if (!rv->records) {
+                ERR_LOG("malloc");
+                free_safe(rv->game_data);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->common_bank);
+                free_safe(rv->char_bank);
+                free_safe(rv->pl);
+                free_safe(rv->mode_pl);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
+
+            memset(rv->records, 0, sizeof(record_data_t));
+
             if (version == CLIENT_VERSION_BB) {
                 rv->bb_pl =
                     (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
                 if (!rv->bb_pl) {
-                    perror("malloc");
-                    free_safe(rv->pl);
-                    free_safe(rv->enemy_kills);
+                    ERR_LOG("malloc");
                     free_safe(rv->game_data);
-                    free_safe(rv->mode_pl);
-                    free_safe(rv->records);
+                    free_safe(rv->enemy_kills);
                     free_safe(rv->common_bank);
                     free_safe(rv->char_bank);
+                    free_safe(rv->pl);
+                    free_safe(rv->mode_pl);
+                    free_safe(rv->records);
                     free_safe(rv);
                     closesocket(sock);
                     return NULL;
@@ -275,14 +274,14 @@ ship_client_t* client_create_connection(int sock, int version, int type,
                     (psocn_bb_db_opts_t*)malloc(PSOCN_STLENGTH_BB_DB_OPTS);
 
                 if (!rv->bb_opts) {
-                    perror("malloc");
+                    ERR_LOG("malloc");
+                    free_safe(rv->common_bank);
+                    free_safe(rv->char_bank);
                     free_safe(rv->pl);
                     free_safe(rv->enemy_kills);
                     free_safe(rv->game_data);
                     free_safe(rv->mode_pl);
                     free_safe(rv->records);
-                    free_safe(rv->common_bank);
-                    free_safe(rv->char_bank);
                     free_safe(rv->bb_pl);
                     free_safe(rv);
                     closesocket(sock);
@@ -290,18 +289,19 @@ ship_client_t* client_create_connection(int sock, int version, int type,
                 }
 
                 memset(rv->bb_opts, 0, PSOCN_STLENGTH_BB_DB_OPTS);
+
                 rv->bb_guild =
                     (psocn_bb_db_guild_t*)malloc(PSOCN_STLENGTH_BB_GUILD);
 
                 if (!rv->bb_guild) {
-                    perror("malloc");
+                    ERR_LOG("malloc");
+                    free_safe(rv->common_bank);
+                    free_safe(rv->char_bank);
                     free_safe(rv->pl);
                     free_safe(rv->enemy_kills);
                     free_safe(rv->game_data);
                     free_safe(rv->mode_pl);
                     free_safe(rv->records);
-                    free_safe(rv->common_bank);
-                    free_safe(rv->char_bank);
                     free_safe(rv->bb_pl);
                     free_safe(rv->bb_opts);
                     free_safe(rv);
@@ -316,13 +316,13 @@ ship_client_t* client_create_connection(int sock, int version, int type,
                 rv->xbl_ip = (xbox_ip_t*)malloc(sizeof(xbox_ip_t));
 
                 if (!rv->xbl_ip) {
-                    perror("malloc");
+                    ERR_LOG("malloc");
+                    free_safe(rv->common_bank);
+                    free_safe(rv->char_bank);
                     free_safe(rv->pl);
                     free_safe(rv->enemy_kills);
                     free_safe(rv->game_data);
                     free_safe(rv->mode_pl);
-                    free_safe(rv->common_bank);
-                    free_safe(rv->char_bank);
                     free_safe(rv->records);
                     free_safe(rv);
                     closesocket(sock);
@@ -1030,7 +1030,7 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
     uint32_t level;
 
     if (dest->version != CLIENT_VERSION_BB || (!dest->bb_pl) && (!dest->mode_pl)) {
-        ERR_LOG("GC %u 角色不存在或版本不为BB", dest->guildcard);
+        ERR_LOG("%s 角色不存在或版本不为BB", get_player_describe(dest));
         return -1;
     }
 
@@ -1053,7 +1053,7 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
 
     /* See if they got any level ups. */
     do {
-        ent = &bb_char_stats.levels[cl][level + 1];
+        ent = &bb_char_stats.levels[cl][level];
 
         if (exp_total >= ent->exp) {
             need_lvlup = 1;
@@ -1271,7 +1271,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
        we don't have to worry about byte ordering. */
     if (dress_data1.model != dress_data2.model)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误model %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误model %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.model, dress_data2.model);
         dress_data1.model = dress_data2.model;
         return -10;
@@ -1279,7 +1279,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.section != dress_data2.section)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误section %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误section %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.section, dress_data2.section);
         dress_data1.section = dress_data2.section;
         return -11;
@@ -1287,7 +1287,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.ch_class != dress_data2.ch_class)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误ch_class %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误ch_class %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.ch_class, dress_data2.ch_class);
         dress_data1.ch_class = dress_data2.ch_class;
         return -12;
@@ -1295,7 +1295,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.costume != dress_data2.costume)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误costume %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误costume %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.costume, dress_data2.costume);
         dress_data1.costume = dress_data2.costume;
         return -13;
@@ -1303,7 +1303,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.skin != dress_data2.skin)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误skin %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误skin %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.skin, dress_data2.skin);
         dress_data1.skin = dress_data2.skin;
         return -14;
@@ -1311,7 +1311,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.face != dress_data2.face)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误face %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误face %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.face, dress_data2.face);
         dress_data1.face = dress_data2.face;
         return -15;
@@ -1319,7 +1319,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.head != dress_data2.head)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误head %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误head %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.head, dress_data2.head);
         dress_data1.head = dress_data2.head;
         return -16;
@@ -1327,7 +1327,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.hair != dress_data2.hair)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误hair %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.hair, dress_data2.hair);
         dress_data1.hair = dress_data2.hair;
         return -17;
@@ -1335,7 +1335,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.hair_r != dress_data2.hair_r)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair_r %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误hair_r %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.hair_r, dress_data2.hair_r);
         dress_data1.hair_r = dress_data2.hair_r;
         return -18;
@@ -1343,7 +1343,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.hair_g != dress_data2.hair_g)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair_g %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误hair_g %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.hair_g, dress_data2.hair_g);
         dress_data1.hair_g = dress_data2.hair_g;
         return -19;
@@ -1351,7 +1351,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
 
     if (dress_data1.hair_b != dress_data2.hair_b)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair_b %d %d", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误hair_b %d %d", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), dress_data1.hair_b, dress_data2.hair_b);
         dress_data1.hair_b = dress_data2.hair_b;
         return -20;
@@ -1364,7 +1364,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     f2.f = dress_data2.prop_x;
     if (f1.b != f2.b)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), f1.b, f2.b);
         f1.b = f2.b;
         return -21;
@@ -1374,7 +1374,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     f2.f = dress_data2.prop_y;
     if (f1.b != f2.b)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
             get_player_describe(src), f1.b, f2.b);
         f1.b = f2.b;
         return -22;
@@ -1387,25 +1387,37 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
        Since these aren't equality comparisons, we have to deal with byte
        ordering here... The hp/tp materials count are 8-bits each, but
        everything else is multi-byte. */
-    if (src->pl->bb.character.inv.hpmats_used > pl->bb.character.inv.hpmats_used)
+    if (src->pl->bb.character.inv.hpmats_used > pl->bb.character.inv.hpmats_used) {
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误hpmats_used %u %u", ship->cfg->ship_name, src->cur_block->b,
+            get_player_describe(src), src->pl->bb.character.inv.hpmats_used, pl->bb.character.inv.hpmats_used);
         return -24;
+    }
 
-    if (src->pl->bb.character.inv.tpmats_used > pl->bb.character.inv.tpmats_used)
+    if (src->pl->bb.character.inv.tpmats_used > pl->bb.character.inv.tpmats_used) {
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误tpmats_used %u %u", ship->cfg->ship_name, src->cur_block->b,
+            get_player_describe(src), src->pl->bb.character.inv.tpmats_used, pl->bb.character.inv.tpmats_used);
         return -25;
+    }
 
-    if (LE32(disp1.exp) > LE32(disp2.exp))
+    if (LE32(disp1.exp) > LE32(disp2.exp)) {
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误exp %u %u", ship->cfg->ship_name, src->cur_block->b,
+            get_player_describe(src), disp1.exp, disp2.exp);
         return -26;
+    }
 
     /* Why is the level 32-bits?... */
-    if (LE32(disp1.level) > LE32(disp2.level))
+    if (LE32(disp1.level) > LE32(disp2.level)) {
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误level %u %u", ship->cfg->ship_name, src->cur_block->b,
+            get_player_describe(src), disp1.level, disp2.level);
         return -27;
+    }
 
     return 0;
 }
 
 int client_check_character(ship_client_t* c, player_t* pl, int ver) {
 
-    /*DBG_LOG("%s(%d): client_check_character for GC %" PRIu32
+    /*DBG_LOG("%s[舰仓%02d]: client_check_character for GC %" PRIu32
         " 版本 = %d", ship->cfg->name, c->cur_block->b,
         c->guildcard, ver);*/
 
@@ -1518,7 +1530,7 @@ psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
 #ifdef DEBUG
 
     if (src->bank_type) {
-        DBG_LOG("GC %u 的银行模式为 %d", src->guildcard, src->bank_type);
+        DBG_LOG("%s 的银行模式为 %d", get_player_describe(src), src->bank_type);
     }
 
 #endif // DEBUG
@@ -1528,19 +1540,19 @@ psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
 
 void print_quest_info(ship_client_t* src) {
     if (src->mode)
-        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
+        DBG_LOG("%s 的游戏模式为 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
 }
 
 inventory_t* get_client_inv_bb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u BB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
+        DBG_LOG("%s BB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
     return src->mode == 0 ? &src->bb_pl->character.inv : &src->mode_pl->bb.inv;
 }
 
 inventory_t* get_client_inv_nobb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u NOBB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
+        DBG_LOG("%s NOBB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
 
     return src->mode == 0 ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
@@ -1555,14 +1567,14 @@ inventory_t* get_player_inv(ship_client_t* src) {
 
 trade_inv_t* get_client_trade_inv_bb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u BB交易背包数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
+        DBG_LOG("%s BB交易背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
     return &src->game_data->pending_item_trade;
 }
 
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u BB角色数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
+        DBG_LOG("%s BB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
 
     return src->mode == 0 ? &src->bb_pl->character : &src->mode_pl->bb;
@@ -1570,7 +1582,7 @@ psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
 
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u NOBB角色数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
+        DBG_LOG("%s NOBB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
 
     return src->mode == 0 ? &src->pl->v1.character : &src->mode_pl->nobb;
@@ -1589,7 +1601,7 @@ ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
     }
 
     if (i >= l->max_clients)
-        ERR_LOG("GC %u 寻找的客户端ID %d 不存在", target_client_id);
+        ERR_LOG("寻找的客户端ID %d 不存在", target_client_id);
 
     return NULL;
 }

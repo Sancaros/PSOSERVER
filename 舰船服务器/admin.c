@@ -422,12 +422,12 @@ int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
                 if(i2->pl) {
                     if(i2 != c) {
                         f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
-                            __(i2, "\tE\tC7舰船将于"), when,
+                            __(i2, "\tE\tC6舰船将于"), when,
                             __(i2, "分钟后"), restart ? "重启" : "关闭");
                     }
                     else {
                         f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
-                            __(i2, "\tE\tC7舰船将于"), when,
+                            __(i2, "\tE\tC6舰船将于"), when,
                             __(i2, "分钟后"), restart ? "重启" : "关闭");
                     }
                 }

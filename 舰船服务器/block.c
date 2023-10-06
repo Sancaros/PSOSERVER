@@ -2878,8 +2878,7 @@ static int process_trade(ship_client_t* c, gc_trade_pkt* pkt) {
 
     /* 搜索目标客户端. */
     dest = ge_target_client_by_id(l, target_client_id);
-
-    if (dest == NULL) {
+    if (!dest) {
         ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
             c->guildcard);
         return send_msg(c, MSG1_TYPE, "%s",

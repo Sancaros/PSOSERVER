@@ -84,6 +84,7 @@ static command_t cmds[] = {
     { "cmdc"     , handle_cmdcheck      },
     { "rsquest"  , handle_resetquest    },
     { "login"    , handle_login         },
+    { "shutdown" , handle_shutdown      },
     /////////////////////////////////////////// 以下是玩家大厅指令
     { "pl"       , handle_player_menu   },
     { "save"     , handle_save          },
@@ -106,7 +107,6 @@ static command_t cmds[] = {
     { "gban:m"   , handle_gban_m        },
     { "gban:p"   , handle_gban_p        },
     { "normal"   , handle_normal        },
-    { "shutdown" , handle_shutdown      },
     { "log"      , handle_log           },
     { "endlog"   , handle_endlog        },
     { "motd"     , handle_motd          },

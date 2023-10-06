@@ -303,6 +303,20 @@ void lobby_print_info2(ship_client_t* src) {
     //    send_bb_game_type_sel(src);
 }
 
+const char* get_lobby_name(lobby_t* l) {
+    if (!l)
+        return "房间不存在";
+
+    const char* b_ptr = strstr(l->name, "B");
+    if (b_ptr != NULL) {
+        const char* new_str = b_ptr;
+        return b_ptr;
+    }
+    else {
+        return "房间名称获取失败";
+    }
+}
+
 char* get_lobby_describe(lobby_t* l) {
     if (!l)
         return "房间不存在";
@@ -310,20 +324,16 @@ char* get_lobby_describe(lobby_t* l) {
     /* 初始化角色描述内存 */
     memset(lobby_des, 0, sizeof(lobby_des));
 
-    const char* b_ptr = strstr(l->name, "B");
-    if (b_ptr != NULL) {
-        const char* new_str = b_ptr + 1;
-        sprintf(lobby_des, "房间:%s (%s:%s:%s:%s:任务%d:节日%d)"
-            , new_str
-            , l->episode == 1 ? "EP1" : l->episode == 2 ? "EP2" : "EP4"
-            , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "团队"
-            , get_difficulty_describe(l->difficulty)
-            , l->drop_pso2 == true ? l->drop_psocn == true ? "随机" : "独立" : "默认"
-            , l->qid
-            , l->event
-        );
-        //printf("%s\n", new_str);
-    }
+    sprintf(lobby_des, "房间:%s (%s:%s:%s:%s:任务%d:节日%dV2:%d)"
+        , get_lobby_name(l)
+        , l->episode == 1 ? "EP1" : l->episode == 2 ? "EP2" : "EP4"
+        , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "团队"
+        , get_difficulty_describe(l->difficulty)
+        , l->drop_pso2 == true ? l->drop_psocn == true ? "随机" : "独立" : "默认"
+        , l->qid
+        , l->event
+        , l->v2
+    );
 
     return lobby_des;
 }
@@ -2095,7 +2105,7 @@ int lobby_resend_burst_bb(lobby_t* l, ship_client_t* c) {
 
 /* Enqueue a packet for later sending (due to a player bursting) */
 static int lobby_enqueue_pkt_ex(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p,
-                                int q) {
+                                bool in_quest) {
     lobby_pkt_t *pkt;
     int rv = 0;
     uint16_t len = LE16(p->pkt_len);
@@ -2138,7 +2148,7 @@ static int lobby_enqueue_pkt_ex(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p,
     memcpy(pkt->pkt, p, len);
 
     /* Insert into the packet queue */
-    if(!q)
+    if(!in_quest)
         STAILQ_INSERT_TAIL(&l->pkt_queue, pkt, qentry);
     else
         STAILQ_INSERT_TAIL(&l->burst_queue, pkt, qentry);
@@ -2149,16 +2159,16 @@ out:
 }
 
 int lobby_enqueue_pkt(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p) {
-    return lobby_enqueue_pkt_ex(l, c, p, 0);
+    return lobby_enqueue_pkt_ex(l, c, p, false);
 }
 
 int lobby_enqueue_burst(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p) {
-    return lobby_enqueue_pkt_ex(l, c, p, 1);
+    return lobby_enqueue_pkt_ex(l, c, p, true);
 }
 
 /* Enqueue a packet for later sending (due to a player bursting) */
 static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p,
-    int q) {
+    bool in_quest) {
     lobby_pkt_t* pkt;
     int rv = 0;
     uint16_t len = LE16(p->pkt_len);
@@ -2167,12 +2177,14 @@ static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p
 
     /* 合理性检查... */
     if (!(l->flags & LOBBY_FLAG_BURSTING)) {
+        ERR_LOG("%s 并非在跃迁中 0x%04X", get_player_describe(c), p->pkt_type);
         rv = -1;
         goto out;
     }
 
     if (p->pkt_type != GAME_SUBCMD60_TYPE && p->pkt_type != GAME_SUBCMD62_TYPE &&
         p->pkt_type != GAME_SUBCMD6D_TYPE) {
+        ERR_LOG("%s 数据包类型错误 0x%04X", get_player_describe(c), p->pkt_type);
         rv = -2;
         goto out;
     }
@@ -2180,17 +2192,19 @@ static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p
     /* 申请临时内存空间 */
     pkt = (lobby_pkt_t*)malloc(sizeof(lobby_pkt_t));
     if (!pkt) {
+        ERR_LOG("%s 数据包内存分配错误 0x%04X", get_player_describe(c), p->pkt_type);
         rv = -3;
         goto out;
     }
 
     if (len <= 0) {
-        ERR_LOG("%s 的列表数据长度为 0 ", get_player_describe(c));
+        ERR_LOG("%s 数据包数据长度为 %d 重新分配 0x%04X", get_player_describe(c), len, p->pkt_type);
         len = sizeof(bb_pkt_hdr_t);
     }
 
     pkt->bb_pkt = (bb_pkt_hdr_t*)malloc(len);
     if (!pkt->bb_pkt) {
+        ERR_LOG("%s BB数据包内存分配错误 0x%04X", get_player_describe(c), p->pkt_type);
         free_safe(pkt);
         rv = -3;
         goto out;
@@ -2201,7 +2215,7 @@ static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p
     memcpy(pkt->bb_pkt, p, len);
 
     /* Insert into the packet queue */
-    if (!q)
+    if (!in_quest)
         STAILQ_INSERT_TAIL(&l->pkt_queue, pkt, qentry);
     else
         STAILQ_INSERT_TAIL(&l->burst_queue, pkt, qentry);
@@ -2212,11 +2226,11 @@ out:
 }
 
 int lobby_enqueue_pkt_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
-    return lobby_enqueue_pkt_ex_bb(l, c, p, 0);
+    return lobby_enqueue_pkt_ex_bb(l, c, p, false);
 }
 
 int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
-    return lobby_enqueue_pkt_ex_bb(l, c, p, 1);
+    return lobby_enqueue_pkt_ex_bb(l, c, p, true);
 }
 
 void lobby_send_kill_counts(lobby_t *l) {

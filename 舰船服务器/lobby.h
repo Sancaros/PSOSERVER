@@ -219,22 +219,6 @@ typedef struct lobby lobby_t;
 
 TAILQ_HEAD(lobby_queue, lobby);
 
-//#define LOCK_LMUTEX(lobby) \
-//    do { \
-//        int ret = pthread_mutex_lock(&(lobby)->mutex); \
-//        if (ret != 0) { \
-//            ERR_LOG("%s pthread_mutex_lock ´íÎó: %d", get_lobby_describe((lobby_t*)lobby), ret); \
-//        } \
-//    } while (0)
-//
-//#define UNLOCK_LMUTEX(lobby) \
-//    do { \
-//        int ret = pthread_mutex_unlock(&(lobby)->mutex); \
-//        if (ret != 0) { \
-//            ERR_LOG("%s pthread_mutex_unlock ´íÎó: %d", get_lobby_describe((lobby_t*)lobby), ret); \
-//        } \
-//    } while (0)
-
 /* Possible values for the type parameter. */
 #define LOBBY_TYPE_LOBBY              0x00000001
 #define LOBBY_TYPE_GAME               0x00000002
@@ -424,6 +408,7 @@ void lobby_print_info(lobby_t *l, FILE *fp);
 
 void lobby_print_info2(ship_client_t* src);
 
+const char* get_lobby_name(lobby_t* l);
 char* get_lobby_describe(lobby_t* l);
 char* get_lobby_describe_leader(lobby_t* l);
 

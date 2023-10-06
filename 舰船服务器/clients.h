@@ -72,7 +72,7 @@ typedef struct blocklist_entry {
 } blocklist_t;
 
 typedef struct trade_inv {
-    uint8_t other_client_id;
+    uint32_t other_client_id;
     bool confirmed; // true if client has sent a D2 command
     uint32_t meseta;
     uint32_t trade_item_count;
@@ -86,7 +86,7 @@ struct Pair {
 };
 
 typedef struct trade_card {
-    uint8_t other_client_id;
+    uint32_t other_client_id;
     int confirmed; // 0 for false, 1 for true
     struct Pair* card_to_count;
     size_t card_to_count_size;
@@ -289,32 +289,31 @@ struct ship_client {
     /// 以下为动态内存区域 请勿移至上方 避免内存错乱
     /// </summary>
 
+    // 游戏数据存储
+    client_game_data_t* game_data;
+    uint32_t* enemy_kills;
+    psocn_bank_t* common_bank;
+    psocn_bank_t* char_bank;
+    player_t* pl;
+    // 记录和挑战模式信息
+    psocn_mode_char_t* mode_pl;
+    record_data_t* records;              /* 指向玩家挑战/对战结构体的指针. */
+    psocn_bb_db_char_t* bb_pl;
+    psocn_bb_db_opts_t* bb_opts;
+    psocn_bb_db_guild_t* bb_guild;
+    xbox_ip_t* xbl_ip;
+
     // 选项和限制性设置
     void* autoreply;
     char* infoboard;                    /* Points into the player struct. */
     blocklist_t* blocklist;
     psocn_limits_t* limits;
-    xbox_ip_t* xbl_ip;
-
-    // 记录和挑战模式信息
-    record_data_t* records;              /* 指向玩家挑战/对战结构体的指针. */
-    psocn_mode_char_t* mode_pl;
-
-    // 游戏数据存储
-    uint32_t* next_maps;
-    uint32_t* enemy_kills;
-    psocn_bank_t* common_bank;
-    psocn_bank_t* char_bank;
-    psocn_bb_db_opts_t* bb_opts;
-    psocn_bb_db_guild_t* bb_guild;
-    client_game_data_t* game_data;
 
     block_t* cur_block;
     lobby_t* cur_lobby;
     lobby_t* create_lobby;
     lobby_t* lobby_req;
-    player_t* pl;
-    psocn_bb_db_char_t* bb_pl;
+    uint32_t* next_maps;
 
     // 文件和缓冲区
     FILE* logfile;

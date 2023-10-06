@@ -336,10 +336,11 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
 
         //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
         if (!l->lobby_create) {
+            send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
+            return 0;
         }
 
         //TODO 这里要判断类型
@@ -388,10 +389,11 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
         
         //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
         if (!l->lobby_create) {
+            send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
+            return 0;
         }
 
         c->create_lobby = NULL;
@@ -1130,28 +1132,34 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     if (c->pl->bb.character.dress_data.gc_string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
-            ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-                " 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
-                c->guildcard, i);
+            pthread_mutex_unlock(&c->mutex);
+
+            ERR_LOG("%s[舰仓%02d]: %s 角色数据检查失败 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
+                get_player_describe(c), i);
             if (c->cur_lobby) {
-                ERR_LOG("        房间: %s (类型: 难度:%d,对战模式:%d,挑战模式:%d,V2:%d)",
-                    c->cur_lobby->name, c->cur_lobby->difficulty,
-                    c->cur_lobby->battle, c->cur_lobby->challenge,
-                    c->cur_lobby->v2);
+                ERR_LOG("%s[舰仓%02d]: %s", ship->cfg->ship_name, c->cur_block->b,
+                    get_lobby_describe(c->cur_lobby));
             }
+
+            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入\n"
+                "这个服务器.\n\n"
+                "\tE\tC7请将这条信息上报至\n"
+                "管理员处."));
+
+            return -1;
         }
     }
-
+    
     v = LE32(pkt->data.bb.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
+        pthread_mutex_unlock(&c->mutex);
         send_msg(c, MSG_BOX_TYPE, __(c, "\tE不允许作弊玩家进入\n"
             "这个服务器.\n\n"
             "这条信息将会上报至\n"
             "管理员处."));
-        ERR_LOG("%s(%d): 检测到无效级别的角色!\n"
-            "        GC %" PRIu32 ", 等级: %" PRIu32 "",
+        ERR_LOG("%s[舰仓%02d]: 检测到 %s 无效级别的角色! 等级: %" PRIu32 "",
             ship->cfg->ship_name, c->cur_block->b,
-            c->guildcard, v);
+            get_player_describe(c), v);
         return -1;
     }
 
@@ -1301,28 +1309,34 @@ static int bb_process_char_leave_game(ship_client_t* c, bb_char_data_pkt* pkt) {
     if (c->pl->bb.character.dress_data.gc_string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
-            ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-                " 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
-                c->guildcard, i);
+            pthread_mutex_unlock(&c->mutex);
+
+            ERR_LOG("%s[舰仓%02d]: %s 角色数据检查失败 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
+                get_player_describe(c), i);
             if (c->cur_lobby) {
-                ERR_LOG("        房间: %s (类型: 难度:%d,对战模式:%d,挑战模式:%d,V2:%d)",
-                    c->cur_lobby->name, c->cur_lobby->difficulty,
-                    c->cur_lobby->battle, c->cur_lobby->challenge,
-                    c->cur_lobby->v2);
+                ERR_LOG("%s[舰仓%02d]: %s", ship->cfg->ship_name, c->cur_block->b,
+                    get_lobby_describe(c->cur_lobby));
             }
+
+            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入\n"
+                "这个服务器.\n\n"
+                "\tE\tC7请将这条信息上报至\n"
+                "管理员处."));
+
+            return -1;
         }
     }
 
     v = LE32(pkt->data.bb.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
+        pthread_mutex_unlock(&c->mutex);
         send_msg(c, MSG_BOX_TYPE, __(c, "\tE不允许作弊玩家进入\n"
             "这个服务器.\n\n"
             "这条信息将会上报至\n"
             "管理员处."));
-        ERR_LOG("%s(%d): 检测到无效级别的角色!\n"
-            "        GC %" PRIu32 ", 等级: %" PRIu32 "",
+        ERR_LOG("%s[舰仓%02d]: 检测到 %s 无效级别的角色! 等级: %" PRIu32 "",
             ship->cfg->ship_name, c->cur_block->b,
-            c->guildcard, v);
+            get_player_describe(c), v);
         return -1;
     }
 
@@ -1848,30 +1862,33 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     int add_done = 0;
 
     if (!l || l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("GC %u : %d 不在游戏或房间中", src->guildcard, src->sec_data.slot);
+        ERR_LOG("%s 不在游戏或房间中", get_player_describe(src));
         return -1;
     }
 
     if (trade_item_count > 0x20) {
-        ERR_LOG("GC %" PRIu32 " 尝试交易的物品超出限制!",
-            src->guildcard);
-        return send_msg(src, MSG1_TYPE, "%s",
-            __(src, "\tE尝试交易的物品超出限制!."));
+        ERR_LOG("%s 尝试交易的物品超出限制!",
+            get_player_describe(src));
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
+            __(src, "\tE\tC4尝试交易的物品超出限制!."));
+        return -2;
     }
 
     pthread_mutex_lock(&l->mutex);
 
-    ERR_LOG("///////////////bb_process_trade start GC %" PRIu32 "", src->guildcard);
+    ERR_LOG("///////////////bb_process_trade start %s", get_player_describe(src));
 
     print_ascii_hex(errl, pkt, LE16(pkt->hdr.pkt_len));
 
     /* 搜索目标客户端. */
     ship_client_t* dest = ge_target_client_by_id(l, target_client_id);
     if (!dest) {
-        ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
-            src->guildcard);
-        return send_msg(src, MSG1_TYPE, "%s",
-            __(src, "\tE未找到需要交易的玩家."));
+        pthread_mutex_unlock(&l->mutex);
+        ERR_LOG("%s 尝试与不存在的玩家交易!",
+            get_player_describe(src));
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
+            __(src, "\tE\tC4未找到需要交易的玩家."));
+        return -3;
     }
 
     trade_inv_t* src_trade = get_client_trade_inv_bb(src);
@@ -1902,8 +1919,9 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
             /* 客户端已经自动移除该物品 所以这里只需要进行内存操作即可 */
             iitem_t iitem = remove_iitem(src, item_id, item_amount, src->version != CLIENT_VERSION_BB);
             if (item_not_identification_bb(iitem.data.datal[0], iitem.data.datal[1])) {
-                ERR_LOG("GC %" PRIu32 " 交易物品失败!",
-                    src->guildcard);
+                pthread_mutex_unlock(&l->mutex);
+                ERR_LOG("%s 交易物品失败!",
+                    get_player_describe(src));
                 return -2;
             }
 
@@ -1913,8 +1931,9 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
             }
 
             if (!(add_done = add_iitem(dest, iitem))) {
-                ERR_LOG("GC %" PRIu32 " 获取交易物品失败! 错误码 %d",
-                    dest->guildcard, add_done);
+                pthread_mutex_unlock(&l->mutex);
+                ERR_LOG("%s 获取交易物品失败! 错误码 %d",
+                    get_player_describe(dest), add_done);
                 return -3;
             }
 
@@ -1923,7 +1942,7 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         }
     }
 
-    ERR_LOG("///////////////bb_process_trade end GC %" PRIu32 "", src->guildcard);
+    ERR_LOG("///////////////bb_process_trade end %s", get_player_describe(src));
 
     send_simple(dest, TRADE_1_TYPE, 0x00);
     if (dest->game_data->pending_item_trade.confirmed) {
@@ -1941,11 +1960,11 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
     bool add_done = 0;
 
     if (!l || l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("GC %u : %d 不在游戏或房间中", src->guildcard, src->sec_data.slot);
+        ERR_LOG("%s 不在游戏或房间中", get_player_describe(src));
         return -1;
     }
 
-    ERR_LOG("///////////////bb_process_trade_excute start GC %" PRIu32 "", src->guildcard);
+    ERR_LOG("///////////////bb_process_trade_excute start %s", get_player_describe(src));
 
     print_ascii_hex(errl, pkt, LE16(pkt->hdr.pkt_len));
 
@@ -1957,18 +1976,22 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
     /* 搜索目标客户端. */
     ship_client_t* dest = ge_target_client_by_id(l, target_client_id);
     if (!dest) {
-        ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
-            src->guildcard);
-        return send_msg(src, MSG1_TYPE, "%s",
-            __(src, "\tE未找到需要交易的玩家."));
+        pthread_mutex_unlock(&l->mutex);
+        ERR_LOG("%s 尝试与不存在的玩家交易!",
+            get_player_describe(src));
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
+            __(src, "\tE\tC4未找到需要交易的玩家."));
+        return -2;
     }
 
     trade_inv_t* dest_trade_inv = get_client_trade_inv_bb(dest);
     if (!dest_trade_inv->confirmed) {
-        ERR_LOG("GC %" PRIu32 " 对方未确认交易!",
-            src->guildcard);
-        return send_msg(src, MSG1_TYPE, "%s",
+        pthread_mutex_unlock(&l->mutex);
+        ERR_LOG("%s 对方未确认交易!",
+            get_player_describe(dest));
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
             __(src, "\tE\tC4对方未确认交易."));
+        return -3;
     }
 
     src_trade_inv->confirmed = true;
@@ -1978,7 +2001,7 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
 
     pthread_mutex_unlock(&l->mutex);
 
-    ERR_LOG("///////////////bb_process_trade_excute end GC %" PRIu32 "", src->guildcard);
+    ERR_LOG("///////////////bb_process_trade_excute end %s", get_player_describe(src));
 
     return 0;
 }
@@ -1989,7 +2012,7 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     int rv = -1;
 
     if (!l || l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("GC %u : %d 不在游戏或房间中", src->guildcard, src->sec_data.slot);
+        ERR_LOG("%s 不在游戏或房间中", get_player_describe(src));
         return 0;
     }
 
@@ -2007,18 +2030,20 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
 
     /* 搜索目标客户端. */
     dest = ge_target_client_by_id(l, other_client_id);
-    if (dest == NULL) {
-        ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
-            src->guildcard);
+    if (!dest) {
+        pthread_mutex_unlock(&l->mutex);
+        ERR_LOG("%s 尝试与不存在的玩家交易!",
+            get_player_describe(src));
         return -1;
     }
     if (!dest->game_data->pending_item_trade.confirmed) {
-        ERR_LOG("GC %" PRIu32 " 的未确认交易!",
-            dest->guildcard);
+        pthread_mutex_unlock(&l->mutex);
+        ERR_LOG("%s 的未确认交易!",
+            get_player_describe(dest));
         return -2;
     }
 
-    DBG_LOG("交易错误 GC %" PRIu32 " 至 GC %" PRIu32 "", src->guildcard, dest->guildcard);
+    DBG_LOG("交易错误 %s 至 %s", get_player_describe(src), get_player_describe(dest));
     trade_inv_t* trade_inv_dest = player_tinv_init(dest);
     send_simple(dest, TRADE_4_TYPE, 0x00);
     pthread_mutex_unlock(&l->mutex);
@@ -2058,13 +2083,13 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
         return -1;
 
     if (!src->bb_pl || !src->mode_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR) {
-        ERR_LOG("bb_process_full_char %d %d c->mode %d", src->version, len, src->mode);
+        ERR_LOG("%s bb_process_full_char %d %d c->mode %d", get_player_describe(src), src->version, len, src->mode);
         return -2;
     }
 
     /* No need if they've already maxed out. */
     if (src->bb_pl->character.disp.level + 1 > MAX_PLAYER_LEVEL) {
-        ERR_LOG("GC %d 等级超过 200 (%d)", src->guildcard, src->bb_pl->character.disp.level + 1);
+        ERR_LOG("%s 等级超过 200 (%d)", get_player_describe(src), src->bb_pl->character.disp.level + 1);
         return -4;
     }
 
@@ -2155,27 +2180,19 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
                 if (character->tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
                     src->bb_pl->character.tech.all[i] = 0xFF;
                     /* 移除不合规的法术 */
-                    //character->tech.all[i] = 0xFF;
-                    //send_msg(src, TEXT_MSG_TYPE, "%s %s %s%d 高于 %d %s", __(src, "\tE\tC4法术"), get_technique_comment(i)
-                    //    , __(src, "\tE\tC4等级"), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]
-                    //    , __(src, "\tE\tC4已被清除!")
-                    //);
-                    ERR_LOG("%s 法术 %s 等级%d 高于 %d, 已被修正为 0 级!", get_player_describe(src), get_technique_comment(i), character->tech.all[i] + 1, get_bb_max_tech_level(src, i));
-                    //pkt2.tech.all[i] = character->tech.all[i];
-                }
-                else {
-
-                    //pkt2.tech.all[i] = character->tech.all[i];
+                    ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
+                        , get_player_describe(src)
+                        , get_technique_comment(i), character->tech.all[i] + 1
+                        , get_bb_max_tech_level(src, i)
+                    );
                 }
             }
+        } else {
+            /* 清除机器人的魔法 */
+            for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+                src->bb_pl->character.tech.all[i] = 0xFF;
+            }
         }
-        //else {
-        //    /* 清除机器人的魔法 */
-        //    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        //        character->tech.all[i] = 0xFF;
-        //        //pkt2.tech.all[i] = character->tech.all[i];
-        //    }
-        //}
     }
 
     if (!src->mode) {
@@ -2325,9 +2342,8 @@ static int process_bb_guild_create(ship_client_t* c, bb_guild_create_pkt* pkt) {
     }
 
     if (c->bb_guild->data.guild_id > 0) {
-        send_msg(c, MSG1_TYPE, "%s\n%s", __(c, "\tE\tC4您已经在公会中了!"),
+        return send_msg(c, MSG1_TYPE, "%s\n%s", __(c, "\tE\tC4您已经在公会中了!"),
             __(c, "\tC7请切换舰船刷新数据."));
-        return 0;
     }
 
     pkt->guildcard = c->guildcard;

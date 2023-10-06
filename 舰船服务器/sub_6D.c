@@ -390,64 +390,72 @@ subcmd_handle_func_t subcmd6D_handler[] = {
 
 /* 处理 DC GC PC V1 V2 0x6D 来自客户端的数据包. */
 int subcmd_handle_6D(ship_client_t* src, subcmd_pkt_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    ship_client_t* dest;
-    uint16_t hdr_type = pkt->hdr.dc.pkt_type;
-    uint8_t type = pkt->type;
-    int rv = -1;
+    __try {
+        lobby_t* l = src->cur_lobby;
+        ship_client_t* dest;
+        uint16_t hdr_type = pkt->hdr.dc.pkt_type;
+        uint8_t type = pkt->type;
+        int rv = -1;
 
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if (!l)
-        return 0;
+        /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+        if (!l)
+            return 0;
 
-    pthread_mutex_lock(&l->mutex);
+        pthread_mutex_lock(&l->mutex);
 
-    /* 搜索目标客户端. */
-    dest = l->clients[pkt->hdr.dc.flags];
+        /* 搜索目标客户端. */
+        dest = l->clients[pkt->hdr.dc.flags];
 
-    /* 目标客户端已离线，将不再发送数据包. */
-    if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
-        return 0;
-    }
-
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
-
-    /* If there's a burst going on in the lobby, delay most packets */
-    if (l->flags & LOBBY_FLAG_BURSTING) {
-        rv = 0;
-
-        switch (type) {
-        case SUBCMD6D_BURST1:
-        case SUBCMD6D_BURST2:
-        case SUBCMD6D_BURST3:
-        case SUBCMD6D_BURST4:
-        case SUBCMD6D_BURST_PLDATA:
-            rv |= l->subcmd_handle(src, dest, pkt);
-            break;
-
-        default:
-            rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
+        /* 目标客户端已离线，将不再发送数据包. */
+        if (!dest) {
+            pthread_mutex_unlock(&l->mutex);
+            return 0;
         }
 
-    }
-    else {
+        l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 
-        if (l->subcmd_handle == NULL) {
+        /* If there's a burst going on in the lobby, delay most packets */
+        if (l->flags & LOBBY_FLAG_BURSTING) {
+            rv = 0;
+
+            switch (type) {
+            case SUBCMD6D_BURST1:
+            case SUBCMD6D_BURST2:
+            case SUBCMD6D_BURST3:
+            case SUBCMD6D_BURST4:
+            case SUBCMD6D_BURST_PLDATA:
+                rv |= l->subcmd_handle(src, dest, pkt);
+                break;
+
+            default:
+                rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
+            }
+        } else if (l->subcmd_handle == NULL) {
+
 #ifdef BB_LOG_UNKNOWN_SUBS
             DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
             print_ascii_hex(dbgl, pkt, LE16(pkt->hdr.dc.pkt_len));
-            //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
+
             rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
         }
-        else
+        else {
             rv = l->subcmd_handle(src, dest, pkt);
+        }
+
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
+
     }
 
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 /* 处理BB 0x6D 数据包. */
@@ -485,6 +493,17 @@ int subcmd_bb_handle_6D(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
         //subcmd_bb_626Dsize_check(c, pkt);
 
         l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+        if (!l->subcmd_handle) {
+
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            print_ascii_hex(dbgl, pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
+            rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
 
         /* If there's a burst going on in the lobby, delay most packets */
         if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -500,22 +519,10 @@ int subcmd_bb_handle_6D(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
                 break;
 
             default:
-                DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
                 rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
             }
-
-        }
-        else {
-
-            if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(dbgl, pkt, len);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-                rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-            }
-            else
-                rv = l->subcmd_handle(src, dest, pkt);
+        } else {
+            rv = l->subcmd_handle(src, dest, pkt);
         }
 
         pthread_mutex_unlock(&l->mutex);

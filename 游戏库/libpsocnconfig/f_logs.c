@@ -81,23 +81,21 @@ bool is_all_zero(const char* data, size_t length) {
 }
 
 void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length) {
+	pthread_mutex_lock(&pkt_mutex);
+	size_t i;
+	memset(&dp[0], 0, sizeof(dp));
+
 	if (data == NULL || length == 0 || length > MAX_PACKET_BUFF) {
-		ERR_LOG("空指针数据包或无效长度 %d 数据包.", length);
-		return;
+		sprintf(dp, "空指针数据包或无效长度 % d 数据包.", length);
+		goto done;
 	}
 
 	uint8_t* buff = (uint8_t*)data;
 
 	if (is_all_zero(buff, length)) {
-		ERR_LOG("空数据包 长度 %d.", length);
-		return;
+		sprintf(dp, "空数据包 长度 %d.", length);
+		goto done;
 	}
-
-	pthread_mutex_lock(&pkt_mutex);
-
-	size_t i; 
-
-	memset(&dp[0], 0, sizeof(dp));
 
 	strcpy(dp, "数据包如下:\n\r");
 
@@ -139,6 +137,7 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 		print_method("不足以容纳换行符");
 	}
 
+done:
 	print_method(dp);
 
 	pthread_mutex_unlock(&pkt_mutex);
