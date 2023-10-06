@@ -110,12 +110,21 @@ ship_client_t* client_create_connection(int sock, int version, int type,
     ship_t* ship, block_t* block,
     struct sockaddr* ip, socklen_t size) {
     __try {
-        ship_client_t* rv = (ship_client_t*)malloc(sizeof(ship_client_t));
         uint32_t client_seed_dc, server_seed_dc;
         uint8_t client_seed_bb[48] = { 0 }, server_seed_bb[48] = { 0 };
         int i;
         pthread_mutexattr_t attr;
-        //struct mt19937_state *rng;
+
+        ship_client_t* rv = (ship_client_t*)malloc(sizeof(ship_client_t));
+        if (rv == NULL || !rv) {
+            // 内存分配失败的处理逻辑...
+            ERR_LOG("client_create_connection 分配新客户端内存错误");
+            return NULL;
+        }
+        else {
+            memset(rv, 0, sizeof(ship_client_t));  // 将分配的内存清零
+            // 其他初始化操作...
+        }
 
         /* Disable Nagle's algorithm */
         i = 1;
@@ -137,14 +146,7 @@ ship_client_t* client_create_connection(int sock, int version, int type,
             break;
         }
 
-        if (!rv) {
-            ERR_LOG("malloc 分配内存错误");
-            perror("malloc");
-            return NULL;
-        }
-
-        memset(rv, 0, sizeof(ship_client_t));
-
+        /* 当玩家进入舰仓时 初始化所有数据 */
         if (type == CLIENT_TYPE_BLOCK) {
             rv->pl = (player_t*)malloc(sizeof(player_t));
 
@@ -182,41 +184,7 @@ ship_client_t* client_create_connection(int sock, int version, int type,
             }
 
             memset(rv->game_data, 0, sizeof(client_game_data_t));
-
-            //if (version == CLIENT_VERSION_BB) {
-            //    rv->game_data->pending_item_trade =
-            //        (trade_inv_t*)malloc(sizeof(trade_inv_t));
-
-            //    if (!rv->game_data) {
-            //        perror("malloc");
-            //        free_safe(rv->pl);
-            //        free_safe(rv->enemy_kills);
-            //        free_safe(rv->game_data);
-            //        free_safe(rv);
-            //        closesocket(sock);
-            //        return NULL;
-            //    }
-
-            //    memset(rv->game_data->pending_item_trade, 0, sizeof(trade_inv_t));
-            //}
-
-            //if (version == CLIENT_VERSION_EP3) {
-            //    rv->game_data->pending_card_trade =
-            //        (trade_card_t*)malloc(sizeof(trade_card_t));
-
-            //    if (!rv->game_data) {
-            //        perror("malloc");
-            //        free_safe(rv->pl);
-            //        free_safe(rv->enemy_kills);
-            //        free_safe(rv->game_data);
-            //        free_safe(rv);
-            //        closesocket(sock);
-            //        return NULL;
-            //    }
-
-            //    memset(rv->game_data->pending_card_trade, 0, sizeof(trade_card_t));
-            //}
-
+            
             rv->mode_pl =
                 (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
 
@@ -302,6 +270,7 @@ ship_client_t* client_create_connection(int sock, int version, int type,
                 }
 
                 memset(rv->bb_pl, 0, PSOCN_STLENGTH_BB_DB_CHAR);
+
                 rv->bb_opts =
                     (psocn_bb_db_opts_t*)malloc(PSOCN_STLENGTH_BB_DB_OPTS);
 
@@ -372,7 +341,8 @@ ship_client_t* client_create_connection(int sock, int version, int type,
         rv->last_message = rv->login_time = time(NULL);
         rv->hdr_size = 4;
 
-        rv->isvip = 0;
+        rv->isvip = false;
+        rv->can_chat = true;
         rv->mode = 0;
         rv->need_save_data = false;
         rv->bank_type = false;

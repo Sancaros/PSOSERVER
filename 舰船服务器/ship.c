@@ -137,7 +137,7 @@ static void* ship_thd(void* d) {
     ship_t* s = (ship_t*)d;
     struct timeval timeout = { 0 };
     fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
-    ship_client_t* it, * tmp;
+    ship_client_t* it = NULL, * tmp = NULL;
     socklen_t len = 0;
     struct sockaddr_storage addr = { 0 };
     struct sockaddr* addr_p = (struct sockaddr*)&addr;
@@ -147,7 +147,7 @@ static void* ship_thd(void* d) {
     time_t now = 0;
     time_t last_ban_sweep = time(NULL);
     uint32_t numsocks = 1;
-    psocn_event_t* event, * oldevent = s->cfg->events;
+    psocn_event_t* event = NULL, * oldevent = s->cfg->events;
 
 #ifdef PSOCN_ENABLE_IPV6
     if (enable_ipv6) {
@@ -166,6 +166,11 @@ static void* ship_thd(void* d) {
             s->blocks[i - 1] = tmp_b;
 
         tmp_b = NULL;
+
+        // 如果已经创建了所需数量的块，则跳出循环
+        if (i > s->cfg->blocks) {
+            break;
+        }
     }
 
     BLOCK_LOG("%s: 舰仓 (1 - %d) 已开启", s->cfg->ship_name, i - 1);

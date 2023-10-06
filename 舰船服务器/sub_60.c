@@ -737,6 +737,25 @@ static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
     if (!(en->clients_hit & 0x80)) {
         en->clients_hit |= (1 << src->client_id);
         en->last_client = src->client_id;
+
+        script_execute(ScriptActionEnemyHit, src, SCRIPT_ARG_PTR, src,
+            SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_UINT32, en->bp_entry,
+            SCRIPT_ARG_UINT8, en->rt_index, SCRIPT_ARG_UINT8,
+            en->clients_hit, SCRIPT_ARG_END);
+
+        /* If the kill flag is set, mark it as dead and update the client's
+           counter. */
+        if (flags & 0x00000800) {
+            en->clients_hit |= 0x80;
+
+            script_execute(ScriptActionEnemyKill, src, SCRIPT_ARG_PTR, src,
+                SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_UINT32,
+                en->bp_entry, SCRIPT_ARG_UINT8, en->rt_index,
+                SCRIPT_ARG_UINT8, en->clients_hit, SCRIPT_ARG_END);
+
+            if (en->bp_entry < 0x60 && !(l->flags & LOBBY_FLAG_HAS_NPC))
+                ++src->enemy_kills[en->bp_entry];
+        }
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
