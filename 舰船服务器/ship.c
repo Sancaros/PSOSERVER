@@ -157,10 +157,15 @@ static void* ship_thd(void* d) {
 
     BLOCK_LOG("%s: 舰仓 (1 - %d) 启动中...", s->cfg->ship_name, s->cfg->blocks);
 
-    /* Fire up the threads for each block. */
+    /* 设置该船的舰仓数量 用临时指针判断是否成功创建 . */
     for (i = 1; i <= s->cfg->blocks; ++i) {
-        s->blocks[i - 1] = block_server_start(s, i, s->cfg->base_port +
+        block_t* tmp_b = block_server_start(s, i, s->cfg->base_port +
             (i * 6));
+
+        if (tmp_b)
+            s->blocks[i - 1] = tmp_b;
+
+        tmp_b = NULL;
     }
 
     BLOCK_LOG("%s: 舰仓 (1 - %d) 已开启", s->cfg->ship_name, i - 1);
@@ -193,8 +198,8 @@ static void* ship_thd(void* d) {
         }
 
         if (srv_time && srv_time > now + 5) {
-            now = srv_time;
             shipgate_send_ping(&s->sg, 0);
+            now = srv_time;
         }
 
         /* If we haven't swept the bans list in the last day, do it now. */
