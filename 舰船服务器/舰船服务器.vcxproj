@@ -44,18 +44,18 @@
     <ClCompile Include="ship_packets.c" />
     <ClCompile Include="ship_server.c" />
     <ClCompile Include="smutdata.c" />
-    <ClCompile Include="subcmd_handle.c" />
-    <ClCompile Include="subcmd_handle_6D.c" />
-    <ClCompile Include="subcmd_handle_60.c" />
-    <ClCompile Include="subcmd_handle_62.c" />
-    <ClCompile Include="subcmd_dcnte.c" />
-    <ClCompile Include="subcmd_handle_dcgcpcv1v2.c" />
+    <ClCompile Include="sub_hnd.c" />
+    <ClCompile Include="sub_6D.c" />
+    <ClCompile Include="sub_60.c" />
+    <ClCompile Include="sub_62.c" />
+    <ClCompile Include="sub_dcnte.c" />
+    <ClCompile Include="sub_dcgcpcv1v2.c" />
     <ClCompile Include="utils.c" />
     <ClCompile Include="word_select.c" />
     <ClCompile Include="block_bb.c" />
     <ClCompile Include="shop.c" />
     <ClCompile Include="mag_bb.c" />
-    <ClCompile Include="subcmd_send.c" />
+    <ClCompile Include="sub_send.c" />
     <ClCompile Include="item_creator.c" />
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +103,7 @@
     <ClInclude Include="commands_gm.h" />
     <ClInclude Include="commands_pl_game.h" />
     <ClInclude Include="commands_pl_lobby.h" />
+    <ClInclude Include="lobby_f.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico" />

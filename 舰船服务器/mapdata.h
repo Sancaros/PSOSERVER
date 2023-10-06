@@ -86,46 +86,6 @@ typedef struct map_enemy {
     /* 48 */
 } PACKED map_enemy_t;
 
-typedef struct EnemyEntry {
-    /* 00 */ uint16_t base_type;
-    /* 02 */ uint16_t unknown_a0; // Overwritten by client at load time
-    /* 04 */ uint16_t enemy_index; // Overwritten by client at load time
-    /* 06 */ uint16_t num_children;
-
-    /* 08 */ uint16_t area;
-    /* 0A */ uint16_t entity_id; // == enemy_index + 0x1000
-    /* 0C */ uint16_t section;
-    /* 0E */ uint16_t wave_number;
-    /* 10 */ uint32_t wave_number2;
-    /* 14 */ float x;
-    /* 18 */ float y;
-    /* 1C */ float z;
-    /* 20 */ uint32_t x_angle;
-    /* 24 */ uint32_t y_angle;
-    /* 28 */ uint32_t z_angle;
-    /* 2C */ uint32_t unknown_a3;
-
-    /* 30 */ uint32_t unknown_a4;   //rareratio
-    /* 34 */ uint32_t unknown_a5;  //reserved12
-    /* 38 */ uint32_t unknown_a6; //reserved13
-    /* 3C */ uint32_t exp;
-    /* 40 */ uint32_t skin;
-    /* 44 */ uint32_t rt_index;
-    /* 48 */
-
-    //string str() const {
-    //    return string_printf("EnemyEntry(base_type=%hX, a0=%hX, enemy_index=%hX, num_children=%hX, area=%hX, entity_id=%hX, section=%hX, wave_number=%hX, wave_number2=%" PRIX32 ", x=%g, y=%g, z=%g, x_angle=%" PRIX32 ", y_angle=%" PRIX32 ", z_angle=%" PRIX32 ", a3=%" PRIX32 ", a4=%" PRIX32 ", a5=%" PRIX32 ", a6=%" PRIX32 ", a7=%" PRIX32 ", skin=%" PRIX32 ", a8=%" PRIX32 ")",
-    //        this->base_type.load(), this->unknown_a0.load(), this->enemy_index.load(), this->num_children.load(), this->area.load(),
-    //        this->entity_id.load(), this->section.load(), this->wave_number.load(),
-    //        this->wave_number2.load(), this->x.load(), this->y.load(), this->z.load(), this->x_angle.load(),
-    //        this->y_angle.load(), this->z_angle.load(), this->unknown_a3.load(), this->unknown_a4.load(),
-    //        this->unknown_a5.load(), this->unknown_a6.load(), this->unknown_a7.load(), this->skin.load(),
-    //        this->unknown_a8.load());
-    //}
-} PACKED EnemyEntry_t;
-
-static int dsasadsada = sizeof(map_enemy_t);
-
 /* 地图对象文件中的物体数据. 68字节 */
 typedef struct map_object {
     uint32_t base_type;

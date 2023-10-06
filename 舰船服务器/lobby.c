@@ -310,12 +310,14 @@ char* get_lobby_describe(lobby_t* l) {
     /* 初始化角色描述内存 */
     memset(lobby_des, 0, sizeof(lobby_des));
 
-    sprintf(lobby_des, "房间:%s (%s:%s:%s:%s)"
+    sprintf(lobby_des, "房间:%s (%s:%s:%s:%s:任务%d:节日%d)"
         , l->name
         , l->episode == 1 ? "EP1" : l->episode == 2 ? "EP2" : "EP4"
         , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "团队"
         , get_difficulty_describe(l->difficulty)
         , l->drop_pso2 == true ? l->drop_psocn == true ? "随机" : "独立" : "默认"
+        , l->qid
+        , l->event
     );
 
     return lobby_des;

@@ -19,8 +19,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <f_logs.h>
-
 #include "pso_items.h"
 #include "pso_character.h"
 
@@ -426,127 +424,6 @@ bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
 	}
 
 	return false;
-}
-
-/* 打印物品数据 */
-void print_item_data(const item_t* item, int version) {
-	ITEM_LOG("物品: %s", get_item_describe(item, version));
-	ITEM_LOG("编号: 0x%08X",
-		item->item_id);
-	ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		item->datab[0], item->datab[1], item->datab[2], item->datab[3],
-		item->datab[4], item->datab[5], item->datab[6], item->datab[7],
-		item->datab[8], item->datab[9], item->datab[10], item->datab[11],
-		item->data2b[0], item->data2b[1], item->data2b[2], item->data2b[3]);
-	ITEM_LOG("------------------------------------------------------------");
-}
-
-/* 打印背包物品数据 */
-void print_iitem_data(const iitem_t* iitem, int item_index, int version) {
-	ITEM_LOG("物品: %s", get_item_describe(&iitem->data, version));
-	ITEM_LOG("编号: 0x%08X", iitem->data.item_id);
-	ITEM_LOG(""
-		"槽位 (%d) "
-		"(%s) %04X "
-		"鉴定 %d %d"
-		"(%s) "
-		"Flags %08X",
-		item_index,
-		((iitem->present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
-		iitem->present,
-		iitem->extension_data1,
-		iitem->extension_data2,
-		((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
-		iitem->flags
-	);
-	ITEM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		iitem->data.datab[0], iitem->data.datab[1], iitem->data.datab[2], iitem->data.datab[3],
-		iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
-		iitem->data.datab[8], iitem->data.datab[9], iitem->data.datab[10], iitem->data.datab[11],
-		iitem->data.data2b[0], iitem->data.data2b[1], iitem->data.data2b[2], iitem->data.data2b[3]);
-	ITEM_LOG("------------------------------------------------------------");
-}
-
-/* 打印银行物品数据 */
-void print_bitem_data(const bitem_t* bitem, int item_index, int version) {
-	ITEM_LOG("物品: %s", get_item_describe(&bitem->data, version));
-	ITEM_LOG("编号: 0x%08X", bitem->data.item_id);
-	ITEM_LOG(""
-		"槽位 (%d) "
-		"(%s) %04X "
-		"(%s) "
-		"Flags %04X",
-		item_index,
-		((max_stack_size_for_item(bitem->data.datab[0], bitem->data.datab[1]) > 1) ? "堆叠" : "单独"),
-		bitem->amount,
-		((bitem->show_flags & LE32(0x0001)) ? "显示" : "隐藏"),
-		bitem->show_flags
-	);
-	ITEM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		bitem->data.datab[0], bitem->data.datab[1], bitem->data.datab[2], bitem->data.datab[3],
-		bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],
-		bitem->data.datab[8], bitem->data.datab[9], bitem->data.datab[10], bitem->data.datab[11],
-		bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
-	ITEM_LOG("------------------------------------------------------------");
-}
-
-void print_biitem_data(void* data, int item_index, int version, int inv, int err) {
-	char* inv_text = ((inv == 1) ? "背包" : "银行");
-	char* err_text = ((err == 1) ? "错误" : "玩家");
-
-	if (data) {
-		if (inv) {
-			iitem_t* iitem = (iitem_t*)data;
-
-			ITEM_LOG("%s X %s物品:(ID %d / %08X) %s", err_text, inv_text,
-				iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version, 0));
-
-			ITEM_LOG(""
-				"槽位 (%d) "
-				"(%s) %04X "
-				"鉴定 %d %d"
-				"(%s) Flags %08X",
-				item_index,
-				((iitem->present == 0x0001) ? "已占槽位" : "未占槽位"),
-				iitem->present,
-				iitem->extension_data1,
-				iitem->extension_data2,
-				((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
-				iitem->flags
-			);
-
-			ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-				inv_text,
-				iitem->data.datab[0], iitem->data.datab[1], iitem->data.datab[2], iitem->data.datab[3],
-				iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
-				iitem->data.datab[8], iitem->data.datab[9], iitem->data.datab[10], iitem->data.datab[11],
-				iitem->data.data2b[0], iitem->data.data2b[1], iitem->data.data2b[2], iitem->data.data2b[3]);
-		}
-		else {
-			bitem_t* bitem = (bitem_t*)data;
-
-			ITEM_LOG("%s X %s物品:(ID %d / %08X) %s", err_text, inv_text,
-				bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version, 0));
-
-			ITEM_LOG(""
-				"槽位 (%d) "
-				"(%s) %04X "
-				"(%s) Flags %04X",
-				item_index,
-				((bitem->amount == 0x0001) ? "堆叠" : "单独"),
-				bitem->amount,
-				((bitem->show_flags == 0x0001) ? "显示" : "隐藏"),
-				bitem->show_flags
-			);
-
-			ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-				inv_text,
-				bitem->data.datab[0], bitem->data.datab[1], bitem->data.datab[2], bitem->data.datab[3],
-				bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],
-				bitem->data.datab[8], bitem->data.datab[9], bitem->data.datab[10], bitem->data.datab[11],
-				bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
-		}
-	}
 }
 
 const char* get_unit_bonus_describe(const item_t* item) {

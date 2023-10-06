@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "pso_cmd_name.h"
 #include "pso_timer.h"
@@ -48,6 +49,7 @@ typedef SSIZE_T ssize_t;
 char dp[MAX_PACKET_BUFF];
 
 pthread_mutex_t log_mutex;
+pthread_mutex_t log_item_mutex;
 pthread_mutex_t pkt_mutex;
 
 enum Log_files_Num {
@@ -59,7 +61,7 @@ enum Log_files_Num {
 	LOBBY_LOG, //舰船
 	SGATE_LOG, //舰船
 	LOGIN_LOG, //登陆 舰船
-	ITEMS_LOG, //舰船
+    ITEMS_LOG, //舰船
 	MYSQLERR_LOG, //登陆
 	QUESTERR_LOG, //舰船
 	GMC_LOG, //舰船
@@ -79,6 +81,11 @@ enum Log_files_Num {
 	CRASH_LOG,
 	LOG,
 	LOG_FILES_MAX,
+    TRADE_LOG = 8, //舰船
+    PICK_LOG = 8, //舰船
+    DROP_LOG = 8, //舰船
+    MDROP_LOG = 8, //舰船
+    BDROP_LOG = 8, //舰船
 };
 
 typedef struct log_map {
@@ -115,6 +122,11 @@ static log_map_st log_header[] = {
 	{ CRASH_LOG,			"崩溃" },
 	{ LOG,					"日志" },
 	{ LOG_FILES_MAX, "未知日志错误" },
+    { TRADE_LOG,			"交易" }, //舰船
+    { PICK_LOG,			    "拾取" }, //舰船
+    { DROP_LOG,			    "掉落" }, //舰船
+    { MDROP_LOG,			"怪掉" }, //舰船
+    { BDROP_LOG,			"箱掉" }, //舰船
 };
 
 /////////////////////////////////////////
@@ -286,12 +298,50 @@ do { \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ITEM_LOG(...) \
 do { \
-    pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__); \
-    pthread_mutex_unlock(&log_mutex); \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
+
+#define TRADES_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, TRADE_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define PICKS_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, PICK_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define DROPS_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, DROP_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define MDROPS_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, MDROP_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define BDROPS_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, BDROP_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define SQLERR_LOG(...) \
 do { \
@@ -428,15 +478,6 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp);
 
 /* This function based on information from a couple of different sources, namely
    Fuzziqer's newserv and information from Lee (through Aleron Ives). */
-extern inline void errl(const char* message);
-
-extern inline void dbgl(const char* message);
-
-extern inline void gml(const char* message);
-
-extern inline void iteml(const char* message);
-
-extern inline void testl(const char* message);
 
 typedef void (*LogFunc)(const char*, ...);
 
@@ -457,6 +498,7 @@ extern void packet_to_text(uint8_t* buf, size_t len, bool show);
 extern void display_packet_old(const void* buf, size_t len);
 
 extern void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
+extern void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...);
 extern void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
@@ -472,5 +514,85 @@ extern void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* fil
 extern int remove_directory(const char* path);
 
 extern ssize_t clamp(ssize_t value, ssize_t min, ssize_t max);
+
+static inline void errl(const char* message) {
+    ERR_LOG("%s", message);
+}
+
+static inline void dbgl(const char* message) {
+    DBG_LOG("%s", message);
+}
+
+static inline void gml(const char* message) {
+    GM_LOG("%s", message);
+}
+
+static inline void iteml(const char* message) {
+    ITEM_LOG("%s", message);
+}
+
+static inline void pickl(const char* message) {
+    PICKS_LOG("%s", message);
+}
+
+static inline void dropl(const char* message) {
+    DROPS_LOG("%s", message);
+}
+
+static inline void tradel(const char* message) {
+    TRADES_LOG("%s", message);
+}
+
+static inline void testl(const char* message) {
+    TEST_LOG("%s", message);
+}
+
+static inline void log_mutex_init() {
+    int result = 0;
+    errno = 0;
+    result |= pthread_mutex_init(&log_mutex, NULL);
+    result |= pthread_mutex_init(&log_item_mutex, NULL);
+    result |= pthread_mutex_init(&pkt_mutex, NULL);
+    if (result != 0 || errno) {
+        if (result) {
+            ERR_LOG("pthread_mutex_init 初始化失败1，错误码: %d", result);
+            ERR_LOG("错误消息1: %s", strerror(result));
+        }
+
+        // 或者直接使用 errno 获取错误码
+        if (errno) {
+            ERR_LOG("pthread_mutex_init 初始化失败2，错误码: %d", errno);
+            ERR_LOG("错误消息2: %s", strerror(errno));
+        }
+    }
+    else {
+        // 初始化成功
+        DBG_LOG("log_mutex_init 初始化成功！");
+    }
+}
+
+static inline void log_mutex_destory() {
+    int result = 0;
+    errno = 0;
+    result |= pthread_mutex_destroy(&pkt_mutex);
+    result |= pthread_mutex_destroy(&log_item_mutex);
+    result |= pthread_mutex_destroy(&log_mutex);
+    if (result != 0 || errno) {
+        if (result) {
+            ERR_LOG("pthread_mutex_destroy 销毁失败1，错误码: %d", result);
+            ERR_LOG("错误消息1: %s", strerror(result));
+        }
+
+        // 或者直接使用 errno 获取错误码
+        if (errno) {
+            ERR_LOG("pthread_mutex_destroy 销毁失败2，错误码: %d", errno);
+            ERR_LOG("错误消息2: %s", strerror(errno));
+        }
+    }
+    else {
+        // 销毁成功
+        DBG_LOG("log_mutex_destory 销毁成功！");
+    }
+}
 
 #endif // !PSOCN_LOG

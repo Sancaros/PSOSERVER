@@ -1129,8 +1129,7 @@ int __cdecl main(int argc, char** argv) {
     server_name_num = PATCH_SERVER;
 
     __try {
-        pthread_mutex_init(&log_mutex, NULL);
-        pthread_mutex_init(&pkt_mutex, NULL);
+        log_mutex_init();
 
         load_program_info(server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
 
@@ -1181,16 +1180,14 @@ int __cdecl main(int argc, char** argv) {
         }
 
         UnhookHandler();
-        pthread_mutex_destroy(&log_mutex);
-        pthread_mutex_destroy(&pkt_mutex);
+        log_mutex_destory();
     }
 
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
         CRASH_LOG("出现错误, 程序将退出.");
-        pthread_mutex_destroy(&log_mutex);
-        pthread_mutex_destroy(&pkt_mutex);
+        log_mutex_destory();
         (void)getchar();
     }
 

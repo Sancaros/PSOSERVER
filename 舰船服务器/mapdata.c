@@ -799,6 +799,7 @@ bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, si
 //    return 0;
 //}
 
+/* µØÍ¼½âÎöº¯Êı */
 static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     int ep, int alt, int area, sfmt_t* sfmt) {
     int i = 0, j = 0;
@@ -1143,7 +1144,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             break;
 
         case 0x00C0:    /* Dragon or Gal Gryphon */
-            if (ep == 1) {
+            if (ep == GAME_TYPE_EPISODE_1) {
                 gen[count].bp_entry = 0x12;
                 gen[count].rt_index = 0x2C;
             }

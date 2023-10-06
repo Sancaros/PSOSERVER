@@ -25,7 +25,6 @@
 #include <pthread.h>
 #include <GSL.h>
 
-#include <f_logs.h>
 #include <pso_StringReader.h>
 
 #include "item_random.h"

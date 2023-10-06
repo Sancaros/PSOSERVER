@@ -78,10 +78,10 @@
     <ClCompile Include="smutdata.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_handle_dcgcpcv1v2.c">
+    <ClCompile Include="sub_dcgcpcv1v2.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_dcnte.c">
+    <ClCompile Include="sub_dcnte.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="word_select.c">
@@ -99,19 +99,19 @@
     <ClCompile Include="mag_bb.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_send.c">
+    <ClCompile Include="sub_send.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_handle_60.c">
+    <ClCompile Include="sub_60.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_handle_62.c">
+    <ClCompile Include="sub_62.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_handle_6D.c">
+    <ClCompile Include="sub_6D.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_handle.c">
+    <ClCompile Include="sub_hnd.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="enemy_type.c">
@@ -261,6 +261,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="commands_pl_lobby.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lobby_f.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

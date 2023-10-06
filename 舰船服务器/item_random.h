@@ -25,6 +25,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <f_logs.h>
+
 #include <SFMT.h>
 
 #ifdef PACKED
