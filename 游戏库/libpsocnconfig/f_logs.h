@@ -539,6 +539,14 @@ static inline void dropl(const char* message) {
     DROPS_LOG("%s", message);
 }
 
+static inline void mdropl(const char* message) {
+    MDROPS_LOG("%s", message);
+}
+
+static inline void bdropl(const char* message) {
+    BDROPS_LOG("%s", message);
+}
+
 static inline void tradel(const char* message) {
     TRADES_LOG("%s", message);
 }

@@ -1146,7 +1146,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
         //);
         //PICKS_LOG("%s", get_lobby_describe(l));
         //print_item_data(&iitem_data.data, l->version);
-        LOBBY_PICKITEM_LOG(src, pkt->item_id, pkt->area, &iitem_data.data);
+        LOBBY_PICKITEM_LOG(src, item_id, area, &iitem_data.data);
         /* Add the item to the client's inventory. */
         if (!add_iitem(src, iitem_data)) {
             ERR_LOG("%s 拾取物品出错", get_player_describe(src));
@@ -1248,7 +1248,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             //ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
             //ITEM_LOG("%s", get_lobby_describe(l));
             iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
-            LOBBY_MDROPITEM_LOG(p2, mid, pt_index, drop_area, &iitem.data);
+            LOBBY_MOB_DROPITEM_LOG(p2, mid, pt_index, drop_area, &iitem.data);
             if (is_item_empty(&iitem.data)) {
                 ITEM_LOG("未产生掉落");
                 pthread_mutex_unlock(&p2->mutex);
@@ -1299,7 +1299,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         //ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
         //ITEM_LOG("%s", get_lobby_describe(l));
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
-        LOBBY_MDROPITEM_LOG(src, mid, pt_index, drop_area, &iitem.data);
+        LOBBY_MOB_DROPITEM_LOG(src, mid, pt_index, drop_area, &iitem.data);
         if (is_item_empty(&iitem.data)) {
             ITEM_LOG("未产生掉落");
             pthread_mutex_unlock(&src->mutex);
@@ -1450,6 +1450,10 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         else
             iitem.data = on_specialized_box_item_drop(l, &src->sfmt_rng, drop_area,
                 pkt->def[0], pkt->def[1], pkt->def[2]);
+
+
+        LOBBY_BOX_DROPITEM_LOG(src, pkt->request_id, pkt->pt_index, pkt->ignore_def
+            , get_pt_data_area_bb(l->episode, drop_area), &iitem.data);
 
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);
