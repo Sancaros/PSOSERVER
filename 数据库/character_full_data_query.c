@@ -56,7 +56,9 @@ int db_get_orignal_char_full_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t*
         "%s"
         " WHERE "
         "guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'"
+        "AND slot = '%u' "
+        "ORDER BY update_time DESC "
+        "LIMIT 1"
         , CHARACTER_DATA_FULL
         , gc
         , slot
