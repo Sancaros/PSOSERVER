@@ -178,7 +178,7 @@ static void* block_thd(void* d) {
     //char nm[64];
     int sock;
     ssize_t sent;
-    //time_t now;
+    time_t now = 0;
     int numsocks = 1;
     int select_result = 0;
 
@@ -202,6 +202,12 @@ static void* block_thd(void* d) {
 
         /* Ping pong?! */
         srv_time = time(NULL);
+
+        //if (srv_time && srv_time > now + 5) {
+        //    now = srv_time;
+        //    
+        //    printf("±£´æ %d\n", b->num_clients);
+        //}
 
         /* Fill the sockets into the fd_sets so we can use select below. */
         pthread_rwlock_rdlock(&b->lock);

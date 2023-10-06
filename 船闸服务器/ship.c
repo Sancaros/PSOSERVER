@@ -5632,22 +5632,9 @@ static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
     uint16_t flags = ntohs(pkt->hdr.flags);
 
     if (!(flags & SHDR_RESPONSE)) {
-        ERR_LOG("舰船发送了无效的PING响应");
+        update_ship_ipv4(c);
         return send_ping(c, 1);
     }
-
-    //if (p->host4) {
-    //    //DBG_LOG("handle_ship_ping %s %d", p->host4, c->key_idx);
-
-    //    memcpy(c->remote_host4, p->host4, sizeof(c->remote_host4));
-    //    update_ship_ipv4(c);
-    //}
-#ifdef DEBUG
-
-    DBG_LOG("handle_ship_ping %s %d", c->remote_host4, c->key_idx);
-
-#endif // DEBUG
-    update_ship_ipv4(c);
 
     return 0;
 }

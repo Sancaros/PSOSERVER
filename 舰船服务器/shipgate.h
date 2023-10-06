@@ -93,10 +93,10 @@ int shipgate_reconnect(shipgate_conn_t *conn);
 void shipgate_cleanup(shipgate_conn_t *c);
 
 /* Read data from the shipgate. */
-int shipgate_process_pkt(shipgate_conn_t *c);
+int process_shipgate_pkt(shipgate_conn_t *c);
 
 /* Send any piled up data. */
-int shipgate_send_pkts(shipgate_conn_t *c);
+int send_shipgate_pkts(shipgate_conn_t *c);
 
 /* Send a newly opened ship's information to the shipgate. */
 int shipgate_send_ship_info(shipgate_conn_t *c, ship_t *ship);

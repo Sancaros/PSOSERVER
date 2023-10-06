@@ -3085,7 +3085,9 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
 
     if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
         DBG_LOG("是否是NPC用了物品？");
+#endif // DEBUG
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
@@ -5173,7 +5175,9 @@ static int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
         DBG_LOG("是否是NPC用了物品？");
+#endif // DEBUG
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 

@@ -356,8 +356,6 @@ int send_ping(ship_t* c, int reply) {
     pkt->hdr.reserved = 0;
     pkt->hdr.version = 0;
 
-    //DBG_LOG("%s", c->remote_host4);
-
     if (reply)
         pkt->hdr.flags = htons(SHDR_RESPONSE);
     else

@@ -144,7 +144,7 @@ static void* ship_thd(void* d) {
     char ipstr[INET6_ADDRSTRLEN];
     int sock, rv;
     ssize_t sent;
-    time_t now;
+    time_t now = 0;
     time_t last_ban_sweep = time(NULL);
     uint32_t numsocks = 1;
     psocn_event_t* event, * oldevent = s->cfg->events;
@@ -182,28 +182,34 @@ static void* ship_thd(void* d) {
         FD_ZERO(&exceptfds);
         timeout.tv_sec = 30;
         timeout.tv_usec = 0;
-        now = time(NULL);
+
+        /* Ping pong?! */
+        srv_time = time(NULL);
 
         /* Break out if we're shutting down now */
-        if (s->shutdown_time && s->shutdown_time <= now) {
+        if (s->shutdown_time && s->shutdown_time <= srv_time) {
             s->run = 0;
             break;
         }
 
+        if (srv_time && srv_time > now + 5) {
+            now = srv_time;
+            shipgate_send_ping(&s->sg, 0);
+        }
+
         /* If we haven't swept the bans list in the last day, do it now. */
-        if ((last_ban_sweep + 3600 * 24) <= now) {
+        if ((last_ban_sweep + 3600 * 24) <= srv_time) {
             ban_sweep(s);
-            last_ban_sweep = now = time(NULL);
+            last_ban_sweep = srv_time = time(NULL);
         }
 
         /* If the shipgate isn't there, attempt to reconnect */
-        if (s->sg.sock == SOCKET_ERROR && s->sg.login_attempt < now) {
+        if (s->sg.sock == SOCKET_ERROR && s->sg.login_attempt < srv_time) {
             if (shipgate_reconnect(&s->sg)) {
                 /* Set the next login attempt to ~15 seconds from now... */
-                s->sg.login_attempt = now + 14;
+                s->sg.login_attempt = srv_time + 14;
                 timeout.tv_sec = 15;
-            }
-            else {
+            } else {
                 s->sg.login_attempt = 0;
             }
         }
@@ -232,19 +238,19 @@ static void* ship_thd(void* d) {
 
             /* If we haven't heard from a client in 2 minutes, its dead.
                Disconnect it. */
-            if (now > it->last_message + 120) {
+            if (srv_time > it->last_message + 120) {
                 it->flags |= CLIENT_FLAG_DISCONNECTED;
                 continue;
             }
             /* Otherwise, if we haven't heard from them in a minute, ping it. */
-            else if (now > it->last_message + 60 && now > it->last_sent + 10) {
+            else if (srv_time > it->last_message + 60 && srv_time > it->last_sent + 10) {
                 if (send_simple(it, PING_TYPE, 0)) {
                     ERR_LOG("一分钟内未接收数据反馈,则断开其连接.");
                     it->flags |= CLIENT_FLAG_DISCONNECTED;
                     continue;
                 }
 
-                it->last_sent = now;
+                it->last_sent = srv_time;
             }
 
             FD_SET(it->sock, &readfds);
@@ -291,8 +297,8 @@ static void* ship_thd(void* d) {
 
         /* If we're supposed to shut down soon, make sure we aren't in the
            middle of a select still when its supposed to happen. */
-        if (s->shutdown_time && now + timeout.tv_sec > s->shutdown_time) {
-            timeout.tv_sec = (long)(s->shutdown_time - now);
+        if (s->shutdown_time && srv_time + timeout.tv_sec > s->shutdown_time) {
+            timeout.tv_sec = (long)(s->shutdown_time - srv_time);
         }
 
         /* Wait for some activity... */
@@ -477,7 +483,7 @@ static void* ship_thd(void* d) {
 
             /* Process the shipgate */
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &readfds)) {
-                if ((rv = shipgate_process_pkt(&s->sg))) {
+                if ((rv = process_shipgate_pkt(&s->sg))) {
                     ERR_LOG("%s: 失去与船闸的连接1 rv = %d",
                         s->cfg->ship_name, rv);
 
@@ -498,7 +504,7 @@ static void* ship_thd(void* d) {
             }
 
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &writefds)) {
-                if (rv = shipgate_send_pkts(&s->sg)) {
+                if (rv = send_shipgate_pkts(&s->sg)) {
                     ERR_LOG("%s: 失去与船闸的连接2 rv = %d",
                         s->cfg->ship_name, rv);
 

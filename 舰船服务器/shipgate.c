@@ -3519,7 +3519,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 }
 
 /* 从船闸服务器读取数据流. */
-int shipgate_process_pkt(shipgate_conn_t* c) {
+int process_shipgate_pkt(shipgate_conn_t* c) {
     __try {
         ssize_t sz;
         ssize_t pkt_sz;
@@ -3655,7 +3655,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 }
 
 /* Send any piled up data. */
-int shipgate_send_pkts(shipgate_conn_t* c) {
+int send_shipgate_pkts(shipgate_conn_t* c) {
     __try {
         ssize_t amt;
 

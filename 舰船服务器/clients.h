@@ -178,43 +178,59 @@ typedef struct client_options {
 struct ship_client {
     TAILQ_ENTRY(ship_client) qentry;
 
+    // 数据包处理
     pthread_mutex_t mutex;
     pkt_header_t pkt;
     sfmt_t sfmt_rng;
-
     uint16_t(*pkt_size)(const pkt_header_t* hdr, int version);
 
+    // 加密处理
     CRYPT_SETUP ckey;
     CRYPT_SETUP skey;
 
-    int version;
+    // 网络相关
     int sock;
+    struct sockaddr_storage ip_addr;
+
+    // 通用属性
+    int version;
     int hdr_size;
     uint32_t client_id;
+    uint32_t privilege;
 
-    int language_code;
-    int cur_area;
     int recvbuf_cur;
     int recvbuf_size;
-
     int sendbuf_cur;
     int sendbuf_size;
     int sendbuf_start;
-    int item_count;
 
-    int autoreply_len;
+    // 玩家坐标信息
     int lobby_id;
-
+    int cur_area;
     float x;
     float y;
     float z;
     float w;
 
-    struct sockaddr_storage ip_addr;
+    // 掉落坐标信息
+    float drop_x;
+    float drop_z;
+    uint32_t drop_area;
+    uint32_t drop_item_id;
+    uint32_t drop_amt;
 
+    // 用户认证
     char username[48];
     char password[48];
 
+    // 时间信息
+    time_t last_message;
+    time_t last_sent;
+    time_t join_time;
+    time_t login_time;
+    time_t save_time;
+
+    uint8_t equip_flags;
     uint32_t guildcard;
     uint32_t menu_id;
     uint32_t preferred_lobby_id;
@@ -222,91 +238,34 @@ struct ship_client {
     uint32_t arrow_color;
     uint32_t blocklist_size;
     uint32_t option_flags;
-
-    uint32_t ignore_list[CLIENT_IGNORE_LIST_SIZE];
-    uint32_t blacklist[CLIENT_BLACKLIST_SIZE];
-    blocklist_t *blocklist;
-
     uint32_t last_info_req;
 
-    float drop_x;
-    float drop_z;
-    uint32_t drop_area;
-    uint32_t drop_item_id;
-    uint32_t drop_amt;
+    int autoreply_len;
+    uint8_t autoreply_on;
 
-    uint32_t privilege;
+    int language_code;
     uint8_t cc_char;
     uint8_t q_lang;
-    uint8_t autoreply_on;
     uint16_t quest_item_id;
-    bool reset_quest;
 
-    client_options_t options;
-
-    uint8_t equip_flags;
+    int item_count;
     item_t new_item;
     iitem_t iitems[30]; //通常用于存储非BB版本的物品数据
 
-    int isvip;
-
-    block_t *cur_block;
-    lobby_t *cur_lobby;
-    player_t *pl;
-
-    unsigned char *recvbuf;
-    unsigned char *sendbuf;
-    void *autoreply;
-    FILE *logfile;
-
-    char *infoboard;                    /* Points into the player struct. */
-
+    // 其他游戏相关属性
+    bool isvip;
+    bool can_chat; //控制玩家是否可以说话的开关
+    bool bank_type;
+    bool need_save_data;
+    bool guild_accept;
+    bool guild_master_exfer;
+    bool reset_quest;
     int mode;                           // 通常为0 只有在挑战模式和对战模式才会发生改变
     uint32_t mode_semi_item_id;         /* 用于记录S武器占位的ID值 */
     uint8_t ch_class;/* 测试用 */
-    record_data_t* records;              /* 指向玩家挑战/对战结构体的指针. */
-    psocn_mode_char_t* mode_pl;
-
-    lobby_t *create_lobby;
-
-    uint32_t *next_maps;
-    uint32_t *enemy_kills;
-    psocn_limits_t *limits;
-    xbox_ip_t *xbl_ip;
-
-    time_t last_message;
-    time_t last_sent;
-    time_t join_time;
-    time_t login_time;
-    time_t save_time;
-
-    bool need_save_data;
-
-    bb_client_config_pkt sec_data;
-    psocn_bb_db_char_t *bb_pl;
-    psocn_bb_db_opts_t *bb_opts;
-    bool guild_accept;
-    bool guild_master_exfer;
     uint32_t guild_points_personal_donation;
-    psocn_bb_db_guild_t *bb_guild;
-
-    sg_char_bkup_pkt game_info;
-
-    client_game_data_t *game_data;
-
-    bool bank_type;
-    psocn_bank_t* common_bank;
-    psocn_bank_t* char_bank;
-
-    time_t cmd_cooldown[256];
-    time_t subcmd_cooldown[256];
-    time_t guild_cooldown[32];
-
-    bb_switch_changed_t last_switch_enabled_command;
-    bool can_chat; //控制玩家是否可以说话的开关
 
     int script_ref;
-    uint64_t aoe_timer;
 
     uint32_t q_stack[CLIENT_MAX_QSTACK];
     int q_stack_top;
@@ -314,7 +273,53 @@ struct ship_client {
     uint32_t p2_drops[30];
     uint32_t p2_drops_max;
 
-    lobby_t *lobby_req;
+    // 选项和限制性设置
+    uint64_t aoe_timer;
+    time_t cmd_cooldown[256];
+    time_t subcmd_cooldown[256];
+    time_t guild_cooldown[32];
+    uint32_t ignore_list[CLIENT_IGNORE_LIST_SIZE];
+    uint32_t blacklist[CLIENT_BLACKLIST_SIZE];
+    bb_switch_changed_t last_switch_enabled_command;
+    bb_client_config_pkt sec_data;
+    sg_char_bkup_pkt game_info;
+    client_options_t options;
+    /// <summary>
+    /// ////////////////////////////////////////
+    /// 以下为动态内存区域 请勿移至上方 避免内存错乱
+    /// </summary>
+
+    // 选项和限制性设置
+    void* autoreply;
+    char* infoboard;                    /* Points into the player struct. */
+    blocklist_t* blocklist;
+    psocn_limits_t* limits;
+    xbox_ip_t* xbl_ip;
+
+    // 记录和挑战模式信息
+    record_data_t* records;              /* 指向玩家挑战/对战结构体的指针. */
+    psocn_mode_char_t* mode_pl;
+
+    // 游戏数据存储
+    uint32_t* next_maps;
+    uint32_t* enemy_kills;
+    psocn_bank_t* common_bank;
+    psocn_bank_t* char_bank;
+    psocn_bb_db_opts_t* bb_opts;
+    psocn_bb_db_guild_t* bb_guild;
+    client_game_data_t* game_data;
+
+    block_t* cur_block;
+    lobby_t* cur_lobby;
+    lobby_t* create_lobby;
+    lobby_t* lobby_req;
+    player_t* pl;
+    psocn_bb_db_char_t* bb_pl;
+
+    // 文件和缓冲区
+    FILE* logfile;
+    unsigned char* recvbuf;
+    unsigned char* sendbuf;
 
 #ifdef DEBUG
     uint8_t sdrops_ver;
