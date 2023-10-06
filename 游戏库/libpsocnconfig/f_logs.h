@@ -86,6 +86,9 @@ enum Log_files_Num {
     DROP_LOG = 8, //½¢´¬
     MDROP_LOG = 8, //½¢´¬
     BDROP_LOG = 8, //½¢´¬
+    TEKK_LOG = 8, //½¢´¬
+    BANKD_LOG = 8, //½¢´¬
+    BANKT_LOG = 8, //½¢´¬
 };
 
 typedef struct log_map {
@@ -127,6 +130,9 @@ static log_map_st log_header[] = {
     { DROP_LOG,			    "µôÂä" }, //½¢´¬
     { MDROP_LOG,			"¹Öµô" }, //½¢´¬
     { BDROP_LOG,			"Ïäµô" }, //½¢´¬
+    { TEKK_LOG,			    "¼ø¶¨" }, //½¢´¬
+    { BANKD_LOG,			"ÒøÈ¡" }, //½¢´¬
+    { BANKT_LOG,			"Òø´æ" }, //½¢´¬
 };
 
 /////////////////////////////////////////
@@ -303,6 +309,27 @@ do { \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
     flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define BANK_DEPOSIT_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, BANKD_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define BANK_TAKE_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, BANKT_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define TEKKS_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, TEKK_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 

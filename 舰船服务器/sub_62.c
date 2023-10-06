@@ -1229,24 +1229,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            //if (pt_index != enemy->rt_index) {
-            //    //ERR_LOG("命令参数 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
-            //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
-            //    pt_index = enemy->rt_index;
-
-            //    //DBG_LOG("修正 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
-            //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
-            //}
-            //ITEM_LOG("-----------------第 %d 个怪物掉落情况----------------- ", mid);
-            //ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max:%d)!"
-            //    , get_player_describe(p2)
-            //    , get_section_describe(p2, section, true)
-            //    , drop_area
-            //    , mid
-            //    , l->map_enemies->enemy_count
-            //);
-            //ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
-            //ITEM_LOG("%s", get_lobby_describe(l));
             iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
             LOBBY_MOB_DROPITEM_LOG(p2, mid, pt_index, drop_area, &iitem.data);
             if (is_item_empty(&iitem.data)) {
@@ -1280,24 +1262,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
 
-        //if (pt_index != enemy->rt_index) {
-        //    //ERR_LOG("命令参数 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
-        //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
-        //    enemy->rt_index = pt_index;
-        //    //DBG_LOG("修正 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
-        //    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
-        //}
-
-        //ITEM_LOG("-----------------第 %d 个怪物掉落情况----------------- ", mid);
-        //ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max: %d, 任务 %" PRIu32 ")!"
-        //    , get_player_describe(src)
-        //    , get_section_describe(src, section, true)
-        //    , drop_area
-        //    , mid
-        //    , l->map_enemies->enemy_count
-        //    , l->qid);
-        //ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
-        //ITEM_LOG("%s", get_lobby_describe(l));
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
         LOBBY_MOB_DROPITEM_LOG(src, mid, pt_index, drop_area, &iitem.data);
         if (is_item_empty(&iitem.data)) {
@@ -1315,6 +1279,24 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         }
 
 #ifdef DEBUG
+        //if (pt_index != enemy->rt_index) {
+//    //ERR_LOG("命令参数 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
+//    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
+//    enemy->rt_index = pt_index;
+//    //DBG_LOG("修正 pt_index %d != rt_index %d 与实体的预期不匹配 entity_id %04X enemy->bp_entry 0x%02X",
+//    //    pt_index, enemy->rt_index, mid, enemy->bp_entry);
+//}
+
+//ITEM_LOG("-----------------第 %d 个怪物掉落情况----------------- ", mid);
+//ITEM_LOG("%s %s 区域 %d 怪物掉落 (%d -- max: %d, 任务 %" PRIu32 ")!"
+//    , get_player_describe(src)
+//    , get_section_describe(src, section, true)
+//    , drop_area
+//    , mid
+//    , l->map_enemies->enemy_count
+//    , l->qid);
+//ITEM_LOG("%s", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));
+//ITEM_LOG("%s", get_lobby_describe(l));
         print_item_data(&lt->iitem.data, l->version);
 #endif // DEBUG
 
@@ -1409,6 +1391,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 iitem.data = on_specialized_box_item_drop(l, &p2->sfmt_rng, drop_area,
                     pkt->def[0], pkt->def[1], pkt->def[2]);
 
+            LOBBY_BOX_DROPITEM_LOG(p2, pkt->request_id, pkt->pt_index, pkt->ignore_def
+                , get_pt_data_area_bb(l->episode, drop_area), &iitem.data);
+
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
@@ -1425,13 +1410,12 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             }
 
 #ifdef DEBUG
-            print_item_data(&iitem.data, l->version);
-#endif // DEBUG
             ITEM_LOG("%s %s 请求ignore_def %d 区域 %d 箱子掉落 (任务=%" PRIu32 ")!"
-                , get_player_describe(p2)
+            , get_player_describe(p2)
                 , get_section_describe(p2, section, false), pkt->ignore_def, pkt->area, l->qid);
             ITEM_LOG("%s", get_lobby_describe(l));
             print_item_data(&lt->iitem.data, l->version);
+#endif // DEBUG
 
             rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
@@ -1471,13 +1455,12 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         }
 
 #ifdef DEBUG
-        print_item_data(&iitem.data, l->version);
-#endif // DEBUG
         ITEM_LOG("%s %s 请求ignore_def %d 区域 %d 箱子掉落 (任务=%" PRIu32 ")!"
             , get_player_describe(src)
             , get_section_describe(src, section, false), pkt->ignore_def, pkt->area, l->qid);
         ITEM_LOG("%s", get_lobby_describe(l));
         print_item_data(&lt->iitem.data, l->version);
+#endif // DEBUG
 
         rv = subcmd_send_lobby_bb_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
@@ -1987,6 +1970,8 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     src->drop_item_id = src->game_data->identify_result.data.item_id;
     src->drop_amt = 1;
 
+    LOBBY_TEKKITEM_LOG(src, item_id, src->cur_area, &id_result->data);
+
     if (src->game_data->gm_debug)
         print_item_data(&src->game_data->identify_result.data, src->version);
 
@@ -2015,6 +2000,8 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     //id_result->data.item_id = generate_item_id(l, src->client_id);
+
+    LOBBY_TEKKITEM_LOG(src, pkt->item_id, src->cur_area, &id_result.data);
 
     if (!add_iitem(src, id_result)) {
         ERR_LOG("%s 背包空间不足, 无法获得物品!",
@@ -2129,6 +2116,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
+            LOBBY_BANK_DEPOSIT_ITEM_LOG(src, item_id, src->cur_area, &iitem.data);
             if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
                 ERR_LOG("%s 移除了不存在于背包的物品!", get_player_describe(src));
                 return -3;
@@ -2180,6 +2168,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* 尝试从银行中取出物品. */
             bitem = remove_bitem(src, item_id, pkt_bitem_index, pkt_item_amt);
+            LOBBY_BANK_TAKE_ITEM_LOG(src, item_id, src->cur_area, &bitem.data);
             if (&bitem == NULL) {
                 ERR_LOG("%s 从银行中取出无效物品!", get_player_describe(src));
                 return -9;

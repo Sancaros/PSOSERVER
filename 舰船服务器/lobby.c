@@ -322,8 +322,7 @@ char* get_lobby_describe(lobby_t* l) {
             , l->qid
             , l->event
         );
-
-        printf("%s\n", new_str);
+        //printf("%s\n", new_str);
     }
 
     return lobby_des;

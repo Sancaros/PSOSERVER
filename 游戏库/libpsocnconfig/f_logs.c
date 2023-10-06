@@ -543,7 +543,7 @@ void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
 	//strcpy(logfile, "Log\\");
-	sprintf(logdir, "Error\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	sprintf(logdir, "Log\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	if (!_mkdir(logdir)) {
 		//printf("%u年%02u月%02u日 日志目录创建成功", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
