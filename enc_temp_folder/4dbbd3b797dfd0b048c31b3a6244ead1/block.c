@@ -999,7 +999,7 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
         return LOBBY_FLAG_ERROR_ADD_CLIENT;
     }
 
-    player_class_tag_item_equip_flag(c);
+    item_class_tag_equip_flag(c);
 
     /* See if they can change lobbies... */
     rv = lobby_change_lobby(c, l);

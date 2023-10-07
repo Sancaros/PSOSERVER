@@ -1124,6 +1124,8 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     uint32_t v;
     int i, version = c->version;
 
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
     pthread_mutex_lock(&c->mutex);
 
     /* 要完善更合理的角色数据检测...
@@ -1294,97 +1296,97 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     return 0;
 }
 
-/* 0x0098 输出完整玩家角色*/
-static int bb_process_char_leave_game(ship_client_t* c, bb_char_data_pkt* pkt) {
-    uint16_t type = LE16(pkt->hdr.pkt_type);
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint32_t v;
-    int i, version = c->version;
-
-    pthread_mutex_lock(&c->mutex);
-
-    /* 要完善更合理的角色数据检测...
-       TODO: This should probably be more thorough and done as part of the
-       client_check_character() function. */
-       /* If they already had character data, then check if it's still sane. */
-    if (c->pl->bb.character.dress_data.gc_string[0]) {
-        i = client_check_character(c, &pkt->data, version);
-        if (i) {
-            pthread_mutex_unlock(&c->mutex);
-
-            ERR_LOG("%s[舰仓%02d]: %s 角色数据检查失败 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
-                get_player_describe(c), i);
-            if (c->cur_lobby) {
-                ERR_LOG("%s[舰仓%02d]: %s", ship->cfg->ship_name, c->cur_block->b,
-                    get_lobby_describe(c->cur_lobby));
-            }
-            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
-                "\tE\tC7请将这条信息上报至管理员处.\n\n"
-                "\tE\tC7QQ群:901650349")
-            );
-            return -1;
-        }
-    }
-
-    v = LE32(pkt->data.bb.character.disp.level + 1);
-    if (v > MAX_PLAYER_LEVEL) {
-        pthread_mutex_unlock(&c->mutex);
-        send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
-            "\tE\tC7请将这条信息上报至管理员处.\n\n"
-            "\tE\tC7QQ群:901650349")
-        );
-        ERR_LOG("%s[舰仓%02d]: 检测到 %s 无效级别的角色! 等级: %" PRIu32 "",
-            ship->cfg->ship_name, c->cur_block->b,
-            get_player_describe(c), v);
-        return -1;
-    }
-
-    if (pkt->data.bb.autoreply[0]) {
-        /* 复制自动回复数据 */
-        client_set_autoreply(c, pkt->data.bb.autoreply,
-            len - 4 - sizeof(bb_player_t));
-    }
-
-    /* 复制玩家数据至统一结构, 并设置指针. */
-    memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
-    /* 初始化 模式角色数据 */
-    memset(&c->mode_pl->bb, 0, PSOCN_STLENGTH_BB_CHAR2);
-    c->infoboard = (char*)c->pl->bb.infoboard;
-    if (!&c->pl->bb.records) {
-        c->records->bb = c->pl->bb.records;
-        //c->records->bb.challenge.title_color = encode_xrgb1555(c->pl->bb.records.challenge.title_color);
-        //c->records->bb.challenge.rank_title = encrypt_challenge_rank_text()
-    }
-    memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
-
-    /* 将背包数据复制至玩家数据结构中 */
-    memcpy(c->iitems, c->pl->bb.character.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
-    c->item_count = (int)c->pl->bb.character.inv.item_count;
-
-    /* 测试用 */
-    c->ch_class = c->pl->bb.character.dress_data.ch_class;
-    /* 更新玩家用药情况 */
-    update_bb_mat_use(c);
-
-#ifdef DEBUG
-
-    DBG_LOG("c->ch_class %d", c->ch_class);
-
-#endif // DEBUG
-
-    /* 重新对库存数据进行编号, 以便后期进行数据交换 */
-    for (i = 0; i < c->item_count; ++i) {
-        v = 0x00210000 | i;
-        c->iitems[i].data.item_id = LE32(v);
-    }
-
-    /* Remove the client from the lobby they're in, which will force the
-       0x84 sent later to act like we're adding them to any lobby
-        将客户端从其所在的大厅中删除，
-        这将强制稍后发送的0x84表现为我们正在将其添加到任何大厅中 . */
-    pthread_mutex_unlock(&c->mutex);
-    return lobby_remove_player_bb(c);
-}
+///* 0x0098 输出完整玩家角色*/
+//static int bb_process_char_leave_game(ship_client_t* c, bb_char_data_pkt* pkt) {
+//    uint16_t type = LE16(pkt->hdr.pkt_type);
+//    uint16_t len = LE16(pkt->hdr.pkt_len);
+//    uint32_t v;
+//    int i, version = c->version;
+//
+//    pthread_mutex_lock(&c->mutex);
+//
+//    /* 要完善更合理的角色数据检测...
+//       TODO: This should probably be more thorough and done as part of the
+//       client_check_character() function. */
+//       /* If they already had character data, then check if it's still sane. */
+//    if (c->pl->bb.character.dress_data.gc_string[0]) {
+//        i = client_check_character(c, &pkt->data, version);
+//        if (i) {
+//            pthread_mutex_unlock(&c->mutex);
+//
+//            ERR_LOG("%s[舰仓%02d]: %s 角色数据检查失败 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
+//                get_player_describe(c), i);
+//            if (c->cur_lobby) {
+//                ERR_LOG("%s[舰仓%02d]: %s", ship->cfg->ship_name, c->cur_block->b,
+//                    get_lobby_describe(c->cur_lobby));
+//            }
+//            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
+//                "\tE\tC7请将这条信息上报至管理员处.\n\n"
+//                "\tE\tC7QQ群:901650349")
+//            );
+//            return -1;
+//        }
+//    }
+//
+//    v = LE32(pkt->data.bb.character.disp.level + 1);
+//    if (v > MAX_PLAYER_LEVEL) {
+//        pthread_mutex_unlock(&c->mutex);
+//        send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
+//            "\tE\tC7请将这条信息上报至管理员处.\n\n"
+//            "\tE\tC7QQ群:901650349")
+//        );
+//        ERR_LOG("%s[舰仓%02d]: 检测到 %s 无效级别的角色! 等级: %" PRIu32 "",
+//            ship->cfg->ship_name, c->cur_block->b,
+//            get_player_describe(c), v);
+//        return -1;
+//    }
+//
+//    if (pkt->data.bb.autoreply[0]) {
+//        /* 复制自动回复数据 */
+//        client_set_autoreply(c, pkt->data.bb.autoreply,
+//            len - 4 - sizeof(bb_player_t));
+//    }
+//
+//    /* 复制玩家数据至统一结构, 并设置指针. */
+//    memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
+//    /* 初始化 模式角色数据 */
+//    memset(&c->mode_pl->bb, 0, PSOCN_STLENGTH_BB_CHAR2);
+//    c->infoboard = (char*)c->pl->bb.infoboard;
+//    if (!&c->pl->bb.records) {
+//        c->records->bb = c->pl->bb.records;
+//        //c->records->bb.challenge.title_color = encode_xrgb1555(c->pl->bb.records.challenge.title_color);
+//        //c->records->bb.challenge.rank_title = encrypt_challenge_rank_text()
+//    }
+//    memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
+//
+//    /* 将背包数据复制至玩家数据结构中 */
+//    memcpy(c->iitems, c->pl->bb.character.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
+//    c->item_count = (int)c->pl->bb.character.inv.item_count;
+//
+//    /* 测试用 */
+//    c->ch_class = c->pl->bb.character.dress_data.ch_class;
+//    /* 更新玩家用药情况 */
+//    update_bb_mat_use(c);
+//
+//#ifdef DEBUG
+//
+//    DBG_LOG("c->ch_class %d", c->ch_class);
+//
+//#endif // DEBUG
+//
+//    /* 重新对库存数据进行编号, 以便后期进行数据交换 */
+//    for (i = 0; i < c->item_count; ++i) {
+//        v = 0x00210000 | i;
+//        c->iitems[i].data.item_id = LE32(v);
+//    }
+//
+//    /* Remove the client from the lobby they're in, which will force the
+//       0x84 sent later to act like we're adding them to any lobby
+//        将客户端从其所在的大厅中删除，
+//        这将强制稍后发送的0x84表现为我们正在将其添加到任何大厅中 . */
+//    pthread_mutex_unlock(&c->mutex);
+//    return lobby_remove_player_bb(c);
+//}
 
 /* Process a client's done bursting signal. */
 static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
@@ -3518,7 +3520,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
             /* 0x0098 152*/
         case LEAVE_GAME_PL_DATA_TYPE:
-            return bb_process_char_leave_game(c, (bb_char_data_pkt*)pkt);
+            return bb_process_char(c, (bb_char_data_pkt*)pkt);
 
             /* 0x00A0 160*/
         case SHIP_LIST_TYPE:

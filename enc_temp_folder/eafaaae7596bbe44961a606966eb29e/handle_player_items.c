@@ -2385,7 +2385,7 @@ int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
 }
 
 /* 给客户端标记可穿戴职业装备的标签 */
-void player_class_tag_item_equip_flag(ship_client_t* c) {
+void item_class_tag_equip_flag(ship_client_t* c) {
     psocn_bb_char_t* character = get_client_char_bb(c);
     c->equip_flags = class_equip_flags[character->dress_data.ch_class];
 }
