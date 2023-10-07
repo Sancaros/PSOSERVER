@@ -46,8 +46,12 @@
 
 #define PSOCN_STLENGTH_BB_CHAR              400
 #define PSOCN_STLENGTH_BB_CHAR2             1244
+#define PSOCN_STLENGTH_BB_CHAR_CONFIG       232
+
 #define PSOCN_STLENGTH_BB_KEY_CONFIG        420
-#define PSOCN_STLENGTH_BB_GUILD             2108
+#define PSOCN_STLENGTH_BB_KEY_CONFIG_KB     364
+#define PSOCN_STLENGTH_BB_KEY_CONFIG_JOY    56
+
 #define PSOCN_STLENGTH_BB_GC                264
 #define PSOCN_STLENGTH_BB_GC_DATA           54672
 #define PSOCN_STLENGTH_BB_DB_OPTS           4448
@@ -59,6 +63,10 @@
 #define PSOCN_STLENGTH_BB_DB_AUTOREPLY      344
 #define PSOCN_STLENGTH_BB_DB_INFOBOARD      344
 #define PSOCN_STLENGTH_BB_TECH              20
+
+
+#define PSOCN_STLENGTH_BB_GUILD             2108
+#define PSOCN_STLENGTH_BB_GUILD_NAME        32
 
 /////////////////////////////////////////////////////////////////////////
 /////

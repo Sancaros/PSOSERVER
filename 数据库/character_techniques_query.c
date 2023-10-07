@@ -20,7 +20,7 @@
 
 #define TABLE1 CHARACTER_TECHNIQUES
 
-static int db_insert_techniques(techniques_t* tech_data, uint32_t gc, uint32_t slot) {
+static int db_insert_techniques(techniques_t tech_data, uint32_t gc, uint32_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO %s "
@@ -36,9 +36,9 @@ static int db_insert_techniques(techniques_t* tech_data, uint32_t gc, uint32_t s
         ")",
         TABLE1,
         gc, slot,
-        tech_data->all[0], tech_data->all[1], tech_data->all[2], tech_data->all[3], tech_data->all[4], tech_data->all[5], tech_data->all[6],
-        tech_data->all[7], tech_data->all[8], tech_data->all[9], tech_data->all[10], tech_data->all[11], tech_data->all[12], tech_data->all[13],
-        tech_data->all[14], tech_data->all[15], tech_data->all[16], tech_data->all[17], tech_data->all[18], tech_data->all[19]
+        tech_data.all[0], tech_data.all[1], tech_data.all[2], tech_data.all[3], tech_data.all[4], tech_data.all[5], tech_data.all[6],
+        tech_data.all[7], tech_data.all[8], tech_data.all[9], tech_data.all[10], tech_data.all[11], tech_data.all[12], tech_data.all[13],
+        tech_data.all[14], tech_data.all[15], tech_data.all[16], tech_data.all[17], tech_data.all[18], tech_data.all[19]
     );
 
     //DBG_LOG("保存角色更衣室数据 %d", dress_data->create_code);
@@ -54,7 +54,7 @@ static int db_insert_techniques(techniques_t* tech_data, uint32_t gc, uint32_t s
     return 0;
 }
 
-static int db_update_techniques(techniques_t* tech_data, uint32_t gc, uint32_t slot) {
+static int db_update_techniques(techniques_t tech_data, uint32_t gc, uint32_t slot) {
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -65,9 +65,9 @@ static int db_update_techniques(techniques_t* tech_data, uint32_t gc, uint32_t s
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
         TABLE1,
-        tech_data->all[0], tech_data->all[1], tech_data->all[2], tech_data->all[3], tech_data->all[4], tech_data->all[5], tech_data->all[6],
-        tech_data->all[7], tech_data->all[8], tech_data->all[9], tech_data->all[10], tech_data->all[11], tech_data->all[12], tech_data->all[13],
-        tech_data->all[14], tech_data->all[15], tech_data->all[16], tech_data->all[17], tech_data->all[18], tech_data->all[19]
+        tech_data.all[0], tech_data.all[1], tech_data.all[2], tech_data.all[3], tech_data.all[4], tech_data.all[5], tech_data.all[6],
+        tech_data.all[7], tech_data.all[8], tech_data.all[9], tech_data.all[10], tech_data.all[11], tech_data.all[12], tech_data.all[13],
+        tech_data.all[14], tech_data.all[15], tech_data.all[16], tech_data.all[17], tech_data.all[18], tech_data.all[19]
         , gc, slot
     );
 
@@ -123,7 +123,7 @@ static int db_del_techniques(uint32_t gc, uint32_t slot) {
     return 0;
 }
 
-int db_update_char_techniques(techniques_t* tech_data, uint32_t gc, uint32_t slot, uint32_t flag) {
+int db_update_char_techniques(techniques_t tech_data, uint32_t gc, uint32_t slot, uint32_t flag) {
 
     memset(myquery, 0, sizeof(myquery));
 

@@ -34,6 +34,7 @@
 #include <pso_pack.h>
 
 static uint8_t sendbuf[MAX_PACKET_BUFF];
+bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 /* 获取 sendbuf 动态内存数据. */
 uint8_t* get_sg_sendbuf(void) {
@@ -1150,18 +1151,18 @@ int send_pl_lvl_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
 int send_player_max_tech_level_table_bb(ship_t* c) {
     int i;
 
-    bb_max_tech_level_t* bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_PLAYER_TECHNIQUES);
+    //bb_max_tech_level_t* bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_PLAYER_TECHNIQUES);
 
-    if (!bb_max_tech_level)
-        return 0;
+    //if (!bb_max_tech_level)
+    //    return 0;
 
-    if (read_player_max_tech_level_table_bb(bb_max_tech_level)) {
+    if (read_player_max_tech_level_table_bb(max_tech_level)) {
         ERR_LOG("无法读取 Blue Burst 法术等级数据表");
         return -2;
     }
 
-    i = send_max_tech_lvl_bb(c, bb_max_tech_level);
-    free_safe(bb_max_tech_level);
+    i = send_max_tech_lvl_bb(c, max_tech_level);
+    //free_safe(bb_max_tech_level);
 
     return i;
 }

@@ -499,11 +499,99 @@ ship_client_t* client_create_connection(int sock, int version, int type,
     }
 }
 
+void client_send_bb_data(ship_client_t* c) {
+    __try {
+        int i = 0;
+        time_t now = time(NULL);
+
+        uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
+
+        /* If the client was on Blue Burst, update their db character */
+        if (c->version == CLIENT_VERSION_BB &&
+            !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
+
+            c->need_save_data = false;
+
+            /* 将游戏时间存储入人物数据 */
+            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+
+            c->save_time = now;
+
+#ifdef DEBUG
+            DBG_LOG("mode %d", c->mode);
+            fix_client_inv(&c->bb_pl->character.inv);
+            fix_equip_item(&c->bb_pl->character.inv);
+
+#endif // DEBUG
+
+            if (!c->mode) {
+                for (i = 0; i < c->bb_pl->character.inv.item_count; i++) {
+                    if (c->bb_pl->character.inv.iitems[i].present == LE16(0x0002)) {
+                        c->bb_pl->character.inv.iitems[i].flags = LE32(0x00000008);
+                    }
+                    else {
+                        c->bb_pl->character.inv.iitems[i].present = LE16(0x0001);
+                        c->bb_pl->character.inv.iitems[i].flags = LE32(0x00000000);
+                    }
+                    c->bb_pl->character.inv.iitems[i].data.item_id = EMPTY_STRING;
+                }
+
+                /* 检测玩家的魔法是否合规 */
+                if (!char_class_is_android(c->equip_flags)) {
+                    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+                        if (c->bb_pl->character.tech.all[i] == 0xFF)
+                            continue;
+
+                        if (c->bb_pl->character.tech.all[i] + 1 > get_bb_max_tech_level(c, i)) {
+                            c->bb_pl->character.tech.all[i] = 0xFF;
+                            /* 移除不合规的法术 */
+                            ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
+                                , get_player_describe(c)
+                                , get_technique_comment(i), c->bb_pl->character.tech.all[i] + 1
+                                , get_bb_max_tech_level(c, i)
+                            );
+                        }
+                    }
+                }
+                else {
+                    /* 清除机器人的魔法 */
+                    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+                        c->bb_pl->character.tech.all[i] = 0xFF;
+                    }
+                }
+
+                /* 将玩家数据存入数据库 */
+                shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+                    c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+                    c->cur_block->b);
+            }
+
+            /* 将玩家选项数据存入数据库 */
+            shipgate_send_bb_opts(&ship->sg, c);
+#ifdef DEBUG
+
+            DBG_LOG("%d 秒", num_seconds);
+
+#endif // DEBUG
+            DBG_LOG("%d 秒", num_seconds);
+
+        }
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+    }
+}
+
 /* Destroy a connection, closing the socket and removing it from the list. This
    must always be called with the appropriate lock held for the list! */
 void client_destroy_connection(ship_client_t* c,
     struct client_queue* clients) {
     __try {
+        int i = 0;
         time_t now = time(NULL);
         char tstr[26];
         script_action_t action = ScriptActionClientShipLogout;
@@ -513,21 +601,7 @@ void client_destroy_connection(ship_client_t* c,
 
         TAILQ_REMOVE(clients, c, qentry);
 
-        /* If the client was on Blue Burst, update their db character */
-        if (c->version == CLIENT_VERSION_BB &&
-            !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
-
-            /* 将游戏时间存储入人物数据 */
-            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
-
-            /* 将玩家数据存入数据库 */
-            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-                c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-                c->cur_block->b);
-
-            /* 将玩家选项数据存入数据库 */
-            shipgate_send_bb_opts(&ship->sg, c);
-        }
+        client_send_bb_data(c);
 
         script_execute(action, c, SCRIPT_ARG_PTR, c, 0);
 
@@ -634,53 +708,6 @@ void client_destroy_connection(ship_client_t* c,
         pthread_mutex_destroy(&c->mutex);
 
         free_safe(c);
-    }
-
-    __except (crash_handler(GetExceptionInformation())) {
-        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-
-        CRASH_LOG("出现错误, 程序将退出.");
-        (void)getchar();
-    }
-}
-
-void client_send_bb_data(ship_client_t* c) {
-    __try {
-        time_t now = time(NULL);
-
-        uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
-
-        /* If the client was on Blue Burst, update their db character */
-        if (c->version == CLIENT_VERSION_BB &&
-            !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
-
-            c->need_save_data = false;
-
-            /* 将游戏时间存储入人物数据 */
-            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
-
-            c->save_time = now;
-
-#ifdef DEBUG
-            DBG_LOG("mode %d", c->mode);
-            fix_client_inv(&c->bb_pl->character.inv);
-            fix_equip_item(&c->bb_pl->character.inv);
-
-#endif // DEBUG
-
-            /* 将玩家数据存入数据库 */
-            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-                c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-                c->cur_block->b);
-
-            /* 将玩家选项数据存入数据库 */
-            shipgate_send_bb_opts(&ship->sg, c);
-#ifdef DEBUG
-
-            DBG_LOG("%d 秒", num_seconds);
-
-#endif // DEBUG
-        }
     }
 
     __except (crash_handler(GetExceptionInformation())) {

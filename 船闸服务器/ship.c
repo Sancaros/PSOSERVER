@@ -88,6 +88,7 @@ static uint8_t default_guild_flag_slashes[4098];
 
 ///* 默认玩家数据 */
 //static psocn_bb_default_char_t default_chars;
+extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 /* Find a ship by its id */
 static ship_t* find_ship(uint16_t id) {
@@ -2898,18 +2899,66 @@ static int handle_bb_cmode_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
+uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech) {
+    if (ch_class > 11 || ch_class < 0) {
+        ERR_LOG("职业超出界限 %d", ch_class);
+        return 0;
+    }
+    return max_tech_level[tech].max_lvl[ch_class];
+}
+
 static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)pkt->pkt;
+    psocn_bb_full_char_t* full_char = &full_data_pkt->data;
     uint32_t slot = pkt->fw_flags, gc = ntohl(pkt->guildcard);
     char char_class_name_text[64];
+
+    DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
+    print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 
 #ifdef DEBUG
     DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
     print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
 
+    if (db_update_char_inv(&full_char->character.inv, gc, slot)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        SQLERR_LOG("无法更新玩家背包数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+    }
+
+    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+        if (full_char->character.tech.all[i] == 0xFF) {
+            DBG_LOG("GC %u:%u 法术 %s 等级 %d 为 0xFF!"
+                , gc
+                , slot
+                , get_technique_comment(i), full_char->character.tech.all[i]
+            );
+            continue;
+        }
+
+        if (full_char->character.tech.all[i] + 1 > get_bb_max_tech_level(full_char->character.dress_data.ch_class, i)) {
+            full_char->character.tech.all[i] = 0xFF;
+            /* 移除不合规的法术 */
+            ERR_LOG("GC %u:%u 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
+                , gc
+                , slot
+                , get_technique_comment(i), full_char->character.tech.all[i] + 1
+                , get_bb_max_tech_level(full_char->character.dress_data.ch_class, i)
+            );
+        }
+    }
+
+    if (db_update_char_techniques(full_char->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        SQLERR_LOG("无法更新玩家科技数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+    }
+
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[full_data_pkt->data.gc.char_class].cn_name, sizeof(char_class_name_text));
-    
+
     if (db_insert_bb_full_char_data(full_data_pkt, gc, slot, full_data_pkt->data.gc.char_class, char_class_name_text)) {
         //DBG_LOG("qid %d %s 数据已存在,进行更新操作", slot, pso_class[full_data_pkt->data.gc.char_class].cn_name);
         db_update_bb_full_char_data(full_data_pkt, gc, slot, full_data_pkt->data.gc.char_class, char_class_name_text);
@@ -3036,7 +3085,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_techniques(&char_data->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_techniques(char_data->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
@@ -3459,7 +3508,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             db_update_char_disp(&backupdata.character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_dress_data(&backupdata.character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_name(&backupdata.character.name, gc, slot);
-            db_update_char_techniques(&backupdata.character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_techniques(backupdata.character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_b_records(&backupdata.b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_c_records(&backupdata.c_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
 

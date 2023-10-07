@@ -2072,10 +2072,10 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
     return 0;
 }
 
-/* 0x00E7 231 完整角色数据 */
+/* 0x00E7 231 完整角色数据 ******************************************************************/
 static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    psocn_bb_full_char_t char_data = pkt->data;
+    psocn_bb_full_char_t* char_data = (psocn_bb_full_char_t*)&pkt->data;
     int i = 0;
 
     if (src->version != CLIENT_VERSION_BB)
@@ -2099,20 +2099,8 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     }
 #endif // DEBUG
 
-    /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
-    for (int i = 0; i < char_data.character.inv.item_count; i++) {
-        if (char_data.character.inv.iitems[i].present == LE16(0x0002)) {
-            char_data.character.inv.iitems[i].flags = LE32(0x00000008);
-        }
-        else {
-            char_data.character.inv.iitems[i].present = LE16(0x0001);
-            char_data.character.inv.iitems[i].flags = LE32(0x00000000);
-        }
-        char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
-    }
-
     //DBG_LOG("%s 玩家背包数据保存 %d", get_player_describe(src), src->game_data->db_save_done);
-    //print_ascii_hex(dbgl, &char_data.character.inv, PSOCN_STLENGTH_INV);
+    //print_ascii_hex(dbgl, &char_data->character.inv, PSOCN_STLENGTH_INV);
 
     //if (!src->game_data->db_save_done) {
 
@@ -2130,7 +2118,8 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
 #endif // DEBUG
 
     if (src->mode) {
-        memcpy(&src->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+        DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, src->pkt_size);
+        //memcpy(&char_data->character, &src->mode_pl->bb, PSOCN_STLENGTH_BB_CHAR2);
 #ifdef DEBUG
         DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
         return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
@@ -2139,47 +2128,104 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
 #endif // DEBUG
     }
     else {
-        memcpy(&src->bb_pl->character, &char_data.character, 1220);
+        //memcpy(&src->bb_pl->character, &char_data->character, 1220);
     }
 
-    /* BB has this in two places for now... */
+    /* BB玩家退出游戏后保存的全部数据... */
+    /////////////////////////////////////////////////////////////////////////////////////psocn_bb_char_t
+    memcpy(&char_data->character.inv, &src->bb_pl->character.inv, PSOCN_STLENGTH_INV);
+    memcpy(&char_data->character.disp, &src->bb_pl->character.disp, PSOCN_STLENGTH_DISP);
+    memcpy(&char_data->character.dress_data, &src->bb_pl->character.dress_data, PSOCN_STLENGTH_DRESS);
+    memcpy(&char_data->character.name, &src->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+    char_data->character.unknown_a3 = src->bb_pl->character.unknown_a3;
+    char_data->character.play_time = src->bb_pl->character.play_time;
+    memcpy(char_data->character.config, src->bb_pl->character.config, PSOCN_STLENGTH_BB_CHAR_CONFIG);
+    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+        char_data->character.tech.all[i] = src->bb_pl->character.tech.all[i];
+    }
     /////////////////////////////////////////////////////////////////////////////////////
-    //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
-    //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
-    memcpy(src->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
-    //memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
-    memcpy(src->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
-    memcpy(src->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
-    memcpy(src->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
-    memcpy(&src->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
-    memcpy(&src->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-    memcpy(src->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-    memcpy(src->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+    char_data->option_flags = src->bb_opts->option_flags;
+    memcpy(char_data->quest_data1, src->bb_pl->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+    /////////////////////////////////////////////////////////////////////////////////////psocn_bank_t
+    char_data->bank.item_count = src->bb_pl->bank.item_count;
+    char_data->bank.meseta = src->bb_pl->bank.meseta;
+    /* TODO 审查这段数据 是否有非法数据 */
+    for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
+        char_data->bank.bitems[i] = src->bb_pl->bank.bitems[i];
+    }
+    /////////////////////////////////////////////////////////////////////////////////////psocn_bb_guild_card
+    char_data->gc.guildcard = src->guildcard;
+    for (i = 0; i < BB_CHARACTER_CHAR_TAG_NAME_WLENGTH; i++) {
+        char_data->gc.name[i] = src->bb_pl->character.name.all[i];
+    }
+    //memcpy(char_data->gc.name, src->bb_pl->character.name.all, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+    for (i = 0; i < 14; i++) {
+        char_data->gc.guild_name[i] = src->bb_guild->data.guild_name[i];
+    }
+    //memcpy(char_data->gc.guild_name, src->bb_guild->data.guild_name, PSOCN_STLENGTH_BB_GUILD_NAME);
+    memcpy(&char_data->gc.guildcard_desc[0], &src->bb_pl->guildcard_desc[0], sizeof(src->bb_pl->guildcard_desc));
+    char_data->gc.present = 0x01;
+    char_data->gc.language = src->language_code;
+    char_data->gc.section = src->bb_pl->character.dress_data.section;
+    char_data->gc.char_class = src->bb_pl->character.dress_data.ch_class;
     /////////////////////////////////////////////////////////////////////////////////////
-    memcpy(&src->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
+    memcpy(char_data->symbol_chats, src->bb_opts->symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
+    memcpy(char_data->shortcuts, src->bb_opts->shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
+    memcpy(char_data->autoreply, src->bb_pl->autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
+    memcpy(char_data->infoboard, src->bb_pl->infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
+    /////////////////////////////////////////////////////////////////////////////////////battle_records_t
+    memcpy(&char_data->b_records, &src->bb_pl->b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
+    /////////////////////////////////////////////////////////////////////////////////////bb_challenge_records_t
+    memcpy(&char_data->c_records, &src->bb_pl->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+    /////////////////////////////////////////////////////////////////////////////////////tech_menu
+    memcpy(char_data->tech_menu, src->bb_pl->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
+    /////////////////////////////////////////////////////////////////////////////////////quest_data2
+    memcpy(char_data->quest_data2, src->bb_pl->quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
-    /////////////////////////////////////////////////////////////////////////////////////
-    src->bb_opts->option_flags = char_data.option_flags;
-    memcpy(src->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
-    memcpy(src->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
-    memcpy(src->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(src->bb_opts->guild_name));
-    memcpy(&src->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
+    for (i = 0; i < 276; i++) {
+        char_data->unk1[i] = 0x01;
+    }
+    ///////////////////////////////////////////////////////////////////////////////////bb_key_config_t
+    memcpy(&char_data->key_cfg.keyboard_config, &src->bb_opts->key_cfg.keyboard_config, PSOCN_STLENGTH_BB_KEY_CONFIG_KB);
+    memcpy(&char_data->key_cfg.joystick_config, &src->bb_opts->key_cfg.joystick_config, PSOCN_STLENGTH_BB_KEY_CONFIG_JOY);
+    ///////////////////////////////////////////////////////////////////////////////////bb_guild_t
+    memcpy(&char_data->guild_data, &src->bb_guild->data, PSOCN_STLENGTH_BB_GUILD);
+    char_data->guild_data.guild_owner_gc = src->bb_guild->data.guild_owner_gc;
+    char_data->guild_data.guild_id = src->bb_guild->data.guild_id;
+    char_data->guild_data.guild_points_rank = src->bb_guild->data.guild_points_rank;
+    char_data->guild_data.guild_points_rest = src->bb_guild->data.guild_points_rest;
+    char_data->guild_data.guild_priv_level = src->bb_guild->data.guild_priv_level;
+    memcpy(char_data->guild_data.guild_name, src->bb_guild->data.guild_name, sizeof(char_data->guild_data.guild_name));
+    char_data->guild_data.guild_rank = src->bb_guild->data.guild_rank;
+    memcpy(char_data->guild_data.guild_flag, src->bb_guild->data.guild_flag, sizeof(char_data->guild_data.guild_flag));
+    memcpy(char_data->guild_data.guild_reward, src->bb_guild->data.guild_reward, sizeof(char_data->guild_data.guild_reward));
 
+    ///////////////////////////////////////////////////////////////////////////////////
 
-    psocn_bb_char_t* character = get_client_char_bb(src);
+    /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
+    for (i = 0; i < char_data->character.inv.item_count; i++) {
+        if (char_data->character.inv.iitems[i].present == LE16(0x0002)) {
+            char_data->character.inv.iitems[i].flags = LE32(0x00000008);
+        }
+        else {
+            char_data->character.inv.iitems[i].present = LE16(0x0001);
+            char_data->character.inv.iitems[i].flags = LE32(0x00000000);
+        }
+        char_data->character.inv.iitems[i].data.item_id = EMPTY_STRING;
+    }
 
     /* 检测玩家的魔法是否合规 */
     if (!char_class_is_android(src->equip_flags)) {
         for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            if (character->tech.all[i] == 0xFF)
+            if (src->bb_pl->character.tech.all[i] == 0xFF)
                 continue;
 
-            if (character->tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
-                src->bb_pl->character.tech.all[i] = 0xFF;
+            if (src->bb_pl->character.tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
+                char_data->character.tech.all[i] = 0xFF;
                 /* 移除不合规的法术 */
                 ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
                     , get_player_describe(src)
-                    , get_technique_comment(i), character->tech.all[i] + 1
+                    , get_technique_comment(i), src->bb_pl->character.tech.all[i] + 1
                     , get_bb_max_tech_level(src, i)
                 );
             }
@@ -2188,10 +2234,9 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     else {
         /* 清除机器人的魔法 */
         for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            src->bb_pl->character.tech.all[i] = 0xFF;
+            char_data->character.tech.all[i] = 0xFF;
         }
     }
-    //}
 
     if (!src->mode) {
 #ifdef DEBUG
@@ -2251,7 +2296,7 @@ static int bb_process_options(ship_client_t* c, bb_options_config_update_pkt* pk
             return result;
         }
 
-        memcpy(c->bb_opts->key_cfg.key_config, pkt->key_config, sizeof(pkt->key_config));
+        memcpy(c->bb_opts->key_cfg.keyboard_config, pkt->key_config, sizeof(pkt->key_config));
         break;
 
         /* 0x05ED 1517*/

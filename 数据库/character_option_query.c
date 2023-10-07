@@ -27,8 +27,8 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     /* Build the db query */
     sprintf(myquery, "UPDATE %s SET key_config='", CLIENTS_OPTION_BLUEBURST);
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.key_config,
-        sizeof(opts.key_cfg.key_config));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.keyboard_config,
+        sizeof(opts.key_cfg.keyboard_config));
 
     strcat(myquery, "', joystick_config = '");
 
@@ -80,7 +80,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
         /* See if we got a hit... */
         if (psocn_db_result_rows(result)) {
             row = psocn_db_result_fetch(result);
-            memcpy(&opts.key_cfg.key_config, row[0], sizeof(opts.key_cfg.key_config));
+            memcpy(&opts.key_cfg.keyboard_config, row[0], sizeof(opts.key_cfg.keyboard_config));
             memcpy(&opts.key_cfg.joystick_config, row[1], sizeof(opts.key_cfg.joystick_config));
             opts.option_flags = (uint32_t)strtoul(row[2], NULL, 10);
             memcpy(&opts.shortcuts, row[3], PSOCN_STLENGTH_BB_DB_SHORTCUTS);
@@ -89,7 +89,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
         }
         else {
             /* Initialize to defaults */
-            memcpy(&opts.key_cfg.key_config, default_key_config, sizeof(default_key_config));
+            memcpy(&opts.key_cfg.keyboard_config, default_key_config, sizeof(default_key_config));
             memcpy(&opts.key_cfg.joystick_config, default_joystick_config, sizeof(default_joystick_config));
             memcpy(&opts.symbol_chats, default_symbolchats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
 
@@ -97,7 +97,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
                 " VALUES ('%" PRIu32"', '", CLIENTS_OPTION_BLUEBURST, gc);
 
             psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                (char*)&opts.key_cfg.key_config, sizeof(opts.key_cfg.key_config));
+                (char*)&opts.key_cfg.keyboard_config, sizeof(opts.key_cfg.keyboard_config));
 
             strcat(myquery, "', '");
 

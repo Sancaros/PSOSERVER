@@ -117,7 +117,7 @@ typedef struct psocn_bb_mini_char {
 typedef struct psocn_bb_char {
     inventory_t inv;//844
     psocn_disp_char_t disp; //36
-    psocn_dress_data_t dress_data;//108
+    psocn_dress_data_t dress_data;//80
     psocn_bb_char_name_t name;//24
     uint16_t padding;//2
     uint16_t unknown_a3; //2
@@ -137,8 +137,8 @@ typedef struct psocn_v1v2v3pc_char {
 
 /* BB键位设置数据结构 410 字节*/
 typedef struct psocn_bb_key_config {
-    uint8_t key_config[0x016C];           // 0114
-    uint8_t joystick_config[0x0038];      // 0280
+    uint8_t keyboard_config[0x016C];// 0114
+    uint8_t joystick_config[0x0038];// 0280
 } PACKED bb_key_config_t;
 
 #define BB_GUILD_PRIV_LEVEL_MASTER 0x00000040
@@ -204,16 +204,18 @@ typedef struct psocn_bb_guild_card {
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节 大小 14744*/
 typedef struct psocn_bb_full_char {
     psocn_bb_char_t character;                                               // 玩家数据表               OK
-    //char guildcard_string1[16];                                            // not saved
+    //char guildcard_string1[16];                                            // 未完成保存
+    ////////////未保存
     /* 04DC */ uint32_t unknown_a1;
     /* 04E0 */ uint32_t creation_timestamp;
     /* 04E4 */ uint32_t signature; // == 0xA205B064 (see SaveFileFormats.hh)
     /* 04E8 */ uint32_t play_time_seconds;
+    ////////////
     uint32_t option_flags;                                                   // account
     uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];                   // 玩家任务数据表1          OK
     psocn_bank_t bank;                                                       // 玩家银行数据表           OK
     psocn_bb_guild_card_t gc;                                                // 玩家GC数据表部分         OK
-    uint32_t unk2;                                                           // not saved
+    uint32_t unk2;                                                           // 未完成保存
     uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];                 // 选项数据表
     uint8_t shortcuts[PSOCN_STLENGTH_BB_DB_SHORTCUTS];                                               // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
@@ -222,7 +224,7 @@ typedef struct psocn_bb_full_char {
     uint8_t unk3[4];
     bb_challenge_records_t c_records;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
-    uint8_t unk4[0x002C];                                                    // not saved
+    uint8_t unk4[0x002C];                                                    // 未完成保存
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];                   // 玩家任务数据表2
     uint8_t unk1[276];                                                       // 276 - 264 = 12
     bb_key_config_t key_cfg;                                                 // 选项数据表               OK
