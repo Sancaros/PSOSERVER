@@ -1119,7 +1119,7 @@ uint8_t fix_bp_entry_index() {
 
 const char* get_lobby_mob_describe(lobby_t* l, uint8_t pt_index, uint8_t language) {
     /* PT表位是从NULL为0 客户端是从第一个怪物为0 少一位 */
-    uint8_t fix_pt_index = pt_index;
+    uint8_t fix_pt_index = pt_index - 1;
     const char* enemy_name_cn = pt_index_raw_mobnames_cn[fix_pt_index];
     const char* enemy_name_en = pt_index_raw_mobnames[fix_pt_index];
 

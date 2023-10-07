@@ -322,7 +322,7 @@ char* get_lobby_describe(lobby_t* l) {
     /* 初始化角色描述内存 */
     memset(lobby_des, 0, sizeof(lobby_des));
 
-    sprintf(lobby_des, "房间:%s (%s:%s:%s:%s:任务%d:节日%dV2:%d)"
+    sprintf(lobby_des, "房间:%s (%s:%s:%s:%s:任务%d:节日%d:V2:%d)"
         , get_lobby_name(l)
         , l->episode == 1 ? "EP1" : l->episode == 2 ? "EP2" : "EP4"
         , l->battle == 1 ? "对战" : l->challenge == 1 ? "挑战" : l->oneperson == 1 ? "单人" : "团队"

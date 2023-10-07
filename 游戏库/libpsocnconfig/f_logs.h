@@ -47,6 +47,7 @@ typedef SSIZE_T ssize_t;
 #define MAX_PACKET_BUFF ( MAX_TMP_BUFF * 2 )
 
 char dp[MAX_PACKET_BUFF];
+char dbgdp[MAX_PACKET_BUFF];
 
 pthread_mutex_t log_mutex;
 pthread_mutex_t log_item_mutex;

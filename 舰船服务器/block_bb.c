@@ -173,7 +173,7 @@ static int game_type_info_reply(ship_client_t* c, uint32_t item_id) {
         break;
     }
 
-     /* Send the information away. */
+    /* Send the information away. */
     return send_info_reply(c, string);
 }
 
@@ -245,7 +245,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
         return rv;
     }
 
-        /* Ship */
+    /* Ship */
     case MENU_ID_SHIP:
     {
         miniship_t* i;
@@ -267,7 +267,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
         return 0;
     }
 
-        /* Game type (PSOBB only) */
+    /* Game type (PSOBB only) */
     case MENU_ID_GAME_TYPE:
         return game_type_info_reply(c, item_id);
 
@@ -387,7 +387,7 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
             //DBG_LOG("返回上一级");
             return send_bb_game_type_sel(c);
         }
-        
+
         //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
         if (!l->lobby_create) {
             send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
@@ -409,7 +409,7 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
         }
 
         ITEM_LOG("%s %s", get_player_describe(c), l->drop_pso2 == true ? l->drop_psocn == true ? "随机颜色独立模式" : "独立掉落模式" : "默认掉落模式");
-        
+
         /* All's well in the world if we get here. */
         return 0;
     }
@@ -472,7 +472,7 @@ static int bb_process_player_menu_section(ship_client_t* c, uint32_t item_id) {
         return send_bb_player_section_list(c);
     }
 
-    if(new_section == character->dress_data.section) {
+    if (new_section == character->dress_data.section) {
         send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7您当前已经是该颜色ID!"));
         return send_bb_player_section_list(c);
     }
@@ -678,7 +678,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
 #endif // DEBUG
 
-        /* Figure out what the client is selecting. */
+    /* Figure out what the client is selecting. */
     switch (menu_id & 0xFF) {
         /* Lobby Information Desk */
     case MENU_ID_INFODESK:
@@ -748,7 +748,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 #endif
     }
 
-        /* Game Selection */
+    /* Game Selection */
     case MENU_ID_GAME:
     {
         char passwd_cmp[17] = { 0 };
@@ -802,7 +802,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return join_game(c, l);
     }
 
-        /* Quest category */
+    /* Quest category */
     case MENU_ID_QCATEGORY:
     {
         int rv;
@@ -828,7 +828,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return rv;
     }
 
-        /* Quest */
+    /* Quest */
     case MENU_ID_QUEST:
     {
         int lang = (menu_id >> 24) & 0xFF;
@@ -842,7 +842,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return lobby_setup_quest(l, c, item_id, lang);
     }
 
-        /* Ship */
+    /* Ship */
     case MENU_ID_SHIP:
     {
         miniship_t* i;
@@ -904,7 +904,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
             __(c, "\tE\tC4当前选择的舰船\n已离线."));
     }
 
-        /* Game type (PSOBB only) */
+    /* Game type (PSOBB only) */
     case MENU_ID_GAME_TYPE:
         return bb_process_game_type(c, item_id);
 
@@ -1150,7 +1150,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             return -1;
         }
     }
-    
+
     v = LE32(pkt->data.bb.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
         pthread_mutex_unlock(&c->mutex);
@@ -1446,7 +1446,7 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     lobby_t* l = c->cur_lobby;
     int rv = 0;
 
-        /* 合理性检查... Is the client in a game lobby? */
+    /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
@@ -2100,99 +2100,98 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
 #endif // DEBUG
 
     /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
-    //for (int i = 0; i < char_data.character.inv.item_count; i++) {
-    //    if (char_data.character.inv.iitems[i].present == LE16(0x0002)) {
-    //        char_data.character.inv.iitems[i].present = LE16(0x0001);
-    //        char_data.character.inv.iitems[i].flags = LE32(0x00000008);
-    //    }
-    //    else {
-    //        char_data.character.inv.iitems[i].present = LE16(0x0001);
-    //        char_data.character.inv.iitems[i].flags = LE32(0x00000000);
-    //    }
-    //    char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
-    //}
-
-    //DBG_LOG("玩家背包数据保存 %d", c->game_data->db_save_done);
-    //print_ascii_hex(errl, &char_data.character.inv, PSOCN_STLENGTH_INV);
-
-    if (!src->game_data->db_save_done) {
-
-#ifdef DEBUG
-        printf("C->S数据来源 %d 字节\n", len);
-        print_ascii_hex(errl, &pkt, len);
-        printf("原数据\n");
-        print_ascii_hex(errl, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
-#endif // DEBUG
-
-        src->game_data->db_save_done = 1;
-#ifdef DEBUG
-        DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
-        print_ascii_hex(errl, &char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
-#endif // DEBUG
-
-        if (src->mode) {
-            memcpy(&src->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
-#ifdef DEBUG
-            DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
-            return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
-#else
-            return -3;
-#endif // DEBUG
+    for (int i = 0; i < char_data.character.inv.item_count; i++) {
+        if (char_data.character.inv.iitems[i].present == LE16(0x0002)) {
+            char_data.character.inv.iitems[i].flags = LE32(0x00000008);
         }
-        //else {
-        //    memcpy(&src->bb_pl->character, &char_data.character, 1220);
-        //}
+        else {
+            char_data.character.inv.iitems[i].present = LE16(0x0001);
+            char_data.character.inv.iitems[i].flags = LE32(0x00000000);
+        }
+        char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
+    }
 
-        /* BB has this in two places for now... */
-        /////////////////////////////////////////////////////////////////////////////////////
-        //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
-        //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
-        memcpy(src->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
-        //memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
-        memcpy(src->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
-        memcpy(src->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
-        memcpy(src->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
-        memcpy(&src->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
-        memcpy(&src->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-        memcpy(src->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-        memcpy(src->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
-        /////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&src->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
+    //DBG_LOG("%s 玩家背包数据保存 %d", get_player_describe(src), src->game_data->db_save_done);
+    //print_ascii_hex(dbgl, &char_data.character.inv, PSOCN_STLENGTH_INV);
+
+    //if (!src->game_data->db_save_done) {
+
+#ifdef DEBUG
+    printf("C->S数据来源 %d 字节\n", len);
+    print_ascii_hex(errl, &pkt, len);
+    printf("原数据\n");
+    print_ascii_hex(errl, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
+#endif // DEBUG
+
+    //src->game_data->db_save_done = 1;
+#ifdef DEBUG
+    DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
+    print_ascii_hex(errl, &char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
+#endif // DEBUG
+
+    if (src->mode) {
+        memcpy(&src->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+#ifdef DEBUG
+        DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
+        return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
+#else
+        return -3;
+#endif // DEBUG
+    }
+    else {
+        memcpy(&src->bb_pl->character, &char_data.character, 1220);
+    }
+
+    /* BB has this in two places for now... */
+    /////////////////////////////////////////////////////////////////////////////////////
+    //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
+    //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
+    memcpy(src->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+    //memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
+    memcpy(src->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
+    memcpy(src->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
+    memcpy(src->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
+    memcpy(&src->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
+    memcpy(&src->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+    memcpy(src->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
+    memcpy(src->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+    /////////////////////////////////////////////////////////////////////////////////////
+    memcpy(&src->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    src->bb_opts->option_flags = char_data.option_flags;
+    memcpy(src->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
+    memcpy(src->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
+    memcpy(src->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(src->bb_opts->guild_name));
+    memcpy(&src->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
 
 
-        /////////////////////////////////////////////////////////////////////////////////////
-        src->bb_opts->option_flags = char_data.option_flags;
-        memcpy(src->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
-        memcpy(src->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
-        memcpy(src->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(src->bb_opts->guild_name));
-        memcpy(&src->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
+    /* 检测玩家的魔法是否合规 */
+    if (!char_class_is_android(src->equip_flags)) {
+        for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+            if (character->tech.all[i] == 0xFF)
+                continue;
 
-        psocn_bb_char_t* character = get_client_char_bb(src);
-
-        /* 检测玩家的魔法是否合规 */
-        if (!char_class_is_android(src->equip_flags)) {
-            for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-                if (character->tech.all[i] == 0xFF)
-                    continue;
-
-                if (character->tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
-                    src->bb_pl->character.tech.all[i] = 0xFF;
-                    /* 移除不合规的法术 */
-                    ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
-                        , get_player_describe(src)
-                        , get_technique_comment(i), character->tech.all[i] + 1
-                        , get_bb_max_tech_level(src, i)
-                    );
-                }
-            }
-        } else {
-            /* 清除机器人的魔法 */
-            for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+            if (character->tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
                 src->bb_pl->character.tech.all[i] = 0xFF;
+                /* 移除不合规的法术 */
+                ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
+                    , get_player_describe(src)
+                    , get_technique_comment(i), character->tech.all[i] + 1
+                    , get_bb_max_tech_level(src, i)
+                );
             }
         }
     }
+    else {
+        /* 清除机器人的魔法 */
+        for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+            src->bb_pl->character.tech.all[i] = 0xFF;
+        }
+    }
+    //}
 
     if (!src->mode) {
 #ifdef DEBUG

@@ -1458,12 +1458,11 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    equip_resault = player_equip_item(src, item_id);
     /* 是否存在物品背包中? */
-    if (equip_resault) {
+    if ((equip_resault = player_equip_item(src, item_id))) {
         ERR_LOG("%s 装备了未存在的物品数据! 错误码:%d",
             get_player_describe(src), equip_resault);
-        return -1;
+        return -3;
     }
 
     /* Done, let everyone else know. */
@@ -1474,7 +1473,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_unequip_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id;
-    int item_count, i = 0, isframe = 0;
+    int /*item_count,*/ unequip_resault = 0/*, isframe = 0*/;
 
     if (!in_game(src))
         return -1;
@@ -1486,43 +1485,9 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
-
-    /* Find the item and remove the equip flag. */
-    item_count = inv->item_count;
-
-    i = find_iitem_index(inv, item_id);
-    /* 如果找不到该物品，则将用户从船上推下. */
-    if (i < 0) {
-        ERR_LOG("%s 卸除无效装备物品! 错误码 %d", get_player_describe(src), i);
-        return i;
-    }
-
-    inv->iitems[i].flags &= LE32(0xFFFFFFF7);
-
-    /* If its a frame, we have to make sure to unequip any units that
-       may be equipped as well. */
-    if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-        inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
-        isframe = 1;
-    }
-
-    /* Did we find something to equip? */
-    if (i >= item_count) {
-        ERR_LOG("%s 卸除了未存在的物品数据! 索引 %d ID 0x%08X",
-            get_player_describe(src), i, inv->iitems[i].data.item_id);
-        print_item_data(&inv->iitems[i].data, src->version);
-        return -2;
-    }
-
-    /* Clear any units if we unequipped a frame. */
-    if (isframe) {
-        for (i = 0; i < item_count; ++i) {
-            if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-                inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
-            }
-        }
+    if ((unequip_resault = player_unequip_item(src, pkt->item_id))) {
+        ERR_LOG("%s 卸除无效ID 0x%08X 装备物品! 错误码 %d", get_player_describe(src), pkt->item_id, unequip_resault);
+        return -3;
     }
 
     /* Done, let everyone else know. */
@@ -6346,12 +6311,7 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
-
-    sort_client_inv(inv);
-
-    /* Nobody else really needs to care about this one... */
-    return 0;
+    return player_sort_inv_by_id(src, pkt->item_ids, ARRAYSIZE(pkt->item_ids));
 }
 
 static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
@@ -6365,9 +6325,7 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    psocn_bb_char_t* character = get_client_char_bb(src);
-
-    subcmd_send_lobby_bb_delete_meseta(src, character, 10, false);
+    subcmd_send_lobby_bb_delete_meseta(src, get_client_char_bb(src), 10, false);
 
     /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);

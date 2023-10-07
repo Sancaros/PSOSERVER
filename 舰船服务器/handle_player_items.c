@@ -2333,6 +2333,101 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
     return 0;
 }
 
+int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
+    inventory_t* inventory = get_client_inv_bb(src);
+    iitem_t iitem1, iitem2, swap_item = { 0 };
+
+    // 如果物品数量小于等于 1，则不需要排序
+    if (inventory->item_count < 1) {
+        ERR_LOG("%s 身上没有物品可以排序", get_player_describe(src));
+        return -1;
+    }
+
+    // 冒泡排序
+    for (int i = 0; i < id_count - 1; i++) {
+        swap_item.data.item_id = 0xFFFFFFFF;
+        memcpy(&iitem1, &inventory->iitems[i], sizeof(iitem_t));
+        int index1 = -1;
+        for (int j = 0; j < id_count; j++) {
+            if (id_arr[j] == iitem1.data.item_id) {
+                index1 = j;
+                break;
+            }
+        }
+
+        if (index1 < 0) {  // 物品1的 ID 不在指定 ID 数组中，跳过本次循环
+            continue;
+        }
+
+        for (int j = i + 1; j < id_count; j++) {
+            memcpy(&iitem2, &inventory->iitems[j], sizeof(iitem_t));
+            int index2 = -1;
+            for (int k = 0; k < id_count; k++) {
+                if (id_arr[k] == iitem2.data.item_id) {
+                    index2 = k;
+                    break;
+                }
+            }
+
+            if (index2 < 0) {  // 物品2的 ID 不在指定 ID 数组中，跳过本次循环
+                continue;
+            }
+
+            if (index2 < index1) {  // 交换两个物品的位置
+                memcpy(&swap_item, &inventory->iitems[i], sizeof(iitem_t));
+                memcpy(&inventory->iitems[i], &inventory->iitems[j], sizeof(iitem_t));
+                memcpy(&inventory->iitems[j], &swap_item, sizeof(iitem_t));
+                index1 = index2;
+            }
+        }
+    }
+
+    return 0;
+}
+
+// 将物品按名称（前三个字节）排序
+int player_sort_inv(ship_client_t* src) {
+    inventory_t* inventory = get_client_inv_bb(src);
+    iitem_t item1, item2, swap_item;
+    uint32_t name1, name2;
+    uint8_t name_byte_swap;
+
+    // 如果物品数量小于等于 1，则不需要排序
+    if (inventory->item_count < 1) {
+        ERR_LOG("%s 身上没有物品可以排序", get_player_describe(src));
+        return -1;
+    }
+
+    // 冒泡排序
+    for (int i = 0; i < inventory->item_count - 1; i++) {
+        // 取出第一个物品的名称，并交换字节顺序
+        memcpy(&item1, &inventory->iitems[i], sizeof(iitem_t));
+        name_byte_swap = item1.data.datab[0];
+        item1.data.datab[0] = item1.data.datab[2];
+        item1.data.datab[2] = name_byte_swap;
+        memcpy(&name1, &item1.data.datab[0], 3);
+
+        for (int j = i + 1; j < inventory->item_count; j++) {
+            // 取出第二个物品的名称，并交换字节顺序
+            memcpy(&item2, &inventory->iitems[j], sizeof(iitem_t));
+            name_byte_swap = item2.data.datab[0];
+            item2.data.datab[0] = item2.data.datab[2];
+            item2.data.datab[2] = name_byte_swap;
+            memcpy(&name2, &item2.data.datab[0], 3);
+
+            // 如果第二个物品的名称比第一个物品的名称小，则交换它们
+            if (name2 < name1) {
+                memcpy(&swap_item, &inventory->iitems[i], sizeof(iitem_t));
+                memcpy(&inventory->iitems[i], &inventory->iitems[j], sizeof(iitem_t));
+                memcpy(&inventory->iitems[j], &swap_item, sizeof(iitem_t));
+                memcpy(&name1, &name2, 3);
+            }
+        }
+    }
+
+    return 0;
+}
+
 /* 给客户端标记可穿戴职业装备的标签 */
 void item_class_tag_equip_flag(ship_client_t* c) {
     psocn_bb_char_t* character = get_client_char_bb(c);
@@ -2602,37 +2697,6 @@ void fix_client_inv(inventory_t* inv) {
 
     for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
         inv->iitems[i] = fix_iitem[i];
-}
-
-//整理仓库物品 测试用
-void sort_client_inv(inventory_t* inv) {
-    int i = 0, j = 0;
-    uint32_t compare_item1 = 0, compare_item2 = 0;
-    uint8_t swap_c = 0;
-    iitem_t swap_item = { 0 }, b1 = { 0 }, b2 = { 0 };
-
-    if (inv->item_count > 1) {
-        for (i = 0; i < (inv->item_count - 1); i++) {
-            memcpy(&b1, &inv->iitems[i], sizeof(iitem_t));
-            swap_c = b1.data.datab[0];
-            b1.data.datab[0] = b1.data.datab[2];
-            b1.data.datab[2] = swap_c;
-            memcpy(&compare_item1, &b1.data.datab[0], 3);
-            for (j = i + 1; j < inv->item_count; j++) {
-                memcpy(&b2, &inv->iitems[j], sizeof(iitem_t));
-                swap_c = b2.data.datab[0];
-                b2.data.datab[0] = b2.data.datab[2];
-                b2.data.datab[2] = swap_c;
-                memcpy(&compare_item2, &b2.data.datab[0], 3);
-                if (compare_item2 < compare_item1) { // compare_item2 should take compare_item1's place
-                    memcpy(&swap_item, &inv->iitems[i], sizeof(iitem_t));
-                    memcpy(&inv->iitems[i], &inv->iitems[j], sizeof(iitem_t));
-                    memcpy(&inv->iitems[j], &swap_item, sizeof(iitem_t));
-                    memcpy(&compare_item1, &compare_item2, 3);
-                }
-            }
-        }
-    }
 }
 
 void fix_client_bank(psocn_bank_t* bank) {

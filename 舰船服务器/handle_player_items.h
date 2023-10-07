@@ -95,6 +95,9 @@ void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon
 /* 物品检测装备标签 */
 bool item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
 int player_equip_item(ship_client_t* src, uint32_t item_id);
+int player_unequip_item(ship_client_t* src, uint32_t item_id);
+int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count);
+int player_sort_inv(ship_client_t* src);
 /* 给客户端标记可穿戴职业装备的标签 */
 void item_class_tag_equip_flag(ship_client_t* c);
 void remove_titem_equip_flags(iitem_t* trade_item);
@@ -107,7 +110,6 @@ void fix_equip_item(inventory_t* inv);
 
 /* 清理背包物品 */
 void fix_client_inv(inventory_t* inv);
-void sort_client_inv(inventory_t* inv);
 void fix_client_bank(psocn_bank_t* bank);
 void sort_client_bank(psocn_bank_t* bank);
 

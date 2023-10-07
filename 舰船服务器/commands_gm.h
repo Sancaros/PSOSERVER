@@ -997,7 +997,28 @@ static void dumpinv_internal(ship_client_t* src) {
 
         GM_LOG("------------------------------------------------------------");
         for (i = 0; i < character_v1->inv.item_count; ++i) {
-            print_iitem_data(&character_v1->inv.iitems[i], i, src->version);
+            GM_LOG("物品: %s", get_item_describe(&character_v1->inv.iitems[i].data, v));
+            GM_LOG("编号: 0x%08X", character_v1->inv.iitems[i].data.item_id);
+            GM_LOG(""
+                "槽位 (%d) "
+                "(%s) %04X "
+                "鉴定 %d %d"
+                "(%s) "
+                "Flags %08X",
+                i,
+                ((character_v1->inv.iitems[i].present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
+                character_v1->inv.iitems[i].present,
+                character_v1->inv.iitems[i].extension_data1,
+                character_v1->inv.iitems[i].extension_data2,
+                ((character_v1->inv.iitems[i].flags & LE32(0x00000008)) ? "已装备" : "未装备"),
+                character_v1->inv.iitems[i].flags
+            );
+            GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+                character_v1->inv.iitems[i].data.datab[0], character_v1->inv.iitems[i].data.datab[1], character_v1->inv.iitems[i].data.datab[2], character_v1->inv.iitems[i].data.datab[3],
+                character_v1->inv.iitems[i].data.datab[4], character_v1->inv.iitems[i].data.datab[5], character_v1->inv.iitems[i].data.datab[6], character_v1->inv.iitems[i].data.datab[7],
+                character_v1->inv.iitems[i].data.datab[8], character_v1->inv.iitems[i].data.datab[9], character_v1->inv.iitems[i].data.datab[10], character_v1->inv.iitems[i].data.datab[11],
+                character_v1->inv.iitems[i].data.data2b[0], character_v1->inv.iitems[i].data.data2b[1], character_v1->inv.iitems[i].data.data2b[2], character_v1->inv.iitems[i].data.data2b[3]);
+            GM_LOG("------------------------------------------------------------");
         }
         GM_LOG("////////////////////////////////////////////////////////////");
     }
@@ -1014,11 +1035,31 @@ static void dumpinv_internal(ship_client_t* src) {
 
         GM_LOG("------------------------------------------------------------");
         for (i = 0; i < character_bb->inv.item_count; ++i) {
-            print_iitem_data(&character_bb->inv.iitems[i], i, src->version);
+            GM_LOG("物品: %s", get_item_describe(&character_bb->inv.iitems[i].data, v));
+            GM_LOG("编号: 0x%08X", character_bb->inv.iitems[i].data.item_id);
+            GM_LOG(""
+                "槽位 (%d) "
+                "(%s) %04X "
+                "鉴定 %d %d"
+                "(%s) "
+                "Flags %08X",
+                i,
+                ((character_bb->inv.iitems[i].present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
+                character_bb->inv.iitems[i].present,
+                character_bb->inv.iitems[i].extension_data1,
+                character_bb->inv.iitems[i].extension_data2,
+                ((character_bb->inv.iitems[i].flags & LE32(0x00000008)) ? "已装备" : "未装备"),
+                character_bb->inv.iitems[i].flags
+            );
+            GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+                character_bb->inv.iitems[i].data.datab[0], character_bb->inv.iitems[i].data.datab[1], character_bb->inv.iitems[i].data.datab[2], character_bb->inv.iitems[i].data.datab[3],
+                character_bb->inv.iitems[i].data.datab[4], character_bb->inv.iitems[i].data.datab[5], character_bb->inv.iitems[i].data.datab[6], character_bb->inv.iitems[i].data.datab[7],
+                character_bb->inv.iitems[i].data.datab[8], character_bb->inv.iitems[i].data.datab[9], character_bb->inv.iitems[i].data.datab[10], character_bb->inv.iitems[i].data.datab[11],
+                character_bb->inv.iitems[i].data.data2b[0], character_bb->inv.iitems[i].data.data2b[1], character_bb->inv.iitems[i].data.data2b[2], character_bb->inv.iitems[i].data.data2b[3]);
+            GM_LOG("------------------------------------------------------------");
         }
         GM_LOG("////////////////////////////////////////////////////////////");
     }
-
 }
 
 /* 用法: /dbginv [l/client_id/guildcard] */
@@ -1129,7 +1170,25 @@ static void dumpbank_internal(ship_client_t* src) {
 
         GM_LOG("------------------------------------------------------------");
         for (i = 0; i < bank->item_count; ++i) {
-            print_bitem_data(&bank->bitems[i], i, src->version);
+            GM_LOG("物品: %s", get_item_describe(&bank->bitems[i].data, v));
+            GM_LOG("编号: 0x%08X", bank->bitems[i].data.item_id);
+            GM_LOG(""
+                "槽位 (%d) "
+                "(%s) %04X "
+                "(%s) "
+                "Flags %04X",
+                i,
+                ((max_stack_size_for_item(bank->bitems[i].data.datab[0], bank->bitems[i].data.datab[1]) > 1) ? "堆叠" : "单独"),
+                bank->bitems[i].amount,
+                ((bank->bitems[i].show_flags & LE32(0x0001)) ? "显示" : "隐藏"),
+                bank->bitems[i].show_flags
+            );
+            GM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+                bank->bitems[i].data.datab[0], bank->bitems[i].data.datab[1], bank->bitems[i].data.datab[2], bank->bitems[i].data.datab[3],
+                bank->bitems[i].data.datab[4], bank->bitems[i].data.datab[5], bank->bitems[i].data.datab[6], bank->bitems[i].data.datab[7],
+                bank->bitems[i].data.datab[8], bank->bitems[i].data.datab[9], bank->bitems[i].data.datab[10], bank->bitems[i].data.datab[11],
+                bank->bitems[i].data.data2b[0], bank->bitems[i].data.data2b[1], bank->bitems[i].data.data2b[2], bank->bitems[i].data.data2b[3]);
+            GM_LOG("------------------------------------------------------------");
         }
         GM_LOG("////////////////////////////////////////////////////////////");
     }
