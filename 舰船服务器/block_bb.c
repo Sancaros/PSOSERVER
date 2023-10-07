@@ -94,6 +94,7 @@ static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
     /* Check for commands. */
     if (pkt->msg[2] == LE16('/')) {
         return bbcommand_parse(c, pkt);
+        //return send_bb_empty_chat(l, c, c, "1", 2);
     }
 #endif
 
@@ -3291,7 +3292,7 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
 typedef void (*process_command_t)(ship_t s, ship_client_t* c,
     uint16_t command, uint32_t flag, uint8_t* data);
 
-#define DEBUG_BB_BLOCK1
+#define DEBUG_BB_BLOCK
 
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     __try {

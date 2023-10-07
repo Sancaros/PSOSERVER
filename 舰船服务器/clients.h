@@ -284,6 +284,10 @@ struct ship_client {
     bb_client_config_pkt sec_data;
     sg_char_bkup_pkt game_info;
     client_options_t options;
+    uint8_t sdrops_ver;
+    uint8_t sdrops_ep;
+    uint8_t sdrops_diff;
+    uint8_t sdrops_section;
     /// <summary>
     /// ////////////////////////////////////////
     /// 以下为动态内存区域 请勿移至上方 避免内存错乱
@@ -319,13 +323,6 @@ struct ship_client {
     FILE* logfile;
     unsigned char* recvbuf;
     unsigned char* sendbuf;
-
-#ifdef DEBUG
-    uint8_t sdrops_ver;
-    uint8_t sdrops_ep;
-    uint8_t sdrops_diff;
-    uint8_t sdrops_section;
-#endif
 };
 
 #define CLIENT_PRIV_LOCAL_GM    0x00000001

@@ -69,6 +69,9 @@ typedef struct client_type {
 typedef struct login_client {
     TAILQ_ENTRY(login_client) qentry;
 
+    /* Random number generator state */
+    sfmt_t sfmt_rng;
+
     int type;
     int sock;
     int disconnected;
@@ -108,27 +111,24 @@ typedef struct login_client {
     CRYPT_SETUP client_cipher;
     CRYPT_SETUP server_cipher;
 
-    unsigned char *recvbuf;
-    int pkt_cur;
-    int pkt_sz;
-
-    unsigned char *sendbuf;
-    int sendbuf_cur;
-    int sendbuf_size;
-    int sendbuf_start;
-
-    bb_guildcard_data_t *gc_data;
-    psocn_bb_db_guild_t *guild_data;
-    bb_client_config_pkt sec_data;
-    int hdr_read;
-
     /* Only used for the Dreamcast Network Trial Edition */
     char serial_number[16];
     char access_key[16];
 
-    /* Random number generator state */
-    //struct mt19937_state rng;
-    sfmt_t sfmt_rng;
+    bb_guildcard_data_t* gc_data;
+    psocn_bb_db_guild_t* guild_data;
+    bb_client_config_pkt sec_data;
+
+    unsigned char* recvbuf;
+    int pkt_cur;
+    int pkt_sz;
+
+    unsigned char* sendbuf;
+    int sendbuf_cur;
+    int sendbuf_size;
+    int sendbuf_start;
+
+    int hdr_read;
 
 } login_client_t;
 

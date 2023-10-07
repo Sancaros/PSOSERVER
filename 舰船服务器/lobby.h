@@ -198,11 +198,9 @@ struct lobby {
 
     uint8_t qpos_regs[LOBBY_MAX_IN_TEAM][LOBBY_MAX_IN_TEAM];
 
-#ifdef DEBUG
     uint8_t sdrops_ep;
     uint8_t sdrops_diff;
     uint8_t sdrops_section;
-#endif
 
     int script_ref;
     int script_table;

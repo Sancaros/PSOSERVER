@@ -834,7 +834,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         switch (me.base_type) {
         case 0x0040:    /* Hildebear & Hildetorr */
             rare_monster = false;
-            acc = me.skin & 0x01;
+            acc = me.skin & 0x01;// Set rare from a quest由任务来设置出现概率?
             if (acc)
                 rare_monster = true;
             else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.hildeblue)) {

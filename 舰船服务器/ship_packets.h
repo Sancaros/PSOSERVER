@@ -145,6 +145,9 @@ int send_lobby_leave(lobby_t *l, ship_client_t *c, int client_id);
 int send_lobby_chat(lobby_t *l, ship_client_t *sender, const char *msg,
                     const char *cmsg);
 
+int send_bb_empty_chat(lobby_t* l, ship_client_t* c, ship_client_t* s,
+    const uint8_t* msg, size_t len);
+
 /* Send a talk packet to the specified lobby (UTF-16 - Blue Burst). */
 int send_lobby_bbchat(lobby_t *l, ship_client_t *sender, const uint8_t *msg,
                       size_t len);

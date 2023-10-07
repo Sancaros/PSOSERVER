@@ -1209,7 +1209,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     if (enemy->drop_done)
         return 0;
 
-    enemy->drop_done = 1;
+    /* TODO */
+    if(!l->drop_pso2)
+        enemy->drop_done = 1;
 
     uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
 
@@ -1341,7 +1343,8 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bitemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
-    uint8_t drop_area = pkt->area, section = 0;
+    uint8_t drop_area = get_pt_data_area_bb(l->episode, pkt->area), section = 0, pt_index = pkt->pt_index;                   /* Always 0x30 */
+    uint16_t request_id = pkt->request_id, ignore_def = pkt->ignore_def;
 
     if (!in_game(src))
         return -1;
@@ -1362,15 +1365,15 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            if (pkt->ignore_def) {
-                iitem.data = on_box_item_drop(l, &p2->sfmt_rng, get_pt_data_area_bb(l->episode, drop_area), section);
+            if (ignore_def) {
+                iitem.data = on_box_item_drop(l, &p2->sfmt_rng, drop_area, section);
             }
             else
                 iitem.data = on_specialized_box_item_drop(l, &p2->sfmt_rng, drop_area,
                     pkt->def[0], pkt->def[1], pkt->def[2]);
 
-            LOBBY_BOX_DROPITEM_LOG(p2, pkt->request_id, pkt->pt_index, pkt->ignore_def
-                , get_pt_data_area_bb(l->episode, drop_area), &iitem.data);
+            LOBBY_BOX_DROPITEM_LOG(p2, request_id, pt_index, ignore_def
+                , drop_area, &iitem.data);
 
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
@@ -1406,16 +1409,16 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         section = get_lobby_leader_section(l);
         //drop_area = src->cur_area;
 
-        if (pkt->ignore_def) {
-            iitem.data = on_box_item_drop(l, &src->sfmt_rng, get_pt_data_area_bb(l->episode, drop_area), section);
+        if (ignore_def) {
+            iitem.data = on_box_item_drop(l, &src->sfmt_rng, drop_area, section);
         }
         else
             iitem.data = on_specialized_box_item_drop(l, &src->sfmt_rng, drop_area,
                 pkt->def[0], pkt->def[1], pkt->def[2]);
 
 
-        LOBBY_BOX_DROPITEM_LOG(src, pkt->request_id, pkt->pt_index, pkt->ignore_def
-            , get_pt_data_area_bb(l->episode, drop_area), &iitem.data);
+        LOBBY_BOX_DROPITEM_LOG(src, request_id, pt_index, ignore_def
+            , drop_area, &iitem.data);
 
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);

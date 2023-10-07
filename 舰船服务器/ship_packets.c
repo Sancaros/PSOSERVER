@@ -2863,6 +2863,46 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     return crypt_send(c, len, sendbuf);
 }
 
+int send_bb_empty_chat(lobby_t* l, ship_client_t* c, ship_client_t* s,
+    const uint8_t* msg, size_t len) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_chat_pkt* pkt = (bb_chat_pkt*)sendbuf;
+    uint16_t tmp[2] = { LE16('\t'), 0 };
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    /* Clear the packet header */
+    memset(pkt, 0, sizeof(bb_chat_pkt));
+
+    /* 填充数据头 */
+    pkt->client_id = LE16(s->client_id);
+    pkt->guildcard = LE32(s->guildcard);
+
+    strcpy16_raw(pkt->msg, &s->pl->bb.character.name);
+    strcat16_raw(pkt->msg, tmp);
+    strcat16_raw(pkt->msg, msg);
+    len = (strlen16_raw(pkt->msg) << 1) + 0x12;
+
+    /* 结尾添加截断字符 0x00*/
+    sendbuf[len++] = 0x00;
+    sendbuf[len++] = 0x00;
+
+    /* 增加字节偏移以适应4或8字节对齐 */
+    while (len & 0x07) {
+        sendbuf[len++] = 0;
+    }
+
+    /* 填充数据头 */
+    pkt->hdr.pkt_len = LE16((uint16_t)len);
+    pkt->hdr.pkt_type = LE16(CHAT_TYPE);
+    pkt->hdr.flags = 0;
+
+    /* 加密并发送 */
+    return crypt_send(c, len, sendbuf);
+}
+
 /* Send a talk packet to the specified lobby (UTF-16 - Blue Burst). */
 int send_lobby_bbchat(lobby_t *l, ship_client_t *sender, const uint8_t *msg,
                       size_t len) {

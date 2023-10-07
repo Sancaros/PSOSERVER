@@ -1154,7 +1154,7 @@ const char* get_lobby_mob_describe(lobby_t* l, uint8_t pt_index, uint8_t languag
 char* get_enemy_describe(lobby_t* l, uint8_t pt_index, const char* enemy_name_cn, const char* enemy_name_en, game_enemy_t* enemy) {
     memset(enemy_desc, 0, sizeof(enemy_desc));
 
-    snprintf(enemy_desc, sizeof(enemy_desc), "¹ÖÎï %s (%s PT%d RT%d BP%d) »÷É±:%s",
+    snprintf(enemy_desc, sizeof(enemy_desc), "¹ÖÎï %s(%s) [PT%d RT%d BP%d]\n»÷É±:%s",
         enemy_name_cn, enemy_name_en, pt_index, enemy->rt_index, enemy->bp_entry/*, enemy->clients_hit*/, get_player_describe(l->clients[enemy->last_client]));
 
     return enemy_desc;

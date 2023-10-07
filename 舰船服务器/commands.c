@@ -166,8 +166,6 @@ static int command_call(ship_client_t *c, const char *txt, size_t len) {
     }else
         ERR_LOG("指令参数为空");
 
-    DBG_LOG("123123123123");
-
     /* Look through the list for the one we want */
     while (i->hnd) {
         /* If this is it, go ahead and handle it */
@@ -177,8 +175,6 @@ static int command_call(ship_client_t *c, const char *txt, size_t len) {
 
         i++;
     }
-
-    DBG_LOG("123123123123");
 
     /* Make sure a script isn't set up to respond to the user's command... */
     if (!script_execute(ScriptActionUnknownCommand, c, SCRIPT_ARG_PTR, c,

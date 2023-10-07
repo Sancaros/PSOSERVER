@@ -44,7 +44,7 @@ typedef SSIZE_T ssize_t;
 #include <pthread.h>
 
 #define MAX_TMP_BUFF 65536
-#define MAX_PACKET_BUFF MAX_TMP_BUFF
+#define MAX_PACKET_BUFF ( MAX_TMP_BUFF * 2 )
 
 char dp[MAX_PACKET_BUFF];
 
@@ -602,7 +602,7 @@ static inline void log_mutex_init() {
     }
     else {
         // 初始化成功
-        DBG_LOG("log_mutex_init 初始化成功！");
+        //DBG_LOG("log_mutex_init 初始化成功！");
     }
 }
 
@@ -626,7 +626,7 @@ static inline void log_mutex_destory() {
     }
     else {
         // 销毁成功
-        DBG_LOG("log_mutex_destory 销毁成功！");
+        //DBG_LOG("log_mutex_destory 销毁成功！");
     }
 }
 

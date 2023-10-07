@@ -253,7 +253,7 @@ static int handle_ship_select(login_client_t* c, bb_select_pkt* pkt) {
         }
 
     case MENU_ID_NO_SHIP:
-        ERR_LOG("GC %u Î´ÕÒµ½½¢´¬", c->guildcard);
+        ERR_LOG("%s Î´ÕÒµ½½¢´¬,»ò½¢´¬Î¬»¤ÖĞ", get_lplayer_describe(c));
         return send_disconnect(c, c->auth);
 
     default:

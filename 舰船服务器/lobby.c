@@ -138,7 +138,6 @@ lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev) {
 }
 
 static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
-#ifdef DEBUG
     /* See if we have server drop debugging turned on... */
     if(c->flags & CLIENT_FLAG_DBG_SDROPS) {
         l->flags |= LOBBY_FLAG_SERVER_DROPS | LOBBY_FLAG_DBG_SDROPS;
@@ -160,7 +159,6 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
         l->sdrops_section = c->sdrops_section;
         return;
     }
-#endif
 
     /* 检查客户端是否开启服务器掉落模式. */
     if(c->flags & CLIENT_FLAG_SERVER_DROPS) {
@@ -309,7 +307,7 @@ const char* get_lobby_name(lobby_t* l) {
 
     const char* b_ptr = strstr(l->name, "B");
     if (b_ptr != NULL) {
-        const char* new_str = b_ptr;
+        const char* new_str = b_ptr + 1;
         return b_ptr;
     }
     else {

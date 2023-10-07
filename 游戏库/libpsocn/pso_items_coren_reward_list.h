@@ -391,14 +391,14 @@ static uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 		},
 		//100000 美赛塔 拉古奥尔手镯 抵抗黑色手镯 抵抗阳光手镯 厄普西隆之盾 天使圆环 黑色手套 腥臭盾 八咫镜 露芘卡 深渊来客
 		{
-			BBItem_YATA_MIRROR, BBItem_BLACK_GAUNTLETS, BBItem_EPSIGUARD,
-			BBItem_ANGEL_RING, BBItem_Scape_Doll, BBItem_FROM_THE_DEPTHS,
-			BBItem_RUPIKA, BBItem_STINK_SHIELD, BBItem_Power_Material,
 			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Power_Material, BBItem_Scape_Doll, BBItem_RUPIKA,
+			BBItem_YATA_MIRROR, BBItem_GRATIA, BBItem_EPSIGUARD,
+			BBItem_ANGEL_RING, BBItem_STINK_SHIELD, BBItem_FROM_THE_DEPTHS,
 			BBItem_TRIPOLIC_REFLECTOR, BBItem_REGENERATE_GEAR_BP, BBItem_WEAPONS_SILVER_SHIELD,
-			BBItem_WEAPONS_COPPER_SHIELD, BBItem_YELLOW_RING_63, BBItem_GREEN_RING_5B,
-			BBItem_BLUE_RING_53, BBItem_ANTI_DARK_RING, BBItem_ANTI_LIGHT_RING,
+			BBItem_WEAPONS_COPPER_SHIELD, BBItem_YELLOW_RING_66, BBItem_GREEN_RING_5F,
+			BBItem_BLUE_RING_59, BBItem_ANTI_DARK_RING, BBItem_ANTI_LIGHT_RING,
 			BBItem_RAGOL_RING
 		}
 	}

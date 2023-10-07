@@ -1293,10 +1293,8 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 		return item;
 	}
 
-	uint8_t normarea = get_pt_data_area_bb(l->episode, area);
-
 	if (choice_rng)
-		item = create_bb_box_item(l, ent, rng, normarea, section_id, item.datab[0]);
+		item = create_bb_box_item(l, ent, rng, area, section_id, item.datab[0]);
 	else
 		item = create_bb_box_waste_item(l, ent, rng, def0, def1, def2);
 	

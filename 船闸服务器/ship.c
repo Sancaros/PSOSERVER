@@ -5889,13 +5889,11 @@ int handle_pkt(ship_t* c) {
 
         if (c == NULL) {
             ERR_LOG("非法舰船链接");
-            //free_safe(recvbuf);
             return -1; // 参数合法性检查
         }
 
         if (!c->session) {
             ERR_LOG("非法舰船session");
-            //free_safe(recvbuf);
             return -1; // 错误检查，确保 c->session 不为空
         }
 
@@ -5905,7 +5903,7 @@ int handle_pkt(ship_t* c) {
         }
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
-        sz = ship_recv(c, recvbuf + c->recvbuf_cur, 65536 - c->recvbuf_cur);
+        sz = ship_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
 
         if (sz <= 0) {
             if (sz == SOCKET_ERROR) {
@@ -5919,7 +5917,6 @@ int handle_pkt(ship_t* c) {
                 ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
             }
 
-            //free_safe(recvbuf);
             return -1;
         }
 

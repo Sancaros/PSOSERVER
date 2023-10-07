@@ -221,18 +221,13 @@ static int handle_refresh(ship_client_t* c, const char* params) {
         return get_gm_priv(c);
     }
 
-    /* Not valid for Blue Burst clients */
-    if (c->version == CLIENT_VERSION_BB) {
-        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
-    }
-
     if (!strcmp(params, "quests")) {
         return refresh_quests(c, send_msg);
     }
     else if (!strcmp(params, "gms")) {
         /* Make sure the requester is a local root. */
         if (!LOCAL_ROOT(c)) {
-            return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
+            return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4权限不足."));
         }
 
         return refresh_gms(c, send_msg);
@@ -1869,22 +1864,16 @@ static int handle_ep3music(ship_client_t* c, const char* params) {
 
 /* 用法: /dsdrops version difficulty section episode */
 static int handle_dsdrops(ship_client_t* c, const char* params) {
-#ifdef DEBUG
     uint8_t ver, diff, section, ep;
     char* sver, * sdiff, * ssection, * sep;
     char* tok, * str;
-#endif
 
     /* Make sure the requester is a local GM, at least. */
     if (!LOCAL_GM(c))
         return get_gm_priv(c);
 
-    if (c->version == CLIENT_VERSION_BB)
-        return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
+    //return send_txt(c, "%s", __(c, "\tE\tC7Debug support not compiled in."));
 
-#ifndef DEBUG
-    return send_txt(c, "%s", __(c, "\tE\tC7Debug support not compiled in."));
-#else
     if (!(str = _strdup(params)))
         return send_txt(c, "%s", __(c, "\tE\tC7内部服务器错误."));
 
@@ -1901,7 +1890,7 @@ static int handle_dsdrops(ship_client_t* c, const char* params) {
 
     /* Parse the arguments */
     if (!strcmp(sver, "v2")) {
-        if (!pt_v2_enabled() || !map_have_v2_maps() || !pmt_v2_enabled() ||
+        if (!pt_v2_enabled() || !map_have_v2_maps() || !pmt_enabled_v2() ||
             !rt_v2_enabled()) {
             free_safe(str);
             return send_txt(c, "%s", __(c, "\tE\tC7Server-side drops not\n"
@@ -1912,7 +1901,7 @@ static int handle_dsdrops(ship_client_t* c, const char* params) {
         ver = CLIENT_VERSION_DCV2;
     }
     else if (!strcmp(sver, "gc")) {
-        if (!pt_gc_enabled() || !map_have_gc_maps() || !pmt_gc_enabled() ||
+        if (!pt_gc_enabled() || !map_have_gc_maps() || !pmt_enabled_gc() ||
             !rt_gc_enabled()) {
             free_safe(str);
             return send_txt(c, "%s", __(c, "\tE\tC7Server-side drops not\n"
@@ -1958,7 +1947,6 @@ static int handle_dsdrops(ship_client_t* c, const char* params) {
     free_safe(str);
 
     return send_txt(c, "%s", __(c, "\tE\tC7Enabled server-side drop debug."));
-#endif
 }
 
 /* 用法: /lflags */
@@ -2414,7 +2402,7 @@ static int handle_shutdown(ship_client_t* c, const char* params) {
 
     /* Make sure the requester is a local root. */
     if (!LOCAL_ROOT(c)) {
-        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4权限不足."));
     }
 
     /* Figure out when we're supposed to shut down. */
