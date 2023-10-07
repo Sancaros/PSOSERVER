@@ -510,6 +510,8 @@ void client_send_bb_data(ship_client_t* c) {
         if (c->version == CLIENT_VERSION_BB &&
             !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
 
+            pthread_mutex_lock(&c->mutex);
+
             c->need_save_data = false;
 
             /* 将游戏时间存储入人物数据 */
@@ -524,57 +526,49 @@ void client_send_bb_data(ship_client_t* c) {
 
 #endif // DEBUG
 
-            if (!c->mode) {
-                for (i = 0; i < c->bb_pl->character.inv.item_count; i++) {
-                    if (c->bb_pl->character.inv.iitems[i].present == LE16(0x0002)) {
-                        c->bb_pl->character.inv.iitems[i].flags = LE32(0x00000008);
-                    }
-                    else {
-                        c->bb_pl->character.inv.iitems[i].present = LE16(0x0001);
-                        c->bb_pl->character.inv.iitems[i].flags = LE32(0x00000000);
-                    }
-                    c->bb_pl->character.inv.iitems[i].data.item_id = EMPTY_STRING;
-                }
+            /* 检测玩家的魔法是否合规 */
+            if (!char_class_is_android(c->equip_flags)) {
+                for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+                    if (c->bb_pl->character.tech.all[i] == 0xFF)
+                        continue;
 
-                /* 检测玩家的魔法是否合规 */
-                if (!char_class_is_android(c->equip_flags)) {
-                    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-                        if (c->bb_pl->character.tech.all[i] == 0xFF)
-                            continue;
-
-                        if (c->bb_pl->character.tech.all[i] + 1 > get_bb_max_tech_level(c, i)) {
-                            c->bb_pl->character.tech.all[i] = 0xFF;
-                            /* 移除不合规的法术 */
-                            ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
-                                , get_player_describe(c)
-                                , get_technique_comment(i), c->bb_pl->character.tech.all[i] + 1
-                                , get_bb_max_tech_level(c, i)
-                            );
-                        }
-                    }
-                }
-                else {
-                    /* 清除机器人的魔法 */
-                    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+                    if (c->bb_pl->character.tech.all[i] + 1 > get_bb_max_tech_level(c, i)) {
                         c->bb_pl->character.tech.all[i] = 0xFF;
+                        /* 移除不合规的法术 */
+                        ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
+                            , get_player_describe(c)
+                            , get_technique_comment(i), c->bb_pl->character.tech.all[i] + 1
+                            , get_bb_max_tech_level(c, i)
+                        );
                     }
                 }
+            }
+            else {
+                /* 清除机器人的魔法 */
+                for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+                    c->bb_pl->character.tech.all[i] = 0xFF;
+                }
+            }
 
+            if (!c->mode) {
                 /* 将玩家数据存入数据库 */
-                shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+                if (shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
                     c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-                    c->cur_block->b);
+                    c->cur_block->b)) {
+                    pthread_mutex_unlock(&c->mutex);
+                    send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4存储数据失败~请联系管理员处理."));
+                    c->flags |= CLIENT_FLAG_DISCONNECTED;
+                }
             }
 
             /* 将玩家选项数据存入数据库 */
             shipgate_send_bb_opts(&ship->sg, c);
+
+            pthread_mutex_unlock(&c->mutex);
+
 #ifdef DEBUG
-
             DBG_LOG("%d 秒", num_seconds);
-
 #endif // DEBUG
-            DBG_LOG("%d 秒", num_seconds);
-
         }
     }
 

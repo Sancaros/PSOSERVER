@@ -36,6 +36,7 @@
 #include "mag_bb.h"
 #include "max_tech_level.h"
 #include "shipgate.h"
+#include "commands_gm.h"
 
 iitem_t fix_iitem[MAX_PLAYER_INV_ITEMS];
 bitem_t fix_bitem[MAX_PLAYER_BANK_ITEMS];
@@ -84,9 +85,9 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
     uint32_t id;
     int i;
 
-    inventory_t* inv = get_client_inv_bb(c);
-
     if (c->version == CLIENT_VERSION_BB) {
+        inventory_t* inv = get_client_inv_bb(c);
+
         /* 在新房间中修正玩家背包ID */
         id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
 

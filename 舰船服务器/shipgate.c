@@ -1560,7 +1560,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
                         }
 
-                        //fix_client_inv(&c->bb_pl->character.inv);
+                        fix_client_inv(&c->bb_pl->character.inv);
 
                         //fix_equip_item(&c->bb_pl->character.inv);
 
