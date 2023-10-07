@@ -138,14 +138,14 @@ bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
         pkt_size = pkt_bb->size;
         break;
 
-    case CLIENT_VERSION_PC:
-        subcmd_pkt_t* pkt_pc = (subcmd_pkt_t*)pkt;
-        pkt_type = pkt_pc->hdr.pc.pkt_type, pkt_subtype = pkt_pc->type;
-        pkt_len = pkt_pc->hdr.pc.pkt_len;
-        pkt_size = pkt_pc->size;
-        break;
-
-
+        /* 目前PC版本用了转换指令 转换为了 DC指令统一处理 */
+    //case CLIENT_VERSION_PC:
+    //    subcmd_pkt_t* pkt_pc = (subcmd_pkt_t*)pkt;
+    //    pkt_type = pkt_pc->hdr.pc.pkt_type, pkt_subtype = pkt_pc->type;
+    //    pkt_len = pkt_pc->hdr.pc.pkt_len;
+    //    pkt_size = pkt_pc->size;
+    //    break;
+        
     default:
         subcmd_pkt_t* pkt_dc = (subcmd_pkt_t*)pkt;
         pkt_type = pkt_dc->hdr.dc.pkt_type, pkt_subtype = pkt_dc->type;
@@ -155,19 +155,20 @@ bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
     }
 
     if (pkt_len != LE16(len) && len != 0) {
+        ERR_LOG("%s 发送损坏的数据指令1 0x%04X 0x%02X!", get_player_describe(src), pkt_type, pkt_subtype);
         goto err_all;
     }
 
     if (pkt_size != size && size != 0xFF) {
+        ERR_LOG("%s 发送损坏的数据指令2 0x%04X 0x%02X!", get_player_describe(src), pkt_type, pkt_subtype);
         goto err_all;
     }
 
     return true;
 
 err_all:
-    ERR_LOG("%s 发送损坏的数据指令 0x%04X 0x%02X!", get_player_describe(src), pkt_type, pkt_subtype);
     ERR_LOG("当前房间信息:");
-    ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+    ERR_LOG("章节: 0x%02X 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
     print_ascii_hex(errl, pkt, pkt_len);
     return false;
 }
