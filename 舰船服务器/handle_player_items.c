@@ -808,7 +808,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
-    fix_client_inv(&character->inv);
+    //fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -940,7 +940,7 @@ bool add_iitem(ship_client_t* src, const iitem_t iitem) {
     }
     character->inv.iitems[character->inv.item_count] = iitem;
     character->inv.item_count++;
-    fix_client_inv(&character->inv);
+    //fix_client_inv(&character->inv);
     return true;
 }
 
@@ -2345,7 +2345,6 @@ int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
 
     // 冒泡排序
     for (int i = 0; i < id_count - 1; i++) {
-        swap_item.data.item_id = 0xFFFFFFFF;
         memcpy(&iitem1, &inventory->iitems[i], sizeof(iitem_t));
         int index1 = -1;
         for (int j = 0; j < id_count; j++) {
@@ -2378,49 +2377,6 @@ int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
                 memcpy(&inventory->iitems[i], &inventory->iitems[j], sizeof(iitem_t));
                 memcpy(&inventory->iitems[j], &swap_item, sizeof(iitem_t));
                 index1 = index2;
-            }
-        }
-    }
-
-    return 0;
-}
-
-// 将物品按名称（前三个字节）排序
-int player_sort_inv(ship_client_t* src) {
-    inventory_t* inventory = get_client_inv_bb(src);
-    iitem_t item1, item2, swap_item;
-    uint32_t name1, name2;
-    uint8_t name_byte_swap;
-
-    // 如果物品数量小于等于 1，则不需要排序
-    if (inventory->item_count < 1) {
-        ERR_LOG("%s 身上没有物品可以排序", get_player_describe(src));
-        return -1;
-    }
-
-    // 冒泡排序
-    for (int i = 0; i < inventory->item_count - 1; i++) {
-        // 取出第一个物品的名称，并交换字节顺序
-        memcpy(&item1, &inventory->iitems[i], sizeof(iitem_t));
-        name_byte_swap = item1.data.datab[0];
-        item1.data.datab[0] = item1.data.datab[2];
-        item1.data.datab[2] = name_byte_swap;
-        memcpy(&name1, &item1.data.datab[0], 3);
-
-        for (int j = i + 1; j < inventory->item_count; j++) {
-            // 取出第二个物品的名称，并交换字节顺序
-            memcpy(&item2, &inventory->iitems[j], sizeof(iitem_t));
-            name_byte_swap = item2.data.datab[0];
-            item2.data.datab[0] = item2.data.datab[2];
-            item2.data.datab[2] = name_byte_swap;
-            memcpy(&name2, &item2.data.datab[0], 3);
-
-            // 如果第二个物品的名称比第一个物品的名称小，则交换它们
-            if (name2 < name1) {
-                memcpy(&swap_item, &inventory->iitems[i], sizeof(iitem_t));
-                memcpy(&inventory->iitems[i], &inventory->iitems[j], sizeof(iitem_t));
-                memcpy(&inventory->iitems[j], &swap_item, sizeof(iitem_t));
-                memcpy(&name1, &name2, 3);
             }
         }
     }

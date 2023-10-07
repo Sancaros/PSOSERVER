@@ -996,7 +996,7 @@ static void dumpinv_internal(ship_client_t* src) {
         GM_LOG("数量: %u", character_v1->inv.item_count);
 
         GM_LOG("------------------------------------------------------------");
-        for (i = 0; i < character_v1->inv.item_count; ++i) {
+        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
             GM_LOG("物品: %s", get_item_describe(&character_v1->inv.iitems[i].data, v));
             GM_LOG("编号: 0x%08X", character_v1->inv.iitems[i].data.item_id);
             GM_LOG(""
@@ -1034,7 +1034,7 @@ static void dumpinv_internal(ship_client_t* src) {
         GM_LOG("HP药: %u TP药: %u 语言: %u", character_bb->inv.hpmats_used, character_bb->inv.tpmats_used, character_bb->inv.language);
 
         GM_LOG("------------------------------------------------------------");
-        for (i = 0; i < character_bb->inv.item_count; ++i) {
+        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
             GM_LOG("物品: %s", get_item_describe(&character_bb->inv.iitems[i].data, v));
             GM_LOG("编号: 0x%08X", character_bb->inv.iitems[i].data.item_id);
             GM_LOG(""
@@ -1169,7 +1169,7 @@ static void dumpbank_internal(ship_client_t* src) {
         GM_LOG("数量: %u 美赛塔 %u", bank->item_count, bank->meseta);
 
         GM_LOG("------------------------------------------------------------");
-        for (i = 0; i < bank->item_count; ++i) {
+        for (i = 0; i < MAX_PLAYER_BANK_ITEMS; ++i) {
             GM_LOG("物品: %s", get_item_describe(&bank->bitems[i].data, v));
             GM_LOG("编号: 0x%08X", bank->bitems[i].data.item_id);
             GM_LOG(""

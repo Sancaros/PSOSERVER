@@ -1118,28 +1118,36 @@ uint8_t fix_bp_entry_index() {
 }
 
 const char* get_lobby_mob_describe(lobby_t* l, uint8_t pt_index, uint8_t language) {
-    /* PT表位是从NULL为0 客户端是从第一个怪物为0 少一位 */
+    // PT表位是从NULL为0 客户端是从第一个怪物为0 少一位
     uint8_t fix_pt_index = pt_index - 1;
-    const char* enemy_name_cn = pt_index_raw_mobnames_cn[fix_pt_index];
-    const char* enemy_name_en = pt_index_raw_mobnames[fix_pt_index];
 
+    const char* enemy_name_cn = NULL;
+    const char* enemy_name_en = NULL;
+
+    // 根据当前大厅的难度选择不同的怪物名称数组
     if (l->difficulty == 3) {
-        enemy_name_cn = pt_index_raw_mobnames_ult_cn[fix_pt_index];
-        enemy_name_en = pt_index_raw_mobnames_ult[fix_pt_index];
+        if (l->episode == 3) {
+            // 如果难度和场景都满足条件，则使用 pt_index_raw_mobnames_ep4_ult_cn 和 pt_index_raw_mobnames_ep4_ult 数组
+            enemy_name_cn = (pt_index <= ARRAYSIZE(pt_index_raw_mobnames_ep4_ult_cn)) ? pt_index_raw_mobnames_ep4_ult_cn[fix_pt_index] : "未识别怪物";
+            enemy_name_en = (pt_index <= ARRAYSIZE(pt_index_raw_mobnames_ep4_ult)) ? pt_index_raw_mobnames_ep4_ult[fix_pt_index] : "未识别怪物";
+        }
+        else {
+            // 否则，使用 pt_index_raw_mobnames_ult_cn 和 pt_index_raw_mobnames_ult 数组
+            enemy_name_cn = (pt_index <= ARRAYSIZE(pt_index_raw_mobnames_ult_cn)) ? pt_index_raw_mobnames_ult_cn[fix_pt_index] : "未识别怪物";
+            enemy_name_en = (pt_index <= ARRAYSIZE(pt_index_raw_mobnames_ult)) ? pt_index_raw_mobnames_ult[fix_pt_index] : "未识别怪物";
+        }
     }
-
-    if (l->episode == 3) {
-        fix_pt_index = pt_index;
-
-        if (l->difficulty == 3) {
-            enemy_name_cn = pt_index_raw_mobnames_ep4_ult_cn[fix_pt_index];
-            enemy_name_en = pt_index_raw_mobnames_ep4_ult[fix_pt_index];
+    else {
+        if (l->episode == 3) {
+            // 如果场景满足条件，则使用 pt_index_raw_mobnames_ep4_cn 和 pt_index_raw_mobnames_ep4 数组
+            enemy_name_cn = (pt_index < ARRAYSIZE(pt_index_raw_mobnames_ep4_cn)) ? pt_index_raw_mobnames_ep4_cn[fix_pt_index] : "未识别怪物";
+            enemy_name_en = (pt_index < ARRAYSIZE(pt_index_raw_mobnames_ep4)) ? pt_index_raw_mobnames_ep4[fix_pt_index] : "未识别怪物";
         }
-        else{
-            enemy_name_cn = pt_index_raw_mobnames_ep4_cn[fix_pt_index];
-            enemy_name_en = pt_index_raw_mobnames_ep4[fix_pt_index];
+        else {
+            // 否则，使用 pt_index_raw_mobnames_cn 和 pt_index_raw_mobnames 数组
+            enemy_name_cn = (pt_index < ARRAYSIZE(pt_index_raw_mobnames_cn)) ? pt_index_raw_mobnames_cn[fix_pt_index] : "未识别怪物";
+            enemy_name_en = (pt_index < ARRAYSIZE(pt_index_raw_mobnames)) ? pt_index_raw_mobnames[fix_pt_index] : "未识别怪物";
         }
-
     }
 
     switch (language) {

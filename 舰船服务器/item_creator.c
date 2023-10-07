@@ -805,7 +805,7 @@ item_t check_rare_spec_and_create_rare_enemy_item(lobby_t* l, pt_bb_entry_t* ent
 		// return multiple drops for an enemy type).
 		rt_table_t* rare_specs = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section_id);
 
-		PackedDrop_t spec = rare_specs->enemy_rares[enemy_type + 1];
+		PackedDrop_t spec = rare_specs->enemy_rares[enemy_type];
 
 		if (spec.probability == 0)
 			return item;

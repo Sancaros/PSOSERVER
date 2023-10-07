@@ -1537,50 +1537,53 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                     else if(c->bb_pl) {
                         memcpy(c->bb_pl, pkt->data, clen);
 
-                        //ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
-                            tmpi = &c->bb_pl->character.inv.iitems[i].data;
-                            if (item_not_identification_bb(tmpi->datal[0], tmpi->datal[1])) {
-#ifdef DEBUG
-                                ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
-                                print_item_data(tmpi, c->version);
-#endif // DEBUG
-                                clear_iitem(&c->bb_pl->character.inv.iitems[i]);
-                                continue;
-                            }
+                        //DBG_LOG("%s 玩家背包数据获取 %d", get_player_describe(c));
+                        //print_ascii_hex(dbgl, &c->bb_pl->character.inv, PSOCN_STLENGTH_INV);
+//
+//                        //ITEM_LOG("////////////////////////////////////////////////////////////");
+//                        for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+//                            tmpi = &c->bb_pl->character.inv.iitems[i].data;
+//                            if (item_not_identification_bb(tmpi->datal[0], tmpi->datal[1])) {
+//#ifdef DEBUG
+//                                ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
+//                                print_item_data(tmpi, c->version);
+//#endif // DEBUG
+//                                clear_iitem(&c->bb_pl->character.inv.iitems[i]);
+//                                continue;
+//                            }
+//
+//                            if (c->bb_pl->character.inv.iitems[i].present) {
+//                                //fix_inv_bank_item(tmpi);
+//                                tmpi->item_id = EMPTY_STRING;
+//                            }
+//                            else
+//                                clear_iitem(&c->bb_pl->character.inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
+//                        }
+//
+//                        //fix_client_inv(&c->bb_pl->character.inv);
+//
+//                        //fix_equip_item(&c->bb_pl->character.inv);
+//
+//                        //ITEM_LOG("////////////////////////////////////////////////////////////");
+//                        for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
+//                            tmpi = &c->bb_pl->bank.bitems[i].data;
+//                            if (item_not_identification_bb(tmpi->datal[0], tmpi->datal[1])) {
+//#ifdef DEBUG
+//                                ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
+//                                print_bitem_data(iteml, &c->bb_pl->bank.bitems[i], i, c->version);
+//#endif // DEBUG
+//                                clear_bitem(&c->bb_pl->bank.bitems[i]);
+//                                continue;
+//                            }
+//
+//                            if (c->bb_pl->bank.bitems[i].show_flags && c->bb_pl->bank.bitems[i].amount) {
+//                                //fix_inv_bank_item(tmpi);
+//                            }
+//                            else
+//                                clear_bitem(&c->bb_pl->bank.bitems[i]); /* 初始化无效的银行物品 以免数据错误 */
+//                        }
 
-                            if (c->bb_pl->character.inv.iitems[i].present) {
-                                //fix_inv_bank_item(tmpi);
-                                tmpi->item_id = EMPTY_STRING;
-                            }
-                            else
-                                clear_iitem(&c->bb_pl->character.inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
-                        }
-
-                        fix_client_inv(&c->bb_pl->character.inv);
-
-                        //fix_equip_item(&c->bb_pl->character.inv);
-
-                        //ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
-                            tmpi = &c->bb_pl->bank.bitems[i].data;
-                            if (item_not_identification_bb(tmpi->datal[0], tmpi->datal[1])) {
-#ifdef DEBUG
-                                ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
-                                print_bitem_data(iteml, &c->bb_pl->bank.bitems[i], i, c->version);
-#endif // DEBUG
-                                clear_bitem(&c->bb_pl->bank.bitems[i]);
-                                continue;
-                            }
-
-                            if (c->bb_pl->bank.bitems[i].show_flags && c->bb_pl->bank.bitems[i].amount) {
-                                //fix_inv_bank_item(tmpi);
-                            }
-                            else
-                                clear_bitem(&c->bb_pl->bank.bitems[i]); /* 初始化无效的银行物品 以免数据错误 */
-                        }
-
-                        fix_client_bank(&c->bb_pl->bank);
+                        //fix_client_bank(&c->bb_pl->bank);
                     }
 
                     done = 1;

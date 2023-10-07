@@ -27,7 +27,7 @@ void clear_inv_item(item_t* item) {
 	item->datal[0] = 0;
 	item->datal[1] = 0;
 	item->datal[2] = 0;
-	item->item_id = 0;
+	item->item_id = EMPTY_STRING;
 	item->data2l = 0;
 }
 
