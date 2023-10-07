@@ -1262,106 +1262,106 @@ static int check_char_xbox(ship_client_t* src, player_t* pl) {
 
 static int check_char_bb(ship_client_t* src, player_t* pl) {
     bitfloat_t f1 = { 0 }, f2 = { 0 };
-    psocn_dress_data_t dress_data1 = src->pl->bb.character.dress_data;
-    psocn_dress_data_t dress_data2 = pl->bb.character.dress_data;
-    psocn_disp_char_t disp1 = src->pl->bb.character.disp;
-    psocn_disp_char_t disp2 = pl->bb.character.disp;
+    psocn_dress_data_t src_dress_data = src->pl->bb.character.dress_data;
+    psocn_dress_data_t pkt_dress_data = pl->bb.character.dress_data;
+    psocn_disp_char_t src_disp = src->pl->bb.character.disp;
+    psocn_disp_char_t pkt_disp = pl->bb.character.disp;
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
-    if (dress_data1.model != dress_data2.model)
+    if (src_dress_data.model != pkt_dress_data.model)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎómodel %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.model, dress_data2.model);
-        dress_data1.model = dress_data2.model;
+            get_player_describe(src), src_dress_data.model, pkt_dress_data.model);
+        src_dress_data.model = pkt_dress_data.model;
         return -10;
     }
 
-    if (dress_data1.section != dress_data2.section)
+    if (src_dress_data.section != pkt_dress_data.section)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎósection %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.section, dress_data2.section);
-        dress_data1.section = dress_data2.section;
+            get_player_describe(src), src_dress_data.section, pkt_dress_data.section);
+        src_dress_data.section = pkt_dress_data.section;
         return -11;
     }
 
-    if (dress_data1.ch_class != dress_data2.ch_class)
+    if (src_dress_data.ch_class != pkt_dress_data.ch_class)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóch_class %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.ch_class, dress_data2.ch_class);
-        dress_data1.ch_class = dress_data2.ch_class;
+            get_player_describe(src), src_dress_data.ch_class, pkt_dress_data.ch_class);
+        src_dress_data.ch_class = pkt_dress_data.ch_class;
         return -12;
     }
 
-    if (dress_data1.costume != dress_data2.costume)
+    if (src_dress_data.costume != pkt_dress_data.costume)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎócostume %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.costume, dress_data2.costume);
-        dress_data1.costume = dress_data2.costume;
+            get_player_describe(src), src_dress_data.costume, pkt_dress_data.costume);
+        src_dress_data.costume = pkt_dress_data.costume;
         return -13;
     }
 
-    if (dress_data1.skin != dress_data2.skin)
+    if (src_dress_data.skin != pkt_dress_data.skin)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóskin %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.skin, dress_data2.skin);
-        dress_data1.skin = dress_data2.skin;
+            get_player_describe(src), src_dress_data.skin, pkt_dress_data.skin);
+        src_dress_data.skin = pkt_dress_data.skin;
         return -14;
     }
 
-    if (dress_data1.face != dress_data2.face)
+    if (src_dress_data.face != pkt_dress_data.face)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóface %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.face, dress_data2.face);
-        dress_data1.face = dress_data2.face;
+            get_player_describe(src), src_dress_data.face, pkt_dress_data.face);
+        src_dress_data.face = pkt_dress_data.face;
         return -15;
     }
 
-    if (dress_data1.head != dress_data2.head)
+    if (src_dress_data.head != pkt_dress_data.head)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóhead %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.head, dress_data2.head);
-        dress_data1.head = dress_data2.head;
+            get_player_describe(src), src_dress_data.head, pkt_dress_data.head);
+        src_dress_data.head = pkt_dress_data.head;
         return -16;
     }
 
-    if (dress_data1.hair != dress_data2.hair)
+    if (src_dress_data.hair != pkt_dress_data.hair)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóhair %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.hair, dress_data2.hair);
-        dress_data1.hair = dress_data2.hair;
+            get_player_describe(src), src_dress_data.hair, pkt_dress_data.hair);
+        src_dress_data.hair = pkt_dress_data.hair;
         return -17;
     }
 
-    if (dress_data1.hair_r != dress_data2.hair_r)
+    if (src_dress_data.hair_r != pkt_dress_data.hair_r)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóhair_r %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.hair_r, dress_data2.hair_r);
-        dress_data1.hair_r = dress_data2.hair_r;
+            get_player_describe(src), src_dress_data.hair_r, pkt_dress_data.hair_r);
+        src_dress_data.hair_r = pkt_dress_data.hair_r;
         return -18;
     }
 
-    if (dress_data1.hair_g != dress_data2.hair_g)
+    if (src_dress_data.hair_g != pkt_dress_data.hair_g)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóhair_g %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.hair_g, dress_data2.hair_g);
-        dress_data1.hair_g = dress_data2.hair_g;
+            get_player_describe(src), src_dress_data.hair_g, pkt_dress_data.hair_g);
+        src_dress_data.hair_g = pkt_dress_data.hair_g;
         return -19;
     }
 
-    if (dress_data1.hair_b != dress_data2.hair_b)
+    if (src_dress_data.hair_b != pkt_dress_data.hair_b)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóhair_b %d %d", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), dress_data1.hair_b, dress_data2.hair_b);
-        dress_data1.hair_b = dress_data2.hair_b;
+            get_player_describe(src), src_dress_data.hair_b, pkt_dress_data.hair_b);
+        src_dress_data.hair_b = pkt_dress_data.hair_b;
         return -20;
     }
 
     /* Floating point stuff... Ugh. Pay careful attention to these, just in case
        they're some special value like NaN or Inf (potentially because of byte
        ordering or whatnot). */
-    f1.f = dress_data1.prop_x;
-    f2.f = dress_data2.prop_x;
+    f1.f = src_dress_data.prop_x;
+    f2.f = pkt_dress_data.prop_x;
     if (f1.b != f2.b)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎób %u %u", ship->cfg->ship_name, src->cur_block->b,
@@ -1370,8 +1370,8 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
         return -21;
     }
 
-    f1.f = dress_data1.prop_y;
-    f2.f = dress_data2.prop_y;
+    f1.f = src_dress_data.prop_y;
+    f2.f = pkt_dress_data.prop_y;
     if (f1.b != f2.b)
     {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎób %u %u", ship->cfg->ship_name, src->cur_block->b,
@@ -1380,8 +1380,11 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
         return -22;
     }
 
-    if (memcmp(dress_data1.gc_string, dress_data2.gc_string, 16))
+    if (memcmp(src_dress_data.gc_string, pkt_dress_data.gc_string, 16)) {
+        ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎógc_string %s %s", ship->cfg->ship_name, src->cur_block->b,
+            get_player_describe(src), src_dress_data.gc_string, pkt_dress_data.gc_string);
         return -23;
+    }
 
     /* Now make sure that nothing has decreased that should never decrease.
        Since these aren't equality comparisons, we have to deal with byte
@@ -1399,16 +1402,18 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
         return -25;
     }
 
-    if (LE32(disp1.exp) > LE32(disp2.exp)) {
+    if (LE32(src_disp.exp) > LE32(pkt_disp.exp)) {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎóexp %u %u", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), disp1.exp, disp2.exp);
+            get_player_describe(src), src_disp.exp, pkt_disp.exp);
+        src_disp.exp = pkt_disp.exp;
         return -26;
     }
 
     /* Why is the level 32-bits?... */
-    if (LE32(disp1.level) > LE32(disp2.level)) {
+    if (LE32(src_disp.level) > LE32(pkt_disp.level)) {
         ERR_LOG("%s[½¢²Ö%02d]: ½ÇÉ«Êý¾Ý¼ì²éÊ§°Ü %s ´íÎólevel %u %u", ship->cfg->ship_name, src->cur_block->b,
-            get_player_describe(src), disp1.level, disp2.level);
+            get_player_describe(src), src_disp.level, pkt_disp.level);
+        src_disp.level = pkt_disp.level;
         return -27;
     }
 

@@ -1142,10 +1142,10 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                     get_lobby_describe(c->cur_lobby));
             }
 
-            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入\n"
-                "这个服务器.\n\n"
-                "\tE\tC7请将这条信息上报至\n"
-                "管理员处."));
+            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
+                "\tE\tC7请将这条信息上报至管理员处.\n\n"
+                "\tE\tC7QQ群:901650349")
+            );
 
             return -1;
         }
@@ -1154,10 +1154,10 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     v = LE32(pkt->data.bb.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
         pthread_mutex_unlock(&c->mutex);
-        send_msg(c, MSG_BOX_TYPE, __(c, "\tE不允许作弊玩家进入\n"
-            "这个服务器.\n\n"
-            "这条信息将会上报至\n"
-            "管理员处."));
+        send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
+            "\tE\tC7请将这条信息上报至管理员处.\n\n"
+            "\tE\tC7QQ群:901650349")
+        );
         ERR_LOG("%s[舰仓%02d]: 检测到 %s 无效级别的角色! 等级: %" PRIu32 "",
             ship->cfg->ship_name, c->cur_block->b,
             get_player_describe(c), v);
@@ -1318,12 +1318,10 @@ static int bb_process_char_leave_game(ship_client_t* c, bb_char_data_pkt* pkt) {
                 ERR_LOG("%s[舰仓%02d]: %s", ship->cfg->ship_name, c->cur_block->b,
                     get_lobby_describe(c->cur_lobby));
             }
-
-            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入\n"
-                "这个服务器.\n\n"
-                "\tE\tC7请将这条信息上报至\n"
-                "管理员处."));
-
+            send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
+                "\tE\tC7请将这条信息上报至管理员处.\n\n"
+                "\tE\tC7QQ群:901650349")
+            );
             return -1;
         }
     }
@@ -1331,10 +1329,10 @@ static int bb_process_char_leave_game(ship_client_t* c, bb_char_data_pkt* pkt) {
     v = LE32(pkt->data.bb.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
         pthread_mutex_unlock(&c->mutex);
-        send_msg(c, MSG_BOX_TYPE, __(c, "\tE不允许作弊玩家进入\n"
-            "这个服务器.\n\n"
-            "这条信息将会上报至\n"
-            "管理员处."));
+        send_msg(c, MSG_BOX_TYPE, __(c, "\tE\tC4不允许数据错误的玩家进入这个服务器.\n\n"
+            "\tE\tC7请将这条信息上报至管理员处.\n\n"
+            "\tE\tC7QQ群:901650349")
+        );
         ERR_LOG("%s[舰仓%02d]: 检测到 %s 无效级别的角色! 等级: %" PRIu32 "",
             ship->cfg->ship_name, c->cur_block->b,
             get_player_describe(c), v);
