@@ -114,17 +114,71 @@ int db_get_orignal_char_full_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t*
 }
 
 int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name) {
+    bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)data;
+    psocn_bb_full_char_t* full_char = &full_data_pkt->data;
 
     memset(myquery, 0, sizeof(myquery));
 
     snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
         "guildcard, slot, ch_class, class_name, update_time, "
+        "`character2`, bank, quest_data1, guildcard_desc, "
+        "autoreply, infoboard, b_records, c_records, tech_menu, quest_data2, "
         "`full_data`"
         ") VALUES ("
         "'%d', '%d', '%d', '%s', NOW(), '",
         CHARACTER_DATA_FULL,
         gc, slot, char_class, class_name
     );
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->character,
+        PSOCN_STLENGTH_BB_CHAR2);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->bank,
+        PSOCN_STLENGTH_BANK);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_data1,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->gc.guildcard_desc,
+        88);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->autoreply,
+        172);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->infoboard,
+        172);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->b_records,
+        PSOCN_STLENGTH_BATTLE_RECORDS);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->c_records,
+        PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->tech_menu,
+        PSOCN_STLENGTH_BB_DB_TECH_MENU);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_data2,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+
+    strcat(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)data,
         PSOCN_STLENGTH_BB_FULL_CHAR);
@@ -139,7 +193,6 @@ int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
 
     return 0;
 }
-
 
 int db_update_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name) {
     memset(myquery, 0, sizeof(myquery));

@@ -691,11 +691,8 @@ static int handle_item(ship_client_t* src, const char* params) {
         return get_gm_priv(src);
     }
 
-    pthread_mutex_lock(&l->mutex);
-
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
@@ -704,7 +701,6 @@ static int handle_item(ship_client_t* src, const char* params) {
         &item[3]);
 
     if (count == EOF || count == 0) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
@@ -720,7 +716,6 @@ static int handle_item(ship_client_t* src, const char* params) {
     pmt_item_base_check_t item_base_check = get_item_definition_bb(src->new_item.datal[0], src->new_item.datal[1]);
     if (item_base_check.err) {
         clear_inv_item(&src->new_item);
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
     }
 
@@ -729,7 +724,6 @@ static int handle_item(ship_client_t* src, const char* params) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!litem) {
-            pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
@@ -737,31 +731,20 @@ static int handle_item(ship_client_t* src, const char* params) {
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
-        pthread_mutex_unlock(&l->mutex);
     }
     else {
         ++l->item_player_id[src->client_id];
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
-        pthread_mutex_unlock(&l->mutex);
     }
-
-    send_txt(src, "%s %s %s",
-        __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version, 0),
-        __(src, "\tE\tC6设置成功, 立即生成."));
 
     LOBBY_GM_MAKE_ITEM_LOG(src, idata.item_id, src->cur_area, &idata);
 
-#ifdef DEBUG
-
-    GM_LOG("%s 使用权限制造:", get_player_describe(src));
-    print_item_data(&src->new_item, l->version);
-
-#endif // DEBUG
-
-    return 0;
+    return send_txt(src, "%s %s %s",
+        __(src, "\tE\tC8物品:"),
+        item_get_name(&src->new_item, src->version, 0),
+        __(src, "\tE\tC6设置成功, 立即生成."));
 }
 
 /* 用法 /item1 item1 */
@@ -797,16 +780,6 @@ static int handle_item1(ship_client_t* src, const char* params) {
     src->new_item.datal[0] = SWAP32(item);
 
     LOBBY_GM_MAKE_ITEM_LOG(src, src->new_item.item_id, src->cur_area, &src->new_item);
-    //GM_LOG("%s 使用权限修改 item1:", get_player_describe(src));
-    //GM_LOG("物品: %s", get_item_describe(item, src->version));
-    //GM_LOG("编号: 0x%08X", src->new_item.item_id);
-    //GM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-    //    src->new_item.datab[0], src->new_item.datab[1], src->new_item.datab[2], src->new_item.datab[3],
-    //    src->new_item.datab[4], src->new_item.datab[5], src->new_item.datab[6], src->new_item.datab[7],
-    //    src->new_item.datab[8], src->new_item.datab[9], src->new_item.datab[10], src->new_item.datab[11],
-    //    src->new_item.data2b[0], src->new_item.data2b[1], src->new_item.data2b[2], src->new_item.data2b[3]);
-    //GM_LOG("----------------------------------------------------");
-    //print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
@@ -841,9 +814,6 @@ static int handle_item2(ship_client_t* src, const char* params) {
 
     LOBBY_GM_MAKE_ITEM_LOG(src, src->new_item.item_id, src->cur_area, &src->new_item);
 
-    //GM_LOG("%s 使用权限修改 item2:", get_player_describe(src));
-    //print_item_data(&src->new_item, src->version);
-
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item2 设置成功."));
 }
 
@@ -873,9 +843,6 @@ static int handle_item3(ship_client_t* src, const char* params) {
     src->new_item.datal[2] = SWAP32(item);
 
     LOBBY_GM_MAKE_ITEM_LOG(src, src->new_item.item_id, src->cur_area, &src->new_item);
-
-    //GM_LOG("%s 使用权限修改 item3:", get_player_describe(src));
-    print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item3 设置成功."));
 }
@@ -907,9 +874,6 @@ static int handle_item4(ship_client_t* src, const char* params) {
 
     LOBBY_GM_MAKE_ITEM_LOG(src, src->new_item.item_id, src->cur_area, &src->new_item);
 
-    //GM_LOG("%s 使用权限修改 item4:", get_player_describe(src));
-    //print_item_data(&src->new_item, src->version);
-
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item4 设置成功."));
 }
 
@@ -924,17 +888,13 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         return get_gm_priv(src);
     }
 
-    pthread_mutex_lock(&l->mutex);
-
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
     /* Make sure there's something set with /item */
     if (!src->new_item.datal[0]) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."),
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
@@ -944,7 +904,6 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!litem) {
-            pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
@@ -952,7 +911,6 @@ static int handle_miitem(ship_client_t* src, const char* params) {
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
-        pthread_mutex_unlock(&l->mutex);
     }
     else {
         ++l->item_player_id[src->client_id];
@@ -961,24 +919,14 @@ static int handle_miitem(ship_client_t* src, const char* params) {
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
-        pthread_mutex_unlock(&l->mutex);
     }
-
-    send_txt(src, "%s %s %s",
-        __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version, 0),
-        __(src, "\tE\tC6生成成功."));
 
     LOBBY_GM_MAKE_ITEM_LOG(src, idata.item_id, src->cur_area, &idata);
 
-#ifdef DEBUG
-
-    GM_LOG("%s 使用权限制造:", get_player_describe(src));
-    print_item_data(&src->new_item, l->version);
-
-#endif // DEBUG
-
-    return 0;
+    return send_txt(src, "%s %s %s",
+            __(src, "\tE\tC8物品:"),
+            item_get_name(&src->new_item, src->version, 0),
+            __(src, "\tE\tC6生成成功."));
 }
 
 static void dumpinv_internal(ship_client_t* src) {

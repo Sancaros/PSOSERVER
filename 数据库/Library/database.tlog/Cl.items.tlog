@@ -19,5 +19,7 @@ E:\梦幻之星项目\PSOSERVER\数据库\shipgate_query.c;E:\梦幻之星项目
 E:\梦幻之星项目\PSOSERVER\数据库\common_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\common_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_techniques_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_techniques_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_full_data_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_full_data_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_quest_data2_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_quest_data2_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_tech_menu_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_tech_menu_query.obj
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.ixx;E:\梦幻之星项目\PSOSERVER\数据库\Library\std.ixx.obj
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.compat.ixx;E:\梦幻之星项目\PSOSERVER\数据库\Library\std.compat.ixx.obj

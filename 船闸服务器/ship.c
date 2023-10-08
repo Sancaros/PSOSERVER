@@ -2975,16 +2975,15 @@ uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech) {
     return max_tech_level[tech].max_lvl[ch_class];
 }
 
+/* 处理E7指令传输过来的BB角色数据 **************************************************************/
 static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)pkt->pkt;
     psocn_bb_full_char_t* full_char = &full_data_pkt->data;
     uint32_t slot = pkt->fw_flags, gc = ntohl(pkt->guildcard);
     char char_class_name_text[64];
 
-    DBG_LOG("GC %u:%u ch_class %d %s 角色数据如下", gc, slot, full_data_pkt->data.gc.char_class, pso_class[full_data_pkt->data.gc.char_class].cn_name);
-    print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #ifdef DEBUG
-    DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
+    DBG_LOG("GC %u:%u ch_class %d %s 角色数据如下", gc, slot, full_data_pkt->data.gc.char_class, pso_class[full_data_pkt->data.gc.char_class].cn_name);
     print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
 
@@ -2997,11 +2996,13 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
         if (full_char->character.tech.all[i] == 0xFF) {
+#ifdef DEBUG
             DBG_LOG("GC %u:%u 法术 %s 等级 %d 为 0xFF!"
                 , gc
                 , slot
                 , get_technique_comment(i), full_char->character.tech.all[i]
             );
+#endif // DEBUG
             continue;
         }
 
@@ -3098,7 +3099,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 }
 
-/* 船闸保存角色数据. */
+/* 船闸保存BB角色数据. 于E7后触发保存 *******************************************************************************/
 static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint32_t gc, slot;
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
@@ -3169,7 +3170,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_b_records(&char_data->b_records, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
-        SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("无法保存角色对战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
@@ -3187,7 +3188,25 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_quest_data1(char_data->quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
-        SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("无法保存角色quest_data1数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        return 0;
+    }
+
+    if (db_update_char_quest_data2(char_data->quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        SQLERR_LOG("无法保存角色quest_data2数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        return 0;
+    }
+
+    if (db_update_char_tech_menu(char_data->tech_menu, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        SQLERR_LOG("无法保存角色quest_data2数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
@@ -3547,6 +3566,16 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据, 错误码:%d", gc, slot, err);
         }
 
+        /* 从数据库中获取玩家角色的QUEST_DATA2数据 */
+        if ((err |= db_get_char_quest_data2(gc, slot, bb_data->quest_data2, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA2数据, 错误码:%d", gc, slot, err);
+        }
+
+        /* 从数据库中获取玩家角色的TECH_MENU数据 */
+        if ((err |= db_get_char_tech_menu(gc, slot, bb_data->tech_menu, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA2数据, 错误码:%d", gc, slot, err);
+        }
+
         /* 从数据库中获取玩家角色的银行数据 */
         if ((err |= db_get_char_bank(gc, slot, &bb_data->bank))) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据, 错误码:%d", gc, slot, err);
@@ -3572,10 +3601,15 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
 
                 return -2;
             }
+            db_update_char_inv(&backupdata.character.inv, gc, slot);
             db_update_char_disp(&backupdata.character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_dress_data(&backupdata.character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_name(&backupdata.character.name, gc, slot);
             db_update_char_techniques(backupdata.character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_quest_data1(backupdata.quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_quest_data2(backupdata.quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_tech_menu(backupdata.tech_menu, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_bank(&backupdata.bank, gc, slot);
             db_update_char_b_records(&backupdata.b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_c_records(&backupdata.c_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
 
@@ -6004,8 +6038,8 @@ int handle_pkt(ship_t* c) {
 
     sz = ship_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
 
-    DBG_LOG("handle_pkt");
-    print_ascii_hex(dbgl, recvbuf, sz);
+    //DBG_LOG("handle_pkt");
+    //print_ascii_hex(dbgl, recvbuf, sz);
     if (sz <= 0) {
         pthread_rwlock_unlock(&c->rwlock);
         if (sz == SOCKET_ERROR) {

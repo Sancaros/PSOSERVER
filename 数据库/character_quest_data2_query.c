@@ -19,9 +19,9 @@
 #include "database_query.h"
 #include "f_checksum.h"
 
-#define TABLE1 CHARACTER_QUEST_DATA1
+#define TABLE1 CHARACTER_QUEST_DATA2
 
-static int db_del_char_quest_data1(uint32_t gc, uint8_t slot) {
+static int db_del_char_quest_data2(uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "DELETE FROM %s"
@@ -42,7 +42,7 @@ static int db_del_char_quest_data1(uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-static int db_updata_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot) {
+static int db_updata_quest_data2(uint8_t* quest_data2, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "UPDATE %s SET "
@@ -51,8 +51,8 @@ static int db_updata_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
-        (char*)quest_data1,
-        PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+        (char*)quest_data2,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
     sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
         "slot = '%" PRIu8 "'", gc, slot);
@@ -68,7 +68,7 @@ static int db_updata_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot
     return 0;
 }
 
-int db_insert_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot) {
+int db_insert_char_quest_data2(uint8_t* quest_data2, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO %s "
@@ -81,8 +81,8 @@ int db_insert_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot) 
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
-        (char*)quest_data1,
-        0x208);
+        (char*)quest_data2,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
     strcat(myquery, "')");
 
@@ -96,21 +96,21 @@ int db_insert_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot) 
     return 0;
 }
 
-int db_update_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot, uint32_t flag) {
+int db_update_char_quest_data2(uint8_t* quest_data2, uint32_t gc, uint8_t slot, uint32_t flag) {
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
-        if (db_insert_char_quest_data1(quest_data1, gc, slot)) {
+        if (db_insert_char_quest_data2(quest_data2, gc, slot)) {
             return -1;
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        if (db_updata_quest_data1(quest_data1, gc, slot)) {
+        if (db_updata_quest_data2(quest_data2, gc, slot)) {
 
-            if (db_del_char_quest_data1(gc, slot)) {
+            if (db_del_char_quest_data2(gc, slot)) {
                 return -1;
             }
 
-            if (db_insert_char_quest_data1(quest_data1, gc, slot)) {
+            if (db_insert_char_quest_data2(quest_data2, gc, slot)) {
                 return -1;
             }
         }
@@ -119,8 +119,8 @@ int db_update_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot, 
     return 0;
 }
 
-/* 获取玩家QUEST_DATA1数据数据项 */
-int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int check) {
+/* 获取玩家QUEST_DATA2数据数据项 */
+int db_get_char_quest_data2(uint32_t gc, uint8_t slot, uint8_t* quest_data2, int check) {
     void* result;
     char** row;
     //char* endptr;
@@ -155,11 +155,11 @@ int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int
 
     ///* 获取二进制数据 */
     //int i = 2;
-    //quest_data1->quest_guildcard = (uint32_t)strtoul(row[i], &endptr, 10);
+    //quest_data2->quest_guildcard = (uint32_t)strtoul(row[i], &endptr, 10);
     //i++;
-    memcpy(quest_data1, row[0], 0x208);
+    memcpy(quest_data2, row[0], PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
     //i++;
-    //quest_data1->quest_flags = (uint32_t)strtoul(row[i], &endptr, 10);
+    //quest_data2->quest_flags = (uint32_t)strtoul(row[i], &endptr, 10);
 
     //if (*endptr != '\0') {
     //    SQLERR_LOG("获取的数据 索引 %d 字符串读取有误", i);
@@ -171,7 +171,7 @@ int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int
     return 0;
 
 build:
-    if (db_insert_char_quest_data1(quest_data1, gc, slot)) {
+    if (db_insert_char_quest_data2(quest_data2, gc, slot)) {
         return -1;
     }
 

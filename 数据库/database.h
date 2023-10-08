@@ -75,8 +75,9 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_QUEST_DATA2 "character_quest_data2"
 #define CHARACTER_RECORDS_BATTLE "character_records_battle"
 #define CHARACTER_RECORDS_CHALLENGE "character_records_challenge"
+#define CHARACTER_TECH_MENU "character_tech_menu"
 #define CHARACTER_TECHNIQUES "character_techniques"
-#define CHARACTER_TRADE "character_trade"
+#define CHARACTER_TRADE "character_trade"   
 
 #define CLIENTS_GUILD "clients_guild"
 #define CLIENTS_GUILDCARDS "clients_guildcards"

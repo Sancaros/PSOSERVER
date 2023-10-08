@@ -174,20 +174,18 @@ int db_update_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, uint8
             
 
             if (db_del_char_dress_data(gc, slot)) {
-
                 SQLERR_LOG("无法删除外观数据 %s (GC %" PRIu32 ", "
                     "槽位 %" PRIu8 ")", TABLE1, gc, slot);
                 return -3;
             }
 
-
+            SQLERR_LOG("插入新外观数据 %s (GC %" PRIu32 ", "
+                "槽位 %" PRIu8 ")", TABLE1, gc, slot);
             if (db_insert_char_dress_data(dress_data, gc, slot)) {
                 SQLERR_LOG("无法保存外观数据 %s (GC %" PRIu32 ", "
                     "槽位 %" PRIu8 ")", TABLE1, gc, slot);
                 return -4;
             }
-
-
         }
     }
 

@@ -3568,8 +3568,8 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
     sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
 
     //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
-    DBG_LOG("process_shipgate_pkt");
-    print_ascii_hex(dbgl, recvbuf, sz);
+    //DBG_LOG("process_shipgate_pkt");
+    //print_ascii_hex(dbgl, recvbuf, sz);
 
     /* 尝试读取数据，如果没有获取到，则结束处理。 */
     if (sz <= 0) {
@@ -3678,8 +3678,8 @@ int send_shipgate_pkts(shipgate_conn_t* c) {
         /* Send as much as we can. */
         amt = sg_send(c, c->sendbuf, c->sendbuf_cur);
 
-        DBG_LOG("send_shipgate_pkts");
-        print_ascii_hex(dbgl, c->sendbuf, c->sendbuf_cur);
+        //DBG_LOG("send_shipgate_pkts");
+        //print_ascii_hex(dbgl, c->sendbuf, c->sendbuf_cur);
 
         DBG_LOG("零碎数据端口 %d 发送数据 %d 字节", c->sock, amt);
 

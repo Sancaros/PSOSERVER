@@ -86,5 +86,11 @@
     <ClCompile Include="character_full_data_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="character_quest_data2_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="character_tech_menu_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

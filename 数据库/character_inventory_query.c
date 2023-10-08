@@ -411,11 +411,11 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 	while ((row = psocn_db_result_fetch(result)) != NULL) {
 		if (!isEmptyInt((uint16_t)strtoul(row[4], &endptr, 16))) {
 			inv->iitems[k].present = (uint16_t)strtoul(row[4], &endptr, 16);
-			DBG_LOG("0x%04X", inv->iitems[k].present);
+			//DBG_LOG("0x%04X", inv->iitems[k].present);
 			inv->iitems[k].extension_data1 = (uint8_t)strtoul(row[5], &endptr, 16);
 			inv->iitems[k].extension_data2 = (uint8_t)strtoul(row[6], &endptr, 16);
 			inv->iitems[k].flags = (uint32_t)strtoul(row[7], &endptr, 16);
-			DBG_LOG("0x%08X", inv->iitems[k].flags);
+			//DBG_LOG("0x%08X", inv->iitems[k].flags);
 
 			inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[8], &endptr, 16);
 			inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[9], &endptr, 16);

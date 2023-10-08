@@ -120,8 +120,8 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
         /* Keep trying until the whole thing's sent. */
         if (!c->has_key || c->sock < 0 || !c->sendbuf_cur) {
 
-            DBG_LOG("send_raw");
-            print_ascii_hex(dbgl, sendbuf, len);
+            //DBG_LOG("send_raw");
+            //print_ascii_hex(dbgl, sendbuf, len);
 
             while (total < len) {
                 rv = ship_send(c, sendbuf + total, len - total);

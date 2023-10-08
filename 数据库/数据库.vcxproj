@@ -44,6 +44,8 @@
     <ClCompile Include="common_query.c" />
     <ClCompile Include="character_techniques_query.c" />
     <ClCompile Include="character_full_data_query.c" />
+    <ClCompile Include="character_quest_data2_query.c" />
+    <ClCompile Include="character_tech_menu_query.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
