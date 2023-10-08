@@ -1553,6 +1553,17 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                             }
 
                             if (c->bb_pl->character.inv.iitems[i].present) {
+
+
+
+
+
+
+
+
+
+
+
                                 //fix_inv_bank_item(tmpi);
                                 tmpi->item_id = EMPTY_STRING;
                             }

@@ -2913,9 +2913,8 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint32_t slot = pkt->fw_flags, gc = ntohl(pkt->guildcard);
     char char_class_name_text[64];
 
-    DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
+    DBG_LOG("GC %u:%u ch_class %d %s 角色数据如下", gc, slot, full_data_pkt->data.gc.char_class, pso_class[full_data_pkt->data.gc.char_class].cn_name);
     print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
-
 #ifdef DEBUG
     DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
     print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
