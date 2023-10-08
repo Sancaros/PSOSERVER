@@ -549,6 +549,9 @@ int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     size_t i = 0, ic = bank->item_count;
 
+    if (bank->item_count == 0)
+        return 0;
+
     if (ic > MAX_PLAYER_BANK_ITEMS)
         ic = db_get_char_bank_char_item_count(gc, slot);
 

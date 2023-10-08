@@ -500,78 +500,45 @@ ship_client_t* client_create_connection(int sock, int version, int type,
 }
 
 void client_send_bb_data(ship_client_t* c) {
-    __try {
-        int i = 0;
-        time_t now = time(NULL);
+    int i = 0;
+    time_t now = time(NULL);
 
-        uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
+    uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
 
-        /* If the client was on Blue Burst, update their db character */
-        if (c->version == CLIENT_VERSION_BB &&
-            !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
+    /* If the client was on Blue Burst, update their db character */
+    if (c->version == CLIENT_VERSION_BB &&
+        !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
 
-            c->need_save_data = false;
+        c->need_save_data = false;
 
-            /* 将游戏时间存储入人物数据 */
-            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        /* 将游戏时间存储入人物数据 */
+        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
-            c->save_time = now;
+        c->save_time = now;
 
 #ifdef DEBUG
-            DBG_LOG("mode %d", c->mode);
-            fix_client_inv(&c->bb_pl->character.inv);
-            fix_equip_item(&c->bb_pl->character.inv);
+        DBG_LOG("mode %d", c->mode);
+        fix_client_inv(&c->bb_pl->character.inv);
+        fix_equip_item(&c->bb_pl->character.inv);
 
 #endif // DEBUG
 
-            /* 检测玩家的魔法是否合规 */
-            if (!char_class_is_android(c->equip_flags)) {
-                for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-                    if (c->bb_pl->character.tech.all[i] == 0xFF)
-                        continue;
-
-                    if (c->bb_pl->character.tech.all[i] + 1 > get_bb_max_tech_level(c, i)) {
-                        c->bb_pl->character.tech.all[i] = 0xFF;
-                        /* 移除不合规的法术 */
-                        ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
-                            , get_player_describe(c)
-                            , get_technique_comment(i), c->bb_pl->character.tech.all[i] + 1
-                            , get_bb_max_tech_level(c, i)
-                        );
-                    }
-                }
+        if (!c->mode) {
+            /* 将玩家数据存入数据库 */
+            if (shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+                c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+                c->cur_block->b)) {
+                send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC4存储数据失败~请联系管理员处理,并出大厅切换服务器保存数据."));
+                //c->flags |= CLIENT_FLAG_DISCONNECTED;
             }
-            else {
-                /* 清除机器人的魔法 */
-                for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-                    c->bb_pl->character.tech.all[i] = 0xFF;
-                }
-            }
-
-            if (!c->mode) {
-                /* 将玩家数据存入数据库 */
-                if (shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-                    c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-                    c->cur_block->b)) {
-                    send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC4存储数据失败~请联系管理员处理,并出大厅切换服务器保存数据."));
-                    //c->flags |= CLIENT_FLAG_DISCONNECTED;
-                }
-            }
-
-            /* 将玩家选项数据存入数据库 */
-            shipgate_send_bb_opts(&ship->sg, c);
-
-#ifdef DEBUG
-            DBG_LOG("%d 秒", num_seconds);
-#endif // DEBUG
         }
-    }
 
-    __except (crash_handler(GetExceptionInformation())) {
-        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+        /* 将玩家选项数据存入数据库 */
+        shipgate_send_bb_opts(&ship->sg, c);
 
-        CRASH_LOG("出现错误, 程序将退出.");
-        (void)getchar();
+#ifdef DEBUG
+        DBG_LOG("%d 秒", num_seconds);
+#endif // DEBUG
     }
 }
 
@@ -579,132 +546,123 @@ void client_send_bb_data(ship_client_t* c) {
    must always be called with the appropriate lock held for the list! */
 void client_destroy_connection(ship_client_t* c,
     struct client_queue* clients) {
-    __try {
-        int i = 0;
-        time_t now = time(NULL);
-        char tstr[26];
-        script_action_t action = ScriptActionClientShipLogout;
+    int i = 0;
+    time_t now = time(NULL);
+    char tstr[26];
+    script_action_t action = ScriptActionClientShipLogout;
 
-        if (!(c->flags & CLIENT_FLAG_TYPE_SHIP))
-            action = ScriptActionClientBlockLogout;
+    if (!(c->flags & CLIENT_FLAG_TYPE_SHIP))
+        action = ScriptActionClientBlockLogout;
 
-        TAILQ_REMOVE(clients, c, qentry);
+    TAILQ_REMOVE(clients, c, qentry);
 
-        client_send_bb_data(c);
+    client_send_bb_data(c);
 
-        script_execute(action, c, SCRIPT_ARG_PTR, c, 0);
+    script_execute(action, c, SCRIPT_ARG_PTR, c, 0);
 
 #ifdef ENABLE_LUA
-        /* Remove the table from the registry */
-        luaL_unref(ship->lstate, LUA_REGISTRYINDEX, c->script_ref);
+    /* Remove the table from the registry */
+    luaL_unref(ship->lstate, LUA_REGISTRYINDEX, c->script_ref);
 #endif
 
-        /* If the user was on a block, notify the shipgate */
-        if (c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.dress_data.gc_string[0]) {
-            shipgate_send_block_login(&ship->sg, 0, c->guildcard,
-                c->cur_block->b, c->pl->v1.character.dress_data.gc_string);
-        }
-        else if (c->version == CLIENT_VERSION_BB && c->bb_pl) {
-            shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard, c->sec_data.slot,
-                c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
-        }
-
-        ship_dec_clients(ship);
-
-        ////TODO 与目前存在空房间的设定冲突 待适配
-        ///* If the client has a lobby sitting around that was created but not added
-        //   to the list of lobbies, destroy it */
-        //if (c->create_lobby && c->create_lobby->lobby_create) {
-        //    c->create_lobby->lobby_create = 0;
-        //    lobby_destroy_noremove(c->create_lobby);
-        //}
-
-           /* If we were logging the user, closesocket the file */
-        if (c->logfile) {
-            ctime_s(tstr, sizeof(tstr), &now);
-            tstr[strlen(tstr) - 1] = 0;
-            fprintf(c->logfile, "[%s] 关闭连接\n", tstr);
-            fclose(c->logfile);
-        }
-
-        if (c->sock >= 0) {
-            closesocket(c->sock);
-        }
-
-        if (c->limits)
-            release(c->limits);
-
-        if (c->recvbuf) {
-            free_safe(c->recvbuf);
-        }
-
-        if (c->sendbuf) {
-            free_safe(c->sendbuf);
-        }
-
-        if (c->autoreply) {
-            free_safe(c->autoreply);
-        }
-
-        if (c->enemy_kills) {
-            free_safe(c->enemy_kills);
-        }
-
-        if (c->pl) {
-            free_safe(c->pl);
-        }
-
-        if (c->game_data) {
-            free_safe(c->game_data);
-        }
-
-        if (c->mode_pl) {
-            free_safe(c->mode_pl);
-        }
-
-        if (c->records) {
-            free_safe(c->records);
-        }
-
-        if (c->common_bank) {
-            free_safe(c->common_bank);
-        }
-
-        if (c->char_bank) {
-            free_safe(c->char_bank);
-        }
-
-        if (c->bb_pl) {
-            free_safe(c->bb_pl);
-        }
-
-        if (c->bb_opts) {
-            free_safe(c->bb_opts);
-        }
-
-        if (c->bb_guild) {
-            free_safe(c->bb_guild);
-        }
-
-        if (c->next_maps) {
-            free_safe(c->next_maps);
-        }
-
-        if (c->xbl_ip) {
-            free_safe(c->xbl_ip);
-        }
-
-        pthread_mutex_destroy(&c->mutex);
-
-        free_safe(c);
+    /* If the user was on a block, notify the shipgate */
+    if (c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.dress_data.gc_string[0]) {
+        shipgate_send_block_login(&ship->sg, 0, c->guildcard,
+            c->cur_block->b, c->pl->v1.character.dress_data.gc_string);
+    }
+    else if (c->version == CLIENT_VERSION_BB && c->bb_pl) {
+        shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard, c->sec_data.slot,
+            c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
     }
 
-    __except (crash_handler(GetExceptionInformation())) {
-        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+    ship_dec_clients(ship);
 
-        CRASH_LOG("出现错误, 程序将退出.");
-        (void)getchar();
+    ////TODO 与目前存在空房间的设定冲突 待适配
+    ///* If the client has a lobby sitting around that was created but not added
+    //   to the list of lobbies, destroy it */
+    //if (c->create_lobby && c->create_lobby->lobby_create) {
+    //    c->create_lobby->lobby_create = 0;
+    //    lobby_destroy_noremove(c->create_lobby);
+    //}
+
+       /* If we were logging the user, closesocket the file */
+    if (c->logfile) {
+        ctime_s(tstr, sizeof(tstr), &now);
+        tstr[strlen(tstr) - 1] = 0;
+        fprintf(c->logfile, "[%s] 关闭连接\n", tstr);
+        fclose(c->logfile);
     }
+
+    if (c->sock >= 0) {
+        closesocket(c->sock);
+    }
+
+    if (c->limits)
+        release(c->limits);
+
+    if (c->recvbuf) {
+        free_safe(c->recvbuf);
+    }
+
+    if (c->sendbuf) {
+        free_safe(c->sendbuf);
+    }
+
+    if (c->autoreply) {
+        free_safe(c->autoreply);
+    }
+
+    if (c->enemy_kills) {
+        free_safe(c->enemy_kills);
+    }
+
+    if (c->pl) {
+        free_safe(c->pl);
+    }
+
+    if (c->game_data) {
+        free_safe(c->game_data);
+    }
+
+    if (c->mode_pl) {
+        free_safe(c->mode_pl);
+    }
+
+    if (c->records) {
+        free_safe(c->records);
+    }
+
+    if (c->common_bank) {
+        free_safe(c->common_bank);
+    }
+
+    if (c->char_bank) {
+        free_safe(c->char_bank);
+    }
+
+    if (c->bb_pl) {
+        free_safe(c->bb_pl);
+    }
+
+    if (c->bb_opts) {
+        free_safe(c->bb_opts);
+    }
+
+    if (c->bb_guild) {
+        free_safe(c->bb_guild);
+    }
+
+    if (c->next_maps) {
+        free_safe(c->next_maps);
+    }
+
+    if (c->xbl_ip) {
+        free_safe(c->xbl_ip);
+    }
+
+    pthread_mutex_destroy(&c->mutex);
+
+    free_safe(c);
 }
 
 /* Read data from a client that is connected to any port. */
@@ -1112,9 +1070,6 @@ int client_give_level(ship_client_t* dest, uint32_t level_req) {
     exp_total = LE32(character->disp.exp);
     exp_gained = ent->exp - exp_total;
     character->disp.exp = LE32(ent->exp);
-
-    if (character->disp.exp > bb_char_stats.levels[character->dress_data.ch_class][character->disp.level].exp)
-        character->disp.exp = bb_char_stats.levels[character->dress_data.ch_class][character->disp.level].exp;
 
     /* Send the packet telling them they've gotten experience. */
     if (subcmd_send_lobby_bb_exp(dest, exp_gained))
@@ -1637,7 +1592,7 @@ lobby_t* get_client_lobby(ship_client_t* src) {
 }
 
 char* get_player_describe(ship_client_t* src) {
-    if(!src)
+    if (!src)
         return "玩家不存在";
 
     /* 初始化角色描述内存 */
@@ -1658,7 +1613,7 @@ char* get_lobby_leader_describe(lobby_t* l) {
         return "房间不存在";
 
     ship_client_t* src = l->clients[l->leader_id];
-    if(!src)
+    if (!src)
         return "房主不存在";
 
     /* 初始化角色描述内存 */
@@ -1705,7 +1660,7 @@ uint8_t get_player_section(ship_client_t* src) {
         section_id = character->dress_data.section;
         break;
     default:
-        ERR_LOG("%s 版本 %s 颜色未获取成功",get_player_describe(src), client_type[0].ver_name);
+        ERR_LOG("%s 版本 %s 颜色未获取成功", get_player_describe(src), client_type[0].ver_name);
         break;
     }
 
@@ -1850,7 +1805,7 @@ void show_player_tech_info(ship_client_t* src) {
         );
 
         for (int i = 0; i < MAX_PLAYER_TECHNIQUES; ++i) {
-            if (max_tech_level[i].max_lvl[ch_class] == 0 ) {
+            if (max_tech_level[i].max_lvl[ch_class] == 0) {
                 // 将要写入的数据格式化为字符串
                 sprintf_s(data_str, sizeof(data_str),
                     "%d.%s \tE\tC4无法学习\tE\tC7"

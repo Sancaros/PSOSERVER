@@ -2753,7 +2753,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     GetLocalTime(&time);
 
     // 获取当前是星期几（星期天 = 0, 星期一 = 1, 星期二 = 2, ..., 星期六 = 6）
-    reward_list.wday = time.wDayOfWeek;
+    reward_list.wday = /*time.wDayOfWeek*/sfmt_genrand_uint32(&src->sfmt_rng) % 7;
 
 #ifdef DEBUG
 
@@ -2766,9 +2766,13 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    reward_percent[0] = weekly_reward_percent[menu_choice][reward_list.wday][0];
-    reward_percent[1] = weekly_reward_percent[menu_choice][reward_list.wday][1];
-    reward_percent[2] = weekly_reward_percent[menu_choice][reward_list.wday][2];
+    // 将数字转换为对应的星期几文本
+    const char* weekDays[] = { "星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+    const char* currentDayOfWeek = weekDays[reward_list.wday];
+
+    reward_percent[0] = 国庆_weekly_reward_percent[menu_choice][reward_list.wday][0];
+    reward_percent[1] = 国庆_weekly_reward_percent[menu_choice][reward_list.wday][1];
+    reward_percent[2] = 国庆_weekly_reward_percent[menu_choice][reward_list.wday][2];
     reward_list.rewards = day_reward_list[reward_list.wday][menu_choice];
 
     /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/

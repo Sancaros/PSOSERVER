@@ -143,13 +143,13 @@ int read_player_level_table_bb(bb_level_table_t* bb_char_stats) {
                 PLAYER_LEVEL_TABLE_BB_, pso_class[j].class_code, i);
 
             if (psocn_db_real_query(&conn, query)) {
-                ERR_LOG("Couldn't fetch from database!");
+                ERR_LOG("无法查询法术数据表!");
                 free_safe(bb_char_stats);
                 return -1;
             }
 
             if ((result = psocn_db_result_store(&conn)) == NULL) {
-                ERR_LOG("Could not store results!");
+                ERR_LOG("无法获取法术数据表!");
                 free_safe(bb_char_stats);
                 return -1;
             }
