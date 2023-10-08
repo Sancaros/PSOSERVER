@@ -36,8 +36,32 @@
 static uint8_t sendbuf[MAX_PACKET_BUFF];
 bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
+/* The key for accessing our thread-specific send buffer. */
+pthread_key_t sendbuf_key;
+
 /* 获取 sendbuf 动态内存数据. */
 uint8_t* get_sg_sendbuf(void) {
+    uint8_t* sendbuf = (uint8_t*)pthread_getspecific(sendbuf_key);
+
+    /* If we haven't initialized the sendbuf pointer yet for this thread, then
+       we need to do that now. */
+    if (!sendbuf) {
+        sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+
+        if (!sendbuf) {
+            ERR_LOG("malloc");
+            perror("malloc");
+            return NULL;
+        }
+
+        memset(sendbuf, 0, MAX_PACKET_BUFF);
+
+        if (pthread_setspecific(sendbuf_key, sendbuf)) {
+            ERR_LOG("pthread_setspecific");
+            free_safe(sendbuf);
+            return NULL;
+        }
+    }
     //uint8_t* sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
     ///* If we haven't initialized the sendbuf pointer yet for this thread, then
@@ -47,7 +71,7 @@ uint8_t* get_sg_sendbuf(void) {
     //    return NULL;
     //}
 
-    memset(sendbuf, 0, MAX_PACKET_BUFF);
+    //memset(sendbuf, 0, MAX_PACKET_BUFF);
 
     return sendbuf;
 }
@@ -90,12 +114,17 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
             ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
             return 0;
         }
+        pthread_rwlock_wrlock(&c->rwlock);
+        //pthread_mutex_lock(&c->pkt_mutex);
 
         /* Keep trying until the whole thing's sent. */
         if (!c->has_key || c->sock < 0 || !c->sendbuf_cur) {
+
+            DBG_LOG("send_raw");
+            print_ascii_hex(dbgl, sendbuf, len);
+
             while (total < len) {
                 rv = ship_send(c, sendbuf + total, len - total);
-
                 //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
 
                 /* 检测数据是否以发送完成? */
@@ -104,6 +133,8 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                     continue;
                 }
                 else if (rv < 0) {
+                    pthread_rwlock_unlock(&c->rwlock);
+                    //pthread_mutex_unlock(&c->pkt_mutex);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //free_safe(sendbuf);
@@ -114,12 +145,15 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
             }
         }
 
+        pthread_rwlock_unlock(&c->rwlock);
+        //pthread_mutex_unlock(&c->pkt_mutex);
         //free_safe(sendbuf);
 
         return 0;
     }
 
     __except (crash_handler(GetExceptionInformation())) {
+        //pthread_mutex_unlock(&c->pkt_mutex);
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
         CRASH_LOG("出现错误, 程序将退出.");

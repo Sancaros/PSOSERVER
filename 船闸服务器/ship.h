@@ -73,6 +73,12 @@ typedef struct monster_event {
 typedef struct ship {
     TAILQ_ENTRY(ship) qentry;
 
+    pthread_mutex_t pkt_mutex;
+    pthread_rwlock_t rwlock;
+    pthread_t read_tid;
+    pthread_t write_tid;
+    //pthread_t thd;
+
     int sock;
     int disconnected;
     int has_key;
@@ -121,6 +127,12 @@ typedef struct ship {
 
 TAILQ_HEAD(ship_queue, ship);
 extern struct ship_queue ships;
+
+/* The key for accessing our thread-specific receive buffer. */
+extern pthread_key_t recvbuf_key;
+
+/* The key used for the thread-specific send buffer. */
+extern pthread_key_t sendbuf_key;
 
 /* Create a new connection, storing it in the list of ships. */
 ship_t *create_connection_tls(int sock, struct sockaddr *addr, socklen_t size);

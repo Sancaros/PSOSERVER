@@ -3534,138 +3534,130 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
 /* 从船闸服务器读取数据流. */
 int process_shipgate_pkt(shipgate_conn_t* c) {
-    __try {
-        ssize_t sz;
-        ssize_t pkt_sz;
-        int rv = 0;
-        unsigned char* rbp;
-        uint8_t* recvbuf = get_recvbuf();
-        void* tmp;
-        /* 确保8字节的倍数传输 */
-        int recv_size = 8;
-
-        /* 如果无法分配空间，则退出。 */
-        if (recvbuf == NULL) {
-            ERR_LOG("内存分配失败");
-            return -1;
-        }
-
-        if (c == NULL) {
-            ERR_LOG("非法舰闸链接");
-            return -1; // 参数合法性检查
-        }
-
-        if (!c->session) {
-            ERR_LOG("非法舰闸session");
-            return -1; // 错误检查，确保 c->session 不为空
-        }
-
-        /* 如果有缓冲区中已有数据，则将其复制到主缓冲区，以便后续处理。 */
-        if (c->recvbuf_cur) {
-            memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
-        }
-
-        /* 尝试读取数据，如果没有获取到，则结束处理。 */
-        sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
-
-        //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
-
-        /* 尝试读取数据，如果没有获取到，则结束处理。 */
-        if (sz <= 0) {
-            if (sz == SOCKET_ERROR) {
-                DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
-            }
-            else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-                ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
-            }
-            else if (sz < 0) {
-                ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-                ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
-            }
-
-            return -1;
-        }
-
-        sz += c->recvbuf_cur;
-        c->recvbuf_cur = 0;
-        rbp = recvbuf;
-
-        /* 只要我们拥有足够长的数据，就进行解密。 */
-        while (sz >= recv_size && rv == 0) {
-            /* 复制数据包头部，以便知道要处理的数据包的长度。 */
-            if (!c->hdr_read) {
-                memcpy(&c->pkt, rbp, recv_size);
-                c->hdr_read = 1;
-            }
-
-            /* 读取数据包的大小以确定预期的数据大小。 */
-            pkt_sz = ntohs(c->pkt.pkt_len);
-
-            /* 我们始终需要8字节的倍数。 */
-            if (pkt_sz & 0x07) {
-                pkt_sz = (pkt_sz & 0xFFF8) + recv_size;
-            }
-
-            /* 是否已接收完整的数据包？ */
-            if (sz >= (ssize_t)pkt_sz) {
-                /* 是的，将其复制出来。 */
-                memcpy(rbp, &c->pkt, recv_size);
-
-                /* 将数据包传递给正确的处理程序。 */
-                c->last_message = time(NULL);
-                rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
-                if (rv) {
-                    ERR_LOG("处理数据包出错，rv = %d", rv);
-                    //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
-                    //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
-                    return -1;
-                }
-
-                rbp += pkt_sz;
-                sz -= pkt_sz;
-                c->hdr_read = 0;
-            }
-            else {
-                /* 没有，说明还缺少部分数据，跳出循环，将剩余数据缓冲起来。 */
-                break;
-            }
-        }
-
-        /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
-        if (sz && rv == 0) {
-            /* 如果接收缓冲区大小不够，则重新分配。 */
-            if (c->recvbuf_size < sz) {
-                tmp = realloc(c->recvbuf, sz);
-
-                if (!tmp) {
-                    ERR_LOG("重新分配内存失败");
-                    return -1;
-                }
-
-                c->recvbuf = (unsigned char*)tmp;
-                c->recvbuf_size = sz;
-            }
-
-            memcpy(c->recvbuf, rbp, sz);
-            c->recvbuf_cur = sz;
-        }
-        else if (c->recvbuf) {
-            /* 如果接收缓冲区为空，则释放它。 */
-            free_safe(c->recvbuf);
-            c->recvbuf = NULL;
-            c->recvbuf_size = 0;
-        }
-
-        return 0;
+    if (c == NULL) {
+        ERR_LOG("非法舰闸链接");
+        return -2; // 参数合法性检查
     }
 
-    __except (crash_handler(GetExceptionInformation())) {
-        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+    if (!c->session) {
+        ERR_LOG("非法舰闸session");
+        return -3; // 错误检查，确保 c->session 不为空
+    }
 
-        CRASH_LOG("出现错误, 程序将退出.");
-        (void)getchar();
+    ssize_t sz;
+    ssize_t pkt_sz;
+    int rv = 0;
+    unsigned char* rbp;
+    uint8_t* recvbuf = get_recvbuf();
+    void* tmp;
+    /* 确保8字节的倍数传输 */
+    int recv_size = 8;
+
+    /* 如果无法分配空间，则退出。 */
+    if (recvbuf == NULL) {
+        ERR_LOG("内存分配失败");
+        return -1;
+    }
+
+    /* 如果有缓冲区中已有数据，则将其复制到主缓冲区，以便后续处理。 */
+    if (c->recvbuf_cur) {
+        memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
+    }
+
+    /* 尝试读取数据，如果没有获取到，则结束处理。 */
+    sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
+
+    //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
+    DBG_LOG("process_shipgate_pkt");
+    print_ascii_hex(dbgl, recvbuf, sz);
+
+    /* 尝试读取数据，如果没有获取到，则结束处理。 */
+    if (sz <= 0) {
+        if (sz == SOCKET_ERROR) {
+            ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
+        }
+        else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
+            ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+        }
+        else if (sz < 0) {
+            ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
+            ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
+        }
+
         return -4;
     }
+
+    sz += c->recvbuf_cur;
+    c->recvbuf_cur = 0;
+    rbp = recvbuf;
+
+    /* 只要我们拥有足够长的数据，就进行解密。 */
+    while (sz >= recv_size && rv == 0) {
+        /* 复制数据包头部，以便知道要处理的数据包的长度。 */
+        if (!c->hdr_read) {
+            memcpy(&c->pkt, rbp, recv_size);
+            c->hdr_read = 1;
+        }
+
+        /* 读取数据包的大小以确定预期的数据大小。 */
+        pkt_sz = ntohs(c->pkt.pkt_len);
+
+        /* 我们始终需要8字节的倍数。 */
+        if (pkt_sz & 0x07) {
+            pkt_sz = (pkt_sz & 0xFFF8) + recv_size;
+        }
+
+        /* 是否已接收完整的数据包？ */
+        if (sz >= (ssize_t)pkt_sz) {
+            /* 是的，将其复制出来。 */
+            memcpy(rbp, &c->pkt, recv_size);
+
+            /* 将数据包传递给正确的处理程序。 */
+            c->last_message = time(NULL);
+            rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
+            if (rv) {
+                ERR_LOG("处理数据包出错，rv = %d", rv);
+                //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
+                //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
+                return -5;
+            }
+
+            rbp += pkt_sz;
+            sz -= pkt_sz;
+            c->hdr_read = 0;
+        }
+        else {
+            /* 没有，说明还缺少部分数据，跳出循环，将剩余数据缓冲起来。 */
+            break;
+        }
+    }
+
+    /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
+    if (sz && rv == 0) {
+        /* 如果接收缓冲区大小不够，则重新分配。 */
+        if (c->recvbuf_size < sz) {
+            tmp = realloc(c->recvbuf, sz);
+
+            if (!tmp) {
+                ERR_LOG("重新分配内存失败");
+                return -6;
+            }
+
+            c->recvbuf = (unsigned char*)tmp;
+            c->recvbuf_size = sz;
+        }
+
+        memcpy(c->recvbuf, rbp, sz);
+        c->recvbuf_cur = sz;
+    }
+    else if (c->recvbuf) {
+        /* 如果接收缓冲区为空，则释放它。 */
+        free_safe(c->recvbuf);
+        c->recvbuf = NULL;
+        c->recvbuf_size = 0;
+    }
+
+    return 0;
 }
 
 /* Send any piled up data. */
@@ -3685,6 +3677,9 @@ int send_shipgate_pkts(shipgate_conn_t* c) {
 
         /* Send as much as we can. */
         amt = sg_send(c, c->sendbuf, c->sendbuf_cur);
+
+        DBG_LOG("send_shipgate_pkts");
+        print_ascii_hex(dbgl, c->sendbuf, c->sendbuf_cur);
 
         DBG_LOG("零碎数据端口 %d 发送数据 %d 字节", c->sock, amt);
 

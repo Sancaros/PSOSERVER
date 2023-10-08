@@ -85,7 +85,7 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 	size_t i;
 	memset(&dp[0], 0, sizeof(dp));
 
-	if (data == NULL || length == 0 || length > MAX_PACKET_BUFF) {
+	if (data == NULL || length <= 0 || length > MAX_PACKET_BUFF) {
 		sprintf(dp, "空指针数据包或无效长度 % d 数据包.", length);
 		goto done;
 	}
@@ -97,7 +97,7 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 		goto done;
 	}
 
-	strcpy(dp, "数据包如下:\n\r");
+	strcpy(dp, "数据包如下:\n\r");	
 
 	for (i = 0; i < length; i++) {
 		if (i % 16 == 0) {
@@ -461,7 +461,7 @@ void color(uint32_t x)	//自定义函根据参数改变颜色
 void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;
@@ -526,7 +526,7 @@ void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;
@@ -592,7 +592,7 @@ void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_
 
 void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...) {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;
@@ -657,7 +657,7 @@ void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const
 void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;
@@ -794,7 +794,7 @@ void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;
@@ -856,7 +856,7 @@ void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;
@@ -918,7 +918,7 @@ void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 void flog_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;

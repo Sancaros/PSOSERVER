@@ -249,8 +249,8 @@ static void* block_thd(void* d) {
                 continue;
             }
 
-            /* 默认间隔5秒存储一次数据 */
-            if ((it->save_time < srv_time) && (it->need_save_data) && !(it->flags & CLIENT_FLAG_DISCONNECTED)) {
+            /* 默认间隔1秒存储一次数据 */
+            if ((it->save_time + 1 < srv_time) && (it->need_save_data) && !(it->flags & CLIENT_FLAG_DISCONNECTED)) {
                 client_send_bb_data(it);
                 it->need_save_data = true;
             }

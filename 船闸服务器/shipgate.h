@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 
+#include <pthread.h>
 #include <pso_player.h>
 
 #include "ship.h"
@@ -36,7 +37,6 @@
 //#define VERSION_MINOR 1;
 //#define VERSION_MICRO 0;
 //
-
 
 /* Send a welcome packet to the given ship. */
 int send_welcome(ship_t *c);

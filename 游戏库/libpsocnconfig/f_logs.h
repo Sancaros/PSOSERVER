@@ -509,6 +509,59 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp);
 
 typedef void (*LogFunc)(const char*, ...);
 
+#define PRINT_HEX_LOG(method, data, length) do {\
+	pthread_mutex_lock(&pkt_mutex);\
+	size_t i;\
+	memset(&dp[0], 0, sizeof(dp));\
+	if (data == NULL || length <= 0 || length > MAX_PACKET_BUFF) {\
+		sprintf(dp, "空指针数据包或无效长度 % d 数据包.", length);\
+		goto done;\
+	}\
+	uint8_t* buff = (uint8_t*)data;\
+	if (is_all_zero(buff, length)) {\
+		sprintf(dp, "空数据包 长度 %d.", length);\
+		goto done;\
+	}\
+	strcpy(dp, "数据包如下:\n\r");\
+	for (i = 0; i < length; i++) {\
+		if (i % 16 == 0) {\
+			if (i != 0) {\
+				strcat(dp, "\n");\
+			}\
+			sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i);\
+		}\
+		sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]);\
+		if (i % 8 == 7 && i % 16 != 15) {\
+			strcat(dp, " ");\
+		}\
+		if (i % 16 == 15 || i == length - 1) {\
+			size_t j;\
+			strcat(dp, "    ");\
+			for (j = i - (i % 16); j <= i; j++) {\
+				if (j >= length) {\
+					strcat(dp, " ");\
+				}\
+				else if (buff[j] >= ' ' && buff[j] <= '~') {\
+					char tmp_str[2] = { buff[j], '\0' };\
+					strcat(dp, tmp_str);\
+				}\
+				else {\
+					strcat(dp, ".");\
+				}\
+			}\
+		}\
+	}\
+	if (strlen(dp) + 2 + 1 <= MAX_PACKET_BUFF) {\
+		strcat(dp, "\n\r");\
+	}\
+	else {\
+		method("不足以容纳换行符");\
+	}\
+done:\
+	method(dp);\
+	pthread_mutex_unlock(&pkt_mutex);\
+} while (0)
+
 extern void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length);
 
 extern double expand_rate(uint8_t rate);
