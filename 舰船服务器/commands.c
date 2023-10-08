@@ -85,6 +85,7 @@ static command_t cmds[] = {
     { "rsquest"  , handle_resetquest    },
     { "login"    , handle_login         },
     { "shutdown" , handle_shutdown      },
+    { "update"   , handle_update        },
     /////////////////////////////////////////// 以下是玩家大厅指令
     { "pl"       , handle_player_menu   },
     { "save"     , handle_save          },

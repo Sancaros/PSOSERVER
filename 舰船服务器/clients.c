@@ -510,8 +510,6 @@ void client_send_bb_data(ship_client_t* c) {
         if (c->version == CLIENT_VERSION_BB &&
             !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
 
-            pthread_mutex_lock(&c->mutex);
-
             c->need_save_data = false;
 
             /* 将游戏时间存储入人物数据 */
@@ -555,16 +553,13 @@ void client_send_bb_data(ship_client_t* c) {
                 if (shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
                     c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
                     c->cur_block->b)) {
-                    pthread_mutex_unlock(&c->mutex);
-                    send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4存储数据失败~请联系管理员处理."));
-                    c->flags |= CLIENT_FLAG_DISCONNECTED;
+                    send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC4存储数据失败~请联系管理员处理,并出大厅切换服务器保存数据."));
+                    //c->flags |= CLIENT_FLAG_DISCONNECTED;
                 }
             }
 
             /* 将玩家选项数据存入数据库 */
             shipgate_send_bb_opts(&ship->sg, c);
-
-            pthread_mutex_unlock(&c->mutex);
 
 #ifdef DEBUG
             DBG_LOG("%d 秒", num_seconds);

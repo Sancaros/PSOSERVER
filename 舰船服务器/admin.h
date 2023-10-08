@@ -64,6 +64,7 @@ int global_message(ship_client_t* c, uint16_t type, int prefix, const char* fmt,
 int announce_message(ship_client_t* src, int srcnosend, uint16_t type, const char* fmt, ...);
 
 int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f);
+int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f);
 
 int global_ban(ship_client_t *c, uint32_t gc, uint32_t l, const char *reason);
 

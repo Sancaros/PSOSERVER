@@ -450,6 +450,61 @@ int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
     return 0;
 }
 
+int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f) {
+    ship_client_t* i2;
+    block_t* b;
+    uint32_t i;
+    extern int restart_on_shutdown;     /* in ship_server.c */
+
+    /* Make sure we don't have anyone trying to escalate their privileges. */
+    if (c && !LOCAL_ROOT(c)) {
+        GM_LOG("%s 正在尝试获取 本地管理 权限", get_player_describe(c));
+        return -1;
+    }
+
+    /* Go through each block and send a notification to everyone. */
+    for (i = 0; i < ship->cfg->blocks; ++i) {
+        b = ship->blocks[i];
+
+        if (b && b->run) {
+            /* Send the message to each player. */
+            TAILQ_FOREACH(i2, b->clients, qentry) {
+                if (i2->pl) {
+                    if (i2 != c) {
+                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s,%s."
+                            , __(i2, "\tE\tC6舰船将于")
+                            , when
+                            , __(i2, "分钟后"), restart ? "重启" : "关闭"
+                            , __(i2, "\tE\tC8更新服务器内容, 请玩家及时下线.")
+                        );
+                    }
+                    else {
+                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s,%s."
+                            , __(i2, "\tE\tC6舰船将于")
+                            , when
+                            , __(i2, "分钟后"), restart ? "重启" : "关闭"
+                            , __(i2, "\tE\tC8更新服务器内容, 请玩家及时下线.")
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /* Log the event to the log file */
+    if (c) {
+        SHIPS_LOG("舰船计划于 %" PRIu32 " 分钟后 %s 操作:%s.", when, restart ? "重启" : "关闭",
+            get_player_describe(c));
+    }
+    else {
+        SHIPS_LOG("舰船服务器收到关闭指令.");
+    }
+
+    restart_on_shutdown = restart;
+    ship_server_shutdown(ship, time(NULL) + ((int)when * 60));
+
+    return 0;
+}
 int global_ban(ship_client_t *c, uint32_t gc, uint32_t l, const char *reason) {
     const char *len = NULL;
     block_t *b;

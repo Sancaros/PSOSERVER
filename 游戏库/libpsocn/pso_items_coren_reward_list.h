@@ -155,9 +155,9 @@ static uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_CUSTOM_FRAME_ver_OO, BBItem_ATTRIBUTE_PLATE, BBItem_WEDDING_DRESS,
 			BBItem_FLOWENS_FRAME
 		},
-		//100000 美赛塔 奖励:物品 音乐光盘 玛古细胞 天使之心细胞 恶魔之心细胞 光子点卷 秘密点券 扩展插槽 光子微晶 光子结晶
+		//100000 美赛塔 奖励:物品 音乐光盘 玛古细胞 天使之心细胞 恶魔之心细胞 光子点卷 圣诞礼物 扩展插槽 光子微晶 光子结晶
 		{
-			BBItem_Photon_Ticket, BBItem_Item_Ticket, BBItem_AddSlot,
+			BBItem_Photon_Ticket, BBItem_Present, BBItem_AddSlot,
 			BBItem_Photon_Sphere, BBItem_Photon_Drop, BBItem_Parts_of_RoboChao,
 			BBItem_Cell_of_MAG_502, BBItem_Cell_of_MAG_213, BBItem_DISK_Vol1,
 			BBItem_DISK_Vol2, BBItem_DISK_Vol3, BBItem_DISK_Vol4,
