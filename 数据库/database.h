@@ -56,6 +56,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_BANK_CHAR_ITEMS "character_bank_char_items"
 #define CHARACTER_BANK_CHAR_ITEMS_BACKUP "character_bank_char_items_backup"
 #define CHARACTER_BANK_COMMON "character_bank_common"
+#define CHARACTER_BANK_COMMON_FULL_DATA "character_bank_common_full_data"
 #define CHARACTER_BANK_COMMON_ITEMS "character_bank_common_items"
 #define CHARACTER_BANK_COMMON_ITEMS_BACKUP "character_bank_common_items_backup"
 #define CHARACTER_BLACKLIST "character_blacklist"
