@@ -31,35 +31,35 @@
 #define CLIENT_VERSION_XBOX     6
 
 bool char_class_is_male(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_MALE;
+	return equip_flags & PLAYER_EQUIP_FLAGS_MALE;
 }
 
 bool char_class_is_female(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_FEMALE;
+	return equip_flags & PLAYER_EQUIP_FLAGS_FEMALE;
 }
 
 bool char_class_is_human(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_HUMAN;
+	return equip_flags & PLAYER_EQUIP_FLAGS_HUMAN;
 }
 
 bool char_class_is_newman(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_NEWMAN;
+	return equip_flags & PLAYER_EQUIP_FLAGS_NEWMAN;
 }
 
 bool char_class_is_android(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_DROID;
+	return equip_flags & PLAYER_EQUIP_FLAGS_DROID;
 }
 
 bool char_class_is_hunter(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_HUNTER;
+	return equip_flags & PLAYER_EQUIP_FLAGS_HUNTER;
 }
 
 bool char_class_is_ranger(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_RANGER;
+	return equip_flags & PLAYER_EQUIP_FLAGS_RANGER;
 }
 
 bool char_class_is_force(uint8_t equip_flags) {
-	return equip_flags & EQUIP_FLAGS_FORCE;
+	return equip_flags & PLAYER_EQUIP_FLAGS_FORCE;
 }
 
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src) {

@@ -13606,7 +13606,8 @@ int send_bb_coren_dayreward_list(ship_client_t* dest) {
             break;
 
         case ITEM_ID_PL_COREN_DAR:
-            sprintf_s(tmp_char, sizeof(tmp_char), "%s[国庆]"
+            /* TODO 解析节假日获得概率 */
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[常规]"
                 , pso_player_menu_coren[i]->name
             );
             istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);

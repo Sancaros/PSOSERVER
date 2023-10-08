@@ -25,32 +25,35 @@
 #include "pso_item_list.h"
 
 // item_equip_flags 职业装备标志 用于识别不同种族
-#define EQUIP_FLAGS_NONE     false
-#define EQUIP_FLAGS_OK       true
-#define EQUIP_FLAGS_HUNTER   0x01   // Bit 1 猎人
-#define EQUIP_FLAGS_RANGER   0x02   // Bit 2 枪手
-#define EQUIP_FLAGS_FORCE    0x04   // Bit 3 法师
-#define EQUIP_FLAGS_HUMAN    0x08   // Bit 4 人类
-#define EQUIP_FLAGS_DROID    0x10   // Bit 5 机器人
-#define EQUIP_FLAGS_NEWMAN   0x20   // Bit 6 新人类
-#define EQUIP_FLAGS_MALE     0x40   // Bit 7 男人
-#define EQUIP_FLAGS_FEMALE   0x80   // Bit 8 女人
-#define EQUIP_FLAGS_MAX      8
+#define PLAYER_EQUIP_FLAGS_NONE     false
+#define PLAYER_EQUIP_FLAGS_OK       true
+#define PLAYER_EQUIP_FLAGS_HUNTER   0x01   // Bit 1 猎人
+#define PLAYER_EQUIP_FLAGS_RANGER   0x02   // Bit 2 枪手
+#define PLAYER_EQUIP_FLAGS_FORCE    0x04   // Bit 3 法师
+#define PLAYER_EQUIP_FLAGS_HUMAN    0x08   // Bit 4 人类
+#define PLAYER_EQUIP_FLAGS_DROID    0x10   // Bit 5 机器人
+#define PLAYER_EQUIP_FLAGS_NEWMAN   0x20   // Bit 6 新人类
+#define PLAYER_EQUIP_FLAGS_MALE     0x40   // Bit 7 男人
+#define PLAYER_EQUIP_FLAGS_FEMALE   0x80   // Bit 8 女人
+#define PLAYER_EQUIP_FLAGS_MAX      8
+
+#define EQUIP_FLAGS          0x00000008
+#define UNEQUIP_FLAGS        0xFFFFFFF7
 
 /* 每个职业对应的装备FLAGS */
 static uint8_t class_equip_flags[12] = {
-    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_MALE,    // HUmar
-    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_NEWMAN    | EQUIP_FLAGS_FEMALE,  // HUnewearl
-    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_MALE,    // HUcast
-    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_MALE,    // RAmar
-    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_MALE,    // RAcast
-    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_FEMALE,  // RAcaseal
-    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_FEMALE,  // FOmarl
-    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_NEWMAN    | EQUIP_FLAGS_MALE,    // FOnewm
-    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_NEWMAN    | EQUIP_FLAGS_FEMALE,  // FOnewearl
-    EQUIP_FLAGS_HUNTER  | EQUIP_FLAGS_DROID     | EQUIP_FLAGS_FEMALE,  // HUcaseal
-    EQUIP_FLAGS_FORCE   | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_MALE,    // FOmar
-    EQUIP_FLAGS_RANGER  | EQUIP_FLAGS_HUMAN     | EQUIP_FLAGS_FEMALE   // RAmarl
+    PLAYER_EQUIP_FLAGS_HUNTER  | PLAYER_EQUIP_FLAGS_HUMAN     | PLAYER_EQUIP_FLAGS_MALE,    // HUmar
+    PLAYER_EQUIP_FLAGS_HUNTER  | PLAYER_EQUIP_FLAGS_NEWMAN    | PLAYER_EQUIP_FLAGS_FEMALE,  // HUnewearl
+    PLAYER_EQUIP_FLAGS_HUNTER  | PLAYER_EQUIP_FLAGS_DROID     | PLAYER_EQUIP_FLAGS_MALE,    // HUcast
+    PLAYER_EQUIP_FLAGS_RANGER  | PLAYER_EQUIP_FLAGS_HUMAN     | PLAYER_EQUIP_FLAGS_MALE,    // RAmar
+    PLAYER_EQUIP_FLAGS_RANGER  | PLAYER_EQUIP_FLAGS_DROID     | PLAYER_EQUIP_FLAGS_MALE,    // RAcast
+    PLAYER_EQUIP_FLAGS_RANGER  | PLAYER_EQUIP_FLAGS_DROID     | PLAYER_EQUIP_FLAGS_FEMALE,  // RAcaseal
+    PLAYER_EQUIP_FLAGS_FORCE   | PLAYER_EQUIP_FLAGS_HUMAN     | PLAYER_EQUIP_FLAGS_FEMALE,  // FOmarl
+    PLAYER_EQUIP_FLAGS_FORCE   | PLAYER_EQUIP_FLAGS_NEWMAN    | PLAYER_EQUIP_FLAGS_MALE,    // FOnewm
+    PLAYER_EQUIP_FLAGS_FORCE   | PLAYER_EQUIP_FLAGS_NEWMAN    | PLAYER_EQUIP_FLAGS_FEMALE,  // FOnewearl
+    PLAYER_EQUIP_FLAGS_HUNTER  | PLAYER_EQUIP_FLAGS_DROID     | PLAYER_EQUIP_FLAGS_FEMALE,  // HUcaseal
+    PLAYER_EQUIP_FLAGS_FORCE   | PLAYER_EQUIP_FLAGS_HUMAN     | PLAYER_EQUIP_FLAGS_MALE,    // FOmar
+    PLAYER_EQUIP_FLAGS_RANGER  | PLAYER_EQUIP_FLAGS_HUMAN     | PLAYER_EQUIP_FLAGS_FEMALE   // RAmarl
 };
 
 #define MAX_LOBBY_SAVED_ITEMS           3000
@@ -384,7 +387,7 @@ inline void print_iitem_data(const iitem_t* iitem, int item_index, int version) 
 		iitem->present,
 		iitem->extension_data1,
 		iitem->extension_data2,
-		((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
+		((iitem->flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
 		iitem->flags
 	);
 	ITEM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
@@ -440,7 +443,7 @@ inline void print_biitem_data(void* data, int item_index, int version, int inv, 
 				iitem->present,
 				iitem->extension_data1,
 				iitem->extension_data2,
-				((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
+				((iitem->flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
 				iitem->flags
 			);
 

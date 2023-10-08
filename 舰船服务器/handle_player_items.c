@@ -658,10 +658,10 @@ void remove_iitem_equiped_flags(inventory_t* inv, const item_t item) {
         return;
     }
 
-    if (inv->iitems[i].flags & LE32(0x00000008)) {
+    if (inv->iitems[i].flags & EQUIP_FLAGS) {
         switch (item.datab[0]) {
         case ITEM_TYPE_WEAPON:
-            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+            inv->iitems[i].flags &= UNEQUIP_FLAGS;
             break;
 
         case ITEM_TYPE_GUARD:
@@ -672,27 +672,27 @@ void remove_iitem_equiped_flags(inventory_t* inv, const item_t item) {
                         inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
                         if (inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD &&
                             inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                            inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                            inv->iitems[j].flags &= UNEQUIP_FLAGS;
                         }
 
                     }
                 }
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
                 break;
 
             case ITEM_SUBTYPE_BARRIER:
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
                 break;
 
             case ITEM_SUBTYPE_UNIT:
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
                 break;
 
             }
             break;
 
         case ITEM_TYPE_MAG:
-            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+            inv->iitems[i].flags &= UNEQUIP_FLAGS;
             break;
 
         }
@@ -2091,13 +2091,13 @@ void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon
 
 //检查装备穿戴标记item_equip_flags
 bool item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签) {
-    for (size_t i = 0; i < EQUIP_FLAGS_MAX; i++) {
+    for (size_t i = 0; i < PLAYER_EQUIP_FLAGS_MAX; i++) {
         if ((客户端装备标签 & (1 << i)) && (!(装备标签 & (1 << i)))) {
-            return EQUIP_FLAGS_NONE;
+            return PLAYER_EQUIP_FLAGS_NONE;
         }
     }
 
-    return EQUIP_FLAGS_OK;
+    return PLAYER_EQUIP_FLAGS_OK;
 }
 
 /* 物品检测装备标签 */
@@ -2129,8 +2129,8 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                     // 解除角色上任何其他武器的装备。（防止堆叠） 
                     for (j = 0; j < inv_count; j++)
                         if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_WEAPON) &&
-                            (inv->iitems[j].flags & LE32(0x00000008))) {
-                            inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                            (inv->iitems[j].flags & EQUIP_FLAGS)) {
+                            inv->iitems[j].flags &= UNEQUIP_FLAGS;
                             //DBG_LOG("卸载武器");
                         }
                     //DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
@@ -2160,9 +2160,9 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         for (j = 0; j < inv_count; ++j) {
                             if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
                                 (inv->iitems[j].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
-                                (inv->iitems[j].flags & LE32(0x00000008))) {
+                                (inv->iitems[j].flags & EQUIP_FLAGS)) {
                                 //DBG_LOG("卸载装甲");
-                                inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                                inv->iitems[j].flags &= UNEQUIP_FLAGS;
                                 inv->iitems[j].data.datab[4] = 0x00;
                             }
                         }
@@ -2191,9 +2191,9 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         for (j = 0; j < inv_count; ++j) {
                             if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
                                 (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
-                                (inv->iitems[j].flags & LE32(0x00000008))) {
+                                (inv->iitems[j].flags & EQUIP_FLAGS)) {
                                 //DBG_LOG("卸载护盾");
-                                inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                                inv->iitems[j].flags &= UNEQUIP_FLAGS;
                                 inv->iitems[j].data.datab[4] = 0x00;
                             }
                         }
@@ -2210,7 +2210,7 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
                             (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT)) {
                             //DBG_LOG("插槽 %d 识别", j);
-                            if ((inv->iitems[j].flags & LE32(0x00000008)) &&
+                            if ((inv->iitems[j].flags & EQUIP_FLAGS) &&
                                 (inv->iitems[j].data.datab[4] < 0x04)) {
 
                                 slot[inv->iitems[j].data.datab[4]] = 1;
@@ -2231,7 +2231,7 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         inv->iitems[j].data.datab[4] = (uint8_t)(found_slot);
                     }
                     else {//缺失 TODO
-                        inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                        inv->iitems[j].flags &= UNEQUIP_FLAGS;
                         ERR_LOG("%s 装备了作弊的插槽物品数据!", get_player_describe(src));
                         return -11;
                     }
@@ -2244,9 +2244,9 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                 // Remove equipped mag
                 for (j = 0; j < inv->item_count; j++)
                     if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_MAG) &&
-                        (inv->iitems[j].flags & LE32(0x00000008))) {
+                        (inv->iitems[j].flags & EQUIP_FLAGS)) {
 
-                        inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+                        inv->iitems[j].flags &= UNEQUIP_FLAGS;
                         //DBG_LOG("卸载玛古");
                     }
                 break;
@@ -2255,7 +2255,7 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
             //DBG_LOG("完成卸载, 但是未识别成功");
 
             /* TODO: Should really make sure we can equip it first... */
-            inv->iitems[i].flags |= LE32(0x00000008);
+            inv->iitems[i].flags |= EQUIP_FLAGS;
         }
     }
 
@@ -2274,14 +2274,14 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
     for (x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
             found_item = 1;
-            inv->iitems[x].flags &= LE32(0xFFFFFFF7);
+            inv->iitems[x].flags &= UNEQUIP_FLAGS;
             switch (inv->iitems[x].data.datab[0]) {
             case ITEM_TYPE_WEAPON:
                 // Remove any other weapon (in case of a glitch... or stacking)
                 for (i = 0; i < inv->item_count; i++) {
                     if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_WEAPON) &&
-                        (inv->iitems[i].flags & LE32(0x00000008)))
-                        inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                        (inv->iitems[i].flags & EQUIP_FLAGS))
+                        inv->iitems[i].flags &= UNEQUIP_FLAGS;
                 }
                 break;
             case ITEM_TYPE_GUARD:
@@ -2292,8 +2292,8 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
                     for (i = 0; i < inv->item_count; i++) {
                         if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
                             (inv->iitems[i].data.datab[1] != ITEM_SUBTYPE_FRAME) &&
-                            (inv->iitems[i].flags & LE32(0x00000008))) {
-                            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                            (inv->iitems[i].flags & EQUIP_FLAGS)) {
+                            inv->iitems[i].flags &= UNEQUIP_FLAGS;
                             inv->iitems[i].data.datab[4] = 0x00;
                         }
                     }
@@ -2304,8 +2304,8 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
                     {
                         if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
                             (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
-                            (inv->iitems[i].flags & LE32(0x00000008))) {
-                            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                            (inv->iitems[i].flags & EQUIP_FLAGS)) {
+                            inv->iitems[i].flags &= UNEQUIP_FLAGS;
                             inv->iitems[i].data.datab[4] = 0x00;
                         }
                     }
@@ -2320,8 +2320,8 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
                 // Remove any other mags (stacking?)
                 for (i = 0; i < inv->item_count; i++)
                     if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_MAG) &&
-                        (inv->iitems[i].flags & LE32(0x00000008)))
-                        inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                        (inv->iitems[i].flags & EQUIP_FLAGS))
+                        inv->iitems[i].flags &= UNEQUIP_FLAGS;
                 break;
             }
             break;
@@ -2392,13 +2392,13 @@ void player_class_tag_item_equip_flag(ship_client_t* c) {
 }
 
 void remove_titem_equip_flags(iitem_t* trade_item) {
-    if (trade_item->flags & LE32(0x00000008)) {
+    if (trade_item->flags & EQUIP_FLAGS) {
         switch (trade_item->data.datab[0])
         {
         case ITEM_TYPE_WEAPON:
         case ITEM_TYPE_GUARD:
         case ITEM_TYPE_MAG:
-            trade_item->flags &= LE32(0xFFFFFFF7);
+            trade_item->flags &= UNEQUIP_FLAGS;
             break;
         }
     }
@@ -2543,7 +2543,7 @@ void fix_equip_item(inventory_t* inv) {
 
     /* 检查所有已装备的物品 */
     for (i = 0; i < inv->item_count; i++) {
-        if (inv->iitems[i].flags & LE32(0x00000008)) {
+        if (inv->iitems[i].flags & EQUIP_FLAGS) {
             switch (inv->iitems[i].data.datab[0])
             {
             case ITEM_TYPE_WEAPON:
@@ -2579,8 +2579,8 @@ void fix_equip_item(inventory_t* inv) {
             // Unequip all weapons when there is more than one equipped.  
             // 当装备了多个武器时,取消所装备武器
             if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_WEAPON) &&
-                (inv->iitems[i].flags & LE32(0x00000008)))
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                (inv->iitems[i].flags & EQUIP_FLAGS))
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
         }
 
     }
@@ -2591,10 +2591,10 @@ void fix_equip_item(inventory_t* inv) {
             // 当装备了多个护甲时，取消装备所有护甲和槽道具。 
             if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
                 (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) &&
-                (inv->iitems[i].flags & LE32(0x00000008))) {
+                (inv->iitems[i].flags & EQUIP_FLAGS)) {
 
                 inv->iitems[i].data.datab[3] = 0x00;
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
             }
         }
     }
@@ -2603,10 +2603,10 @@ void fix_equip_item(inventory_t* inv) {
         for (i = 0; i < inv->item_count; i++) {
             if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
                 (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) &&
-                (inv->iitems[i].flags & LE32(0x00000008))) {
+                (inv->iitems[i].flags & EQUIP_FLAGS)) {
 
                 inv->iitems[i].data.datab[3] = 0x00;
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
             }
         }
     }
@@ -2617,10 +2617,10 @@ void fix_equip_item(inventory_t* inv) {
             // 当装备了多个护盾时，取消装备所有护盾。 
             if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
                 (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
-                (inv->iitems[i].flags & LE32(0x00000008))) {
+                (inv->iitems[i].flags & EQUIP_FLAGS)) {
 
                 inv->iitems[i].data.datab[3] = 0x00;
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
             }
         }
     }
@@ -2630,8 +2630,8 @@ void fix_equip_item(inventory_t* inv) {
             // Unequip all mags when there is more than one equipped. 
             // 当装备了多个玛古时，取消装备所有玛古。 
             if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_MAG) &&
-                (inv->iitems[i].flags & LE32(0x00000008)))
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                (inv->iitems[i].flags & EQUIP_FLAGS))
+                inv->iitems[i].flags &= UNEQUIP_FLAGS;
         }
     }
 }

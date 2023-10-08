@@ -2279,25 +2279,25 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     ///////////////////////////////////////////////////////////////////////////////////
 
     /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
-    for (i = 0; i < char_data->character.inv.item_count; i++) {
-        if (char_data->character.inv.iitems[i].present == LE16(0x0002)) {
-            char_data->character.inv.iitems[i].flags = LE32(0x00000008);
-        }
-        else {
-            char_data->character.inv.iitems[i].present = LE16(0x0001);
-            char_data->character.inv.iitems[i].flags = LE32(0x00000000);
-        }
-        char_data->character.inv.iitems[i].data.item_id = EMPTY_STRING;
-    }
+    //for (i = 0; i < char_data->character.inv.item_count; i++) {
+    //    if (char_data->character.inv.iitems[i].present == LE16(0x0002)) {
+    //        char_data->character.inv.iitems[i].flags = EQUIP_FLAGS;
+    //    }
+    //    else {
+    //        char_data->character.inv.iitems[i].present = LE16(0x0001);
+    //        char_data->character.inv.iitems[i].flags = LE32(0x00000000);
+    //    }
+    //    char_data->character.inv.iitems[i].data.item_id = EMPTY_STRING;
+    //}
 
     /* 检测玩家的魔法是否合规 */
     if (!char_class_is_android(src->equip_flags)) {
         for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            if (src->bb_pl->character.tech.all[i] == 0xFF)
+            if (src->bb_pl->character.tech.all[i] == TECHNIQUE_UNLEARN)
                 continue;
 
             if (src->bb_pl->character.tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
-                char_data->character.tech.all[i] = 0xFF;
+                char_data->character.tech.all[i] = TECHNIQUE_UNLEARN;
                 /* 移除不合规的法术 */
                 ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
                     , get_player_describe(src)

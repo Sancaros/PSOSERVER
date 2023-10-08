@@ -1010,7 +1010,7 @@ static void dumpinv_internal(ship_client_t* src) {
                 character_v1->inv.iitems[i].present,
                 character_v1->inv.iitems[i].extension_data1,
                 character_v1->inv.iitems[i].extension_data2,
-                ((character_v1->inv.iitems[i].flags & LE32(0x00000008)) ? "已装备" : "未装备"),
+                ((character_v1->inv.iitems[i].flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
                 character_v1->inv.iitems[i].flags
             );
             GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
@@ -1048,7 +1048,7 @@ static void dumpinv_internal(ship_client_t* src) {
                 character_bb->inv.iitems[i].present,
                 character_bb->inv.iitems[i].extension_data1,
                 character_bb->inv.iitems[i].extension_data2,
-                ((character_bb->inv.iitems[i].flags & LE32(0x00000008)) ? "已装备" : "未装备"),
+                ((character_bb->inv.iitems[i].flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
                 character_bb->inv.iitems[i].flags
             );
             GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",

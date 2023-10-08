@@ -21,6 +21,8 @@
 
 #include <stdint.h>
 
+#define TECHNIQUE_UNLEARN           0xFF
+
 /* 科技函数ID */
 /* 火球术 */
 #define TECHNIQUE_FOIE              0x00

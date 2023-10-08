@@ -2859,7 +2859,7 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    if (src->equip_flags & EQUIP_FLAGS_DROID ||
+    if (src->equip_flags & PLAYER_EQUIP_FLAGS_DROID ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
         max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == 0
         ) {
@@ -6354,7 +6354,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
 
     if (mid < 0xB50) {
         for (i = 0; i < character->inv.item_count; i++) {
-            if ((character->inv.iitems[i].flags & LE32(0x00000008)) &&
+            if ((character->inv.iitems[i].flags & EQUIP_FLAGS) &&
                 (character->inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
                 if ((character->inv.iitems[i].data.datab[1] < 0x0A) &&
                     (character->inv.iitems[i].data.datab[2] < 0x05)) {
@@ -6389,7 +6389,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
                 case 0x0B:
                     // King's
                     exp_percent = 12;
-                    if ((l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) && (src->equip_flags & EQUIP_FLAGS_DROID))
+                    if ((l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) && (src->equip_flags & PLAYER_EQUIP_FLAGS_DROID))
                         exp_percent += 30;
                     break;
                 }
