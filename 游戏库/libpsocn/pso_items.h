@@ -139,7 +139,7 @@ typedef struct weapon_special {
 } weapon_special_t;
 
 static const weapon_special_t weapon_specials[] = {
-    {0x00, NULL, "无属性"},
+	{0x00, "NULL", "无属性"},
     {0x01, "Draw", "吸血"},
     {0x02, "Drain", "饮血"},
     {0x03, "Fill", "噬血"},

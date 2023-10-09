@@ -506,10 +506,11 @@ char* get_weapon_attrib_describe(const item_t* item) {
 	else if(item->datab[10] & 0x80){
 		sprintf(attrib3, "解封%d", item->datab[11]);
 	}
-	else
+	else {
 		strcpy(attrib3, "空");
+	}
 
-	sprintf(item_attrib_des, "%s/%s/%s", attrib1, attrib2, attrib3);
+	sprintf(item_attrib_des, "[%s/%s/%s]", attrib1, attrib2, attrib3);
 
 	return item_attrib_des;
 }
@@ -521,11 +522,20 @@ char* get_item_describe(const item_t* item, int version) {
 	/* 检索物品类型 */
 	switch (item->datab[0]) {
 	case ITEM_TYPE_WEAPON: // 武器
-		sprintf(item_des, "%s +%d EX %s [%s]"
+		const char* special_describe;
+		if (is_s_rank_weapon(item)) {
+			special_describe = get_s_rank_special_describe(item->datab[2], 0);
+		}
+		else {
+			special_describe = get_weapon_special_describe(item->datab[4], 0);
+		}
+
+		sprintf(item_des, "%s +%d %s EX(%s) %s"
 			, item_get_name(item, version, 0)
 			, item->datab[3]
-			, get_weapon_special_describe(item->datab[4], 0)
-			, get_weapon_attrib_describe(item)
+			, item->datab[4] & 0x80 ? "未鉴定" : "已鉴定"
+			, special_describe
+			, is_s_rank_weapon(item) ? "" : get_weapon_attrib_describe(item)
 		);
 		break;
 	case ITEM_TYPE_GUARD: // 装甲
