@@ -456,7 +456,7 @@ do { \
 #define CRASH_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog_file(__LINE__, crash_log_console_show, CRASH_LOG, "Crash", __VA_ARGS__); \
+    flog_crash(logfilename(__FILE__), __LINE__, crash_log_console_show, CRASH_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
@@ -580,6 +580,7 @@ extern void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, con
 extern void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...);
 extern void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
+extern void flog_crash(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
 extern void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);

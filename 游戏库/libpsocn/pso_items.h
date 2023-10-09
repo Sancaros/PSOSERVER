@@ -260,8 +260,8 @@ static inline const char* get_mag_color_name(int color) {
 	}
 }
 
-static char item_des[512];
-static char item_attrib_des[512];
+static char item_des[4096] = { 0 };
+static char item_attrib_des[4096] = { 0 };
 
 static const uint8_t unit_attrib_val[5] = {
 	0xFE,

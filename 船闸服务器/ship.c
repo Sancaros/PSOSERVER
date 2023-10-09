@@ -662,6 +662,8 @@ void destroy_connection_err(ship_t* s) {
         free_safe(s->sendbuf);
     }
 
+    // 销毁读写锁并释放内存
+    pthread_rwlock_destroy(&s->rwlock);
     pthread_mutex_destroy(&s->pkt_mutex);
 
     free_safe(s);
@@ -696,6 +698,8 @@ void destroy_connection(ship_t* s) {
         free_safe(s->sendbuf);
     }
 
+    // 销毁读写锁并释放内存
+    pthread_rwlock_destroy(&s->rwlock);
     pthread_mutex_destroy(&s->pkt_mutex);
 
     free_safe(s);
@@ -907,7 +911,8 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
         }
     }
 
-
+    // 初始化读写锁
+    pthread_rwlock_init(&s->rwlock, NULL);
 
     SGATE_LOG("%s: 舰船与船闸完成对接", s->ship_name);
     return 0;
@@ -6117,7 +6122,7 @@ int handle_pkt(ship_t* c) {
             tmp = realloc(c->recvbuf, sz);
             if (tmp == NULL) {
                 pthread_rwlock_unlock(&c->rwlock);
-                ERR_LOG("realloc");
+                ERR_LOG("重新分配内存失败");
                 //free_safe(recvbuf);
                 return -6;
             }

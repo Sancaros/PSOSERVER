@@ -26,6 +26,11 @@
 
 #pragma comment(lib , "dbghelp.lib")
 
+#define MAX_BACKTRACE_DEPTH 50
+
+// 声明用于存储函数地址的数组
+void* callstack[MAX_BACKTRACE_DEPTH];
+
 LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info);
 
 #endif // !PSO_CRASH_HANDLE_H

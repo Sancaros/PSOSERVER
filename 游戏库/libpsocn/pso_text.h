@@ -87,23 +87,24 @@ void u32_to_u8(uint32_t value, uint8_t parts[4], bool big_endian);
 
 bool safe_memcpy(uint8_t* dst, const uint8_t* src, size_t len, const uint8_t* start, const uint8_t* end);
 void safe_free(const char* func, uint32_t line, void** ptr);
-#define SAFE_STRCAT(dest, src)                                            \
-    do {                                                                             \
-        size_t dest_len = strlen(dest);                                              \
-        size_t src_len = strlen(src);                                                \
-                                                                                     \
-        if (dest_len < sizeof(dest) - 1) {                                               \
-            size_t copy_len = sizeof(dest) - dest_len - 1;                               \
-            strncat(dest, src, copy_len);                                             \
-        }                                                                            \
-        else {                                                                       \
-            ERR_LOG("错误发生在文件：%s，行号：%d\n", __FILE__, __LINE__);              \
-            ERR_LOG("内存拼接错误：长度不足或有空指针\n"); \
-            ERR_LOG("数据1：%s\n", dest);                                             \
-            ERR_LOG("数据1长度：%zu\n", dest_len);                                 \
-            ERR_LOG("数据2：%s\n", src);                                              \
-            ERR_LOG("数据2长度：%zu\n", src_len);                                  \
-        }                                                                            \
+#define SAFE_STRCAT(dest, src)                                      \
+    do {                                                            \
+        char* dest_ptr = dest + strlen(dest);                      \
+        size_t dest_len = sizeof(dest) - strlen(dest) - 1;         \
+        size_t src_len = strlen(src);                               \
+                                                                      \
+        if (dest_len >= src_len) {                                  \
+            strncpy(dest_ptr, src, dest_len);                       \
+            dest_ptr[dest_len] = '\0';                              \
+        }                                                           \
+        else {                                                      \
+            ERR_LOG("错误发生在文件：%s，行号：%d\n", __FILE__, __LINE__);   \
+            ERR_LOG("内存拼接错误：长度不足或有空指针\n");   \
+            ERR_LOG("数据1：%s\n", dest);                            \
+            ERR_LOG("数据1长度：%zu\n", strlen(dest));               \
+            ERR_LOG("数据2：%s\n", src);                             \
+            ERR_LOG("数据2长度：%zu\n", strlen(src));                \
+        }                                                           \
     } while(0)
 
 void safe_strcat(const char* func, uint32_t line, char* dest, const char* src, size_t dest_size);

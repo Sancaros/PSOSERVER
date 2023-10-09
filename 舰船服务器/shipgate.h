@@ -55,6 +55,13 @@ typedef struct lobby lobby_t;
 
 /* Shipgate connection structure. */
 struct shipgate_conn {
+
+    pthread_mutex_t pkt_mutex;
+    pthread_rwlock_t rwlock;
+    pthread_t read_tid;
+    pthread_t write_tid;
+    //pthread_t thd;
+
     int sock;
     int hdr_read;
     int has_key;

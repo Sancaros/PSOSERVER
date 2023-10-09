@@ -175,6 +175,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
             return 0;
         }
 
+        pthread_rwlock_wrlock(&c->rwlock);
         //print_ascii_hex(dbgl, sendbuf, len);
 
         //gnutls_datum_t datum = { (void*)sendbuf, len };
@@ -196,6 +197,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                     continue;
                 }
                 else if (rv < 0) {
+                    pthread_rwlock_unlock(&c->rwlock);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //print_ascii_hex(errl, sendbuf, len);
@@ -206,6 +208,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
             }
         }
 
+        pthread_rwlock_unlock(&c->rwlock);
         return 0;
     }
 
@@ -502,6 +505,9 @@ void shipgate_cleanup(shipgate_conn_t* c) {
         closesocket(c->sock);
         gnutls_deinit(c->session);
     }
+
+    // 销毁读写锁并释放内存
+    pthread_rwlock_destroy(&c->rwlock);
 
     free_safe(c->recvbuf);
     free_safe(c->sendbuf);
@@ -3297,6 +3303,21 @@ static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_defa
     return 0;
 }
 
+static int handle_shipgate_recv_data_complete(shipgate_conn_t * conn, shipgate_hdr_t* pkt) {
+    uint16_t flags = ntohs(pkt->flags);
+
+    //初始化读写锁
+    pthread_rwlock_init(&conn->rwlock, NULL);
+
+    SHIPS_LOG("舰闸数据接收完成.");
+    ///* Ignore responses for now... we don't send these just yet. */
+    //if (flags & SHDR_RESPONSE) {
+    //    return 0;
+    //}
+
+    return shipgate_send_ping(conn, 1);
+}
+
 static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
     __try {
         uint16_t type = ntohs(pkt->pkt_type);
@@ -3516,13 +3537,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
                 return 0;
 
             case SHDR_TYPE_COMPLETE_DATA:
-                SHIPS_LOG("舰闸数据接收完成.");
-                /* Ignore responses for now... we don't send these just yet. */
-                if (flags & SHDR_RESPONSE) {
-                    return 0;
-                }
-
-                return shipgate_send_ping(conn, 1);
+                return handle_shipgate_recv_data_complete(conn, (shipgate_hdr_t*)pkt);
 
             default:
                 DBG_LOG("未知测试数据获取指令 0x%04X", type);
@@ -3555,6 +3570,8 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
             return -3; // 错误检查，确保 c->session 不为空
         }
 
+        pthread_rwlock_rdlock(&c->rwlock);
+
         ssize_t sz;
         ssize_t pkt_sz;
         int rv = 0;
@@ -3584,6 +3601,7 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         if (sz <= 0) {
+            pthread_rwlock_unlock(&c->rwlock);
             if (sz == SOCKET_ERROR) {
                 ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
             }
@@ -3627,6 +3645,7 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
                 c->last_message = time(NULL);
                 rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
+                    pthread_rwlock_unlock(&c->rwlock);
                     ERR_LOG("处理数据包出错，rv = %d", rv);
                     //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
                     //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
@@ -3650,6 +3669,7 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
                 tmp = realloc(c->recvbuf, sz);
 
                 if (!tmp) {
+                    pthread_rwlock_unlock(&c->rwlock);
                     ERR_LOG("重新分配内存失败");
                     return -6;
                 }
@@ -3668,6 +3688,7 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
             c->recvbuf_size = 0;
         }
 
+        pthread_rwlock_unlock(&c->rwlock);
         return 0;
     }
 

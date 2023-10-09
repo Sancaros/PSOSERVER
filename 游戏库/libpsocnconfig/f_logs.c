@@ -721,6 +721,73 @@ void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 	}
 }
 
+void flog_crash(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+{
+	va_list args;
+	char mes[MAX_PACKET_BUFF] = { 0 };
+	//char headermes[128] = { 0 };
+	//char text[4096] = { 0 };
+	SYSTEMTIME rawtime;
+
+	FILE* fp;
+	char logdir[64] = { 0 };
+	char logfile[256] = { 0 };
+	GetLocalTime(&rawtime);
+
+	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
+	//SAFE_STRCAT(headermes, log_header[files]);
+	va_start(args, fmt);
+	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	va_end(args);
+	//strcpy(logfile, "Log\\");
+	sprintf(logdir, "Crash\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	if (!_mkdir(logdir)) {
+		//printf("%u年%02u月%02u日 日志目录创建成功", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	}
+	else
+	{
+		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	}
+	strcpy(logfile, logdir);
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, server_name[server_name_num].name);
+	SAFE_STRCAT(logfile, "_");
+	SAFE_STRCAT(logfile, log_header[files_num].name);
+	SAFE_STRCAT(logfile, ".log");
+	errno_t err = fopen_s(&fp, logfile, "a");
+	if (err) {
+		color(4);
+		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name,
+			func, codeline, mes);
+		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
+	}
+	else
+	{
+		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[files_num].name, func, codeline, mes))
+		{
+			color(4);
+			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name,
+				func, codeline, mes);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
+		}
+		if (console_log_hide_or_show)
+		{
+			if (consoleshow)
+			{
+				color(4);
+				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds,
+					log_header[files_num].name, func, codeline, mes);
+			}
+		}
+		color(16);
+		fclose(fp);
+	}
+}
+
 void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;

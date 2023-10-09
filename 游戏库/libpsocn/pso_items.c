@@ -427,28 +427,32 @@ bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
 }
 
 const char* get_weapon_special_describe(uint8_t value, int lang) {
-	int len_weapon = ARRAYSIZE(weapon_specials);
-	for (int i = 0; i < len_weapon; i++) {
-		if (weapon_specials[i].id == value) {
-			if (!lang)
-				return weapon_specials[i].cn_name;
-			else
-				return weapon_specials[i].name;
+	if (value < 0x29 && value >= 0x00) {
+		int len_weapon = ARRAYSIZE(weapon_specials);
+		for (int i = 0; i < len_weapon; i++) {
+			if (weapon_specials[i].id == value) {
+				if (!lang)
+					return weapon_specials[i].cn_name;
+				else
+					return weapon_specials[i].name;
 
+			}
 		}
 	}
 	return "无效EX";
 }
 
 const char* get_s_rank_special_describe(uint8_t value, int lang) {
-	int len_s_rank = ARRAYSIZE(s_rank_specials);
-	for (int i = 0; i < len_s_rank; i++) {
-		if (s_rank_specials[i].id == value) {
-			if (!lang)
-				return s_rank_specials[i].cn_name;
-			else
-				return s_rank_specials[i].name;
+	if (value < 0x11 && value >= 0x00) {
+		int len_s_rank = ARRAYSIZE(s_rank_specials);
+		for (int i = 0; i < len_s_rank; i++) {
+			if (s_rank_specials[i].id == value) {
+				if (!lang)
+					return s_rank_specials[i].cn_name;
+				else
+					return s_rank_specials[i].name;
 
+			}
 		}
 	}
 	return "无效EX";
@@ -472,7 +476,7 @@ const char* get_unit_bonus_describe(const item_t* item) {
 		sprintf(attrib1, " 解封数%d", item->datab[11]);
 
 	if (x <= ARRAYSIZE(unit_attrib_val))
-		strcpy(item_attrib_des, unit_attrib[x]);
+		strncpy(item_attrib_des, unit_attrib[x], sizeof(item_attrib_des) - 1);
 
 	SAFE_STRCAT(item_attrib_des, attrib1);
 
@@ -503,7 +507,7 @@ char* get_weapon_attrib_describe(const item_t* item) {
 		sprintf(attrib3, "解封%d", item->datab[11]);
 	}
 
-	sprintf(item_attrib_des, "[%s/%s/%s]", attrib1, attrib2, attrib3);
+	snprintf(item_attrib_des, sizeof(item_attrib_des), "[%s/%s/%s]", attrib1, attrib2, attrib3);
 
 	return item_attrib_des;
 }
