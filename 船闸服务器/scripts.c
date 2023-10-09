@@ -153,7 +153,7 @@ static int ship_script_add(xmlChar *file, xmlChar *remote, int mod,
     }
 
     strcpy(sfile, "Scripts/");
-    strcat(sfile, file);
+    SAFE_STRCAT(sfile, file);
 
     /* Is the script deleted? */
     if(!deleted) {
@@ -300,7 +300,7 @@ int script_list_read(const char *fn) {
             }
 
             strcpy(luafile, dir);
-            strcat(luafile, file);
+            SAFE_STRCAT(luafile, file);
 
             /* Attempt to read in the script. */
             if(luaL_loadfile(lstate, luafile) != LUA_OK) {
@@ -351,7 +351,7 @@ int script_list_read(const char *fn) {
             }
 
             strcpy(luafile, dir);
-            strcat(luafile, file);
+            SAFE_STRCAT(luafile, file);
 
             /* Add it to the list. */
             if(ship_script_add(file, remote, 1, 0, &num_alloc, is_del)) {
@@ -424,7 +424,7 @@ int script_list_read(const char *fn) {
             xmlFree(event);
 
             strcpy(luafile, dir);
-            strcat(luafile, file);
+            SAFE_STRCAT(luafile, file);
 
             /* Add it to the list. */
             if(ship_script_add(file, remote, 0, sidx, &num_alloc, is_del)) {

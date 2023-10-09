@@ -1573,12 +1573,12 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
             if (a->map_num[k] != -1) {
                 char variation1_str[16];  // 根据需要调整大小
                 snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->map_num[k]);
-                strcat(fn2, variation1_str);
+                SAFE_STRCAT(fn2, variation1_str);
             }
             if (a->map_var[l] != -1) {
                 char variation2_str[16];  // 根据需要调整大小
                 snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->map_var[l]);
-                strcat(fn2, variation2_str);
+                SAFE_STRCAT(fn2, variation2_str);
             }
 
             /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） .*/
@@ -1852,12 +1852,12 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
             if (a->map_num[k] != -1) {
                 char variation1_str[16];  // 根据需要调整大小
                 snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->map_num[k]);
-                strcat(fn2, variation1_str);
+                SAFE_STRCAT(fn2, variation1_str);
             }
             if (a->map_var[l] != -1) {
                 char variation2_str[16];  // 根据需要调整大小
                 snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->map_var[l]);
-                strcat(fn2, variation2_str);
+                SAFE_STRCAT(fn2, variation2_str);
             }
 
             /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） .*/

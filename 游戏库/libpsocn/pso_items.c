@@ -474,7 +474,7 @@ const char* get_unit_bonus_describe(const item_t* item) {
 	if (x <= ARRAYSIZE(unit_attrib_val))
 		strcpy(item_attrib_des, unit_attrib[x]);
 
-	strcat(item_attrib_des, attrib1);
+	SAFE_STRCAT(item_attrib_des, attrib1);
 
 	return item_attrib_des; // 如果没有匹配的项，返回NULL或其他适当的默认值
 }

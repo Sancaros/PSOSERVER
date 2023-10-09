@@ -30,22 +30,22 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.keyboard_config,
         sizeof(opts.key_cfg.keyboard_config));
 
-    strcat(myquery, "', joystick_config = '");
+    SAFE_STRCAT(myquery, "', joystick_config = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.joystick_config,
         sizeof(opts.key_cfg.joystick_config));
 
-    strcat(myquery, "', shortcuts = '");
+    SAFE_STRCAT(myquery, "', shortcuts = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.shortcuts,
         PSOCN_STLENGTH_BB_DB_SHORTCUTS);
 
-    strcat(myquery, "', symbol_chats = '");
+    SAFE_STRCAT(myquery, "', symbol_chats = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.symbol_chats,
         PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
 
-    strcat(myquery, "', guild_name = '");
+    SAFE_STRCAT(myquery, "', guild_name = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.guild_name,
         sizeof(opts.guild_name));
@@ -99,17 +99,17 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
             psocn_db_escape_str(&conn, myquery + strlen(myquery),
                 (char*)&opts.key_cfg.keyboard_config, sizeof(opts.key_cfg.keyboard_config));
 
-            strcat(myquery, "', '");
+            SAFE_STRCAT(myquery, "', '");
 
             psocn_db_escape_str(&conn, myquery + strlen(myquery),
                 (char*)&opts.key_cfg.joystick_config, sizeof(opts.key_cfg.joystick_config));
 
-            strcat(myquery, "', '");
+            SAFE_STRCAT(myquery, "', '");
 
             psocn_db_escape_str(&conn, myquery + strlen(myquery),
                 (char*)&opts.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
 
-            strcat(myquery, "')");
+            SAFE_STRCAT(myquery, "')");
 
             //printf("%s \n", myquery);
 

@@ -27,47 +27,47 @@ int db_update_character_default(psocn_bb_db_char_t* data, int index) {
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->character,
         PSOCN_STLENGTH_BB_CHAR2);
 
-    strcat(myquery, "', bank = '");
+    SAFE_STRCAT(myquery, "', bank = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->bank,
         PSOCN_STLENGTH_BANK);
 
-    strcat(myquery, "', quest_data1 = '");
+    SAFE_STRCAT(myquery, "', quest_data1 = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data1,
         PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
 
-    strcat(myquery, "', guildcard_desc = '");
+    SAFE_STRCAT(myquery, "', guildcard_desc = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->guildcard_desc,
         88);
 
-    strcat(myquery, "', autoreply = '");
+    SAFE_STRCAT(myquery, "', autoreply = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->autoreply,
         172);
 
-    strcat(myquery, "', infoboard = '");
+    SAFE_STRCAT(myquery, "', infoboard = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->infoboard,
         172);
 
-    strcat(myquery, "', b_records = '");
+    SAFE_STRCAT(myquery, "', b_records = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->b_records,
         PSOCN_STLENGTH_BATTLE_RECORDS);
 
-    strcat(myquery, "', c_records = '");
+    SAFE_STRCAT(myquery, "', c_records = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->c_records,
         PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
 
-    strcat(myquery, "', tech_menu = '");
+    SAFE_STRCAT(myquery, "', tech_menu = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech_menu,
         PSOCN_STLENGTH_BB_DB_TECH_MENU);
 
-    strcat(myquery, "', quest_data2 = '");
+    SAFE_STRCAT(myquery, "', quest_data2 = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data2,
         PSOCN_STLENGTH_BB_DB_QUEST_DATA2);

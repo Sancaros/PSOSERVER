@@ -102,36 +102,36 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 	for (i = 0; i < length; i++) {
 		if (i % 16 == 0) {
 			if (i != 0) {
-				strcat(dp, "\n");
+				SAFE_STRCAT(dp, "\n");
 			}
 			sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i);
 		}
 		sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]);
 
 		if (i % 8 == 7 && i % 16 != 15) {
-			strcat(dp, " "); // 在8个二进制后增加一个空格
+			SAFE_STRCAT(dp, " "); // 在8个二进制后增加一个空格
 		}
 
 		if (i % 16 == 15 || i == length - 1) {
 			size_t j;
-			strcat(dp, "    ");
+			SAFE_STRCAT(dp, "    ");
 			for (j = i - (i % 16); j <= i; j++) {
 				if (j >= length) {
-					strcat(dp, " ");
+					SAFE_STRCAT(dp, " ");
 				}
 				else if (buff[j] >= ' ' && buff[j] <= '~') {
 					char tmp_str[2] = { buff[j], '\0' };
-					strcat(dp, tmp_str);
+					SAFE_STRCAT(dp, tmp_str);
 				}
 				else {
-					strcat(dp, ".");
+					SAFE_STRCAT(dp, ".");
 				}
 			}
 		}
 	}
 
 	if (strlen(dp) + 2 + 1 <= MAX_PACKET_BUFF) { // 检查长度是否足够
-		strcat(dp, "\n\r"); // 添加两个换行符
+		SAFE_STRCAT(dp, "\n\r"); // 添加两个换行符
 	}
 	else {
 		print_method("不足以容纳换行符");
@@ -472,7 +472,7 @@ void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
@@ -486,11 +486,11 @@ void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, server_name[server_name_num].name);
-	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num].name);
-	strcat(logfile, ".log");
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, server_name[server_name_num].name);
+	SAFE_STRCAT(logfile, "_");
+	SAFE_STRCAT(logfile, log_header[files_num].name);
+	SAFE_STRCAT(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
@@ -537,7 +537,7 @@ void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
@@ -551,11 +551,11 @@ void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, server_name[server_name_num].name);
-	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num].name);
-	strcat(logfile, ".log");
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, server_name[server_name_num].name);
+	SAFE_STRCAT(logfile, "_");
+	SAFE_STRCAT(logfile, log_header[files_num].name);
+	SAFE_STRCAT(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
@@ -603,7 +603,7 @@ void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
@@ -617,11 +617,11 @@ void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, server_name[server_name_num].name);
-	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num].name);
-	strcat(logfile, ".log");
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, server_name[server_name_num].name);
+	SAFE_STRCAT(logfile, "_");
+	SAFE_STRCAT(logfile, log_header[files_num].name);
+	SAFE_STRCAT(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
@@ -668,7 +668,7 @@ void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
@@ -682,11 +682,11 @@ void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, server_name[server_name_num].name);
-	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num].name);
-	strcat(logfile, ".log");
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, server_name[server_name_num].name);
+	SAFE_STRCAT(logfile, "_");
+	SAFE_STRCAT(logfile, log_header[files_num].name);
+	SAFE_STRCAT(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
@@ -736,7 +736,7 @@ void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	mes[MAX_PACKET_BUFF - 1] = '\0';
@@ -805,7 +805,7 @@ void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
@@ -819,9 +819,9 @@ void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, files_name);
-	strcat(logfile, ".log");
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, files_name);
+	SAFE_STRCAT(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
@@ -867,7 +867,7 @@ void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
@@ -881,9 +881,9 @@ void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, files_name);
-	strcat(logfile, ".log");
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, files_name);
+	SAFE_STRCAT(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
@@ -929,7 +929,7 @@ void flog_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_n
 	GetLocalTime(&rawtime);
 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
-	//strcat(headermes, log_header[files]);
+	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
 	va_end(args);
@@ -943,9 +943,9 @@ void flog_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_n
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, files_name);
-	strcat(logfile, ".log");
+	SAFE_STRCAT(logfile, "\\");
+	SAFE_STRCAT(logfile, files_name);
+	SAFE_STRCAT(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);

@@ -54,7 +54,7 @@ static int db_insert_b_records(battle_records_t* b_records, uint32_t gc, uint8_t
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&b_records->unknown_a1, 14);
 
-    strcat(myquery, "')");
+    SAFE_STRCAT(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法保存对战数据表 %s (GC %" PRIu32 ", "

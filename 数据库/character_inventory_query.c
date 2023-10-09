@@ -42,7 +42,7 @@ static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)inv,
 		PSOCN_STLENGTH_INV);
 
-	strcat(myquery, "')");
+	SAFE_STRCAT(myquery, "')");
 
 	if (psocn_db_real_query(&conn, myquery)) {
 		//SQLERR_LOG("psocn_db_real_query() Ê§°Ü: %s", psocn_db_error(&conn));

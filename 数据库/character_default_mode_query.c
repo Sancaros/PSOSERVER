@@ -98,23 +98,23 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->inv,
         PSOCN_STLENGTH_INV);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech,
         PSOCN_STLENGTH_BB_TECH);
 
-    //strcat(myquery, "')");
+    SAFE_STRCAT(myquery, "')");
 
-    int remaining_size = sizeof(myquery) - strlen(myquery) - 1; // 计算剩余可用长度
+    //int remaining_size = sizeof(myquery) - strlen(myquery) - 1; // 计算剩余可用长度
 
-    // 格式化拼接字符串，并确保不会溢出缓冲区
-    int n = snprintf(myquery + strlen(myquery), remaining_size, "')");
+    //// 格式化拼接字符串，并确保不会溢出缓冲区
+    //int n = snprintf(myquery + strlen(myquery), remaining_size, "')");
 
-    if (n < 0 || n >= remaining_size) {
-        SQLERR_LOG("无法写入myquery数据");
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
-    }
+    //if (n < 0 || n >= remaining_size) {
+    //    SQLERR_LOG("无法写入myquery数据");
+    //    SQLERR_LOG("%s", psocn_db_error(&conn));
+    //    return -1;
+    //}
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法插入数据");

@@ -1239,7 +1239,7 @@ int load_param_data(void) {
         }
 
         strcpy(fn2, dir);
-        strcat(fn2, fn);
+        SAFE_STRCAT(fn2, fn);
 
         AUTH_LOG("读取参数文件: %s", fn2);
 

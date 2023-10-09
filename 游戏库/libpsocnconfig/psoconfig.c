@@ -1142,8 +1142,8 @@ int psocn_web_server_getfile(void* HostName, int32_t port, char* file, const cha
         snprintf(WebServer, sizeof(WebServer), "http://%s:%d%s?rand=%d", (char*)HostName, port, file, nRand);
         //printf("网络路径: %s\n", WebServer);
         if (_getcwd(buf, sizeof(buf))) {
-            strcat(buf, "\\");
-            strcat(buf, onlinefile);
+            SAFE_STRCAT(buf, "\\");
+            SAFE_STRCAT(buf, onlinefile);
             //printf("本地路径: %s\n", buf);
             URLDownloadToFileA(0, WebServer, buf, 0, NULL);
             return 0;

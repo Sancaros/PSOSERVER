@@ -1079,9 +1079,9 @@ static int save_mail(uint32_t gc, uint32_t from, void* pkt, int version) {
         from);
     psocn_db_escape_str(&conn, query + strlen(query), name, nmlen);
 
-    strcat(query, "', '");
+    SAFE_STRCAT(query, "', '");
     psocn_db_escape_str(&conn, query + strlen(query), msg, 511 - out);
-    strcat(query, "');");
+    SAFE_STRCAT(query, "');");
 
     /* Execute the query on the db. */
     if (psocn_db_real_query(&conn, query)) {
@@ -3442,7 +3442,7 @@ static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
             len);
     }
 
-    strcat(query, "') ON DUPLICATE KEY UPDATE data=VALUES(data)");
+    SAFE_STRCAT(query, "') ON DUPLICATE KEY UPDATE data=VALUES(data)");
     free_safe(cmp_buf);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -3876,7 +3876,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         "('%u', '%u', '", AUTH_BANS, until, account_id);
     psocn_db_escape_str(&conn, query + strlen(query), (char*)pkt->message,
         strlen(pkt->message));
-    strcat(query, "')");
+    SAFE_STRCAT(query, "')");
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法向 %s 插入封禁数据", AUTH_BANS);

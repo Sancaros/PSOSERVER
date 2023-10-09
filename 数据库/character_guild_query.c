@@ -249,12 +249,12 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 psocn_db_escape_str(&conn, myquery + strlen(myquery),
                     (char*)&guild.data.guild_name, sizeof(guild.data.guild_name));
 
-                strcat(myquery, "', '");
+                SAFE_STRCAT(myquery, "', '");
 
                 psocn_db_escape_str(&conn, myquery + strlen(myquery),
                     (char*)&guild.data.guild_flag, sizeof(guild.data.guild_flag));
 
-                strcat(myquery, "')");
+                SAFE_STRCAT(myquery, "')");
 
                 if (psocn_db_real_query(&conn, myquery)) {
                     SQLERR_LOG("无法插入设置数据 "
@@ -389,12 +389,12 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&g_data->guild_name,
             sizeof(g_data->guild_name));
 
-        strcat(myquery, "', '");
+        SAFE_STRCAT(myquery, "', '");
 
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&g_data->guild_flag,
             sizeof(g_data->guild_flag));
 
-        strcat(myquery, "')");
+        SAFE_STRCAT(myquery, "')");
 
         if (!psocn_db_real_query(&conn, myquery))
         {
@@ -475,7 +475,7 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.data.guild_name,
         sizeof(guild.data.guild_name));
 
-    strcat(myquery, "', guild_flag = '");
+    SAFE_STRCAT(myquery, "', guild_flag = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.data.guild_flag,
         sizeof(guild.data.guild_flag));

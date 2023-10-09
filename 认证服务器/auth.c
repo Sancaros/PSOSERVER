@@ -182,7 +182,7 @@ int send_ban_msg(login_client_t* c, time_t until, const char* reason) {
         reason, __(c, "Your ban expires"));
 
     if ((uint32_t)until == 0xFFFFFFFF) {
-        strcat(string, __(c, "Never"));
+        SAFE_STRCAT(string, __(c, "Never"));
     }
     else {
         //gmtime_r(&until, &cooked);

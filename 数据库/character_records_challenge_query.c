@@ -135,27 +135,27 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->grave_team,
         20);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->grave_message,
         32);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->unk3,
         4);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->string,
         18);
 
-    //strcat(myquery, "', '");
+    //SAFE_STRCAT(myquery, "', '");
 
     //psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->title_str,
     //    10);
 
-    strcat(myquery, "')");
+    SAFE_STRCAT(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "

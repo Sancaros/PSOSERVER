@@ -18,6 +18,7 @@
 #ifndef PSOCN_DATABASE_H
 #define PSOCN_DATABASE_H
 
+#include "f_logs.h"
 #include "psoconfig.h"
 #include <mysql.h>
 
@@ -26,9 +27,7 @@
 #pragma comment(lib , "libmariadb.lib")
 #pragma comment(lib , "mariadbclient.lib")
 
-#define MAX_QUERY_SIZE 0x10000 * 2
-
-static char myquery[MAX_QUERY_SIZE] = { 0 };
+static char myquery[MAX_PACKET_BUFF] = { 0 };
 
 #define AUTH_ACCOUNT "auth_account"
 #define AUTH_ACCOUNT_BLUEBURST "auth_account_blueburst"

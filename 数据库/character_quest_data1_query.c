@@ -84,7 +84,7 @@ int db_insert_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot) 
         (char*)quest_data1,
         0x208);
 
-    strcat(myquery, "')");
+    SAFE_STRCAT(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法保存数据表 %s (GC %" PRIu32 ", "

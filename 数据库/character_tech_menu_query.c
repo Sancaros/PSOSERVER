@@ -84,7 +84,7 @@ int db_insert_char_tech_menu(uint8_t* tech_menu, uint32_t gc, uint8_t slot) {
         (char*)tech_menu,
         PSOCN_STLENGTH_BB_DB_TECH_MENU);
 
-    strcat(myquery, "')");
+    SAFE_STRCAT(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法保存数据表 %s (GC %" PRIu32 ", "
