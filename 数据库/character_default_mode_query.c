@@ -20,34 +20,62 @@
 #include "pso_character.h"
 
 int db_update_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, int qid) {
-    memset(myquery, 0, sizeof(myquery));
+    /* 计算 myquery 缓冲区的长度 */
+    const size_t myquery_size = sizeof(myquery);
+    char char_buf[PSOCN_STLENGTH_BB_CHAR2] = { 0 }, inv_buf[PSOCN_STLENGTH_INV] = { 0 }, tech_buf[PSOCN_STLENGTH_BB_TECH] = { 0 };
 
-    snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "update_time = NOW(), `character` = '", CHARACTER_DEFAULT_MODE);
+    /* 使用 sprintf 函数构造 SQL 查询语句 */
+    const char* sql_template = "UPDATE %s SET update_time = NOW(), `character` = '%s', inventory = '%s', tech = '%s' WHERE `qid` = %d AND `ch_class` = %d";
+    sprintf(myquery, sql_template, CHARACTER_DEFAULT_MODE,
+        psocn_db_escape_str(&conn, char_buf, (char*)data, PSOCN_STLENGTH_BB_CHAR2),
+        psocn_db_escape_str(&conn, inv_buf, (char*)&data->inv, PSOCN_STLENGTH_INV),
+        psocn_db_escape_str(&conn, tech_buf, (char*)&data->tech, PSOCN_STLENGTH_BB_TECH),
+        qid, char_class);
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)data,
-        PSOCN_STLENGTH_BB_CHAR2);
-
-    strcat(myquery, "', inventory = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->inv,
-        PSOCN_STLENGTH_INV);
-
-    strcat(myquery, "', tech = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech,
-        PSOCN_STLENGTH_BB_TECH);
-
-    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `qid` = %d AND `ch_class` = %d", qid, char_class);
+    /* 检查 myquery 是否超出了缓冲区边界 */
+    if (strnlen_s(myquery, myquery_size) == myquery_size - 1) {
+        SQLERR_LOG("写入数据超出缓冲区");
+        return -1;
+    }
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新数据");
         SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
+        return -2;
     }
 
     return 0;
 }
+
+//int db_update_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, int qid) {
+//    memset(myquery, 0, sizeof(myquery));
+//
+//    snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
+//        "update_time = NOW(), `character` = '", CHARACTER_DEFAULT_MODE);
+//
+//    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)data,
+//        PSOCN_STLENGTH_BB_CHAR2);
+//
+//    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "', inventory = '");
+//
+//    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->inv,
+//        PSOCN_STLENGTH_INV);
+//
+//    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "', tech = '");
+//
+//    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech,
+//        PSOCN_STLENGTH_BB_TECH);
+//
+//    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `qid` = %d AND `ch_class` = %d", qid, char_class);
+//
+//    if (psocn_db_real_query(&conn, myquery)) {
+//        SQLERR_LOG("无法更新数据");
+//        SQLERR_LOG("%s", psocn_db_error(&conn));
+//        return -1;
+//    }
+//
+//    return 0;
+//}
 
 int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, int qid, char* class_name) {
 
@@ -65,7 +93,7 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data,
         PSOCN_STLENGTH_BB_CHAR2);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->inv,
         PSOCN_STLENGTH_INV);
@@ -75,7 +103,18 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech,
         PSOCN_STLENGTH_BB_TECH);
 
-    strcat(myquery, "')");
+    //strcat(myquery, "')");
+
+    int remaining_size = sizeof(myquery) - strlen(myquery) - 1; // 计算剩余可用长度
+
+    // 格式化拼接字符串，并确保不会溢出缓冲区
+    int n = snprintf(myquery + strlen(myquery), remaining_size, "')");
+
+    if (n < 0 || n >= remaining_size) {
+        SQLERR_LOG("无法写入myquery数据");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法插入数据");

@@ -45,7 +45,18 @@ static int db_insert_bank_char_param(psocn_bank_t* bank, uint32_t gc, uint8_t sl
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)bank,
         PSOCN_STLENGTH_BANK);
 
-    strcat(myquery, "')");
+    //strcat(myquery, "')");
+
+    int remaining_size = sizeof(myquery) - strlen(myquery) - 1; // 计算剩余可用长度
+
+    // 格式化拼接字符串，并确保不会溢出缓冲区
+    int n = snprintf(myquery + strlen(myquery), remaining_size, "')");
+
+    if (n < 0 || n >= remaining_size) {
+        SQLERR_LOG("无法写入myquery数据");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
 
     if (psocn_db_real_query(&conn, myquery)) {
         //SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));

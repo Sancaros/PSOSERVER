@@ -113,6 +113,43 @@ int db_get_orignal_char_full_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t*
     return 0;
 }
 
+//int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name) {
+//    bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)data;
+//    psocn_bb_full_char_t* full_char = &full_data_pkt->data;
+//
+//    memset(myquery, 0, sizeof(myquery));
+//
+//    snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+//        "guildcard, slot, ch_class, class_name, update_time, "
+//        "`character2`, bank, quest_data1, guildcard_desc, "
+//        "autoreply, infoboard, b_records, c_records, tech_menu, quest_data2, "
+//        "`full_data`"
+//        ") VALUES ("
+//        "?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+//        ")",
+//        CHARACTER_DATA_FULL
+//    );
+//
+//    psocn_db_stmt_query_t* query = psocn_db_stmt_query_init(conn.conndata);
+//    if (!query) {
+//        ERR_LOG("Unable to initialize database query");
+//        return 1;
+//    }
+//
+//    psocn_db_stmt_add_param(MYSQL_TYPE_LONG, &gc, sizeof(uint32_t));
+//    psocn_db_stmt_add_param(MYSQL_TYPE_LONG, &slot, sizeof(uint32_t));
+//    psocn_db_stmt_add_param(MYSQL_TYPE_LONG, &char_class, sizeof(uint8_t));
+//    psocn_db_stmt_add_param(MYSQL_TYPE_STRING, class_name, strlen(class_name));
+//
+//    psocn_db_stmt_add_param(MYSQL_TYPE_BLOB, &full_char->character, PSOCN_STLENGTH_BB_CHAR2);
+//    psocn_db_stmt_add_param(MYSQL_TYPE_BLOB, &full_char->bank, PSOCN_STLENGTH_BANK);
+//    psocn_db_stmt_add_param(MYSQL_TYPE_BLOB, &full_char->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+//    psocn_db_stmt_add_param(MYSQL_TYPE_BLOB, &full_char->gc.guildcard_desc, 88);
+//    psocn_db_stmt_add_param(MYSQL_TYPE_BLOB, &full_char->autoreply, 172);
+//
+//    return 0;
+//}
+
 int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name) {
     bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)data;
     psocn_bb_full_char_t* full_char = &full_data_pkt->data;
@@ -133,57 +170,57 @@ int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->character,
         PSOCN_STLENGTH_BB_CHAR2);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->bank,
         PSOCN_STLENGTH_BANK);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_data1,
         PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->gc.guildcard_desc,
         88);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->autoreply,
         172);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->infoboard,
         172);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->b_records,
         PSOCN_STLENGTH_BATTLE_RECORDS);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->c_records,
         PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->tech_menu,
         PSOCN_STLENGTH_BB_DB_TECH_MENU);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_data2,
         PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
-    strcat(myquery, "', '");
+    SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)data,
         PSOCN_STLENGTH_BB_FULL_CHAR);
 
-    strcat(myquery, "')");
+    SAFE_STRCAT(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {
         //SQLERR_LOG("无法插入数据");

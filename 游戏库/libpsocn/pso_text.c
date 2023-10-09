@@ -23,8 +23,6 @@
 #include <Windows.h>
 #endif
 
-#include "f_logs.h"
-
 #include "pso_text.h"
 
 int32_t ext24(uint32_t a) {
@@ -173,6 +171,23 @@ void safe_free(const char* func, uint32_t line, void** ptr) {
     }
     else
         ERR_LOG("(%s[%04d])内存释放错误, 本身已为悬空指针", func, line);
+}
+
+void safe_strcat(const char* func, uint32_t line, char* dest, const char* src, size_t dest_size) {
+    size_t dest_len = strlen(dest);
+    size_t src_len = strlen(src);
+
+    if (dest_len < dest_size - 1) {
+        size_t copy_len = dest_size - dest_len - 1;  // 拷贝的最大长度
+        strncat(dest, src, copy_len);
+    }
+    else {
+        ERR_LOG("(%s[%04d])内存拼接错误, 长度不足或有空指针", func, line);
+        ERR_LOG("(%s[%04d])数据1 %s", dest);
+        ERR_LOG("(%s[%04d])数据1长度 %s", dest_size);
+        ERR_LOG("(%s[%04d])数据2 %s", src);
+        ERR_LOG("(%s[%04d])数据2长度 %s", src_len);
+    }
 }
 
 #ifndef  _WIN32

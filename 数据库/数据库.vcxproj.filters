@@ -92,5 +92,8 @@
     <ClCompile Include="character_tech_menu_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="database_stmt.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -26,7 +26,7 @@
 #pragma comment(lib , "libmariadb.lib")
 #pragma comment(lib , "mariadbclient.lib")
 
-#define MAX_QUERY_SIZE 0x10000
+#define MAX_QUERY_SIZE 0x10000 * 2
 
 static char myquery[MAX_QUERY_SIZE] = { 0 };
 
@@ -147,85 +147,68 @@ typedef struct psocn_dbconn {
     void* conndata;
 } psocn_dbconn_t;
 
-// 参数类型枚举
-typedef enum {
-    PARAM_TYPE_UINT8,
-    PARAM_TYPE_UINT16,
-    PARAM_TYPE_UINT32,
-    PARAM_TYPE_FLOAT,
-    PARAM_TYPE_CHAR,
-    PARAM_TYPE_WCHAR,
-    PARAM_TYPE_STRING,
-    PARAM_TYPE_STRUCT,
-    PARAM_TYPE_BLOB,
-    PARAM_TYPE_UNKNOWN
-} psocn_param_type_t;
+#define SUPPORT_STMT
+///////////////////////////////////////////////////////////
+/* 参数化查询 */
+#ifdef SUPPORT_STMT
 
-// 数据库参数结构体
+#define MAX_PARAMS 256
+
 typedef struct {
-    psocn_param_type_t type;  // 参数类型（MYSQL_TYPE_*）
-    void* value;            // 参数值的指针
-    unsigned long length;   // 参数值的长度
-} psocn_db_param_t;
+    enum enum_field_types type;
+    void* value;
+    unsigned long length;
+} psocn_db_stmt_param_t;
 
-extern int psocn_db_open(psocn_dbconfig_t* dbcfg,
+typedef struct {
+    MYSQL* connection;
+    MYSQL_STMT* statement;
+} psocn_db_stmt_query_t;
+
+static psocn_db_stmt_param_t stmt_param[MAX_PARAMS] = { 0 };
+static int param_count = 0;
+
+psocn_db_stmt_query_t* psocn_db_stmt_query_init(MYSQL* connection);
+
+int psocn_db_stmt_add_param(enum enum_field_types type, void* value, unsigned long length);
+
+void psocn_db_stmt_clear_params();
+
+void psocn_db_stmt_query_free(psocn_db_stmt_query_t* query);
+
+int psocn_db_stmt_query_exec(psocn_db_stmt_query_t* query, const char* sql, psocn_db_stmt_param_t* params, int param_count);
+
+#endif // SUPPORT_STMT
+
+int psocn_db_open(psocn_dbconfig_t* dbcfg,
     psocn_dbconn_t* conn);
-extern void psocn_db_close(psocn_dbconn_t* conn);
+void psocn_db_close(psocn_dbconn_t* conn);
 
 /* 普通查询 */
-extern int psocn_db_query(psocn_dbconn_t* conn, const char* str);
+int psocn_db_query(psocn_dbconn_t* conn, const char* str);
 /* 支持二进制查询 */
-extern int psocn_db_real_query(psocn_dbconn_t* conn, const char* str);
+int psocn_db_real_query(psocn_dbconn_t* conn, const char* str);
 
-extern void* psocn_db_result_store(psocn_dbconn_t* conn);
-extern void* psocn_db_result_use(psocn_dbconn_t* conn);
-extern void psocn_db_result_free(void* result);
-extern void psocn_db_next_result_free(psocn_dbconn_t* conn, void* result);
+void* psocn_db_result_store(psocn_dbconn_t* conn);
+void* psocn_db_result_use(psocn_dbconn_t* conn);
+void psocn_db_result_free(void* result);
+void psocn_db_next_result_free(psocn_dbconn_t* conn, void* result);
 
-extern long long int psocn_db_result_rows(void* result);
-extern unsigned int psocn_db_result_fields(psocn_dbconn_t* conn);
-extern char** psocn_db_result_fetch(void* result);
+long long int psocn_db_result_rows(void* result);
+unsigned int psocn_db_result_fields(psocn_dbconn_t* conn);
+char** psocn_db_result_fetch(void* result);
 unsigned long* psocn_db_result_lengths(void* result);
 
-extern long long int psocn_db_insert_id(psocn_dbconn_t* conn);
-extern unsigned long psocn_db_escape_str(psocn_dbconn_t* conn, char* to,
+long long int psocn_db_insert_id(psocn_dbconn_t* conn);
+unsigned long psocn_db_escape_str(psocn_dbconn_t* conn, char* to,
     const char* from,
     unsigned long len);
 /* 静态数据库字符串 */
-extern unsigned long psocn_db_str(psocn_dbconn_t* conn, char* q, const char* str, unsigned long len);
-extern const char* psocn_db_error(psocn_dbconn_t* conn);
+unsigned long psocn_db_str(psocn_dbconn_t* conn, char* q, const char* str, unsigned long len);
+const char* psocn_db_error(psocn_dbconn_t* conn);
 
-extern int psocn_db_commit(psocn_dbconn_t* conn);
-extern unsigned long long psocn_db_affected_rows(psocn_dbconn_t* conn);
-
-/// <参数化查询>
-/// //////////////////////////////////////////////////////////////////////////////////////////
-/// </参数化查询>
-
-int psocn_db_stmt_query(psocn_dbconn_t* conn, MYSQL_STMT* stmt, const char* str, unsigned long length, MYSQL_BIND* params);
-int psocn_db_squery(psocn_dbconn_t* conn, const char* str, MYSQL_BIND* params);
-int psocn_db_real_squery(psocn_dbconn_t* conn, const char* str, MYSQL_BIND* params);
-char** psocn_db_result_sfetch(void* result, int num_fields);
-
-// 销毁参数对象
-extern void psocn_destroy_db_param(psocn_db_param_t* param);
-extern int psocn_set_db_param_value(psocn_db_param_t* param, psocn_param_type_t type, void* value, size_t length);
-
-extern void psocn_set_uint8_param(psocn_db_param_t* param, uint8_t value);
-extern void psocn_set_uint16_param(psocn_db_param_t* param, uint16_t value);
-extern void psocn_set_uint32_param(psocn_db_param_t* param, uint32_t value);
-extern void psocn_set_float_param(psocn_db_param_t* param, float value);
-extern void psocn_set_char_param(psocn_db_param_t* param, char value);
-extern void psocn_set_wchar_param(psocn_db_param_t* param, wchar_t* value);
-extern void psocn_set_string_param(psocn_db_param_t* param, const char* value);
-extern void psocn_set_struct_param(psocn_db_param_t* param, void* value, size_t size);
-extern void psocn_set_blob_param(psocn_db_param_t* param, void* value, size_t size);
-extern void psocn_set_unknown_param(psocn_db_param_t* param, void* value, size_t size);
-
-// 输出参数值
-extern void psocn_output_param_value(const psocn_db_param_t* param);
-
-extern int psocn_db_param_query(psocn_dbconn_t* conn, const char* query, const psocn_db_param_t* params, int param_count);
+int psocn_db_commit(psocn_dbconn_t* conn);
+unsigned long long psocn_db_affected_rows(psocn_dbconn_t* conn);
 
 #include "database_query.h"
 

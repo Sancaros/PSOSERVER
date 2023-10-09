@@ -19,7 +19,8 @@
 #define PSO_CRASH_HANDLE_H
 
 #include <stdio.h>
-#include <Windows.h>
+#include <windows.h>
+#include <winnt.h>
 #include <excpt.h>
 #include <DbgHelp.h>
 

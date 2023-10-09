@@ -25,11 +25,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <errno.h>
 
-#include "pso_cmd_name.h"
-#include "pso_timer.h"
-#include "pso_text.h"
 #include "Software_Defines.h"
 
 /* Get ssize_t. */
@@ -683,5 +681,9 @@ static inline void log_mutex_destory() {
         //DBG_LOG("log_mutex_destory Ïú»Ù³É¹¦£¡");
     }
 }
+
+#include "pso_cmd_name.h"
+#include "pso_text.h"
+#include "pso_timer.h"
 
 #endif // !PSOCN_LOG
