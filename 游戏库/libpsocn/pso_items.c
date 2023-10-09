@@ -426,39 +426,106 @@ bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
 	return false;
 }
 
-const char* get_unit_bonus_describe(const item_t* item) {
-	const char* unit_attrib[5][2] = {
-		{ "\xFE", "--" },
-		{ "\xFF", "-" },
-		{ "\x00", "无" },
-		{ "\x01", "+" },
-		{ "\x02", "++" }
-	};
+const char* get_weapon_special_describe(uint8_t value, int lang) {
+	int len_weapon = ARRAYSIZE(weapon_specials);
+	for (int i = 0; i < len_weapon; i++) {
+		if (weapon_specials[i].id == value) {
+			if(!lang)
+				return weapon_specials[i].cn_name;
+			else
+				return weapon_specials[i].name;
 
-	for (size_t x = 0; x < 5; x++) {
-		if (item->datab[6] == *unit_attrib[x][0]) {
-			return unit_attrib[x][1];
+		}
+	}
+	return "";
+}
+
+const char* get_s_rank_special_describe(uint8_t value, int lang) {
+	int len_s_rank = ARRAYSIZE(s_rank_specials);
+	for (int i = 0; i < len_s_rank; i++) {
+		if (s_rank_specials[i].id == value) {
+			if(!lang)
+				return s_rank_specials[i].cn_name;
+			else
+				return s_rank_specials[i].name;
+
+		}
+	}
+	return "";
+}
+
+const char* get_unit_bonus_describe(const item_t* item) {
+	size_t x = 0;
+
+	memset(item_attrib_des, 0, sizeof(item_attrib_des));
+
+	char attrib1[50] = { 0 };
+
+	for (x; x < ARRAYSIZE(unit_attrib_val); x++) {
+		if (item->datab[6] == unit_attrib_val[x]) {
+			break;
 		}
 	}
 
-	return NULL; // 如果没有匹配的项，返回NULL或其他适当的默认值
+	// 处理属性1
+	if (item->datab[10] & 0x80)
+		sprintf(attrib1, " 解封数%d", item->datab[11]);
+
+	if (x <= ARRAYSIZE(unit_attrib_val))
+		strcpy(item_attrib_des, unit_attrib[x]);
+
+	strcat(item_attrib_des, attrib1);
+
+	return item_attrib_des; // 如果没有匹配的项，返回NULL或其他适当的默认值
+}
+
+char* get_weapon_attrib_describe(const item_t* item) {
+	int attrib_len = ARRAYSIZE(weapon_attrib);
+
+	memset(item_attrib_des, 0, sizeof(item_attrib_des));
+
+	char attrib1[50] = { 0 };
+	char attrib2[50] = { 0 };
+	char attrib3[50] = { 0 };
+
+	// 处理属性1
+	if (item->datab[6] < attrib_len)
+		sprintf(attrib1, "%s%d", weapon_attrib[item->datab[6]], item->datab[7]);
+	else
+		strcpy(attrib1, "空");
+
+	// 处理属性2
+	if (item->datab[8] < attrib_len)
+		sprintf(attrib2, "%s%d", weapon_attrib[item->datab[8]], item->datab[9]);
+	else
+		strcpy(attrib2, "空");
+
+	// 处理属性3
+	if (item->datab[10] < attrib_len)
+		sprintf(attrib3, "%s%d", weapon_attrib[item->datab[10]], item->datab[11]);
+	else if(item->datab[10] & 0x80){
+		sprintf(attrib3, "解封%d", item->datab[11]);
+	}
+	else
+		strcpy(attrib3, "空");
+
+	sprintf(item_attrib_des, "%s/%s/%s", attrib1, attrib2, attrib3);
+
+	return item_attrib_des;
 }
 
 char* get_item_describe(const item_t* item, int version) {
-	char* weapon_attrib[6] = { "无", "原生", "变异", "机械", "暗黑", "命中" };
 
 	memset(item_des, 0, sizeof(item_des));
 
 	/* 检索物品类型 */
 	switch (item->datab[0]) {
 	case ITEM_TYPE_WEAPON: // 武器
-		sprintf(item_des, "%s +%d 属性%d [%s%d/%s%d/%s%d]"
+		sprintf(item_des, "%s +%d EX %s [%s]"
 			, item_get_name(item, version, 0)
 			, item->datab[3]
-			, item->datab[4]
-			, weapon_attrib[item->datab[6]], item->datab[7]
-			, weapon_attrib[item->datab[8]], item->datab[9]
-			, weapon_attrib[item->datab[10]], item->datab[11]
+			, get_weapon_special_describe(item->datab[4], 0)
+			, get_weapon_attrib_describe(item)
 		);
 		break;
 	case ITEM_TYPE_GUARD: // 装甲
@@ -480,16 +547,10 @@ char* get_item_describe(const item_t* item, int version) {
 			break;
 
 		case ITEM_SUBTYPE_UNIT://插件
-			const char* bonus_desc = get_unit_bonus_describe(item);
-			if (bonus_desc == NULL) {
-				sprintf(item_des, "%s", item_get_name(item, version, 0));
-			}
-			else {
-				sprintf(item_des, "%s [%s]"
-					, item_get_name(item, version, 0)
-					, bonus_desc
-				);
-			}
+			sprintf(item_des, "%s [%s]"
+				, item_get_name(item, version, 0)
+				, get_unit_bonus_describe(item)
+			);
 			break;
 		}
 		break;

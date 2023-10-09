@@ -130,6 +130,8 @@ static const int8_t weapon_bonus_values[21] = {
     50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
 };
 
+static char* weapon_attrib[6] = { "无", "原生", "变异", "机械", "暗黑", "命中" };
+
 typedef struct weapon_special {
     uint8_t id;
     const char* name;
@@ -256,6 +258,23 @@ static inline const char* get_mag_color_name(int color) {
 }
 
 static char item_des[512];
+static char item_attrib_des[512];
+
+static const uint8_t unit_attrib_val[5] = {
+	0xFE,
+	0xFF,
+	0x00,
+	0x01,
+	0x02,
+};
+
+static const char* unit_attrib[5] = {
+	"--",
+	"-",
+	"无",
+	"+",
+	"++"
+};
 
 /* 初始化物品数据 */
 void clear_inv_item(item_t* item);
