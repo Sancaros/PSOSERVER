@@ -139,7 +139,7 @@ typedef struct weapon_special {
 } weapon_special_t;
 
 static const weapon_special_t weapon_specials[] = {
-	{0x00, "NULL", "无属性"},
+	{0x00, "NULL", "无EX"},
     {0x01, "Draw", "吸血"},
     {0x02, "Drain", "饮血"},
     {0x03, "Fill", "噬血"},
@@ -189,8 +189,11 @@ typedef struct s_rank_special {
 } s_rank_special_t;
 
 static const s_rank_special_t s_rank_specials[] = {
+	{0x00, "NULL", "无EX"},
     {0x01, "Jellen", "降攻"},
     {0x02, "Zalure", "降防"},
+	{0x03, "HP Regeneration", "HP再生"},
+	{0x04, "TP Regeneration", "TP再生"},
     {0x05, "Burning", "炽热"},
     {0x06, "Tempest", "雷霆"},
     {0x07, "Blizzard", "冰暴"},
