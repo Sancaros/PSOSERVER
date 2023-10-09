@@ -2565,6 +2565,37 @@ static int sub60_44_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_45_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_normal_attack_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年10月09日 20:54:19:076] 舰船服务器 调试(sub_60.c 7239): 未知 PC 0x60 指令: 0x45
+//
+//[2023年10月09日 20:54:19:077] 舰船服务器 调试(f_logs.h 0604): 数据包如下:
+//
+//(00000000) 60 00 0C 00 45 02 01 00  1C 79 00 00    `...E....y..
+//
+//
+//
+//[2023年10月09日 20:54:24:509] 舰船服务器 调试(sub_60.c 7239): 未知 PC 0x60 指令: 0x45
+//
+//[2023年10月09日 20:54:24:510] 舰船服务器 调试(f_logs.h 0604): 数据包如下:
+//
+//(00000000) 60 00 0C 00 45 02 01 00  BE 6D 00 00    `...E....m..
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_normal_attack_t), 0x02))
+        return -2;
+
+    /* Save the new area and move along */
+    if (src->client_id == pkt->shdr.client_id) {
+        if ((l->flags & LOBBY_TYPE_GAME))
+            update_bb_qpos(src, l);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_45_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_normal_attack_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -7056,7 +7087,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_REVIVE_PLAYER              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_33_bb },
     { SUBCMD60_PB_BLAST                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_37_bb },
     { SUBCMD60_PB_BLAST_READY             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_39_bb },
-    { SUBCMD60_GAME_CLIENT_LEAVE          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3A_bb },
+    { SUBCMD60_GAME_CLIENT_LEAVE          , sub60_3A_dc, sub60_3A_dc, NULL,        sub60_3A_dc, sub60_3A_dc, sub60_3A_bb },
     { SUBCMD60_LOAD_3B                    , sub60_3B_dc, sub60_3B_dc, NULL,        sub60_3B_dc, sub60_3B_dc, sub60_3B_bb },
     { SUBCMD60_SET_POS_3E                 , sub60_3E_dc, sub60_3E_dc, NULL,        sub60_3E_dc, sub60_3E_dc, sub60_3E_bb },
     { SUBCMD60_SET_POS_3F                 , sub60_3F_dc, sub60_3F_dc, NULL,        sub60_3F_dc, sub60_3F_dc, sub60_3F_bb },
@@ -7066,7 +7097,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_MOVE_FAST                  , sub60_42_dc, sub60_42_dc, NULL,        sub60_42_dc, sub60_42_dc, sub60_42_bb },
     { SUBCMD60_ATTACK1                    , sub60_43_dc, sub60_43_dc, NULL,        sub60_43_dc, sub60_43_dc, sub60_43_bb },
     { SUBCMD60_ATTACK2                    , sub60_44_dc, sub60_44_dc, NULL,        sub60_44_dc, sub60_44_dc, sub60_44_bb },
-    { SUBCMD60_ATTACK3                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_45_bb },
+    { SUBCMD60_ATTACK3                    , sub60_45_dc, sub60_45_dc, NULL,        sub60_45_dc, sub60_45_dc, sub60_45_bb },
     { SUBCMD60_OBJHIT_PHYS                , sub60_46_dc, sub60_46_dc, NULL,        sub60_46_dc, sub60_46_dc, sub60_46_bb },
     { SUBCMD60_OBJHIT_TECH                , sub60_47_dc, sub60_47_dc, NULL,        sub60_47_dc, sub60_47_dc, sub60_47_bb },
     { SUBCMD60_USED_TECH                  , sub60_48_dc, sub60_48_dc, NULL,        sub60_48_dc, sub60_48_dc, sub60_48_bb },
