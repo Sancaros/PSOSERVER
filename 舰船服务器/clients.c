@@ -499,6 +499,12 @@ ship_client_t* client_create_connection(int sock, int version, int type,
     }
 }
 
+void fix_bb_player_db_save_data(psocn_bb_db_char_t* character) {
+
+
+}
+
+/* 人物数据检测修正函数 */
 bool check_bb_pl_data(ship_client_t* c) {
     if (isPacketEmpty(c->bb_pl->character.dress_data.gc_string, sizeof(c->bb_pl->character.dress_data.gc_string))) {
         ERR_LOG("%s 更新的数据有误 %s", get_player_describe(c), c->bb_pl->character.dress_data.gc_string);
