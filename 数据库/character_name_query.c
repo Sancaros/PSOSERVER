@@ -97,7 +97,7 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 
 	j = 0;
 
-	if (isEmptyString(row[j])) {
+	if (isPacketEmpty(row[j], 2)) {
 		psocn_db_result_free(result);
 
 		SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
@@ -108,7 +108,7 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 
 	j++;
 
-	if (isEmptyString(row[j])) {
+	if (isPacketEmpty(row[j], 2)) {
 		psocn_db_result_free(result);
 
 		SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
@@ -119,7 +119,7 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 
 	j++;
 
-	if (isEmptyString(row[j])) {
+	if (isPacketEmpty(row[j], 2)) {
 		psocn_db_result_free(result);
 
 		SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);

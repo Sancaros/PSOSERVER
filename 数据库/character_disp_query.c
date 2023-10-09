@@ -173,13 +173,6 @@ int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int che
 
     j = 2;
 
-    if (isEmptyString(row[j])) {
-        psocn_db_result_free(result);
-
-        SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
-        return -4;
-    }
-
     data->stats.atp = (uint16_t)strtoul(row[j], NULL, 10);
     j++;
     data->stats.mst = (uint16_t)strtoul(row[j], NULL, 10);

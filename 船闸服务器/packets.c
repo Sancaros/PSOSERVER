@@ -41,27 +41,27 @@ pthread_key_t sendbuf_key;
 
 /* 获取 sendbuf 动态内存数据. */
 uint8_t* get_sg_sendbuf(void) {
-    uint8_t* sendbuf = (uint8_t*)pthread_getspecific(sendbuf_key);
+    //uint8_t* sendbuf = (uint8_t*)pthread_getspecific(sendbuf_key);
 
-    /* If we haven't initialized the sendbuf pointer yet for this thread, then
-       we need to do that now. */
-    if (!sendbuf) {
-        sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+    ///* If we haven't initialized the sendbuf pointer yet for this thread, then
+    //   we need to do that now. */
+    //if (!sendbuf) {
+    //    sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
-        if (!sendbuf) {
-            ERR_LOG("malloc");
-            perror("malloc");
-            return NULL;
-        }
+    //    if (!sendbuf) {
+    //        ERR_LOG("malloc");
+    //        perror("malloc");
+    //        return NULL;
+    //    }
 
-        memset(sendbuf, 0, MAX_PACKET_BUFF);
+    //    memset(sendbuf, 0, MAX_PACKET_BUFF);
 
-        if (pthread_setspecific(sendbuf_key, sendbuf)) {
-            ERR_LOG("pthread_setspecific");
-            free_safe(sendbuf);
-            return NULL;
-        }
-    }
+    //    if (pthread_setspecific(sendbuf_key, sendbuf)) {
+    //        ERR_LOG("pthread_setspecific");
+    //        free_safe(sendbuf);
+    //        return NULL;
+    //    }
+    //}
     //uint8_t* sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
     ///* If we haven't initialized the sendbuf pointer yet for this thread, then
@@ -71,7 +71,7 @@ uint8_t* get_sg_sendbuf(void) {
     //    return NULL;
     //}
 
-    //memset(sendbuf, 0, MAX_PACKET_BUFF);
+    memset(sendbuf, 0, MAX_PACKET_BUFF);
 
     return sendbuf;
 }
@@ -110,10 +110,12 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
     __try {
         ssize_t rv, total = 0;
 
-        if (sendbuf == NULL || len == 0 || len > MAX_PACKET_BUFF) {
-            ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
+        if (sendbuf == NULL || isPacketEmpty(sendbuf, len) || len == 0 || len > MAX_PACKET_BUFF) {
+            //ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
+            print_ascii_hex(errl, sendbuf, len);
             return 0;
         }
+
         pthread_rwlock_wrlock(&c->rwlock);
         //pthread_mutex_lock(&c->pkt_mutex);
 

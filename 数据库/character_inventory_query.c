@@ -313,13 +313,6 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
 	/* 获取物品的二进制数据 */
 	int j = 4;
 
-	if (isEmptyString(row[j])) {
-		psocn_db_result_free(result);
-
-		SQLERR_LOG("保存的物品数据为空 (%" PRIu32 ": %u)", gc, slot);
-		return -4;
-	}
-
 	item->present = (uint16_t)strtoul(row[j], &endptr, 16);
 	j++;
 	item->extension_data1 = (uint8_t)strtoul(row[j], &endptr, 16);

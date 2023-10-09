@@ -86,7 +86,7 @@ int db_get_orignal_char_full_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t*
         return -3;
     }
 
-    if (isEmptyString(row[0])) {
+    if (isPacketEmpty(row[0], sizeof(bb_full_char_pkt))) {
         psocn_db_result_free(result);
 
         SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);

@@ -201,6 +201,16 @@ void SecureErase(void* buffer, size_t size) {
 }
 #endif // ! _WIN32
 
+int isPacketEmpty(const char* dataPacket, int packetLength) {
+    for (int i = 0; i < packetLength; i++) {
+        if (dataPacket[i] != 0) {
+            return 0; // 数据包非空
+        }
+    }
+
+    return 1; // 数据包为空
+}
+
 int isEmptyString(const char* str) {
     return (str == NULL || strlen(str) == 0);
 }

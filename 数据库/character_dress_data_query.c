@@ -37,6 +37,11 @@ int db_updata_bb_char_create_code(uint32_t code,
 }
 
 static int db_insert_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, uint8_t slot) {
+    if (isPacketEmpty(dress_data->gc_string, sizeof(dress_data->gc_string))) {
+        SQLERR_LOG("插入的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
+        return -4;
+    }
+
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO %s ("
@@ -90,6 +95,11 @@ static int db_insert_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc
 }
 
 static int db_upd_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, uint8_t slot) {
+    if (isPacketEmpty(dress_data->gc_string, sizeof(dress_data->gc_string))) {
+        SQLERR_LOG("更新的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
+        return -4;
+    }
+
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "UPDATE %s SET "
@@ -233,7 +243,7 @@ int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data,
 
     j = 2;
 
-    if (isEmptyString(row[j])) {
+    if (isPacketEmpty(row[j], sizeof(dress_data->gc_string))) {
         psocn_db_result_free(result);
 
         SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);

@@ -4005,73 +4005,73 @@ static int sub60_75_dc(ship_client_t* src, ship_client_t* dest,
     DBG_LOG("%s ´¥·¢SET_FLAGÖ¸Áî! flag = 0x%02X action = 0x%02X episode = 0x%02X difficulty = 0x%02X",
         get_player_describe(src), flag_index, action, l->episode, difficulty);
 
-    // The client explicitly checks for both 0 and 1 - any other value means no
-    // operation is performed.
-    size_t bit_index = (difficulty << 10) + flag_index;
-    size_t byte_index = bit_index >> 3;
-    uint8_t mask = 0x80 >> (bit_index & 7);
-    if (action == 0) {
-        src->bb_pl->quest_data1[byte_index] |= mask;
-    }
-    else if (action == 1) {
-        src->bb_pl->quest_data1[byte_index] &= (~mask);
-    }
+    //// The client explicitly checks for both 0 and 1 - any other value means no
+    //// operation is performed.
+    //size_t bit_index = (difficulty << 10) + flag_index;
+    //size_t byte_index = bit_index >> 3;
+    //uint8_t mask = 0x80 >> (bit_index & 7);
+    //if (action == 0) {
+    //    src->bb_pl->quest_data1[byte_index] |= mask;
+    //}
+    //else if (action == 1) {
+    //    src->bb_pl->quest_data1[byte_index] &= (~mask);
+    //}
 
     subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 
-    if (src->version == CLIENT_VERSION_GC) {
-        bool should_send_boss_drop_req = false;
-        bool is_ep2 = (l->episode == GAME_TYPE_EPISODE_2);
-        if ((l->episode == GAME_TYPE_EPISODE_1) && (src->cur_area == 0x0E)) {
-            // On Normal, Dark Falz does not have a third phase, so send the drop
-            // request after the end of the second phase. On all other difficulty
-            // levels, send it after the third phase.
-            if (((difficulty == 0) && (flag_index == 0x0035)) ||
-                ((difficulty != 0) && (flag_index == 0x0037))) {
-                should_send_boss_drop_req = true;
-            }
-        }
-        else if (is_ep2 && (flag_index == 0x0057) && (src->cur_area == 0x0D)) {
-            should_send_boss_drop_req = true;
-        }
+    //if (src->version == CLIENT_VERSION_GC) {
+    //    bool should_send_boss_drop_req = false;
+    //    bool is_ep2 = (l->episode == GAME_TYPE_EPISODE_2);
+    //    if ((l->episode == GAME_TYPE_EPISODE_1) && (src->cur_area == 0x0E)) {
+    //        // On Normal, Dark Falz does not have a third phase, so send the drop
+    //        // request after the end of the second phase. On all other difficulty
+    //        // levels, send it after the third phase.
+    //        if (((difficulty == 0) && (flag_index == 0x0035)) ||
+    //            ((difficulty != 0) && (flag_index == 0x0037))) {
+    //            should_send_boss_drop_req = true;
+    //        }
+    //    }
+    //    else if (is_ep2 && (flag_index == 0x0057) && (src->cur_area == 0x0D)) {
+    //        should_send_boss_drop_req = true;
+    //    }
 
-        if (should_send_boss_drop_req) {
-            ship_client_t* c2 = l->clients[l->leader_id];
-            if (c2) {
-                subcmd_bitemreq_t req = { 0 };
+    //    if (should_send_boss_drop_req) {
+    //        ship_client_t* c2 = l->clients[l->leader_id];
+    //        if (c2) {
+    //            subcmd_bitemreq_t req = { 0 };
 
-                req.hdr.pkt_type = 0x62;
-                req.hdr.pkt_len = sizeof(subcmd_bitemreq_t);
-                req.hdr.flags = 0;
-                req.shdr.type = 0x60;
-                req.shdr.size = 0x06;
-                req.shdr.object_id = 0x0000;
+    //            req.hdr.pkt_type = 0x62;
+    //            req.hdr.pkt_len = sizeof(subcmd_bitemreq_t);
+    //            req.hdr.flags = 0;
+    //            req.shdr.type = 0x60;
+    //            req.shdr.size = 0x06;
+    //            req.shdr.object_id = 0x0000;
 
-                req.area = (uint8_t)(src->cur_area);
-                req.pt_index = (uint8_t)(is_ep2 ? 0x4E : 0x2F);
-                req.request_id = 0x0B4F;
-                req.x = is_ep2 ? -9999.0f : 10160.58984375f;
-                req.z = 0.0f;
-                req.unk2[0] = 2;
-                req.unk2[1] = 0;
-                //    req.
-                //    {
-                //        {0x60, 0x06, 0x0000},
-                //        (uint8_t)(src->cur_area),
-                //        (uint8_t)(is_ep2 ? 0x4E : 0x2F),
-                //        0x0B4F,
-                //        is_ep2 ? -9999.0f : 10160.58984375f,
-                //        0.0f,
-                //        2,
-                //        0,
-                //    },
-                //    0xE0AEDC01,
-                //};
-                //send_command_t(c, 0x62, l->leader_id, req);
-                return  l->dropfunc(c2, l, &req);
-            }
-        }
-    }
+    //            req.area = (uint8_t)(src->cur_area);
+    //            req.pt_index = (uint8_t)(is_ep2 ? 0x4E : 0x2F);
+    //            req.request_id = 0x0B4F;
+    //            req.x = is_ep2 ? -9999.0f : 10160.58984375f;
+    //            req.z = 0.0f;
+    //            req.unk2[0] = 2;
+    //            req.unk2[1] = 0;
+    //            //    req.
+    //            //    {
+    //            //        {0x60, 0x06, 0x0000},
+    //            //        (uint8_t)(src->cur_area),
+    //            //        (uint8_t)(is_ep2 ? 0x4E : 0x2F),
+    //            //        0x0B4F,
+    //            //        is_ep2 ? -9999.0f : 10160.58984375f,
+    //            //        0.0f,
+    //            //        2,
+    //            //        0,
+    //            //    },
+    //            //    0xE0AEDC01,
+    //            //};
+    //            //send_command_t(c, 0x62, l->leader_id, req);
+    //            return  l->dropfunc(c2, l, &req);
+    //        }
+    //    }
+    //}
 
     return 0;
 }

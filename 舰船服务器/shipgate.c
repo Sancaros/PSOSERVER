@@ -151,14 +151,14 @@ static inline ssize_t receive_message(shipgate_conn_t* c, char* buffer, size_t b
     return ret;
 }
 
-static inline ssize_t sg_recv(shipgate_conn_t *c, void *buffer, size_t len) {
+static inline ssize_t sg_recv(shipgate_conn_t* c, void* buffer, size_t len) {
     //int ret;
     //LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
     //return ret;
     return gnutls_record_recv(c->session, buffer, len);
 }
 
-static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
+static inline ssize_t sg_send(shipgate_conn_t* c, void* buffer, size_t len) {
     //int ret;
     //LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
     //return ret;
@@ -170,10 +170,18 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
     __try {
         ssize_t rv, total = 0;
 
-        if (sendbuf == NULL || len == 0 || len > MAX_PACKET_BUFF) {
-            ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
+        if (sendbuf == NULL || isPacketEmpty(sendbuf, len) || len == 0 || len > MAX_PACKET_BUFF) {
+            print_ascii_hex(errl, sendbuf, len);
             return 0;
         }
+
+        //print_ascii_hex(dbgl, sendbuf, len);
+
+        //gnutls_datum_t datum = { (void*)sendbuf, len };
+        //int status = gnutls_check_version(datum.data);
+        //if (status != GNUTLS_E_SUCCESS) {
+        //    ERR_LOG("Gnutls *** 错误: 发送的数据无效.");
+        //}
 
         /* Keep trying until the whole thing's sent. */
         if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
@@ -211,9 +219,9 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
 }
 
 /* Encrypt a packet, and send it away. */
-static int send_crypt(shipgate_conn_t *c, int len, uint8_t *sendbuf) {
+static int send_crypt(shipgate_conn_t* c, int len, uint8_t* sendbuf) {
     /* Make sure its at least a header. */
-    if(len < 8) {
+    if (len < 8) {
         ERR_LOG("send_crypt端口 %d 长度 = %d字节", c->sock, len);
         return -1;
     }
@@ -244,7 +252,7 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
     //if(c->ship->cfg->ship_host6)
     //    memcpy(pkt->host6, c->ship->cfg->ship_host6, sizeof(pkt->host6));
 
-    if(reply) {
+    if (reply) {
         pkt->hdr.flags = htons(SHDR_RESPONSE);
     }
 
@@ -253,7 +261,7 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
 }
 
 /* Send a common bank packet to the server. */
-int shipgate_send_common_bank(shipgate_conn_t* c, 
+int shipgate_send_common_bank(shipgate_conn_t* c,
     psocn_bank_t* bank, uint32_t guildcard, uint32_t block, uint32_t common_bank_req) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_common_bank_data_pkt* pkt = (shipgate_common_bank_data_pkt*)sendbuf;
@@ -276,7 +284,7 @@ int shipgate_send_common_bank(shipgate_conn_t* c,
 }
 
 /* Send a guild points packet to the server. */
-int shipgate_send_bb_guild_points(shipgate_conn_t* c, 
+int shipgate_send_bb_guild_points(shipgate_conn_t* c,
     uint32_t guildcard, uint32_t block, uint32_t team_points_value) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_bb_guild_points_pkt* pkt = (shipgate_bb_guild_points_pkt*)sendbuf;
@@ -320,7 +328,7 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
 
         rv->has_key = 0;
         rv->hdr_read = 0;
-        if(rv->recvbuf)
+        if (rv->recvbuf)
             free_safe(rv->recvbuf);
         rv->recvbuf = NULL;
         rv->recvbuf_cur = rv->recvbuf_size = 0;
@@ -432,7 +440,7 @@ reconnet:
     /* Verify that the peer has a valid certificate */
     irv = gnutls_certificate_verify_peers2(rv->session, &peer_status);
 
-    if(irv < 0) {
+    if (irv < 0) {
         ERR_LOG("GNUTLS *** 注意: 验证证书有效性失败: %s", gnutls_strerror(irv));
         gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
         closesocket(sock);
@@ -441,10 +449,10 @@ reconnet:
     }
 
     /* Check whether or not the peer is trusted... */
-    if(peer_status & GNUTLS_CERT_INVALID) {
+    if (peer_status & GNUTLS_CERT_INVALID) {
         ERR_LOG("GNUTLS *** 注意: 不受信任的对等连接, 原因如下 (%08x):"
             , peer_status);
-        
+
         if (peer_status & GNUTLS_CERT_SIGNER_NOT_FOUND)
             ERR_LOG("未找到发卡机构");
         if (peer_status & GNUTLS_CERT_SIGNER_NOT_CA)
@@ -457,7 +465,7 @@ reconnet:
             ERR_LOG("证书已吊销");
         if (peer_status & GNUTLS_CERT_INSECURE_ALGORITHM)
             ERR_LOG("不安全的证书签名");
-        
+
         goto err_cert;
     }
 
@@ -551,7 +559,7 @@ static int handle_bb_greply(shipgate_conn_t* conn, bb_guild_reply_pkt* pkt,
     uint32_t dest = LE32(pkt->gc_searcher);
 
     /* Make sure the block given is sane */
-    if(block > ship->cfg->blocks || !ship->blocks[block - 1]) {
+    if (block > ship->cfg->blocks || !ship->blocks[block - 1]) {
         return 0;
     }
 
@@ -1256,8 +1264,8 @@ static int handle_pc(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     return -2;
 }
 
-static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
-    bb_pkt_hdr_t *bb = (bb_pkt_hdr_t *)pkt->pkt;
+static int handle_bb(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
+    bb_pkt_hdr_t* bb = (bb_pkt_hdr_t*)pkt->pkt;
     uint16_t type = LE16(bb->pkt_type);
     uint16_t len = LE16(bb->pkt_len);
     uint32_t block = ntohl(pkt->block);
@@ -1272,8 +1280,8 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case BB_GUILD_COMMAND:
         return handle_bb_guild(conn, pkt);
 
-    //default:
-    //    break;
+        //default:
+        //    break;
     }
 
     switch (type) {
@@ -1283,11 +1291,11 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case GUILD_SEARCH_REPLY_TYPE:
         return handle_bb_greply(conn, (bb_guild_reply_pkt*)bb, block);
 
-    //default:
-    //    /* Warn the ship that sent the packet, then drop it
-    //     警告发送包裹的船，然后丢弃它
-    //    */
-    //    return 0;
+        //default:
+        //    /* Warn the ship that sent the packet, then drop it
+        //     警告发送包裹的船，然后丢弃它
+        //    */
+        //    return 0;
     }
 
     ERR_LOG("无效BB版本接入");
@@ -1345,7 +1353,7 @@ static int handle_sstatus(shipgate_conn_t* conn, shipgate_ship_status6_pkt* p) {
     uint16_t code = 0;
     int ship_found = 0;
     void* tmp;
-    
+
     /* Did a ship go down or come up? */
     if (!status) {
         /* A ship has gone down */
@@ -1495,11 +1503,11 @@ static int handle_sstatus(shipgate_conn_t* conn, shipgate_ship_status6_pkt* p) {
 }
 
 /* 请求角色数据并发送至客户端 */
-static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
+static int handle_char_data_req(shipgate_conn_t* conn, shipgate_char_data_pkt* pkt) {
     uint32_t i;
-    ship_t *s = conn->ship;
-    block_t *b;
-    ship_client_t *c;
+    ship_t* s = conn->ship;
+    block_t* b;
+    ship_client_t* c;
     uint32_t dest = ntohl(pkt->guildcard);
     int done = 0;
     uint16_t flags = ntohs(pkt->hdr.flags);
@@ -1508,20 +1516,20 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
     item_t* tmpi = NULL;
 
     /* Make sure the packet looks sane */
-    if(!(flags & SHDR_RESPONSE)) {
+    if (!(flags & SHDR_RESPONSE)) {
         return 0;
     }
 
-    for(i = 0; i < s->cfg->blocks && !done; ++i) {
-        if(s->blocks[i]) {
+    for (i = 0; i < s->cfg->blocks && !done; ++i) {
+        if (s->blocks[i]) {
             b = s->blocks[i];
             pthread_rwlock_rdlock(&b->lock);
 
             TAILQ_FOREACH(c, b->clients, qentry) {
                 pthread_mutex_lock(&c->mutex);
 
-                if(c->guildcard == dest) {
-                    if(!c->bb_pl && c->pl) {
+                if (c->guildcard == dest) {
+                    if (!c->bb_pl && c->pl) {
                         /* We've found them, overwrite their data, and send the
                            refresh packet. */
                         memcpy(c->pl, pkt->data, clen);
@@ -1530,11 +1538,11 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         for (i = 0; i < c->pl->v1.character.inv.item_count; i++) {
                             print_iitem_data(&c->pl->v1.character.inv.iitems[i], i, c->version);
                         }
-                        
+
                         send_lobby_join(c, c->cur_lobby);
 
                     }
-                    else if(c->bb_pl) {
+                    else if (c->bb_pl) {
                         memcpy(c->bb_pl, pkt->data, clen);
 
                         fix_equip_item(&c->bb_pl->character.inv);
@@ -1604,7 +1612,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
 
                 pthread_mutex_unlock(&c->mutex);
 
-                if(done) {
+                if (done) {
                     break;
                 }
             }
@@ -1631,7 +1639,7 @@ static int handle_usrlogin(shipgate_conn_t* conn,
     }
 
     /* Check the block number first. */
-    if(block > s->cfg->blocks) {
+    if (block > s->cfg->blocks) {
         return 0;
     }
 
@@ -1879,7 +1887,7 @@ static int handle_usrlogin_err(shipgate_conn_t* conn,
     }
 
     /* Check the block number first. */
-    if(block > (uint32_t)s->cfg->blocks) {
+    if (block > (uint32_t)s->cfg->blocks) {
         return 0;
     }
 
@@ -1912,7 +1920,7 @@ static int handle_blogin_err(shipgate_conn_t* c, shipgate_blogin_err_pkt* pkt) {
 
     /* Grab the block first */
     b = s->blocks[block - 1];
-    if(block > s->cfg->blocks || !b) {
+    if (block > s->cfg->blocks || !b) {
         return 0;
     }
 
@@ -1997,7 +2005,7 @@ static int handle_friend(shipgate_conn_t* c, shipgate_friend_login_4_pkt* pkt) {
 
     /* Grab the block structure where the user is */
     b = s->blocks[ubl - 1];
-    if(ubl > s->cfg->blocks || !b) {
+    if (ubl > s->cfg->blocks || !b) {
         return 0;
     }
 
@@ -2146,7 +2154,7 @@ static int handle_kick(shipgate_conn_t* conn, shipgate_kick_pkt* pkt) {
     ship_client_t* i;
 
     /* Check the block number first. */
-    if(block > s->cfg->blocks) {
+    if (block > s->cfg->blocks) {
         return 0;
     }
 
@@ -2159,12 +2167,12 @@ static int handle_kick(shipgate_conn_t* conn, shipgate_kick_pkt* pkt) {
             /* Found them, send the message and disconnect the client */
             if (strlen(pkt->reason) > 0) {
                 send_msg(i, MSG_BOX_TYPE, "%s\n\n%s\n%s",
-                                 __(i, "\tE您被 GM 踢出游戏."),
-                                 __(i, "理由:"), pkt->reason);
+                    __(i, "\tE您被 GM 踢出游戏."),
+                    __(i, "理由:"), pkt->reason);
             }
             else {
                 send_msg(i, MSG_BOX_TYPE, "%s",
-                                 __(i, "\tE您被 GM 踢出游戏."));
+                    __(i, "\tE您被 GM 踢出游戏."));
             }
 
             i->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -2188,7 +2196,7 @@ static int handle_frlist(shipgate_conn_t* c, shipgate_friend_list_pkt* pkt) {
     size_t len = 0;
 
     /* Check the block number first. */
-    if(block > s->cfg->blocks)
+    if (block > s->cfg->blocks)
         return 0;
 
     b = s->blocks[block - 1];
@@ -2221,18 +2229,18 @@ static int handle_frlist(shipgate_conn_t* c, shipgate_friend_list_pkt* pkt) {
                     /* Fill in the message */
                     if (ms->menu_code) {
                         len += snprintf(msg + len, 1023 - len,
-                                        "\tC2%s (%d)\n\tC7%02x:%c%c/%s "
-                                        "舰仓%02d\n", pkt->entries[j].name,
-                                        gc2, ms->ship_number,
-                                        (char)(ms->menu_code),
-                                        (char)(ms->menu_code >> 8), ms->name,
-                                        bl2);
+                            "\tC2%s (%d)\n\tC7%02x:%c%c/%s "
+                            "舰仓%02d\n", pkt->entries[j].name,
+                            gc2, ms->ship_number,
+                            (char)(ms->menu_code),
+                            (char)(ms->menu_code >> 8), ms->name,
+                            bl2);
                     }
                     else {
                         len += snprintf(msg + len, 1023 - len,
-                                       "\tC2%s (%d)\n\tC7%02x:%s 舰仓%02d\n",
-                                       pkt->entries[j].name, gc2,
-                                       ms->ship_number, ms->name, bl2);
+                            "\tC2%s (%d)\n\tC7%02x:%s 舰仓%02d\n",
+                            pkt->entries[j].name, gc2,
+                            ms->ship_number, ms->name, bl2);
                     }
                 }
                 else {
@@ -2319,7 +2327,7 @@ static int handle_useropt(shipgate_conn_t* c, shipgate_user_opt_pkt* pkt) {
     uint32_t option, length;
 
     /* Check the block number first. */
-    if(block > s->cfg->blocks) {
+    if (block > s->cfg->blocks) {
         return 0;
     }
 
@@ -2434,7 +2442,7 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
     uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
 
     /* Check the block number first. */
-    if(block > s->cfg->blocks) {
+    if (block > s->cfg->blocks) {
         return 0;
     }
 
@@ -2680,7 +2688,7 @@ static int handle_sdata(shipgate_conn_t* c, shipgate_sdata_pkt* pkt) {
     uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
 
     /* Check the block number first. */
-    if(block > s->cfg->blocks)
+    if (block > s->cfg->blocks)
         return 0;
 
     b = s->blocks[block - 1];
@@ -2722,7 +2730,7 @@ static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
     }
 
     /* Check the block number for sanity... */
-    if(block > s->cfg->blocks)
+    if (block > s->cfg->blocks)
         return -1;
 
     b = s->blocks[block - 1];
@@ -2800,7 +2808,7 @@ static int handle_qflag_err(shipgate_conn_t* c, shipgate_qflag_err_pkt* pkt) {
     uint8_t flag_reg;
 
     /* 获取舰仓区域 */
-    if(block > s->cfg->blocks) {
+    if (block > s->cfg->blocks) {
         return 0;
     }
 
@@ -2974,7 +2982,7 @@ static int handle_sctl_uname(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
     if (!sendbuf)
         return -1;
 
-    if(win_uname(&un))
+    if (win_uname(&un))
         return -1;
 
     memset(r, 0, sizeof(shipgate_sctl_uname_reply_pkt));
@@ -3536,130 +3544,140 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
 /* 从船闸服务器读取数据流. */
 int process_shipgate_pkt(shipgate_conn_t* c) {
-    if (c == NULL) {
-        ERR_LOG("非法舰闸链接");
-        return -2; // 参数合法性检查
-    }
-
-    if (!c->session) {
-        ERR_LOG("非法舰闸session");
-        return -3; // 错误检查，确保 c->session 不为空
-    }
-
-    ssize_t sz;
-    ssize_t pkt_sz;
-    int rv = 0;
-    unsigned char* rbp;
-    uint8_t* recvbuf = get_recvbuf();
-    void* tmp;
-    /* 确保8字节的倍数传输 */
-    int recv_size = 8;
-
-    /* 如果无法分配空间，则退出。 */
-    if (recvbuf == NULL) {
-        ERR_LOG("内存分配失败");
-        return -1;
-    }
-
-    /* 如果有缓冲区中已有数据，则将其复制到主缓冲区，以便后续处理。 */
-    if (c->recvbuf_cur) {
-        memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
-    }
-
-    /* 尝试读取数据，如果没有获取到，则结束处理。 */
-    sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
-
-    //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
-    //DBG_LOG("process_shipgate_pkt");
-    //print_ascii_hex(dbgl, recvbuf, sz);
-
-    /* 尝试读取数据，如果没有获取到，则结束处理。 */
-    if (sz <= 0) {
-        if (sz == SOCKET_ERROR) {
-            ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
-        }
-        else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-            ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
-        }
-        else if (sz < 0) {
-            ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-            ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
+    __try {
+        if (c == NULL) {
+            ERR_LOG("非法舰闸链接");
+            return -2; // 参数合法性检查
         }
 
+        if (!c->session) {
+            ERR_LOG("非法舰闸session");
+            return -3; // 错误检查，确保 c->session 不为空
+        }
+
+        ssize_t sz;
+        ssize_t pkt_sz;
+        int rv = 0;
+        unsigned char* rbp;
+        uint8_t* recvbuf = get_recvbuf();
+        void* tmp;
+        /* 确保8字节的倍数传输 */
+        int recv_size = 8;
+
+        /* 如果无法分配空间，则退出。 */
+        if (recvbuf == NULL) {
+            ERR_LOG("内存分配失败");
+            return -1;
+        }
+
+        /* 如果有缓冲区中已有数据，则将其复制到主缓冲区，以便后续处理。 */
+        if (c->recvbuf_cur) {
+            memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
+        }
+
+        /* 尝试读取数据，如果没有获取到，则结束处理。 */
+        sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
+
+        //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
+        //DBG_LOG("process_shipgate_pkt");
+        //print_ascii_hex(dbgl, recvbuf, sz);
+
+        /* 尝试读取数据，如果没有获取到，则结束处理。 */
+        if (sz <= 0) {
+            if (sz == SOCKET_ERROR) {
+                ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
+            }
+            else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
+                ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+            }
+            else if (sz < 0) {
+                ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
+                ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
+            }
+
+            return -4;
+        }
+
+        sz += c->recvbuf_cur;
+        c->recvbuf_cur = 0;
+        rbp = recvbuf;
+
+        /* 只要我们拥有足够长的数据，就进行解密。 */
+        while (sz >= recv_size && rv == 0) {
+            /* 复制数据包头部，以便知道要处理的数据包的长度。 */
+            if (!c->hdr_read) {
+                memcpy(&c->pkt, rbp, recv_size);
+                c->hdr_read = 1;
+            }
+
+            /* 读取数据包的大小以确定预期的数据大小。 */
+            pkt_sz = ntohs(c->pkt.pkt_len);
+
+            /* 我们始终需要8字节的倍数。 */
+            if (pkt_sz & 0x07) {
+                pkt_sz = (pkt_sz & 0xFFF8) + recv_size;
+            }
+
+            /* 是否已接收完整的数据包？ */
+            if (sz >= (ssize_t)pkt_sz) {
+                /* 是的，将其复制出来。 */
+                memcpy(rbp, &c->pkt, recv_size);
+
+                /* 将数据包传递给正确的处理程序。 */
+                c->last_message = time(NULL);
+                rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
+                if (rv) {
+                    ERR_LOG("处理数据包出错，rv = %d", rv);
+                    //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
+                    //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
+                    return -5;
+                }
+
+                rbp += pkt_sz;
+                sz -= pkt_sz;
+                c->hdr_read = 0;
+            }
+            else {
+                /* 没有，说明还缺少部分数据，跳出循环，将剩余数据缓冲起来。 */
+                break;
+            }
+        }
+
+        /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
+        if (sz && rv == 0) {
+            /* 如果接收缓冲区大小不够，则重新分配。 */
+            if (c->recvbuf_size < sz) {
+                tmp = realloc(c->recvbuf, sz);
+
+                if (!tmp) {
+                    ERR_LOG("重新分配内存失败");
+                    return -6;
+                }
+
+                c->recvbuf = (unsigned char*)tmp;
+                c->recvbuf_size = sz;
+            }
+
+            memcpy(c->recvbuf, rbp, sz);
+            c->recvbuf_cur = sz;
+        }
+        else if (c->recvbuf) {
+            /* 如果接收缓冲区为空，则释放它。 */
+            free_safe(c->recvbuf);
+            c->recvbuf = NULL;
+            c->recvbuf_size = 0;
+        }
+
+        return 0;
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
         return -4;
     }
-
-    sz += c->recvbuf_cur;
-    c->recvbuf_cur = 0;
-    rbp = recvbuf;
-
-    /* 只要我们拥有足够长的数据，就进行解密。 */
-    while (sz >= recv_size && rv == 0) {
-        /* 复制数据包头部，以便知道要处理的数据包的长度。 */
-        if (!c->hdr_read) {
-            memcpy(&c->pkt, rbp, recv_size);
-            c->hdr_read = 1;
-        }
-
-        /* 读取数据包的大小以确定预期的数据大小。 */
-        pkt_sz = ntohs(c->pkt.pkt_len);
-
-        /* 我们始终需要8字节的倍数。 */
-        if (pkt_sz & 0x07) {
-            pkt_sz = (pkt_sz & 0xFFF8) + recv_size;
-        }
-
-        /* 是否已接收完整的数据包？ */
-        if (sz >= (ssize_t)pkt_sz) {
-            /* 是的，将其复制出来。 */
-            memcpy(rbp, &c->pkt, recv_size);
-
-            /* 将数据包传递给正确的处理程序。 */
-            c->last_message = time(NULL);
-            rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
-            if (rv) {
-                ERR_LOG("处理数据包出错，rv = %d", rv);
-                //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
-                //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
-                return -5;
-            }
-
-            rbp += pkt_sz;
-            sz -= pkt_sz;
-            c->hdr_read = 0;
-        }
-        else {
-            /* 没有，说明还缺少部分数据，跳出循环，将剩余数据缓冲起来。 */
-            break;
-        }
-    }
-
-    /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
-    if (sz && rv == 0) {
-        /* 如果接收缓冲区大小不够，则重新分配。 */
-        if (c->recvbuf_size < sz) {
-            tmp = realloc(c->recvbuf, sz);
-
-            if (!tmp) {
-                ERR_LOG("重新分配内存失败");
-                return -6;
-            }
-
-            c->recvbuf = (unsigned char*)tmp;
-            c->recvbuf_size = sz;
-        }
-
-        memcpy(c->recvbuf, rbp, sz);
-        c->recvbuf_cur = sz;
-    }
-    else if (c->recvbuf) {
-        /* 如果接收缓冲区为空，则释放它。 */
-        free_safe(c->recvbuf);
-        c->recvbuf = NULL;
-        c->recvbuf_size = 0;
-    }
-
-    return 0;
 }
 
 /* Send any piled up data. */
@@ -3936,8 +3954,8 @@ int shipgate_fw_bb(shipgate_conn_t* c, const void* bbp, uint32_t flags,
 
 /* Send a user login request. */
 int shipgate_send_usrlogin(shipgate_conn_t* c, uint32_t gc, uint32_t block,
-                           const char *username, const char *password,
-                           int tok, uint8_t ver) {
+    const char* username, const char* password,
+    int tok, uint8_t ver) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_usrlogin_req_pkt* pkt = (shipgate_usrlogin_req_pkt*)sendbuf;
 
@@ -4406,7 +4424,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* src) {
     pkt->guild_points_personal_donation = src->guild_points_personal_donation;
 
     /* 填充公共银行数据 */
-    if(src->common_bank->item_count > 0)
+    if (src->common_bank->item_count > 0)
         memcpy(&pkt->common_bank, src->common_bank, PSOCN_STLENGTH_BANK);
 
     /* 将数据包发送出去 */

@@ -80,7 +80,7 @@ extern monster_event_t* events;
 extern uint32_t script_count;
 extern ship_script_t* scripts;
 
-//static uint8_t recvbuf[MAX_PACKET_BUFF];
+static uint8_t recvbuf[MAX_PACKET_BUFF];
 
 /* 公会相关 */
 static uint8_t default_guild_flag[2048];
@@ -95,28 +95,28 @@ pthread_key_t recvbuf_key;
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
 uint8_t* get_sg_recvbuf(void) {
-    uint8_t* recvbuf = (uint8_t*)pthread_getspecific(recvbuf_key);
+    //uint8_t* recvbuf = (uint8_t*)pthread_getspecific(recvbuf_key);
 
-    /* If we haven't initialized the recvbuf pointer yet for this thread, then
-       we need to do that now. */
-    if (!recvbuf) {
-        recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
+    ///* If we haven't initialized the recvbuf pointer yet for this thread, then
+    //   we need to do that now. */
+    //if (!recvbuf) {
+    //    recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
-        if (!recvbuf) {
-            ERR_LOG("malloc");
-            perror("malloc");
-            return NULL;
-        }
+    //    if (!recvbuf) {
+    //        ERR_LOG("malloc");
+    //        perror("malloc");
+    //        return NULL;
+    //    }
 
-        memset(recvbuf, 0, MAX_PACKET_BUFF);
+    //    memset(recvbuf, 0, MAX_PACKET_BUFF);
 
-        if (pthread_setspecific(recvbuf_key, recvbuf)) {
-            ERR_LOG("pthread_setspecific");
-            perror("pthread_setspecific");
-            free_safe(recvbuf);
-            return NULL;
-        }
-    }
+    //    if (pthread_setspecific(recvbuf_key, recvbuf)) {
+    //        ERR_LOG("pthread_setspecific");
+    //        perror("pthread_setspecific");
+    //        free_safe(recvbuf);
+    //        return NULL;
+    //    }
+    //}
 
     //uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
@@ -126,7 +126,7 @@ uint8_t* get_sg_recvbuf(void) {
     //    return NULL;
     //}
 
-    //memset(recvbuf, 0, MAX_PACKET_BUFF);
+    memset(recvbuf, 0, MAX_PACKET_BUFF);
 
     return recvbuf;
 }
@@ -2986,12 +2986,20 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     DBG_LOG("GC %u:%u ch_class %d %s 角色数据如下", gc, slot, full_data_pkt->data.gc.char_class, pso_class[full_data_pkt->data.gc.char_class].cn_name);
     print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
+    if (isPacketEmpty(full_char->character.dress_data.gc_string, sizeof(full_char->character.dress_data.gc_string))) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数据有误 %s", gc, slot, full_char->character.dress_data.gc_string);
+
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        return 0;
+    }
 
     if (db_update_char_inv(&full_char->character.inv, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家背包数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
     }
 
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
@@ -3023,6 +3031,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
     }
 
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[full_data_pkt->data.gc.char_class].cn_name, sizeof(char_class_name_text));
@@ -3116,6 +3125,14 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     slot = ntohl(pkt->slot);
 
     if (gc == 0) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        return 0;
+    }
+
+    if (isPacketEmpty(char_data->character.dress_data.gc_string, sizeof(char_data->character.dress_data.gc_string))) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
@@ -6038,6 +6055,12 @@ int handle_pkt(ship_t* c) {
 
     sz = ship_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
 
+    //gnutls_datum_t datum = { (void*)recvbuf, sz };
+    //int status = gnutls_check_version(datum.data);
+    //if (status != GNUTLS_E_SUCCESS) {
+    //    ERR_LOG("Gnutls *** 错误: 发送的数据无效.");
+    //}
+
     //DBG_LOG("handle_pkt");
     //print_ascii_hex(dbgl, recvbuf, sz);
     if (sz <= 0) {
@@ -6053,7 +6076,7 @@ int handle_pkt(ship_t* c) {
             ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
         }
 
-        free_safe(recvbuf);
+        //free_safe(recvbuf);
         return -4;
     }
 
@@ -6076,7 +6099,7 @@ int handle_pkt(ship_t* c) {
             if (rv != 0) {
                 pthread_rwlock_unlock(&c->rwlock);
                 ERR_LOG("process_ship_pkt 错误 rv = %d", rv);
-                free_safe(recvbuf);
+                //free_safe(recvbuf);
                 return -5;
             }
 
@@ -6095,7 +6118,7 @@ int handle_pkt(ship_t* c) {
             if (tmp == NULL) {
                 pthread_rwlock_unlock(&c->rwlock);
                 ERR_LOG("realloc");
-                free_safe(recvbuf);
+                //free_safe(recvbuf);
                 return -6;
             }
             c->recvbuf = (unsigned char*)tmp;
@@ -6111,7 +6134,7 @@ int handle_pkt(ship_t* c) {
     }
 
     pthread_rwlock_unlock(&c->rwlock);
-    free_safe(recvbuf);
+    //free_safe(recvbuf);
 
     return rv;
 }

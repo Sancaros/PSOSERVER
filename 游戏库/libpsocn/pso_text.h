@@ -90,6 +90,8 @@ void safe_free(const char* func, uint32_t line, void** ptr);
 void SecureErase(void* buffer, size_t size);
 
 /* 判断数据为空 */
+int isPacketEmpty(const char* dataPacket, int packetLength);
+/* 判断文本为空 */
 int isEmptyString(const char* str);
 int isEmptyInt(int num);
 int isEmptyFloat(float val);

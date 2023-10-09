@@ -262,7 +262,7 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
 
     j = 2;
 
-    if (isEmptyString(row[j])) {
+    if (isPacketEmpty(row[j], 2)) {
         psocn_db_result_free(result);
 
         SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);

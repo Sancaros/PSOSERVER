@@ -161,7 +161,7 @@ static int db_get_char_bank_common_param(uint32_t gc, psocn_bank_t* bank, int ch
         bank->meseta = MAX_PLAYER_MESETA;
 
     if (bank->item_count == 0 && bank->meseta == 0) {
-        SQLERR_LOG("保存的公共银行数据为 0 (%" PRIu32 ")", gc);
+        SQLERR_LOG("保存的公共银行数据为 %d 件 %d 美赛塔 (%" PRIu32 ")", bank->item_count, bank->meseta, gc);
         psocn_db_result_free(result);
         return -4;
     }
@@ -213,7 +213,7 @@ static int db_get_char_bank_common_full_data(uint32_t gc, psocn_bank_t* bank, in
         return -3;
     }
 
-    if (isEmptyString(row[0])) {
+    if (isPacketEmpty(row[0], sizeof(psocn_bank_t))) {
         psocn_db_result_free(result);
 
         SQLERR_LOG("保存的公共数据数据为空 (%" PRIu32 ")", gc);
@@ -709,7 +709,7 @@ int db_get_char_bank_common(uint32_t gc, psocn_bank_t* bank) {
     size_t i = 0;
     int rv = 0;
 
-    if (rv = db_get_char_bank_common_param(gc, bank, 1)) {
+    if (rv = db_get_char_bank_common_param(gc, bank, 0)) {
 
         if(rv == -4)
             if (db_get_char_bank_common_full_data(gc, bank, 0)) {

@@ -499,6 +499,15 @@ ship_client_t* client_create_connection(int sock, int version, int type,
     }
 }
 
+bool check_bb_pl_data(ship_client_t* c) {
+    if (isPacketEmpty(c->bb_pl->character.dress_data.gc_string, sizeof(c->bb_pl->character.dress_data.gc_string))) {
+        ERR_LOG("%s 更新的数据有误 %s", get_player_describe(c), c->bb_pl->character.dress_data.gc_string);
+        return false;
+    }
+
+    return true;
+}
+
 void client_send_bb_data(ship_client_t* c) {
     int i = 0;
     time_t now = time(NULL);
@@ -507,7 +516,7 @@ void client_send_bb_data(ship_client_t* c) {
 
     /* If the client was on Blue Burst, update their db character */
     if (c->version == CLIENT_VERSION_BB &&
-        !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
+        !(c->flags & CLIENT_FLAG_TYPE_SHIP) && check_bb_pl_data(c)) {
 
         c->need_save_data = false;
 
