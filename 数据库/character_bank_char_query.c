@@ -186,6 +186,12 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
     if (bank->meseta > MAX_PLAYER_MESETA)
         bank->meseta = MAX_PLAYER_MESETA;
 
+    if (bank->item_count == 0 && bank->meseta == 0) {
+        SQLERR_LOG("保存的角色银行数据为 %d 件 %d 美赛塔 (%" PRIu32 ": %u)", bank->item_count, bank->meseta, gc, slot);
+        psocn_db_result_free(result);
+        return -4;
+    }
+
     psocn_db_result_free(result);
 
     return 0;
@@ -577,21 +583,21 @@ static int db_get_char_bank_full_data(uint32_t gc, uint8_t slot, psocn_bank_t* b
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
+        SQLERR_LOG("无法查询角色银行数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到公共银行数据 (%" PRIu32 ")", gc);
+        SQLERR_LOG("未获取到角色银行数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -2;
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的公共银行数据 (%" PRIu32 ")", gc);
+        SQLERR_LOG("未找到保存的角色银行数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -3;
     }
@@ -599,7 +605,7 @@ static int db_get_char_bank_full_data(uint32_t gc, uint8_t slot, psocn_bank_t* b
     if (isPacketEmpty(row[0], sizeof(psocn_bank_t))) {
         psocn_db_result_free(result);
 
-        SQLERR_LOG("保存的公共数据数据为空 (%" PRIu32 ")", gc);
+        SQLERR_LOG("保存的角色银行数据数据为空 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
         return -4;
     }
 
@@ -715,12 +721,11 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
 
     if (rv = db_get_char_bank_param(gc, slot, bank, 1)) {
         if (rv) {
-
-            SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)银行数据为空,执行获取总数据计划.", gc, slot);
+            SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行数据为空,执行获取总数据计划.", gc, slot);
             if (db_get_char_bank_full_data(gc, slot, bank, 0)) {
-                SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)公共银行原始数据为空,执行获取备份数据计划.", gc, slot);
+                SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行原始数据为空,执行获取备份数据计划.", gc, slot);
                 if (db_get_char_bank_full_data(gc, slot, bank, 1)) {
-                    SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)公共银行备份数据失败,执行初始化1.", gc, slot);
+                    SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行备份数据失败,执行初始化1.", gc, slot);
                     db_insert_bank_char_param(bank, gc, slot);
                     db_insert_bank_char_backup_param(bank, gc, slot);
 

@@ -69,6 +69,7 @@ static char myquery[MAX_PACKET_BUFF] = { 0 };
 #define CHARACTER_FRIENDLIST "character_friendlist"
 #define CHARACTER_GUILD_CARD "character_guild_card"
 #define CHARACTER_INVENTORY "character_inventory"
+#define CHARACTER_INVENTORY_FULL_DATA "character_inventory_full_data"
 #define CHARACTER_INVENTORY_ITEMS "character_inventory_items"
 #define CHARACTER_INVENTORY_ITEMS_BACKUP "character_inventory_items_backup"
 #define CHARACTER_QUEST_DATA1 "character_quest_data1"

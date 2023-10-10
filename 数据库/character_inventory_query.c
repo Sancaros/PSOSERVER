@@ -52,6 +52,38 @@ static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	return 0;
 }
 
+static int db_insert_inv_backup_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
+	uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
+
+	memset(myquery, 0, sizeof(myquery));
+
+	// 插入玩家数据
+	_snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+		"guildcard, slot, "
+		"item_count, hpmats_used, tpmats_used, language, inv_check_num, "
+		"inventory"
+		") VALUES ("
+		"'%" PRIu32 "', '%" PRIu8 "', "
+		"'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "','%" PRIu32 "', '"
+		/*")"*/,
+		CHARACTER_INVENTORY_FULL_DATA,
+		gc, slot,
+		inv->item_count, inv->hpmats_used, inv->tpmats_used, inv->language, inv_crc32
+	);
+
+	psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)inv,
+		PSOCN_STLENGTH_INV);
+
+	SAFE_STRCAT(myquery, "')");
+
+	if (psocn_db_real_query(&conn, myquery)) {
+		//SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
+		return -1;
+	}
+
+	return 0;
+}
+
 static int db_update_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
 	memset(myquery, 0, sizeof(myquery));
@@ -123,6 +155,12 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
 	inv->hpmats_used = (uint8_t)strtoul(row[1], NULL, 10);
 	inv->tpmats_used = (uint8_t)strtoul(row[2], NULL, 10);
 	inv->language = (uint8_t)strtoul(row[3], NULL, 10);
+
+	if (inv->item_count == 0) {
+		SQLERR_LOG("保存的角色背包数据为 %d 件 (%" PRIu32 ": %u)", inv->item_count, gc, slot);
+		psocn_db_result_free(result);
+		return -4;
+	}
 
 	psocn_db_result_free(result);
 
@@ -439,6 +477,64 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 	return k;
 }
 
+/* 优先获取银行数据库中的物品数量 */
+static int db_get_char_inv_full_data(uint32_t gc, uint8_t slot, inventory_t* inv, int backup) {
+	void* result;
+	char** row;
+	const char* tbl_nm = CHARACTER_INVENTORY;
+
+	memset(myquery, 0, sizeof(myquery));
+
+	if (backup)
+		tbl_nm = CHARACTER_INVENTORY_FULL_DATA;
+
+	/* Build the query asking for the data. */
+	sprintf(myquery, "SELECT full_data FROM "
+		"%s "
+		"WHERE "
+		"guildcard = '%" PRIu32 "'"
+		" AND "
+		"slot = '%u' "
+		"ORDER BY change_time DESC "
+		"LIMIT 1",
+		tbl_nm,
+		gc, slot
+	);
+
+	if (psocn_db_real_query(&conn, myquery)) {
+		SQLERR_LOG("无法查询角色背包数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -1;
+	}
+
+	/* Grab the data we got. */
+	if ((result = psocn_db_result_store(&conn)) == NULL) {
+		SQLERR_LOG("未获取到角色背包数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -2;
+	}
+
+	if ((row = psocn_db_result_fetch(result)) == NULL) {
+		psocn_db_result_free(result);
+		SQLERR_LOG("未找到保存的角色背包数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -3;
+	}
+
+	if (isPacketEmpty(row[0], sizeof(inventory_t))) {
+		psocn_db_result_free(result);
+
+		SQLERR_LOG("保存的角色背包数据为空 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
+		return -4;
+	}
+
+	memcpy(&inv->item_count, row[0], sizeof(inventory_t));
+
+	psocn_db_result_free(result);
+
+	return 0;
+}
+
 void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
 	for (item_index; item_index < del_count; item_index++) {
 		inv->iitems[item_index].present = 0;
@@ -486,6 +582,8 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 
 	inv->item_count = ic;
 
+	db_insert_inv_backup_param(inv, gc, slot);
+
 	if (db_update_inv_param(inv, gc, slot)) {
 		SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
 		return -1;
@@ -512,15 +610,36 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
 	size_t i = 0;
+	int rv = 0;
 
-	if (db_get_char_inv_param(gc, slot, inv, 0)) {
-		//SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
-		db_insert_inv_param(inv, gc, slot);
+	if (rv = db_get_char_inv_param(gc, slot, inv, 1)) {
+		if (rv) {
+			SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色背包数据为空,执行获取总数据计划.", gc, slot);
+			if (db_get_char_inv_full_data(gc, slot, inv, 0)) {
+				SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色背包原始数据为空,执行获取备份数据计划.", gc, slot);
+				if (db_get_char_inv_full_data(gc, slot, inv, 1)) {
+					SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色背包备份数据失败,执行初始化1.", gc, slot);
+					db_insert_inv_param(inv, gc, slot);
+					db_insert_inv_backup_param(inv, gc, slot);
 
-		for (i = 0; i < inv->item_count; i++) {
-			if (inv->iitems[i].present)
-				if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
-					break;
+					for (i = 0; i < inv->item_count; i++) {
+						if (inv->iitems[i].present)
+							if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
+								break;
+					}
+				}
+				else {
+					SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行备份数据成功,执行初始化2", gc, slot);
+					db_insert_inv_param(inv, gc, slot);
+
+					for (i = 0; i < inv->item_count; i++) {
+						if (inv->iitems[i].present)
+							if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
+								break;
+					}
+				}
+			}
+
 		}
 
 		return 0;
