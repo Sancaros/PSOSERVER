@@ -428,8 +428,8 @@ bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
 
 const char* get_weapon_special_describe(uint8_t value, int lang) {
 	if (value < 0x29 && value >= 0x00) {
-		int len_weapon = ARRAYSIZE(weapon_specials);
-		for (int i = 0; i < len_weapon; i++) {
+		size_t len_weapon = ARRAYSIZE(weapon_specials);
+		for (size_t i = 0; i < len_weapon; i++) {
 			if (weapon_specials[i].id == value) {
 				if (!lang)
 					return weapon_specials[i].cn_name;
@@ -444,8 +444,8 @@ const char* get_weapon_special_describe(uint8_t value, int lang) {
 
 const char* get_s_rank_special_describe(uint8_t value, int lang) {
 	if (value < 0x11 && value >= 0x00) {
-		int len_s_rank = ARRAYSIZE(s_rank_specials);
-		for (int i = 0; i < len_s_rank; i++) {
+		size_t len_s_rank = ARRAYSIZE(s_rank_specials);
+		for (size_t i = 0; i < len_s_rank; i++) {
 			if (s_rank_specials[i].id == value) {
 				if (!lang)
 					return s_rank_specials[i].cn_name;
@@ -459,32 +459,28 @@ const char* get_s_rank_special_describe(uint8_t value, int lang) {
 }
 
 const char* get_unit_bonus_describe(const item_t* item) {
-	size_t x = 0;
+	size_t x = 0, attrib_val_len = ARRAYSIZE(unit_attrib_val);
 
 	memset(item_attrib_des, 0, sizeof(item_attrib_des));
 
-	char attrib1[50] = "空";
-
-	for (x; x < ARRAYSIZE(unit_attrib_val); x++) {
+	for (x; x < attrib_val_len; x++) {
 		if (item->datab[6] == unit_attrib_val[x]) {
 			break;
 		}
 	}
 
 	// 处理属性1
-	if (item->datab[10] & 0x80)
-		sprintf(attrib1, " 解封数%d", item->datab[11]);
-
-	if (x <= ARRAYSIZE(unit_attrib_val))
-		strncpy(item_attrib_des, unit_attrib[x], sizeof(item_attrib_des) - 1);
-
-	SAFE_STRCAT(item_attrib_des, attrib1);
+	if (x <= attrib_val_len)
+		if (item->datab[10] & 0x80)
+			sprintf(item_attrib_des, "%s 解封数%d", unit_attrib[x], item->datab[11]);
+		else
+			sprintf(item_attrib_des, "%s", unit_attrib[x]);
 
 	return item_attrib_des; // 如果没有匹配的项，返回NULL或其他适当的默认值
 }
 
 char* get_weapon_attrib_describe(const item_t* item) {
-	int attrib_len = ARRAYSIZE(weapon_attrib);
+	size_t attrib_len = ARRAYSIZE(weapon_attrib);
 
 	memset(item_attrib_des, 0, sizeof(item_attrib_des));
 

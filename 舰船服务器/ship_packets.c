@@ -1511,6 +1511,7 @@ static int send_pc_lobby_join(ship_client_t *c, lobby_t *l) {
 
         /* Convert the name to UTF-16. */
         if(l->clients[i]->version == CLIENT_VERSION_BB) {
+            removeWhitespace_w(l->clients[i]->pl->bb.character.name.char_name);
             memcpy(pkt->entries[pls].hdr.name,
                    &l->clients[i]->pl->bb.character.name.char_name[0], BB_CHARACTER_CHAR_NAME_WLENGTH);
             pkt->entries[pls].hdr.name[14] = 0;
@@ -1985,6 +1986,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
+        removeWhitespace_w(nc->pl->bb.character.name.char_name);
         istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
                        &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
@@ -2043,6 +2045,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
+        removeWhitespace_w(nc->pl->bb.character.name.char_name);
         istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
                        &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
@@ -2095,6 +2098,7 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* Convert the name to UTF-16. */
     if(nc->version == CLIENT_VERSION_BB) {
+        removeWhitespace_w(nc->pl->bb.character.name.char_name);
         memcpy(pkt->entries[0].hdr.name,
                &nc->pl->bb.character.name.char_name[0], BB_CHARACTER_CHAR_NAME_WLENGTH);
         pkt->entries[0].hdr.name[14] = 0;
@@ -2173,6 +2177,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
+        removeWhitespace_w(nc->pl->bb.character.name.char_name);
         istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
                        &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
@@ -3011,6 +3016,7 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
 
     /* iconv the name, if needed... */
     if(s->version == CLIENT_VERSION_BB) {
+        removeWhitespace_w(s->bb_pl->character.name.char_name);
         istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->name,
                        &s->bb_pl->character.name.char_name[0], 0x20, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
@@ -3107,6 +3113,7 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
 
     /* ...and the name. */
     if(s->version == CLIENT_VERSION_BB) {
+        removeWhitespace_w(s->bb_pl->character.name.char_name);
         memcpy(pkt->name, &s->bb_pl->character.name.char_name[0], BB_CHARACTER_CHAR_NAME_WLENGTH);
     }
     else {
@@ -3167,6 +3174,7 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
 
     /* ...and the name. */
     if(s->version == CLIENT_VERSION_BB) {
+        removeWhitespace_w(s->bb_pl->character.name.char_name);
         memcpy(pkt->name, &s->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
     }
     else {

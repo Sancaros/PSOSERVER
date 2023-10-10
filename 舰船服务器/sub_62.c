@@ -1234,6 +1234,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
+
             LOBBY_MOB_DROPITEM_LOG(p2, mid, pt_index, drop_area, &iitem.data);
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
@@ -1248,7 +1249,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 print_item_data(&iitem.data, l->version);
                 continue;
             }
-
 #ifdef DEBUG
             print_item_data(&lt->iitem.data, l->version);
 #endif // DEBUG
@@ -1267,6 +1267,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
+
         LOBBY_MOB_DROPITEM_LOG(src, mid, pt_index, drop_area, &iitem.data);
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);
@@ -1376,12 +1377,10 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
             LOBBY_BOX_DROPITEM_LOG(p2, request_id, pt_index, ignore_def
                 , drop_area, &iitem.data);
-
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
-
             //iitem.data.item_id = generate_item_id(l, 0xFF);
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
@@ -1418,10 +1417,8 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             iitem.data = on_specialized_box_item_drop(l, &src->sfmt_rng, drop_area,
                 pkt->def[0], pkt->def[1], pkt->def[2]);
 
-
         LOBBY_BOX_DROPITEM_LOG(src, request_id, pt_index, ignore_def
             , drop_area, &iitem.data);
-
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);
             return 0;
@@ -1465,7 +1462,10 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return rv;
 
-    if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
+    if (!check_pkt_size(src, pkt, 0, 0x04))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
@@ -1689,7 +1689,10 @@ int sub62_AE_dc(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = -1;
 
-    if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
+    if (!check_pkt_size(src, pkt, 0, 0x04))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
@@ -1697,27 +1700,33 @@ int sub62_AE_dc(ship_client_t* src, ship_client_t* dest,
 
     return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 }
-
-int sub62_AE_pc(ship_client_t* src, ship_client_t* dest,
-    subcmd_pc_send_lobby_chair_state_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    int rv = -1;
-
-    if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return rv;
-    }
-
-    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
-}
+//
+//int sub62_AE_pc(ship_client_t* src, ship_client_t* dest,
+//    subcmd_pc_send_lobby_chair_state_t* pkt) {
+//    lobby_t* l = src->cur_lobby;
+//    int rv = -1;
+//
+//    if (!check_pkt_size(src, pkt, 0, 0x04))
+//        return -2;
+//
+//    if (pkt->shdr.client_id != src->client_id) {
+//        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
+//        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+//        return rv;
+//    }
+//
+//    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+//}
 
 int sub62_AE_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_send_lobby_chair_state_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = -1;
 
-    if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
+    if (!check_pkt_size(src, pkt, 0, 0x04))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
@@ -1727,10 +1736,10 @@ int sub62_AE_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_shop_req_t* req) {
+    subcmd_bb_shop_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
-    uint32_t shop_type = LE32(req->shop_type);
+    uint32_t shop_type = LE32(pkt->shop_type);
     //uint8_t num_item_count = 9 + (mt19937_genrand_int32(&b->rng) % 4);
     uint8_t num_item_count = 9 + (sfmt_genrand_uint32(&b->sfmt_rng) % 4);
     size_t shop_item_count = ARRAYSIZE(src->game_data->shop_items);
@@ -1740,6 +1749,9 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!in_game(src))
         return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_shop_req_t), 0x02))
+        return -2;
 
     memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * ARRAYSIZE(src->game_data->shop_items));
 
@@ -1808,12 +1820,8 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
-        ERR_LOG("%s 发送损坏的物品购买数据!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
-    }
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_shop_buy_t), 0x03))
+        return -2;
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -2015,13 +2023,8 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    /* 合理性检查... Make sure the size of the subcommand and the client id
-       match with what we expect. Disconnect the client if not. */
-    if (req->hdr.pkt_len != LE16(0x10) || req->shdr.size != 0x02) {
-        ERR_LOG("%s 发送错误的银行数据包!",
-            get_player_describe(src));
-        return -1;
-    }
+    if (!check_pkt_size(src, req, sizeof(subcmd_bb_bank_open_t), 0x02))
+        return -2;
 
     psocn_bank_t* bank = get_client_bank_bb(src);
 
@@ -2050,14 +2053,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    /* 合理性检查... Make sure the size of the subcommand and the client id
-       match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
-        ERR_LOG("%s 发送损坏的银行操作数据!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
-    }
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_bank_act_t), 0x04))
+        return -2;
 
     psocn_bank_t* bank = get_client_bank_bb(src);
     psocn_bb_char_t* character = get_client_char_bb(src);
@@ -2083,6 +2080,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         break;
 
     case SUBCMD62_BANK_ACT_DEPOSIT:
+        bank = get_client_bank_bb(src);
+        character = get_client_char_bb(src);
+        amt = LE32(pkt->meseta_amount);
+        bank_amt = LE32(bank->meseta);
+        c_mst_amt = LE32(character->disp.meseta);
+        pkt_item_amt = LE32(pkt->item_amount);
+        pkt_bitem_index = pkt->bitem_index;
 
         /* Are they depositing meseta or an item? */
         if (item_id == 0xFFFFFFFF) {
@@ -2128,6 +2132,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         break;
 
     case SUBCMD62_BANK_ACT_TAKE:
+        bank = get_client_bank_bb(src);
+        character = get_client_char_bb(src);
+        amt = LE32(pkt->meseta_amount);
+        bank_amt = LE32(bank->meseta);
+        c_mst_amt = LE32(character->disp.meseta);
+        pkt_item_amt = LE32(pkt->item_amount);
+        pkt_bitem_index = pkt->bitem_index;
 
         /* Are they taking meseta or an item? */
         if (item_id == ITEM_ID_MESETA) {
@@ -2197,12 +2208,8 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t invite_cmd = pkt->trans_cmd;
     uint32_t target_guildcard = pkt->traget_guildcard;
 
-    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("%s 发送错误的公会邀请数据包!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
-    }
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_guild_invite_t), 0x17))
+        return -2;
 
 #ifdef DEBUG
     char guild_name_text[24];
@@ -2252,12 +2259,8 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     char inviter_name_text[24];
     src->guild_accept = false;
 
-    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("%s 发送错误的公会邀请数据包!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
-    }
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_guild_invite_t), 0x17))
+        return -2;
 
     istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
@@ -2999,7 +3002,7 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_BURST6                    , sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_bb },
     { SUBCMD62_ITEM_BOXDROP_REQ          , sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_bb },
     { SUBCMD62_TRADE                     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_A6_bb },
-    { SUBCMD62_CHAIR_STATE               , sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_pc, sub62_AE_bb },
+    { SUBCMD62_CHAIR_STATE               , sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_bb },
     { SUBCMD62_SHOP_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B5_bb },
     { SUBCMD62_SHOP_BUY                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B7_bb },
     { SUBCMD62_TEKKING                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B8_bb },

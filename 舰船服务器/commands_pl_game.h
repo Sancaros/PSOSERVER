@@ -903,17 +903,17 @@ static int handle_cc(ship_client_t* c, const char* params) {
     /* Are we turning it off? */
     if (!strcmp(params, "off")) {
         c->cc_char = 0;
-        return send_txt(c, "%s", __(c, "\tE\tC7Color Chat off."));
+        return send_txt(c, "%s", __(c, "\tE\tC4彩色聊天关闭."));
     }
 
     /* Make sure they only gave one character */
     if (strlen(params) != 1) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid trigger character."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效的触发器字符."));
     }
 
     /* Set the char in the client struct */
     c->cc_char = params[0];
-    return send_txt(c, "%s", __(c, "\tE\tC7Color Chat on."));
+    return send_txt(c, "%s", __(c, "\tE\tCG彩色聊天开启."));
 }
 
 /* 用法: /qlang [2 character language code] */

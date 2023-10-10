@@ -63,6 +63,7 @@ bool char_class_is_force(uint8_t equip_flags) {
 }
 
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src) {
+	removeWhitespace_w(src->char_name);
 	size_t dst_name_len = sizeof(dst->char_name);
 	size_t src_name_len = sizeof(src->char_name);
 
@@ -97,6 +98,7 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 		break;
 
 	case CLIENT_VERSION_BB:
+		removeWhitespace_w(pl->bb.character.name.char_name);
 		if (raw)
 			istrncpy16_raw(ic_utf16_to_gb18030, player_name,
 				&pl->bb.character.name, 24, BB_CHARACTER_NAME_LENGTH);

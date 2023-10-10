@@ -1098,6 +1098,7 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
+    removeWhitespace_w(c->pl->bb.character.name.char_name);
     char tmp_name[32] = { 0 };
     istrncpy16_raw(ic_utf16_to_utf8, tmp_name, (char*)&c->pl->bb.character.name.char_name, 32, 10);
 

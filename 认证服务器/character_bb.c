@@ -558,6 +558,7 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
 
             mc.name.name_tag = char_data->character.name.name_tag;
             mc.name.name_tag2 = char_data->character.name.name_tag2;
+            removeWhitespace_w(char_data->character.name.char_name);
             memcpy(&mc.name.char_name[0], &char_data->character.name.char_name[0], BB_CHARACTER_CHAR_NAME_WLENGTH);
             
             mc.level = char_data->character.disp.level;

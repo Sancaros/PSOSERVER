@@ -4224,6 +4224,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
                             16);
                     }
                     else {
+                        removeWhitespace_w(cl->bb_pl->character.name.char_name);
                         memcpy(pkt->entries[count].ch_name,
                             cl->bb_pl->character.name.char_name, BB_CHARACTER_CHAR_NAME_WLENGTH);
                     }

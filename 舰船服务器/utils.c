@@ -908,6 +908,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     memcpy(&c->character.tech, &sp->tech, sizeof(sp->tech));
 
     /* Copy the name over */
+    removeWhitespace_w(sp->name.char_name);
     istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.gc_string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
 }
 

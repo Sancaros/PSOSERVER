@@ -25,6 +25,50 @@
 
 #include "pso_text.h"
 
+// 去除字符串中的空格、制表符和换行符，并判断是否包含这些字符
+void removeWhitespace(char* str) {
+    char* src = str;
+    char* dst = str;
+    int hasWhitespace = 0;
+
+    while (*src) {
+        if (*src != ' ' && *src != '\t' && *src != '\n') {
+            *dst++ = *src;
+        }
+        else {
+            hasWhitespace = 1;
+        }
+        src++;
+    }
+    *dst = '\0';
+
+    if (hasWhitespace) {
+        ERR_LOG("%s 字符串中包含空格、制表符或换行符, 已修正", str);
+    }
+}
+
+// 去除宽字符字符串中的空格、制表符和换行符，并判断是否包含这些字符
+void removeWhitespace_w(wchar_t* str) {
+    wchar_t* src = str;
+    wchar_t* dst = str;
+    int hasWhitespace = 0;
+
+    while (*src) {
+        if (!iswspace(*src)) {
+            *dst++ = *src;
+        }
+        else {
+            hasWhitespace = 1;
+        }
+        src++;
+    }
+    *dst = L'\0';
+
+    if (hasWhitespace) {
+        ERR_LOG("%s 字符串中包含空格、制表符或换行符, 已修正", str);
+    }
+}
+
 int32_t ext24(uint32_t a) {
     return (a & 0x00800000) ? (a | 0xFF000000) : a;
 }
