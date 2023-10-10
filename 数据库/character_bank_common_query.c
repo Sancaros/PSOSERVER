@@ -693,7 +693,7 @@ int db_update_char_bank_common(psocn_bank_t* bank, uint32_t gc) {
     db_insert_bank_common_backup_param(bank, gc);
 
     if (db_update_bank_common_param(bank, gc)) {
-        SQLERR_LOG("无法查询(GC%" PRIu32 ")公共银行参数数据", gc);
+        SQLERR_LOG("无法更新(GC%" PRIu32 ")公共银行参数数据", gc);
 
         db_insert_bank_common_param(bank, gc);
 
@@ -731,15 +731,14 @@ int db_get_char_bank_common(uint32_t gc, psocn_bank_t* bank) {
     size_t i = 0;
     int rv = 0;
 
-    if (rv = db_get_char_bank_common_param(gc, bank, 0)) {
-
-        if(rv == -4)
+    if (rv = db_get_char_bank_common_param(gc, bank, 1)) {
+        if (rv) {
+            SQLERR_LOG("获取(GC%" PRIu32 ")公共银行数据为空,执行获取总数据计划.", gc);
             if (db_get_char_bank_common_full_data(gc, bank, 0)) {
                 SQLERR_LOG("获取(GC%" PRIu32 ")公共银行原始数据为空,执行获取备份数据计划.", gc);
                 if (db_get_char_bank_common_full_data(gc, bank, 1)) {
-                    SQLERR_LOG("获取(GC%" PRIu32 ")公共银行备份数据失败,执行初始化.", gc);
+                    SQLERR_LOG("获取(GC%" PRIu32 ")公共银行备份数据失败,执行初始化1.", gc);
                     db_insert_bank_common_param(bank, gc);
-
                     db_insert_bank_common_backup_param(bank, gc);
 
                     for (i = 0; i < bank->item_count; i++) {
@@ -748,8 +747,18 @@ int db_get_char_bank_common(uint32_t gc, psocn_bank_t* bank) {
                                 break;
                     }
                 }
+                else {
+                    SQLERR_LOG("获取(GC%" PRIu32 ")公共银行备份数据成功,执行初始化2.", gc);
+                    db_insert_bank_common_param(bank, gc);
 
+                    for (i = 0; i < bank->item_count; i++) {
+                        if (bank->bitems[i].show_flags)
+                            if (db_insert_bank_common_items(&bank->bitems[i], gc, i))
+                                break;
+                    }
+                }
             }
+        }
 
         return 0;
     }

@@ -52,6 +52,7 @@ static char myquery[MAX_PACKET_BUFF] = { 0 };
 #define CHARACTER "character_"
 #define CHARACTER_BACKUP "character_backup"
 #define CHARACTER_BANK_CHAR "character_bank_char"
+#define CHARACTER_BANK_CHAR_FULL_DATA "character_bank_char_full_data"
 #define CHARACTER_BANK_CHAR_ITEMS "character_bank_char_items"
 #define CHARACTER_BANK_CHAR_ITEMS_BACKUP "character_bank_char_items_backup"
 #define CHARACTER_BANK_COMMON "character_bank_common"

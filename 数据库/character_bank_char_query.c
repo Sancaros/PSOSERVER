@@ -66,6 +66,52 @@ static int db_insert_bank_char_param(psocn_bank_t* bank, uint32_t gc, uint8_t sl
     return 0;
 }
 
+static int db_insert_bank_char_backup_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
+
+    memset(myquery, 0, sizeof(myquery));
+
+    if (bank->meseta > MAX_PLAYER_MESETA)
+        bank->meseta = MAX_PLAYER_MESETA;
+
+    // 插入玩家数据
+    _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+        "guildcard, slot, "
+        "item_count, meseta, bank_check_num, change_time, "
+        "full_data"
+        ") VALUES ("
+        "'%" PRIu32 "', '%" PRIu8 "', "
+        "'%" PRIu32 "', '%" PRIu32 "','%" PRIu32 "', NOW(), '"
+        /*")"*/,
+        CHARACTER_BANK_CHAR_FULL_DATA,
+        gc, slot,
+        bank->item_count, bank->meseta, inv_crc32
+    );
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)bank,
+        PSOCN_STLENGTH_BANK);
+
+    //strcat(myquery, "')");
+
+    int remaining_size = sizeof(myquery) - strlen(myquery) - 1; // 计算剩余可用长度
+
+    // 格式化拼接字符串，并确保不会溢出缓冲区
+    int n = snprintf(myquery + strlen(myquery), remaining_size, "')");
+
+    if (n < 0 || n >= remaining_size) {
+        SQLERR_LOG("无法写入myquery数据");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        //SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}
+
 static int db_update_bank_char_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
     memset(myquery, 0, sizeof(myquery));
@@ -506,6 +552,64 @@ static int db_get_char_bank_itemdata(uint32_t gc, uint8_t slot, psocn_bank_t* ba
     return k;
 }
 
+/* 优先获取银行数据库中的物品数量 */
+static int db_get_char_bank_full_data(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int backup) {
+    void* result;
+    char** row;
+    const char* tbl_nm = CHARACTER_BANK_CHAR;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    if (backup)
+        tbl_nm = CHARACTER_BANK_CHAR_FULL_DATA;
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT full_data FROM "
+        "%s "
+        "WHERE "
+        "guildcard = '%" PRIu32 "'"
+        " AND "
+        "slot = '%u' "
+        "ORDER BY change_time DESC "
+        "LIMIT 1",
+        tbl_nm,
+        gc, slot
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到公共银行数据 (%" PRIu32 ")", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的公共银行数据 (%" PRIu32 ")", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    if (isPacketEmpty(row[0], sizeof(psocn_bank_t))) {
+        psocn_db_result_free(result);
+
+        SQLERR_LOG("保存的公共数据数据为空 (%" PRIu32 ")", gc);
+        return -4;
+    }
+
+    memcpy(&bank->item_count, row[0], sizeof(psocn_bank_t));
+
+    psocn_db_result_free(result);
+
+    return 0;
+}
+
 void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
     for (item_index; item_index < del_count; item_index++) {
 
@@ -568,6 +672,8 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     bank->item_count = ic;
 
+    db_insert_bank_char_backup_param(bank, gc, slot);
+
     if (db_update_bank_char_param(bank, gc, slot)) {
         SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
 
@@ -605,15 +711,36 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 /* 获取玩家角色银行数据数据项 */
 int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
     size_t i = 0;
+    int rv = 0;
 
-    if (db_get_char_bank_param(gc, slot, bank, 0)) {
-        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
-        db_insert_bank_char_param(bank, gc, slot);
+    if (rv = db_get_char_bank_param(gc, slot, bank, 1)) {
+        if (rv) {
 
-        for (i = 0; i < bank->item_count; i++) {
-            if(bank->bitems[i].show_flags)
-                if (db_insert_bank_char_items(&bank->bitems[i], gc, slot, i))
-                    break;
+            SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)银行数据为空,执行获取总数据计划.", gc, slot);
+            if (db_get_char_bank_full_data(gc, slot, bank, 0)) {
+                SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)公共银行原始数据为空,执行获取备份数据计划.", gc, slot);
+                if (db_get_char_bank_full_data(gc, slot, bank, 1)) {
+                    SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)公共银行备份数据失败,执行初始化1.", gc, slot);
+                    db_insert_bank_char_param(bank, gc, slot);
+                    db_insert_bank_char_backup_param(bank, gc, slot);
+
+                    for (i = 0; i < bank->item_count; i++) {
+                        if (bank->bitems[i].show_flags)
+                            if (db_insert_bank_char_items(&bank->bitems[i], gc, slot, i))
+                                break;
+                    }
+                }
+                else {
+                    SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行备份数据成功,执行初始化2", gc, slot);
+                    db_insert_bank_char_param(bank, gc, slot);
+
+                    for (i = 0; i < bank->item_count; i++) {
+                        if (bank->bitems[i].show_flags)
+                            if (db_insert_bank_char_items(&bank->bitems[i], gc, slot, i))
+                                break;
+                    }
+                }
+            }
         }
 
         return 0;
