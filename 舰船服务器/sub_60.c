@@ -1442,6 +1442,8 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_equip_t), 0x03))
         return -2;
 
+    print_ascii_hex(dbgl,pkt,pkt->hdr.pkt_len);
+
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
         DBG_LOG("%s ID²»Ò»ÖÂ!",
@@ -1480,6 +1482,8 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_unequip_t), 0x03))
         return -2;
+
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     if (pkt->shdr.client_id != src->client_id) {
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);

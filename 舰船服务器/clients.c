@@ -1058,6 +1058,9 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
             return -1;
     }
 
+    if (character->disp.exp > bb_char_stats.levels[cl][199].exp)
+        character->disp.exp = bb_char_stats.levels[cl][199].exp;
+
     return 0;
 }
 
@@ -1094,6 +1097,9 @@ int client_give_level(ship_client_t* dest, uint32_t level_req) {
     character->disp.level = LE32(level_req);
     if (subcmd_send_lobby_bb_level(dest))
         return -1;
+
+    if (character->disp.exp > bb_char_stats.levels[cl][199].exp)
+        character->disp.exp = bb_char_stats.levels[cl][199].exp;
 
     return 0;
 }
