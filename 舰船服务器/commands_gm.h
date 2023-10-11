@@ -945,6 +945,8 @@ static void dumpinv_internal(ship_client_t* src) {
 
         GM_LOG("------------------------------------------------------------");
         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+            GM_LOG("EXT1: %d", character_v1->inv.iitems[i].extension_data1);
+            GM_LOG("EXT2: %d", character_v1->inv.iitems[i].extension_data2);
             GM_LOG("物品: %s", get_item_describe(&character_v1->inv.iitems[i].data, v));
             GM_LOG("编号: 0x%08X", character_v1->inv.iitems[i].data.item_id);
             GM_LOG(""
@@ -980,6 +982,8 @@ static void dumpinv_internal(ship_client_t* src) {
 
         GM_LOG("------------------------------------------------------------");
         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+            GM_LOG("EXT1: %d", character_bb->inv.iitems[i].extension_data1);
+            GM_LOG("EXT2: %d", character_bb->inv.iitems[i].extension_data2);
             GM_LOG("物品: %s", get_item_describe(&character_bb->inv.iitems[i].data, v));
             GM_LOG("编号: 0x%08X", character_bb->inv.iitems[i].data.item_id);
             GM_LOG(""
@@ -1004,11 +1008,63 @@ static void dumpinv_internal(ship_client_t* src) {
     }
 }
 
+static void dumpinv_ext_internal(ship_client_t* src) {
+    int i;
+    int v = src->version;
+
+    if (v != CLIENT_VERSION_BB) {
+        psocn_v1v2v3pc_char_t* character_v1 = get_client_char_nobb(src);
+
+        GM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
+        GM_LOG("职业: %s 房间模式: %s", pso_class[character_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        GM_LOG("语言: %u 等级: %u 经验: %u", character_v1->inv.language, character_v1->disp.level + 1, character_v1->disp.exp);
+        GM_LOG("钱包: %u", character_v1->disp.meseta);
+        GM_LOG("数量: %u", character_v1->inv.item_count);
+
+        GM_LOG("------------------------------------------------------------");
+        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+            GM_LOG("EXT1: %d", character_v1->inv.iitems[i].extension_data1);
+            GM_LOG("EXT2: %d", character_v1->inv.iitems[i].extension_data2);
+            GM_LOG("------------------------------------------------------------");
+        }
+        GM_LOG("////////////////////////////////////////////////////////////");
+    }
+    else {
+        psocn_bb_char_t* character_bb = get_client_char_bb(src);
+        inventory_t* inv_bb = &character_bb->inv;
+
+        GM_LOG("////////////////////////////////////////////////////////////");
+        GM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
+        GM_LOG("职业: %s 房间模式: %s", pso_class[character_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        GM_LOG("语言: %u 等级: %u 经验: %u", inv_bb->language, character_bb->disp.level + 1, character_bb->disp.exp);
+        GM_LOG("钱包: %u", character_bb->disp.meseta);
+        GM_LOG("数量: %u", inv_bb->item_count);
+        GM_LOG("HP药:%u TP药:%u 攻药:%u 智药:%u 闪药:%u 防药:%u 运药:%u"
+            , get_material_usage(inv_bb, MATERIAL_HP)
+            , get_material_usage(inv_bb, MATERIAL_TP)
+            , get_material_usage(inv_bb, MATERIAL_POWER)
+            , get_material_usage(inv_bb, MATERIAL_MIND)
+            , get_material_usage(inv_bb, MATERIAL_EVADE)
+            , get_material_usage(inv_bb, MATERIAL_DEF)
+            , get_material_usage(inv_bb, MATERIAL_LUCK)
+        );
+
+        GM_LOG("------------------------------------------------------------");
+        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+            GM_LOG("EXT1: %d", inv_bb->iitems[i].extension_data1);
+            GM_LOG("EXT2: %d", inv_bb->iitems[i].extension_data2);
+            GM_LOG("------------------------------------------------------------");
+        }
+        GM_LOG("////////////////////////////////////////////////////////////");
+    }
+}
+
 /* 用法: /dbginv [l/client_id/guildcard] */
 static int handle_dbginv(ship_client_t* src, const char* params) {
     lobby_t* l = src->cur_lobby;
     litem_t* j;
-    int do_lobby;
+    int do_lobby = 0, do_ext = 0;
     uint32_t client;
 
     /* Make sure the requester is a GM. */
@@ -1016,10 +1072,18 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
         return get_gm_priv(src);
     }
 
+    do_ext = params && !strcmp(params, "e");
     do_lobby = params && !strcmp(params, "l");
 
     /* If the arguments say "lobby", then dump the lobby's inventory. */
-    if (do_lobby) {
+    if (do_ext) {
+        dumpinv_ext_internal(src);
+
+        return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+            , get_player_describe(src), __(src, "\tE\tC7的背包额外数据已存储到日志."));
+    }
+    /* If the arguments say "lobby", then dump the lobby's inventory. */
+    else if (do_lobby) {
         pthread_mutex_lock(&l->mutex);
 
         if (l->type != LOBBY_TYPE_GAME || l->version != CLIENT_VERSION_BB) {
@@ -1033,8 +1097,15 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
 
         GM_LOG("------------------------------------------------------------");
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
+            GM_LOG("物品: %s", get_item_describe(&j->item, l->version));
+            GM_LOG("编号: 0x%08X", j->item.item_id);
             GM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
-            print_item_data(&j->item, src->version);
+            GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+                j->item.datab[0], j->item.datab[1], j->item.datab[2], j->item.datab[3],
+                j->item.datab[4], j->item.datab[5], j->item.datab[6], j->item.datab[7],
+                j->item.datab[8], j->item.datab[9], j->item.datab[10], j->item.datab[11],
+                j->item.data2b[0], j->item.data2b[1], j->item.data2b[2], j->item.data2b[3]);
+            GM_LOG("------------------------------------------------------------");
         }
         GM_LOG("------------------------------------------------------------");
 

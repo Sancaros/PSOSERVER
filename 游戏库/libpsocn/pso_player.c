@@ -17,8 +17,9 @@
 
 #include <f_iconv.h>
 
-#include "pso_player.h"
 #include "f_logs.h"
+
+#include "pso_player.h"
 #include "pso_items.h"
 
 /* Possible values for the version field of ship_client_t */
@@ -114,43 +115,80 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 	return player_name;
 }
 
-void set_technique_level(psocn_bb_char_t* character, uint8_t which, uint8_t level) {
-	if (level == 0xFF) {
-		character->technique_levels_v1.all[which] = 0xFF;
-		character->inv.iitems[which].extension_data1 = 0x00;
+void set_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which, uint8_t level) {
+	if (level == TECHNIQUE_UNLEARN) {
+		technique_levels_v1->all[which] = TECHNIQUE_UNLEARN;
+		inv->iitems[which].extension_data1 = 0x00;
 	}
-	else if (level <= 0x0E) {
-		character->technique_levels_v1.all[which] = level;
-		character->inv.iitems[which].extension_data1 = 0x00;
+	else if (level <= TECHNIQUE_V1_MAX_LEVEL) {
+		technique_levels_v1->all[which] = level;
+		inv->iitems[which].extension_data1 = 0x00;
 	}
 	else {
-		character->technique_levels_v1.all[which] = 0x0E;
-		character->inv.iitems[which].extension_data1 = level - 0x0E;
+		technique_levels_v1->all[which] = TECHNIQUE_V1_MAX_LEVEL;
+		inv->iitems[which].extension_data1 = level - TECHNIQUE_V1_MAX_LEVEL;
 	}
 }
 
-uint8_t get_technique_level(psocn_bb_char_t* character, uint8_t which) {
-	return (character->technique_levels_v1.all[which] == 0xFF)
-		? 0xFF
-		: (character->technique_levels_v1.all[which] + character->inv.iitems[which].extension_data1);
+uint8_t get_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which) {
+	return (technique_levels_v1->all[which] == TECHNIQUE_UNLEARN)
+		? TECHNIQUE_UNLEARN
+		: (technique_levels_v1->all[which] + inv->iitems[which].extension_data1);
 }
 
-uint8_t get_material_usage(psocn_bb_char_t* character, MaterialType which) {
-	if (character) {
+uint8_t show_technique_level(psocn_bb_char_t* character, uint8_t which) {
+
+	if (character->technique_levels_v1.all[which] == TECHNIQUE_UNLEARN)
+		return TECHNIQUE_UNLEARN;
+
+	switch (which) {
+		/*这两个法术永远是1级*/
+	case TECHNIQUE_RYUKER:
+	case TECHNIQUE_REVERSER:
+		return character->technique_levels_v1.all[which];
+
+		/*这个法术最高7级*/
+	case TECHNIQUE_ANTI:
+		return character->technique_levels_v1.all[which];
+
+	case TECHNIQUE_FOIE:
+	case TECHNIQUE_GIFOIE:
+	case TECHNIQUE_RAFOIE:
+	case TECHNIQUE_BARTA:
+	case TECHNIQUE_GIBARTA:
+	case TECHNIQUE_RABARTA:
+	case TECHNIQUE_ZONDE:
+	case TECHNIQUE_GIZONDE:
+	case TECHNIQUE_RAZONDE:
+	case TECHNIQUE_GRANTS:
+	case TECHNIQUE_DEBAND:
+	case TECHNIQUE_JELLEN:
+	case TECHNIQUE_ZALURE:
+	case TECHNIQUE_SHIFTA:
+	case TECHNIQUE_RESTA:
+	case TECHNIQUE_MEGID:
+		return character->technique_levels_v1.all[which] + character->inv.iitems[which].extension_data1;
+	}
+
+	return TECHNIQUE_UNLEARN;
+}
+
+uint8_t get_material_usage(inventory_t* inv, MaterialType which) {
+	if (inv) {
 
 		switch (which) {
 		case MATERIAL_HP:
-			return character->inv.hpmats_used;
+			return inv->hpmats_used;
 
 		case MATERIAL_TP:
-			return character->inv.tpmats_used;
+			return inv->tpmats_used;
 
 		case MATERIAL_POWER:
 		case MATERIAL_MIND:
 		case MATERIAL_EVADE:
 		case MATERIAL_DEF:
 		case MATERIAL_LUCK:
-			return character->inv.iitems[8 + (uint8_t)which].extension_data2;
+			return inv->iitems[8 + (uint8_t)which].extension_data2;
 
 		default:
 			ERR_LOG("玩家吃药类型不支持 %d", which);
@@ -164,16 +202,16 @@ uint8_t get_material_usage(psocn_bb_char_t* character, MaterialType which) {
 
 }
 
-void set_material_usage(psocn_bb_char_t* character, MaterialType which, uint8_t usage) {
-	if (character) {
+void set_material_usage(inventory_t* inv, MaterialType which, uint8_t usage) {
+	if (inv) {
 
 		switch (which) {
 		case MATERIAL_HP:
-			character->inv.hpmats_used = usage;
+			inv->hpmats_used = usage;
 			break;
 
 		case MATERIAL_TP:
-			character->inv.tpmats_used = usage;
+			inv->tpmats_used = usage;
 			break;
 
 		case MATERIAL_POWER:
@@ -181,7 +219,7 @@ void set_material_usage(psocn_bb_char_t* character, MaterialType which, uint8_t 
 		case MATERIAL_EVADE:
 		case MATERIAL_DEF:
 		case MATERIAL_LUCK:
-			character->inv.iitems[8 + (uint8_t)which].extension_data2 = usage;
+			inv->iitems[8 + (uint8_t)which].extension_data2 = usage;
 			break;
 
 		default:

@@ -2833,13 +2833,15 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
 
     if (char_class_is_android(src->equip_flags) ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
-        get_bb_max_tech_level(src, pkt->technique_number) == 0
+        get_bb_max_tech_level(src->bb_pl->character.dress_data.ch_class, pkt->technique_number) == 0
         ) {
         ERR_LOG("%s 职业 %s 发送损坏的 %s 法术攻击数据!",
             get_player_describe(src), pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
             max_tech_level[pkt->technique_number].tech_name);
+
+        fix_player_max_tech_level(&src->bb_pl->character);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -1;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     size_t allowed_count = min(pkt->shdr.size - 2, 10);

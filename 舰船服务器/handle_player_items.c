@@ -1186,12 +1186,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_DISK: // Technique disk
-            if (iitem->data.datab[2] + 1 > get_bb_max_tech_level(src, iitem->data.datab[4])) {
+            if (iitem->data.datab[2] + 1 > get_bb_max_tech_level(src->bb_pl->character.dress_data.ch_class, iitem->data.datab[4])) {
                 ERR_LOG("%s 法术科技光碟等级高于职业可用等级", get_player_describe(src));
                 return -1;
             }
 
-            set_technique_level(character, iitem->data.datab[4], iitem->data.datab[2]);
+            set_technique_level(&character->technique_levels_v1, &character->inv, iitem->data.datab[4], iitem->data.datab[2]);
             break;
 
         case ITEM_SUBTYPE_GRINDER: // Grinder
@@ -1215,35 +1215,35 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         case ITEM_SUBTYPE_MATERIAL:
             switch (iitem->data.datab[2]) {
             case ITEM_SUBTYPE_MATERIAL_POWER: // Power Material
-                set_material_usage(character, MATERIAL_POWER, get_material_usage(character, MATERIAL_POWER) + 1);
+                set_material_usage(&character->inv, MATERIAL_POWER, get_material_usage(&character->inv, MATERIAL_POWER) + 1);
                 character->disp.stats.atp += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_MIND: // Mind Material
-                set_material_usage(character, MATERIAL_MIND, get_material_usage(character, MATERIAL_MIND) + 1);
+                set_material_usage(&character->inv, MATERIAL_MIND, get_material_usage(&character->inv, MATERIAL_MIND) + 1);
                 character->disp.stats.mst += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_EVADE: // Evade Material
-                set_material_usage(character, MATERIAL_EVADE, get_material_usage(character, MATERIAL_EVADE) + 1);
+                set_material_usage(&character->inv, MATERIAL_EVADE, get_material_usage(&character->inv, MATERIAL_EVADE) + 1);
                 character->disp.stats.evp += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_HP: // HP Material
-                set_material_usage(character, MATERIAL_HP, get_material_usage(character, MATERIAL_HP) + 1);
+                set_material_usage(&character->inv, MATERIAL_HP, get_material_usage(&character->inv, MATERIAL_HP) + 1);
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_TP: // TP Material
-                set_material_usage(character, MATERIAL_TP, get_material_usage(character, MATERIAL_TP) + 1);
+                set_material_usage(&character->inv, MATERIAL_TP, get_material_usage(&character->inv, MATERIAL_TP) + 1);
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_DEF: // Def Material
-                set_material_usage(character, MATERIAL_DEF, get_material_usage(character, MATERIAL_DEF) + 1);
+                set_material_usage(&character->inv, MATERIAL_DEF, get_material_usage(&character->inv, MATERIAL_DEF) + 1);
                 character->disp.stats.dfp += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_LUCK: // Luck Material
-                set_material_usage(character, MATERIAL_LUCK, get_material_usage(character, MATERIAL_LUCK) + 1);
+                set_material_usage(&character->inv, MATERIAL_LUCK, get_material_usage(&character->inv, MATERIAL_LUCK) + 1);
                 character->disp.stats.lck += 2;
                 break;
 

@@ -307,34 +307,7 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
     rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 
     /* 检测玩家的魔法是否合规 */
-    if (!char_class_is_android(src->equip_flags)) {
-        for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            if (pkt->tech.all[i] == 0xFF)
-                continue;
-
-            if (pkt->tech.all[i] + 1 > get_bb_max_tech_level(src, i)) {
-                /* 移除不合规的法术 */
-                //character->tech.all[i] = 0xFF;
-                //send_msg(src, TEXT_MSG_TYPE, "%s %s %s%d 高于 %d %s", __(src, "\tE\tC4法术"), get_technique_comment(i)
-                //    , __(src, "\tE\tC4等级"), pkt->tech.all[i], max_tech_level[i].max_lvl[character->dress_data.ch_class]
-                //    , __(src, "\tE\tC4已被清除!")
-                //);
-                ERR_LOG("%s 法术 %s 等级%d 高于 %d!", get_player_describe(src), get_technique_comment(i), pkt->tech.all[i] + 1, get_bb_max_tech_level(src, i));
-                //pkt2.tech.all[i] = character->tech.all[i];
-            }
-            //else {
-
-            //    //pkt2.tech.all[i] = character->tech.all[i];
-            //}
-        }
-    }
-    //else {
-    //    /* 清除机器人的魔法 */
-    //    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-    //        character->tech.all[i] = 0xFF;
-    //        //pkt2.tech.all[i] = character->tech.all[i];
-    //    }
-    //}
+    fix_player_max_tech_level(&src->bb_pl->character);
 
     ///* 这里可以检查角色的合法外观数据 */
     //memcpy(&pkt2.dress_data.gc_string[0], &character->dress_data.gc_string[0], sizeof(psocn_dress_data_t));

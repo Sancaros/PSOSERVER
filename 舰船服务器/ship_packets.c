@@ -13501,9 +13501,6 @@ int send_bb_player_section_list(ship_client_t* dest) {
     size_t i = 0;
     char tmp_char[0x20] = { 0 };
 
-    if (in_game(dest))
-        return send_msg(dest, MSG1_TYPE, "%s", __(dest, "\tE\tC4无法在房间中使用!"));
-
     /* 初始化数据包 */
     memset(menu, 0, len);
 

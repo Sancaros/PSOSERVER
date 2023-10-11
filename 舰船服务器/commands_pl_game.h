@@ -1439,14 +1439,15 @@ static int handle_lobby(ship_client_t* c, const char* params) {
 static int handle_matuse(ship_client_t* c, const char* params) {
     lobby_t* l = c->cur_lobby;
     psocn_bb_char_t* character = get_client_char_bb(c);
+    inventory_t* inv = &character->inv;
 
     return send_txt(c, "‡æ“©«Èøˆ:\nHP“©:%u TP“©:%u \nπ•“©:%u ÷«“©:%u …¡“©:%u \n∑¿“©:%u ‘À“©:%u"
-        , get_material_usage(character, MATERIAL_HP)
-        , get_material_usage(character, MATERIAL_TP)
-        , get_material_usage(character, MATERIAL_POWER)
-        , get_material_usage(character, MATERIAL_MIND)
-        , get_material_usage(character, MATERIAL_EVADE)
-        , get_material_usage(character, MATERIAL_DEF)
-        , get_material_usage(character, MATERIAL_LUCK)
+        , get_material_usage(inv, MATERIAL_HP)
+        , get_material_usage(inv, MATERIAL_TP)
+        , get_material_usage(inv, MATERIAL_POWER)
+        , get_material_usage(inv, MATERIAL_MIND)
+        , get_material_usage(inv, MATERIAL_EVADE)
+        , get_material_usage(inv, MATERIAL_DEF)
+        , get_material_usage(inv, MATERIAL_LUCK)
     );
 }

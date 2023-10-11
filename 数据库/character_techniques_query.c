@@ -23,11 +23,12 @@
 
 static int db_insert_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t slot) {
     memset(myquery, 0, sizeof(myquery));
-    uint8_t tech_level[20] = { 0 };
+    techniques_t* tech = &character->technique_levels_v1;
+    //uint8_t tech_level[20] = { 0 };
 
-    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        tech_level[i] = get_technique_level(character, i);
-    }
+    //for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+    //    tech_level[i] = get_technique_level(character, i);
+    //}
 
     sprintf(myquery, "INSERT INTO %s "
         "(guildcard, slot"
@@ -42,9 +43,9 @@ static int db_insert_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_
         ")",
         TABLE1,
         gc, slot,
-        tech_level[0], tech_level[1], tech_level[2], tech_level[3], tech_level[4], tech_level[5], tech_level[6],
-        tech_level[7], tech_level[8], tech_level[9], tech_level[10], tech_level[11], tech_level[12], tech_level[13],
-        tech_level[14], tech_level[15], tech_level[16], tech_level[17], tech_level[18], tech_level[19]
+        tech->all[0], tech->all[1], tech->all[2], tech->all[3], tech->all[4], tech->all[5], tech->all[6],
+        tech->all[7], tech->all[8], tech->all[9], tech->all[10], tech->all[11], tech->all[12], tech->all[13],
+        tech->all[14], tech->all[15], tech->all[16], tech->all[17], tech->all[18], tech->all[19]
     );
 
     //DBG_LOG("保存角色更衣室数据 %d", dress_data->create_code);
@@ -62,11 +63,12 @@ static int db_insert_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_
 
 static int db_update_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t slot) {
     memset(myquery, 0, sizeof(myquery));
-    uint8_t tech_level[20] = { 0 };
+    techniques_t* tech = &character->technique_levels_v1;
+    //uint8_t tech_level[20] = { 0 };
 
-    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        tech_level[i] = get_technique_level(character, i);
-    }
+    //for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+    //    tech_level[i] = get_technique_level(character, i);
+    //}
 
     sprintf(myquery, "UPDATE %s SET "
         "data0 = '%02X', data1 = '%02X', data2 = '%02X', data3 = '%02X', data4 = '%02X', data5 = '%02X', data6 = '%02X', "
@@ -75,9 +77,9 @@ static int db_update_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
         TABLE1,
-        tech_level[0], tech_level[1], tech_level[2], tech_level[3], tech_level[4], tech_level[5], tech_level[6],
-        tech_level[7], tech_level[8], tech_level[9], tech_level[10], tech_level[11], tech_level[12], tech_level[13],
-        tech_level[14], tech_level[15], tech_level[16], tech_level[17], tech_level[18], tech_level[19]
+        tech->all[0], tech->all[1], tech->all[2], tech->all[3], tech->all[4], tech->all[5], tech->all[6],
+        tech->all[7], tech->all[8], tech->all[9], tech->all[10], tech->all[11], tech->all[12], tech->all[13],
+        tech->all[14], tech->all[15], tech->all[16], tech->all[17], tech->all[18], tech->all[19]
         , gc, slot
     );
 
@@ -190,7 +192,8 @@ int db_get_char_techniques(uint32_t gc, uint8_t slot, psocn_bb_char_t* character
     if (row != NULL) {
         int i2 = 2;
         for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            set_technique_level(character, i, (uint8_t)strtoul(row[i2], NULL, 16));
+            character->technique_levels_v1.all[i] = (uint8_t)strtoul(row[i2], NULL, 16);
+            //set_technique_level(character, i, (uint8_t)strtoul(row[i2], NULL, 16));
 
             i2++;
         }

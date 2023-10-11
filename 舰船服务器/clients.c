@@ -540,6 +540,8 @@ void client_send_bb_data(ship_client_t* c) {
 
         if (!c->mode) {
             /* 将玩家数据存入数据库 */
+            fix_player_max_tech_level(&c->bb_pl->character);
+
             if (shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
                 c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
                 c->cur_block->b)) {
@@ -1727,21 +1729,17 @@ uint8_t get_lobby_leader_section(lobby_t* l) {
     return get_player_section(src);
 }
 
-uint8_t get_bb_max_tech_level(ship_client_t* src, int tech) {
-    /* 初始化一个颜色ID数值 */
-    uint8_t ch_class = 0;
+uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech) {
+    if(ch_class < MAX_PLAYER_CLASS_BB)
+        return max_tech_level[tech].max_lvl[ch_class];
 
-    if (!src)
-        return ch_class;
-
-    psocn_bb_char_t* character = get_client_char_bb(src);
-
-    return max_tech_level[tech].max_lvl[character->dress_data.ch_class];
+    return 0;
 }
 
 void update_bb_mat_use(ship_client_t* src) {
     uint16_t atp_base = 0, mst_base = 0, evp_base = 0, hp_base = 0, dfp_base = 0, ata_base = 0;
     psocn_bb_char_t* character = get_client_char_bb(src);
+    inventory_t* inv = &character->inv;
     uint8_t ch_class = character->dress_data.ch_class;
     psocn_pl_stats_t* startingData = &bb_char_stats.start_stats[ch_class];
 
@@ -1761,15 +1759,16 @@ void update_bb_mat_use(ship_client_t* src) {
         ata_base += bb_char_stats.levels[ch_class][x].ata;
     }
 
-    set_material_usage(character, MATERIAL_POWER, (character->disp.stats.atp - atp_base) / 2);
-    set_material_usage(character, MATERIAL_MIND, (character->disp.stats.mst - mst_base) / 2);
-    set_material_usage(character, MATERIAL_EVADE, (character->disp.stats.evp - evp_base) / 2);
-    set_material_usage(character, MATERIAL_DEF, (character->disp.stats.dfp - dfp_base) / 2);
-    set_material_usage(character, MATERIAL_LUCK, (character->disp.stats.lck - 10) / 2);
+    set_material_usage(inv, MATERIAL_POWER, (character->disp.stats.atp - atp_base) / 2);
+    set_material_usage(inv, MATERIAL_MIND, (character->disp.stats.mst - mst_base) / 2);
+    set_material_usage(inv, MATERIAL_EVADE, (character->disp.stats.evp - evp_base) / 2);
+    set_material_usage(inv, MATERIAL_DEF, (character->disp.stats.dfp - dfp_base) / 2);
+    set_material_usage(inv, MATERIAL_LUCK, (character->disp.stats.lck - 10) / 2);
 }
 
 void show_bb_player_info(ship_client_t* src) {
     psocn_bb_char_t* character = get_client_char_bb(src);
+    inventory_t* inv = &character->inv;
     uint8_t ch_class = character->dress_data.ch_class;
 
     send_msg(src, MSG_BOX_TYPE,
@@ -1779,30 +1778,52 @@ void show_bb_player_info(ship_client_t* src) {
         "当前等级: Lv%d 经验:%d 钱包:%d美赛塔\n"
         "背包数量: %d 语言: %u\n"
         "银行数量: 角色:%d 公共:%d\n"
-        "嗑药情况: HP药:%u TP药:%u 攻药:%d 智药:%d 闪药:%d 防药:%d 运药:%d\n"
+        "嗑药情况: HP药:%u TP药:%u 攻药:%u 智药:%u 闪药:%u 防药:%u 运药:%u\n"
         "挑战模式: 详情未完成\n"
         , get_player_describe(src)
         , pso_class[ch_class].cn_name
         , character->disp.level + 1
         , character->disp.exp
         , character->disp.meseta
-        , character->inv.item_count
-        , character->inv.language
+        , inv->item_count
+        , inv->language
         , src->bb_pl->bank.item_count, src->common_bank->item_count
-        , get_material_usage(character, MATERIAL_HP)
-        , get_material_usage(character, MATERIAL_TP)
-        , get_material_usage(character, MATERIAL_POWER)
-        , get_material_usage(character, MATERIAL_MIND)
-        , get_material_usage(character, MATERIAL_EVADE)
-        , get_material_usage(character, MATERIAL_DEF)
-        , get_material_usage(character, MATERIAL_LUCK)
+        , get_material_usage(inv, MATERIAL_HP)
+        , get_material_usage(inv, MATERIAL_TP)
+        , get_material_usage(inv, MATERIAL_POWER)
+        , get_material_usage(inv, MATERIAL_MIND)
+        , get_material_usage(inv, MATERIAL_EVADE)
+        , get_material_usage(inv, MATERIAL_DEF)
+        , get_material_usage(inv, MATERIAL_LUCK)
     );
+}
+
+void fix_player_max_tech_level(psocn_bb_char_t* character) {
+    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+        if (get_technique_level(&character->technique_levels_v1, &character->inv, i) == TECHNIQUE_UNLEARN)
+            continue;
+
+        uint8_t max_level = get_bb_max_tech_level(character->dress_data.ch_class, i);
+        if (get_technique_level(&character->technique_levels_v1, &character->inv, i) >= max_level) {
+            /* 移除不合规的法术 */
+#ifdef DEBUG
+            DBG_LOG("%s:%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
+                , character->dress_data.gc_string
+                , pso_class[character->dress_data.ch_class].cn_name
+                , get_technique_comment(i), show_technique_level(character, i)
+                , get_bb_max_tech_level(character, i)
+                , get_bb_max_tech_level(character, i)
+            );
+#endif // DEBUG
+
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, max_level);
+        }
+    }
 }
 
 void show_player_tech_info(ship_client_t* src) {
     psocn_bb_char_t* character = get_client_char_bb(src);
     uint8_t ch_class = character->dress_data.ch_class;
-    uint8_t tech_level = 0;
     char tmp_msg[4096] = { 0 };
     char data_str[100] = { 0 };
 
@@ -1826,7 +1847,9 @@ void show_player_tech_info(ship_client_t* src) {
         );
 
         for (int i = 0; i < MAX_PLAYER_TECHNIQUES; ++i) {
-            if (get_bb_max_tech_level(src, i) == 0) {
+            fix_player_max_tech_level(&src->bb_pl->character);
+
+            if (get_bb_max_tech_level(src->bb_pl->character.dress_data.ch_class, i) == 0) {
                 // 将要写入的数据格式化为字符串
                 sprintf_s(data_str, sizeof(data_str),
                     "%s \tE\tC4无法学习\tE\tC7"
@@ -1834,30 +1857,18 @@ void show_player_tech_info(ship_client_t* src) {
                 );
             }
             else {
-                if (get_technique_level(character, i) == TECHNIQUE_UNLEARN) {
+                if (get_technique_level(&character->technique_levels_v1, &character->inv, i) == TECHNIQUE_UNLEARN) {
                     sprintf_s(data_str, sizeof(data_str),
                         "%s \tE\tCG未学习\tE\tC7"
                         , get_technique_comment(i)
                     );
                 }
                 else {
-                    if (get_technique_level(character, i) + 1 > get_bb_max_tech_level(src, i)) {
-                        /* 移除不合规的法术 */
-                        ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
-                            , get_player_describe(src)
-                            , get_technique_comment(i), get_technique_level(character, i) + 1
-                            , get_bb_max_tech_level(src, i)
-                            , get_bb_max_tech_level(src, i)
-                        );
-                        set_technique_level(character, i, get_bb_max_tech_level(src, i));
-                    }
-
-                    tech_level = get_technique_level(character, i) + 1;
                     // 将要写入的数据格式化为字符串
                     sprintf_s(data_str, sizeof(data_str),
                         "%s Lv%d"
                         , get_technique_comment(i)
-                        , tech_level
+                        , get_technique_level(&character->technique_levels_v1, &character->inv, i)
                     );
                 }
             }

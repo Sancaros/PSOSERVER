@@ -52,6 +52,129 @@ static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 
 	return 0;
 }
+//
+//static int db_insert_inv_ext_param(inventory_t* inv, uint32_t gc, uint8_t slot, const char* table_name, const char* extension_field) {
+//	memset(myquery, 0, sizeof(myquery));
+//
+//	// 插入玩家数据
+//	_snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+//		"guildcard, slot, change_time, "
+//		"%s_0, %s_1, %s_2, %s_3, %s_4, "
+//		"%s_5, %s_6, %s_7, %s_8, %s_9, "
+//		"%s_10, %s_11, %s_12, %s_13, %s_14, "
+//		"%s_15, %s_16, %s_17, %s_18, %s_19, "
+//		"%s_20, %s_21, %s_22, %s_23, %s_24, "
+//		"%s_25, %s_26, %s_27, %s_28, %s_29"
+//		") VALUES ("
+//		"'%" PRIu32 "', '%" PRIu8 "', NOW(), "
+//		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+//		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+//		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+//		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+//		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+//		"'%02X', '%02X', '%02X', '%02X', '%02X'"
+//		")",
+//		table_name,
+//		extension_field, extension_field, extension_field, extension_field, extension_field,
+//		extension_field, extension_field, extension_field, extension_field, extension_field,
+//		extension_field, extension_field, extension_field, extension_field, extension_field,
+//		extension_field, extension_field, extension_field, extension_field, extension_field,
+//		extension_field, extension_field, extension_field, extension_field, extension_field,
+//		extension_field, extension_field, extension_field, extension_field, extension_field,
+//		gc, slot
+//		, inv->iitems[0].extension_data1, inv->iitems[1].extension_data1, inv->iitems[2].extension_data1, inv->iitems[3].extension_data1, inv->iitems[4].extension_data1
+//		, inv->iitems[5].extension_data1, inv->iitems[6].extension_data1, inv->iitems[7].extension_data1, inv->iitems[8].extension_data1, inv->iitems[9].extension_data1
+//		, inv->iitems[10].extension_data1, inv->iitems[11].extension_data1, inv->iitems[12].extension_data1, inv->iitems[13].extension_data1, inv->iitems[14].extension_data1
+//		, inv->iitems[15].extension_data1, inv->iitems[16].extension_data1, inv->iitems[17].extension_data1, inv->iitems[18].extension_data1, inv->iitems[19].extension_data1
+//		, inv->iitems[20].extension_data1, inv->iitems[21].extension_data1, inv->iitems[22].extension_data1, inv->iitems[23].extension_data1, inv->iitems[24].extension_data1
+//		, inv->iitems[25].extension_data1, inv->iitems[26].extension_data1, inv->iitems[27].extension_data1, inv->iitems[28].extension_data1, inv->iitems[29].extension_data1
+//	);
+//
+//	if (psocn_db_real_query(&conn, myquery)) {
+//		SQLERR_LOG("无法插入角色背包额外数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
+//		return -1;
+//	}
+//
+//	return 0;
+//}
+
+static int db_insert_inv_ext1_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
+	memset(myquery, 0, sizeof(myquery));
+
+	// 插入玩家数据
+	_snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+		"guildcard, slot, change_time, "
+		"ext1_0, ext1_1, ext1_2, ext1_3, ext1_4, "
+		"ext1_5, ext1_6, ext1_7, ext1_8, ext1_9, "
+		"ext1_10, ext1_11, ext1_12, ext1_13, ext1_14, "
+		"ext1_15, ext1_16, ext1_17, ext1_18, ext1_19, "
+		"ext1_20, ext1_21, ext1_22, ext1_23, ext1_24, "
+		"ext1_25, ext1_26, ext1_27, ext1_28, ext1_29"
+		") VALUES ("
+		"'%" PRIu32 "', '%" PRIu8 "', NOW(), "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X'"
+		")",
+		CHARACTER_INVENTORY_ITEMS_EXT1,
+		gc, slot
+		, inv->iitems[0].extension_data1, inv->iitems[1].extension_data1, inv->iitems[2].extension_data1, inv->iitems[3].extension_data1, inv->iitems[4].extension_data1
+		, inv->iitems[5].extension_data1, inv->iitems[6].extension_data1, inv->iitems[7].extension_data1, inv->iitems[8].extension_data1, inv->iitems[9].extension_data1
+		, inv->iitems[10].extension_data1, inv->iitems[11].extension_data1, inv->iitems[12].extension_data1, inv->iitems[13].extension_data1, inv->iitems[14].extension_data1
+		, inv->iitems[15].extension_data1, inv->iitems[16].extension_data1, inv->iitems[17].extension_data1, inv->iitems[18].extension_data1, inv->iitems[19].extension_data1
+		, inv->iitems[20].extension_data1, inv->iitems[21].extension_data1, inv->iitems[22].extension_data1, inv->iitems[23].extension_data1, inv->iitems[24].extension_data1
+		, inv->iitems[25].extension_data1, inv->iitems[26].extension_data1, inv->iitems[27].extension_data1, inv->iitems[28].extension_data1, inv->iitems[29].extension_data1
+	);
+
+	if (psocn_db_real_query(&conn, myquery)) {
+		SQLERR_LOG("无法插入角色背包额外1数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int db_insert_inv_ext2_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
+	memset(myquery, 0, sizeof(myquery));
+
+	// 插入玩家数据
+	_snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+		"guildcard, slot, change_time, "
+		"ext2_0, ext2_1, ext2_2, ext2_3, ext2_4, "
+		"ext2_5, ext2_6, ext2_7, ext2_8, ext2_9, "
+		"ext2_10, ext2_11, ext2_12, ext2_13, ext2_14, "
+		"ext2_15, ext2_16, ext2_17, ext2_18, ext2_19, "
+		"ext2_20, ext2_21, ext2_22, ext2_23, ext2_24, "
+		"ext2_25, ext2_26, ext2_27, ext2_28, ext2_29"
+		") VALUES ("
+		"'%" PRIu32 "', '%" PRIu8 "', NOW(), "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X', "
+		"'%02X', '%02X', '%02X', '%02X', '%02X'"
+		")",
+		CHARACTER_INVENTORY_ITEMS_EXT2,
+		gc, slot
+		, inv->iitems[0].extension_data2, inv->iitems[1].extension_data2, inv->iitems[2].extension_data2, inv->iitems[3].extension_data2, inv->iitems[4].extension_data2
+		, inv->iitems[5].extension_data2, inv->iitems[6].extension_data2, inv->iitems[7].extension_data2, inv->iitems[8].extension_data2, inv->iitems[9].extension_data2
+		, inv->iitems[10].extension_data2, inv->iitems[11].extension_data2, inv->iitems[12].extension_data2, inv->iitems[13].extension_data2, inv->iitems[14].extension_data2
+		, inv->iitems[15].extension_data2, inv->iitems[16].extension_data2, inv->iitems[17].extension_data2, inv->iitems[18].extension_data2, inv->iitems[19].extension_data2
+		, inv->iitems[20].extension_data2, inv->iitems[21].extension_data2, inv->iitems[22].extension_data2, inv->iitems[23].extension_data2, inv->iitems[24].extension_data2
+		, inv->iitems[25].extension_data2, inv->iitems[26].extension_data2, inv->iitems[27].extension_data2, inv->iitems[28].extension_data2, inv->iitems[29].extension_data2
+	);
+
+	if (psocn_db_real_query(&conn, myquery)) {
+		SQLERR_LOG("无法插入角色背包额外1数据 (GC%" PRIu32 ":%" PRIu8 "槽)", gc, slot);
+		return -1;
+	}
+
+	return 0;
+}
 
 static int db_insert_inv_backup_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
@@ -61,11 +184,11 @@ static int db_insert_inv_backup_param(inventory_t* inv, uint32_t gc, uint8_t slo
 	// 插入玩家数据
 	_snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
 		"guildcard, slot, "
-		"item_count, hpmats_used, tpmats_used, language, inv_check_num, "
+		"item_count, hpmats_used, tpmats_used, language, inv_check_num, change_time, "
 		"inventory"
 		") VALUES ("
 		"'%" PRIu32 "', '%" PRIu8 "', "
-		"'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "','%" PRIu32 "', '"
+		"'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "','%" PRIu32 "', NOW(), '"
 		/*")"*/,
 		CHARACTER_INVENTORY_FULL_DATA,
 		gc, slot,
@@ -102,8 +225,46 @@ static int db_update_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'", gc, slot);
 
 	if (psocn_db_real_query(&conn, myquery)) {
-		//SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
+		SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
 		return -1;
+	}
+
+	return 0;
+}
+
+static int db_update_inv_ext_param(inventory_t* inv, uint32_t gc, uint8_t slot, int isext2) {
+	memset(myquery, 0, sizeof(myquery));
+	const char* filed = "ext1";
+	const char* tbl_nm = CHARACTER_INVENTORY_ITEMS_EXT1;
+
+	memset(myquery, 0, sizeof(myquery));
+
+	if (isext2) {
+		filed = "ext2";
+		tbl_nm = CHARACTER_INVENTORY_ITEMS_EXT2;
+	}
+
+	int i;
+	for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+		uint8_t ext_val = inv->iitems[i].extension_data1;
+		if (isext2) {
+			ext_val = inv->iitems[i].extension_data2;
+		}
+		snprintf(myquery, sizeof(myquery), "UPDATE %s SET %s_%d = '%02X' WHERE guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'"
+			, tbl_nm
+			, filed
+			, i
+			, ext_val
+			, gc
+			, slot
+		);
+
+		//DBG_LOG("extval 0x%02X", ext_val);
+
+		if (psocn_db_real_query(&conn, myquery)) {
+			SQLERR_LOG("无法更新角色背包额外%d 第%d数据 (GC%" PRIu32 ":%" PRIu8 "槽)", isext2 + 1, i, gc, slot);
+			return -1;
+		}
 	}
 
 	return 0;
@@ -157,12 +318,7 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
 	inv->tpmats_used = (uint8_t)strtoul(row[2], NULL, 10);
 	inv->language = (uint8_t)strtoul(row[3], NULL, 10);
 
-	if (inv->item_count == 0) {
-		SQLERR_LOG("保存的角色背包数据为 %d 件 (%" PRIu32 ": %u)", inv->item_count, gc, slot);
-		psocn_db_result_free(result);
-		return -4;
-	}
-	else if (inv->item_count > MAX_PLAYER_INV_ITEMS) {
+	if (inv->item_count > MAX_PLAYER_INV_ITEMS) {
 		inv->item_count = MAX_PLAYER_INV_ITEMS;
 	}
 
@@ -347,30 +503,49 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 
 	while ((row = psocn_db_result_fetch(result)) != NULL) {
 		if (!isEmptyInt((uint16_t)strtoul(row[4], &endptr, 16))) {
-			inv->iitems[k].present = (uint16_t)strtoul(row[4], &endptr, 16);
+			int i = 4;
+			inv->iitems[k].present = (uint16_t)strtoul(row[i], &endptr, 16);
+			i++;
 			//DBG_LOG("0x%04X", inv->iitems[k].present);
-			inv->iitems[k].flags = (uint32_t)strtoul(row[7], &endptr, 16);
+			inv->iitems[k].flags = (uint32_t)strtoul(row[i], &endptr, 16);
+			i++;
 			//DBG_LOG("0x%08X", inv->iitems[k].flags);
 
-			inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[8], &endptr, 16);
-			inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[9], &endptr, 16);
-			inv->iitems[k].data.datab[2] = (uint8_t)strtoul(row[10], &endptr, 16);
-			inv->iitems[k].data.datab[3] = (uint8_t)strtoul(row[11], &endptr, 16);
-			inv->iitems[k].data.datab[4] = (uint8_t)strtoul(row[12], &endptr, 16);
-			inv->iitems[k].data.datab[5] = (uint8_t)strtoul(row[13], &endptr, 16);
-			inv->iitems[k].data.datab[6] = (uint8_t)strtoul(row[14], &endptr, 16);
-			inv->iitems[k].data.datab[7] = (uint8_t)strtoul(row[15], &endptr, 16);
-			inv->iitems[k].data.datab[8] = (uint8_t)strtoul(row[16], &endptr, 16);
-			inv->iitems[k].data.datab[9] = (uint8_t)strtoul(row[17], &endptr, 16);
-			inv->iitems[k].data.datab[10] = (uint8_t)strtoul(row[18], &endptr, 16);
-			inv->iitems[k].data.datab[11] = (uint8_t)strtoul(row[19], &endptr, 16);
+			inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[4] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[5] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[6] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[7] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[8] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[9] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[10] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.datab[11] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
 
-			inv->iitems[k].data.item_id = (uint32_t)strtoul(row[20], &endptr, 16);
+			inv->iitems[k].data.item_id = (uint32_t)strtoul(row[i], &endptr, 16);
+			i++;
 
-			inv->iitems[k].data.data2b[0] = (uint8_t)strtoul(row[21], &endptr, 16);
-			inv->iitems[k].data.data2b[1] = (uint8_t)strtoul(row[22], &endptr, 16);
-			inv->iitems[k].data.data2b[2] = (uint8_t)strtoul(row[23], &endptr, 16);
-			inv->iitems[k].data.data2b[3] = (uint8_t)strtoul(row[24], &endptr, 16);
+			inv->iitems[k].data.data2b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.data2b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.data2b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+			i++;
+			inv->iitems[k].data.data2b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
 
 			k++;
 		}
@@ -393,7 +568,7 @@ static int db_get_char_inv_full_data(uint32_t gc, uint8_t slot, inventory_t* inv
 		tbl_nm = CHARACTER_INVENTORY_FULL_DATA;
 
 	/* Build the query asking for the data. */
-	sprintf(myquery, "SELECT full_data FROM "
+	sprintf(myquery, "SELECT inventory FROM "
 		"%s "
 		"WHERE "
 		"guildcard = '%" PRIu32 "'"
@@ -433,6 +608,74 @@ static int db_get_char_inv_full_data(uint32_t gc, uint8_t slot, inventory_t* inv
 	}
 
 	memcpy(&inv->item_count, row[0], sizeof(inventory_t));
+
+	psocn_db_result_free(result);
+
+	return 0;
+}
+
+static int db_get_char_ext_data(uint32_t gc, uint8_t slot, inventory_t* inv, int isext2) {
+	void* result;
+	char** row;
+	const char* tbl_nm = CHARACTER_INVENTORY_ITEMS_EXT1;
+
+	memset(myquery, 0, sizeof(myquery));
+
+	if (isext2)
+		tbl_nm = CHARACTER_INVENTORY_ITEMS_EXT2;
+
+	/* Build the query asking for the data. */
+	sprintf(myquery, "SELECT * FROM "
+		"%s "
+		"WHERE "
+		"guildcard = '%" PRIu32 "'"
+		" AND "
+		"slot = '%u'"
+		, tbl_nm
+		, gc
+		, slot
+	);
+
+	if (psocn_db_real_query(&conn, myquery)) {
+		SQLERR_LOG("无法查询角色背包额外%d数据 (GC%" PRIu32 ":%" PRIu8 "槽)", isext2 + 1, gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -1;
+	}
+
+	/* Grab the data we got. */
+	if ((result = psocn_db_result_store(&conn)) == NULL) {
+		SQLERR_LOG("未获取到角色背包额外%d数据 (GC%" PRIu32 ":%" PRIu8 "槽)", isext2 + 1, gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -2;
+	}
+
+	if ((row = psocn_db_result_fetch(result)) == NULL) {
+		psocn_db_result_free(result);
+		SQLERR_LOG("未找到保存的角色背包额外%d数据 (GC%" PRIu32 ":%" PRIu8 "槽)", isext2 + 1, gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -3;
+	}
+
+	if (isPacketEmpty(row[0], sizeof(inventory_t))) {
+		psocn_db_result_free(result);
+
+		SQLERR_LOG("保存的角色背包额外%d数据为空 (GC%" PRIu32 ":%" PRIu8 "槽)", isext2 + 1, gc, slot);
+		return -4;
+	}
+
+	int i2 = 3;
+	for (int i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+		if (!isext2) {
+			inv->iitems[i].extension_data1 = (uint8_t)strtoul(row[i2], NULL, 16);
+			//DBG_LOG("EXT1 0x%02X", inv->iitems[i].extension_data1);
+		}
+		else {
+			inv->iitems[i].extension_data2 = (uint8_t)strtoul(row[i2], NULL, 16);
+			//DBG_LOG("EXT2 0x%02X", inv->iitems[i].extension_data2);
+		}
+
+		i2++;
+	}
 
 	psocn_db_result_free(result);
 
@@ -537,8 +780,17 @@ void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
 int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	size_t i = 0;
 
-	if (db_insert_inv_param(inv, gc, slot))
+	if (db_insert_inv_param(inv, gc, slot)) {
 		db_update_inv_param(inv, gc, slot);
+	}
+
+	if (db_insert_inv_ext1_param(inv, gc, slot)) {
+		db_update_inv_ext_param(inv, gc, slot, 0);
+	}
+
+	if (db_insert_inv_ext2_param(inv, gc, slot)) {
+		db_update_inv_ext_param(inv, gc, slot, 1);
+	}
 
 	// 遍历背包数据，插入到数据库中
 	for (i; i < inv->item_count; i++) {
@@ -568,8 +820,18 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	db_insert_inv_backup_param(inv, gc, slot);
 
 	if (db_update_inv_param(inv, gc, slot)) {
-		SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
+		SQLERR_LOG("无法更新(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
 		return -1;
+	}
+
+	if (db_update_inv_ext_param(inv, gc, slot, 0)) {
+		SQLERR_LOG("无法更新(GC%" PRIu32 ":%" PRIu8 "槽)角色背包额外1参数数据", gc, slot);
+		return -2;
+	}
+
+	if (db_update_inv_ext_param(inv, gc, slot, 1)) {
+		SQLERR_LOG("无法更新(GC%" PRIu32 ":%" PRIu8 "槽)角色背包额外2参数数据", gc, slot);
+		return -3;
 	}
 
 	// 遍历背包数据，插入到数据库中
@@ -577,7 +839,7 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 		if (db_insert_inv_items(&inv->iitems[i], gc, slot, i)) {
 			if (db_update_inv_items(&inv->iitems[i], gc, slot, i)) {
 				SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数据", gc, slot);
-				return -1;
+				return -4;
 			}
 		}
 	}
@@ -585,7 +847,7 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	clean_up_char_inv(inv, ic, MAX_PLAYER_INV_ITEMS);
 
 	if (db_del_inv_items(gc, slot, ic, MAX_PLAYER_INV_ITEMS))
-		return -1;
+		return -5;
 
 	return 0;
 }
@@ -621,18 +883,22 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, psocn_bb_char_t* character, int c
 					}
 				}
 			}
-
 		}
+	} else {
+		inv->item_count = db_get_char_inv_itemdata(gc, slot, inv);
 
-		return 0;
+		clean_up_char_inv(inv, inv->item_count, MAX_PLAYER_INV_ITEMS);
+
+		if (db_del_inv_items(gc, slot, inv->item_count, MAX_PLAYER_INV_ITEMS))
+			return -1;
 	}
 
-	inv->item_count = db_get_char_inv_itemdata(gc, slot, inv);
+	if (db_get_char_ext_data(gc, slot, inv, 0))
+		db_insert_inv_ext1_param(inv, gc, slot);
 
-	clean_up_char_inv(inv, inv->item_count, MAX_PLAYER_INV_ITEMS);
 
-	if (db_del_inv_items(gc, slot, inv->item_count, MAX_PLAYER_INV_ITEMS))
-		return -1;
+	if (db_get_char_ext_data(gc, slot, inv, 1))
+		db_insert_inv_ext2_param(inv, gc, slot);
 
 	return 0;
 }

@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #define TECHNIQUE_UNLEARN           0xFF
+#define TECHNIQUE_V1_MAX_LEVEL      0x0E
 
 /* 科技函数ID */
 /* 火球术 */

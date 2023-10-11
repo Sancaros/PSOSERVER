@@ -3009,7 +3009,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        if (get_technique_level(character, i) == TECHNIQUE_UNLEARN) {
+        if (get_technique_level(&character->technique_levels_v1, &character->inv, i) == TECHNIQUE_UNLEARN) {
 #ifdef DEBUG
             DBG_LOG("GC %u:%u 法术 %s 等级 %d 为 0xFF!"
                 , gc
@@ -3020,16 +3020,18 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
             continue;
         }
 
-        if (get_technique_level(character, i) + 1 > get_bb_max_tech_level(ch_class, i)) {
+        if (get_technique_level(&character->technique_levels_v1, &character->inv, i) >= get_bb_max_tech_level(ch_class, i)) {
             /* 移除不合规的法术 */
-            ERR_LOG("GC %u:%u 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
+#ifdef DEBUG
+            DBG_LOG("GC %u:%u 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
                 , gc
                 , slot
-                , get_technique_comment(i), get_technique_level(character, i) + 1
+                , get_technique_comment(i), show_technique_level(character, i)
                 , get_bb_max_tech_level(ch_class, i)
                 , get_bb_max_tech_level(ch_class, i)
             );
-            set_technique_level(character, i, get_bb_max_tech_level(ch_class, i));
+#endif // DEBUG
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, get_bb_max_tech_level(ch_class, i));
         }
     }
 

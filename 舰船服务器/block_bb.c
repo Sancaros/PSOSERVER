@@ -2289,29 +2289,7 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     //}
 
     /* 检测玩家的魔法是否合规 */
-    if (!char_class_is_android(src->equip_flags)) {
-        for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            if (get_technique_level(&src->bb_pl->character, i) == TECHNIQUE_UNLEARN)
-                continue;
-
-            if (get_technique_level(&src->bb_pl->character, i) + 1 > get_bb_max_tech_level(src, i)) {
-                /* 移除不合规的法术 */
-                ERR_LOG("%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
-                    , get_player_describe(src)
-                    , get_technique_comment(i), get_technique_level(&src->bb_pl->character, i) + 1
-                    , get_bb_max_tech_level(src, i)
-                    , get_bb_max_tech_level(src, i)
-                );
-                set_technique_level(&src->bb_pl->character, i, get_bb_max_tech_level(src, i));
-            }
-        }
-    }
-    else {
-        /* 清除机器人的魔法 */
-        for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            set_technique_level(&src->bb_pl->character, i, TECHNIQUE_UNLEARN);
-        }
-    }
+    fix_player_max_tech_level(&src->bb_pl->character);
 
     if (!src->mode) {
 #ifdef DEBUG
