@@ -190,20 +190,7 @@ int db_get_char_techniques(uint32_t gc, uint8_t slot, psocn_bb_char_t* character
     if (row != NULL) {
         int i2 = 2;
         for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            uint8_t tmp_level = 0xFF;
-            tmp_level = (uint8_t)strtoul(row[i2], NULL, 16);
-            if (tmp_level == 0xFF) {
-                character->technique_levels_v1.all[i] = 0xFF;
-                character->inv.iitems[i].extension_data1 = 0x00;
-            }
-            else if (tmp_level <= 0x0E) {
-                character->technique_levels_v1.all[i] = tmp_level;
-                character->inv.iitems[i].extension_data1 = 0x00;
-            }
-            else {
-                character->technique_levels_v1.all[i] = 0x0E;
-                character->inv.iitems[i].extension_data1 = tmp_level - 0x0E;
-            }
+            set_technique_level(character, i, (uint8_t)strtoul(row[i2], NULL, 16));
 
             i2++;
         }
