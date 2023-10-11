@@ -79,7 +79,7 @@ typedef struct lobby_item {
     TAILQ_ENTRY(lobby_item) qentry;
 
     // lobby item info
-    iitem_t iitem;
+    item_t item;
     float x;
     float z;
     uint8_t area;

@@ -410,14 +410,11 @@ inline void print_iitem_data(const iitem_t* iitem, int item_index, int version) 
 	ITEM_LOG(""
 		"槽位 (%d) "
 		"(%s) %04X "
-		"鉴定 %d %d"
 		"(%s) "
 		"Flags %08X",
 		item_index,
 		((iitem->present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
 		iitem->present,
-		iitem->extension_data1,
-		iitem->extension_data2,
 		((iitem->flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
 		iitem->flags
 	);

@@ -268,8 +268,8 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	size_t result_index = find_result_index(primary_identifier(&character->inv.iitems[feed_item_index].data));
 
 	if (should_delete_item) {
-		iitem_t delete_item = remove_iitem(src, feed_item_id, 1, src->version != CLIENT_VERSION_BB);
-		if (item_not_identification_bb(delete_item.data.datal[0], delete_item.data.datal[1])) {
+		item_t delete_item = remove_invitem(src, feed_item_id, 1, src->version != CLIENT_VERSION_BB);
+		if (item_not_identification_bb(delete_item.datal[0], delete_item.datal[1])) {
 			ERR_LOG("%s É¾³ý ID 0x%08X Ê§°Ü", get_player_describe(src), feed_item_id);
 			err = -5;
 		}

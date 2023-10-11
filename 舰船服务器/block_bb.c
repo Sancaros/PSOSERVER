@@ -1860,7 +1860,6 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     uint32_t target_client_id = pkt->target_client_id;
     uint16_t trade_item_count = pkt->item_count;
     uint32_t item_amount = 0;
-    int add_done = 0;
 
     if (!l || l->type != LOBBY_TYPE_GAME) {
         ERR_LOG("%s 不在游戏或房间中", get_player_describe(src));
@@ -1897,8 +1896,8 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     if (trade_item_count > 0) {
         src_trade->trade_item_count = trade_item_count;
         for (size_t x = 0; x < src_trade->trade_item_count; x++) {
-            src_trade->iitems[x].data = pkt->items[x];
-            item_t* ti = &src_trade->iitems[x].data;
+            src_trade->items[x] = pkt->items[x];
+            item_t* ti = &src_trade->items[x];
             if (src->version == CLIENT_VERSION_GC)
                 bswap_data2_if_mag(ti);
 
@@ -1918,28 +1917,27 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
             uint32_t item_id = ti->item_id;
 
             /* 客户端已经自动移除该物品 所以这里只需要进行内存操作即可 */
-            iitem_t iitem = remove_iitem(src, item_id, item_amount, src->version != CLIENT_VERSION_BB);
-            if (item_not_identification_bb(iitem.data.datal[0], iitem.data.datal[1])) {
+            item_t item = remove_invitem(src, item_id, item_amount, src->version != CLIENT_VERSION_BB);
+            if (item_not_identification_bb(item.datal[0], item.datal[1])) {
                 pthread_mutex_unlock(&l->mutex);
                 ERR_LOG("%s 交易物品失败!",
                     get_player_describe(src));
                 return -2;
             }
 
-            if (iitem.data.datab[0] != 0x04) {
-                iitem.data.item_id = generate_item_id(l, dest->client_id);
-                remove_titem_equip_flags(&iitem);
+            if (item.datab[0] != ITEM_TYPE_MESETA) {
+                item.item_id = generate_item_id(l, dest->client_id);
             }
 
-            if (!(add_done = add_iitem(dest, iitem))) {
+            if (!add_invitem(dest, item)) {
                 pthread_mutex_unlock(&l->mutex);
                 ERR_LOG("%s 获取交易物品失败! 错误码 %d",
-                    get_player_describe(dest), add_done);
+                    get_player_describe(dest));
                 return -3;
             }
 
             /* 新增内存后 需要给接收的客户端一个物品获取 就像拾取一样 */
-            subcmd_send_bb_create_inv_item(dest, iitem.data, item_amount);
+            subcmd_send_bb_create_inv_item(dest, item, item_amount);
         }
     }
 

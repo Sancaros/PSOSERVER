@@ -2487,7 +2487,7 @@ static int check_and_send_bb_lobby(ship_client_t* dest, lobby_t* l, uint32_t ite
 	lt = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
 	if (!lt)
 		return 0;
-	rv = subcmd_send_lobby_bb_drop_item(dest, NULL, req, &lt->iitem);
+	rv = subcmd_send_lobby_bb_drop_item(dest, NULL, req, &lt->item);
 	pthread_mutex_unlock(&dest->mutex);
 
 	return rv;
@@ -2523,7 +2523,7 @@ static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
 	lt = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
 	if (!lt)
 		return 0;
-	rv = subcmd_send_bb_drop_item(dest, req, &lt->iitem);
+	rv = subcmd_send_bb_drop_item(dest, req, &lt->item);
 	pthread_mutex_unlock(&dest->mutex);
 
 	return rv;

@@ -727,7 +727,7 @@ static int handle_item(ship_client_t* src, const char* params) {
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
-        idata = litem->iitem.data;
+        idata = litem->item;
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
@@ -907,7 +907,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
-        idata = litem->iitem.data;
+        idata = litem->item;
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
@@ -950,14 +950,11 @@ static void dumpinv_internal(ship_client_t* src) {
             GM_LOG(""
                 "槽位 (%d) "
                 "(%s) %04X "
-                "鉴定 %d %d"
                 "(%s) "
                 "Flags %08X",
                 i,
                 ((character_v1->inv.iitems[i].present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
                 character_v1->inv.iitems[i].present,
-                character_v1->inv.iitems[i].extension_data1,
-                character_v1->inv.iitems[i].extension_data2,
                 ((character_v1->inv.iitems[i].flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
                 character_v1->inv.iitems[i].flags
             );
@@ -988,14 +985,11 @@ static void dumpinv_internal(ship_client_t* src) {
             GM_LOG(""
                 "槽位 (%d) "
                 "(%s) %04X "
-                "鉴定 %d %d"
                 "(%s) "
                 "Flags %08X",
                 i,
                 ((character_bb->inv.iitems[i].present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
                 character_bb->inv.iitems[i].present,
-                character_bb->inv.iitems[i].extension_data1,
-                character_bb->inv.iitems[i].extension_data2,
                 ((character_bb->inv.iitems[i].flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
                 character_bb->inv.iitems[i].flags
             );
@@ -1040,7 +1034,7 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
         GM_LOG("------------------------------------------------------------");
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
             GM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
-            print_iitem_data(&j->iitem, find_litem_index(l, &j->iitem.data), src->version);
+            print_item_data(&j->item, src->version);
         }
         GM_LOG("------------------------------------------------------------");
 

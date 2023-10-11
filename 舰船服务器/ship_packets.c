@@ -12497,7 +12497,7 @@ int send_bb_execute_item_trade(ship_client_t* c, trade_inv_t* tinv) {
     pkt->target_client_id = c->client_id;
     pkt->item_count = tinv->trade_item_count;
     for (size_t x = 0; x < tinv->trade_item_count; x++) {
-        pkt->items[x] = tinv->iitems[x].data;
+        pkt->items[x] = tinv->items[x];
         if (c->version == CLIENT_VERSION_GC) {
             bswap_data2_if_mag(&pkt->items[x]);
         }

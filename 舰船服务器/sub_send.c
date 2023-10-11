@@ -85,13 +85,13 @@ int subcmd_send_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, litem_t*
     bb.x = dc.x = litem->x;
     bb.z = dc.z = litem->z;
 
-    bb.data = dc.data = litem->iitem.data;
+    bb.data = dc.data = litem->item;
 
-    if (litem->iitem.data.datab[0] == ITEM_TYPE_MESETA)
-        bb.data.data2l = dc.data.data2l = litem->iitem.data.data2l;
+    if (litem->item.datab[0] == ITEM_TYPE_MESETA)
+        bb.data.data2l = dc.data.data2l = litem->item.data2l;
 
-    if (is_stackable(&litem->iitem.data))
-        bb.data.datab[5] = dc.data.datab[5] = litem->iitem.data.datab[5];
+    if (is_stackable(&litem->item))
+        bb.data.datab[5] = dc.data.datab[5] = litem->item.datab[5];
 
     bb.two = dc.two = LE32(0x00000002);
 
@@ -208,13 +208,13 @@ int subcmd_send_lobby_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, sh
     bb.x = dc.x = litem->x;
     bb.z = dc.z = litem->z;
 
-    bb.data = dc.data = litem->iitem.data;
+    bb.data = dc.data = litem->item;
 
-    if (litem->iitem.data.datab[0] == ITEM_TYPE_MESETA)
-        bb.data.data2l = dc.data.data2l = litem->iitem.data.data2l;
+    if (litem->item.datab[0] == ITEM_TYPE_MESETA)
+        bb.data.data2l = dc.data.data2l = litem->item.data2l;
 
-    if (is_stackable(&litem->iitem.data))
-        bb.data.datab[5] = dc.data.datab[5] = litem->iitem.data.datab[5];
+    if (is_stackable(&litem->item))
+        bb.data.datab[5] = dc.data.datab[5] = litem->item.datab[5];
 
     bb.two = dc.two = LE32(0x00000002);
 
@@ -459,11 +459,11 @@ int subcmd_send_lobby_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* charac
     }
 
     if (drop) {
-        iitem_t tmp_meseta = { 0 };
-        tmp_meseta.data.datal[0] = LE32(Item_Meseta);
-        tmp_meseta.data.datal[1] = tmp_meseta.data.datal[2] = 0;
-        tmp_meseta.data.item_id = generate_item_id(l, c->client_id);
-        tmp_meseta.data.data2l = amount;
+        item_t tmp_meseta = { 0 };
+        tmp_meseta.datal[0] = LE32(Item_Meseta);
+        tmp_meseta.datal[1] = tmp_meseta.datal[2] = 0;
+        tmp_meseta.item_id = generate_item_id(l, c->client_id);
+        tmp_meseta.data2l = amount;
 
         /* 当获得物品... 将其新增入房间物品背包. */
         litem_t* li_meseta = add_litem_locked(l, &tmp_meseta, c->drop_area, c->x, c->z);
@@ -572,7 +572,7 @@ int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, shi
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP 怪物掉落物品 */
-int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const iitem_t* item) {
+int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const item_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
@@ -594,19 +594,19 @@ int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, cons
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.datal[0] = LE32(item->data.datal[0]);
-    gen.data.item.datal[1] = LE32(item->data.datal[1]);
-    gen.data.item.datal[2] = LE32(item->data.datal[2]);
-    gen.data.item.data2l = LE32(item->data.data2l);
+    gen.data.item.datal[0] = LE32(item->datal[0]);
+    gen.data.item.datal[1] = LE32(item->datal[1]);
+    gen.data.item.datal[2] = LE32(item->datal[2]);
+    gen.data.item.data2l = LE32(item->data2l);
 
-    gen.data.item.item_id = LE32(item->data.item_id);
+    gen.data.item.item_id = LE32(item->item_id);
 
     /* Send the packet to every client in the lobby. */
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)&gen);
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const iitem_t* item) {
+int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const item_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
     lobby_t* l = src->cur_lobby;
@@ -632,7 +632,7 @@ int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, su
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
+int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const item_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
@@ -657,12 +657,12 @@ int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, co
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.datal[0] = LE32(item->data.datal[0]);
-    gen.data.item.datal[1] = LE32(item->data.datal[1]);
-    gen.data.item.datal[2] = LE32(item->data.datal[2]);
-    gen.data.item.data2l = LE32(item->data.data2l);
+    gen.data.item.datal[0] = LE32(item->datal[0]);
+    gen.data.item.datal[1] = LE32(item->datal[1]);
+    gen.data.item.datal[2] = LE32(item->datal[2]);
+    gen.data.item.data2l = LE32(item->data2l);
 
-    gen.data.item.item_id = LE32(item->data.item_id);
+    gen.data.item.item_id = LE32(item->item_id);
 
     /* Send the packet to every client in the lobby. */
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);

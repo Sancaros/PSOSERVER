@@ -65,8 +65,6 @@ bool create_tmp_item(const uint32_t* item, size_t item_size, item_t* tmp_item) {
 /* 初始化玩家背包数据 */
 void clear_iitem(iitem_t* iitem) {
 	iitem->present = 0;
-	iitem->extension_data1 = 0;
-	iitem->extension_data2 = 0;
 	iitem->flags = 0;
 	clear_inv_item(&iitem->data);
 }

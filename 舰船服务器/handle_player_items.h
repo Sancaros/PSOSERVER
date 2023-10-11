@@ -40,9 +40,9 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c);
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
 litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
-litem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, float z);
+litem_t* add_litem_locked(lobby_t* l, item_t* item, uint8_t area, float x, float z);
 
-int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
+int remove_litem_locked(lobby_t* l, uint32_t item_id, item_t* rv);
 
 /* 获取大厅中目标物品所在槽位 */
 size_t find_litem_index(lobby_t* l, item_t* item);
@@ -57,10 +57,10 @@ int find_iitem_index(const inventory_t* inv, const uint32_t item_id);
 int find_titem_index(const trade_inv_t* trade, const uint32_t item_id);
 int check_titem_id(const trade_inv_t* trade, const uint32_t item_id);
 int find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id);
-size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* iitem);
+size_t find_iitem_stack_item_id(const inventory_t* inv, const item_t* item);
 size_t find_iitem_code_stack_item_id(const inventory_t* inv, const uint32_t code);
-size_t find_iitem_pid(const inventory_t* inv, const iitem_t* iitem);
-int find_iitem_pid_index(const inventory_t* inv, const iitem_t* iitem);
+size_t find_iitem_pid(const inventory_t* inv, const item_t* iitem);
+int find_iitem_pid_index(const inventory_t* inv, const item_t* iitem);
 int find_equipped_weapon(const inventory_t* inv);
 int find_equipped_armor(const inventory_t* inv);
 int find_equipped_mag(const inventory_t* inv);
@@ -73,11 +73,11 @@ int remove_character_meseta(psocn_bb_char_t* character, uint32_t amount, bool al
 
 /* 移除背包物品操作 */
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
-iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
-iitem_t remove_titem(trade_inv_t* trade, uint32_t item_id, uint32_t amount);
+item_t remove_invitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
+item_t remove_titem(trade_inv_t* trade, uint32_t item_id, uint32_t amount);
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount);
-bool add_iitem(ship_client_t* src, const iitem_t iitem);
-bool add_titem(trade_inv_t* trade, const iitem_t iitem);
+bool add_invitem(ship_client_t* src, const item_t item);
+bool add_titem(trade_inv_t* trade, const item_t iitem);
 bool add_bitem(ship_client_t* src, const bitem_t bitem);
 int player_use_item(ship_client_t* src, uint32_t item_id);
 int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);
@@ -86,7 +86,7 @@ int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);
 int initialize_cmode_iitem(ship_client_t* dest);
 
 /* 蓝色脉冲物品管理 */
-iitem_t player_iitem_init(const item_t item);
+//iitem_t player_iitem_init(const item_t item);
 trade_inv_t* player_tinv_init(ship_client_t* src);
 bitem_t player_bitem_init(const item_t item);
 void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);

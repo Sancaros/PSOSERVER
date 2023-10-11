@@ -77,7 +77,7 @@ typedef struct trade_inv {
     uint32_t meseta;
     uint32_t trade_item_count;
     uint32_t item_ids[0x20];
-    iitem_t iitems[0x20];
+    item_t items[0x20];
 } trade_inv_t;
 
 struct Pair {
