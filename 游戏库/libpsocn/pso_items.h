@@ -95,7 +95,16 @@ static uint8_t class_equip_flags[12] = {
 #define ITEM_SUBTYPE_SCAPE_DOLL         0x09 /* 1  ¶Ñµþ */
 
 #define ITEM_SUBTYPE_GRINDER            0x0A /* 99 ¶Ñµþ */
+/////////////////////////////////////////////////////////////////
 #define ITEM_SUBTYPE_MATERIAL           0x0B /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_POWER     0x00 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_MIND      0x01 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_EVADE     0x02 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_HP	    0x03 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_TP	    0x04 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_DEF	    0x05 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_LUCK	    0x06 /* 99 ¶Ñµþ */
+/////////////////////////////////////////////////////////////////
 #define ITEM_SUBTYPE_MAG_CELL1          0x0C /* 99 ¶Ñµþ */
 #define ITEM_SUBTYPE_MONSTER_LIMBS      0x0D /* 99 ¶Ñµþ */
 #define ITEM_SUBTYPE_MAG_CELL2          0x0E /* 99 ¶Ñµþ */

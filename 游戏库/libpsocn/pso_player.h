@@ -156,6 +156,16 @@ typedef union {
     bb_player_t bb;
 } player_t;
 
+typedef enum {
+    MATERIAL_HP = -2,
+    MATERIAL_TP = -1,
+    MATERIAL_POWER = 0,
+    MATERIAL_MIND = 1,
+    MATERIAL_EVADE = 2,
+    MATERIAL_DEF = 3,
+    MATERIAL_LUCK = 4
+} MaterialType;
+
 bool char_class_is_male(uint8_t equip_flags);
 
 bool char_class_is_female(uint8_t equip_flags);
@@ -177,5 +187,13 @@ static char player_name[24];
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src);
 
 char* get_player_name(player_t* pl, int version, bool raw);
+
+void set_technique_level(psocn_bb_char_t* character, uint8_t which, uint8_t level);
+
+uint8_t get_technique_level(psocn_bb_char_t* character, uint8_t which);
+
+uint8_t get_material_usage(psocn_bb_char_t* character, MaterialType which);
+
+void set_material_usage(psocn_bb_char_t* character, MaterialType which, uint8_t usage);
 
 #endif /* !PLAYER_H */

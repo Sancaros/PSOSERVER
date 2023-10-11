@@ -113,3 +113,82 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 
 	return player_name;
 }
+
+void set_technique_level(psocn_bb_char_t* character, uint8_t which, uint8_t level) {
+	if (level == 0xFF) {
+		character->technique_levels_v1.all[which] = 0xFF;
+		character->inv.iitems[which].extension_data1 = 0x00;
+	}
+	else if (level <= 0x0E) {
+		character->technique_levels_v1.all[which] = level;
+		character->inv.iitems[which].extension_data1 = 0x00;
+	}
+	else {
+		character->technique_levels_v1.all[which] = 0x0E;
+		character->inv.iitems[which].extension_data1 = level - 0x0E;
+	}
+}
+
+uint8_t get_technique_level(psocn_bb_char_t* character, uint8_t which) {
+	return (character->technique_levels_v1.all[which] == 0xFF)
+		? 0xFF
+		: (character->technique_levels_v1.all[which] + character->inv.iitems[which].extension_data1);
+}
+
+uint8_t get_material_usage(psocn_bb_char_t* character, MaterialType which) {
+	if (character) {
+
+		switch (which) {
+		case MATERIAL_HP:
+			return character->inv.hpmats_used;
+
+		case MATERIAL_TP:
+			return character->inv.tpmats_used;
+
+		case MATERIAL_POWER:
+		case MATERIAL_MIND:
+		case MATERIAL_EVADE:
+		case MATERIAL_DEF:
+		case MATERIAL_LUCK:
+			return character->inv.iitems[8 + (uint8_t)which].extension_data2;
+
+		default:
+			ERR_LOG("玩家吃药类型不支持 %d", which);
+			return 0xFF;
+		}
+	}
+	else {
+		ERR_LOG("玩家数据不存在");
+		return 0;
+	}
+
+}
+
+void set_material_usage(psocn_bb_char_t* character, MaterialType which, uint8_t usage) {
+	if (character) {
+
+		switch (which) {
+		case MATERIAL_HP:
+			character->inv.hpmats_used = usage;
+			break;
+
+		case MATERIAL_TP:
+			character->inv.tpmats_used = usage;
+			break;
+
+		case MATERIAL_POWER:
+		case MATERIAL_MIND:
+		case MATERIAL_EVADE:
+		case MATERIAL_DEF:
+		case MATERIAL_LUCK:
+			character->inv.iitems[8 + (uint8_t)which].extension_data2 = usage;
+			break;
+
+		default:
+			ERR_LOG("玩家吃药类型不支持 %d", which);
+		}
+	}
+	else {
+		ERR_LOG("玩家数据不存在");
+	}
+}

@@ -838,7 +838,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->dress_data.prop_x = sp->character.dress_data.prop_x;
     c->dress_data.prop_y = sp->character.dress_data.prop_y;
     memcpy(c->config, sp->character.config, sizeof(sp->character.config));
-    memcpy(&c->tech, &sp->character.tech, sizeof(sp->character.tech));
+    memcpy(&c->technique_levels_v1, &sp->character.technique_levels_v1, sizeof(sp->character.technique_levels_v1));
 
     /* Copy the name over */
     c->name.name_tag = LE16('\t');
@@ -905,7 +905,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.dress_data.prop_x = sp->dress_data.prop_x;
     c->character.dress_data.prop_y = sp->dress_data.prop_y;
     memcpy(c->character.config, sp->config, sizeof(c->character.config));
-    memcpy(&c->character.tech, &sp->tech, sizeof(sp->tech));
+    memcpy(&c->character.technique_levels_v1, &sp->technique_levels_v1, sizeof(sp->technique_levels_v1));
 
     /* Copy the name over */
     removeWhitespace_w(sp->name.char_name);

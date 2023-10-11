@@ -140,6 +140,7 @@ static command_t cmds[] = {
     { "bank"     , handle_bank          },
     { "qr"       , handle_quick_return  },
     { "lb"       , handle_lobby         },
+    { "matuse"   , handle_matuse        },
     { ""         , NULL                 }     /* End marker -- DO NOT DELETE */
 };
 

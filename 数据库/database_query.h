@@ -134,13 +134,7 @@ int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot);
 int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot);
 
 /* 获取玩家角色背包数据数据项 */
-int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check);
-
-/* 优先获取背包数据库中的数量 */
-uint8_t db_get_char_inv_item_count(uint32_t gc, uint8_t slot);
-
-/* 获取玩家背包数据checkum */
-uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot);
+int db_get_char_inv(uint32_t gc, uint8_t slot, psocn_bb_char_t* character, int check);
 
 ///////////////////////////////////////////////////////
 //玩家银行数据库操作
@@ -300,9 +294,9 @@ int db_get_char_tech_menu(uint32_t gc, uint8_t slot, uint8_t* tech_menu, int che
 
 ////////////////////////////////////////////////////////////////
 
-int db_get_char_techniques(uint32_t gc, uint8_t slot, techniques_t* tech_data, int check);
+int db_get_char_techniques(uint32_t gc, uint8_t slot, psocn_bb_char_t* character, int check);
 
-int db_update_char_techniques(techniques_t tech_data, uint32_t gc, uint32_t slot, uint32_t flag);
+int db_update_char_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t slot, uint32_t flag);
 
 ////////////////////////////////////////////////////////////////
 

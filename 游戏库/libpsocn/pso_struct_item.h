@@ -105,23 +105,45 @@ typedef struct item_data {
 //存储跨这些结构条带化的字节数组。在newserv中，我们调用
 //那些字段extension_data。它们包含：
 //items[0]。extension_data1到items[19]。extension_data1：
-//扩展的技术水平。v1_technique_levels数组中的值
+//扩展的技术水平。technique_levels_v1数组中的值
 //只有14级（技术等级15）；如果玩家有以上技术
 //级别15，相应的extension_data1字段保存剩余的
-//等级（因此，一个20级的技术在v1_technique_levels中有14个和5个
+//等级（因此，一个20级的技术将在technique_levels_v1和5中有14个
 //在对应项目的extension_data1字段中）。
 //items[0]。extension_data2到items[3]。extension_data2：
-//PSOGCCharacterFile:：Character中称为unknown_a1的值
-//结构。请参阅SaveFileFormats.hh。
+//PSOGCCharacterFile:：Character结构中的flags字段；看见
+//SaveFileFormats.hh获取详细信息。
 //items[4]。extension_data2到items[7]。extension_data2：
 //上次保存字符时的时间戳，以秒为单位
 //2000年1月1日。存储了小endian，所以items[4]包含LSB。
-//items[8].extension_data2到items[12].extension _data2：
+//items[8].exextension_data2到items[12].exextension _data2：
 //力量材料、心理材料、躲避材料、def的数量
 //材料和玩家（分别）使用的运气材料。
 //items[13]。extension_data2到items[15]。extension_data2：
 //未知。这些不是一个数组，但看起来确实是相关的。
-
+// PSO V2 stored some extra data in the character structs in a format that I'm
+// sure Sega thought was very clever for backward compatibility, but for us is
+// just plain annoying. Specifically, they used the third and fourth bytes of
+// the InventoryItem struct to store some things not present in V1. The game
+// stores arrays of bytes striped across these structures. In newserv, we call
+// those fields extension_data. They contain:
+//   items[0].extension_data1 through items[19].extension_data1:
+//       Extended technique levels. The values in the technique_levels_v1 array
+//       only go up to 14 (tech level 15); if the player has a technique above
+//       level 15, the corresponding extension_data1 field holds the remaining
+//       levels (so a level 20 tech would have 14 in technique_levels_v1 and 5
+//       in the corresponding item's extension_data1 field).
+//   items[0].extension_data2 through items[3].extension_data2:
+//       The flags field from the PSOGCCharacterFile::Character struct; see
+//       SaveFileFormats.hh for details.
+//   items[4].extension_data2 through items[7].extension_data2:
+//       The timestamp when the character was last saved, in seconds since
+//       January 1, 2000. Stored little-endian, so items[4] contains the LSB.
+//   items[8].extension_data2 through items[12].extension_data2:
+//       Number of power materials, mind materials, evade materials, def
+//       materials, and luck materials (respectively) used by the player.
+//   items[13].extension_data2 through items[15].extension_data2:
+//       Unknown. These are not an array, but do appear to be related.
 /* 28 字节 */
 typedef struct psocn_iitem {
     uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用

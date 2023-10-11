@@ -2984,22 +2984,23 @@ uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech) {
 static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)pkt->pkt;
     psocn_bb_full_char_t* full_char = &full_data_pkt->data;
+    psocn_bb_char_t* character = &full_data_pkt->data.character;
     uint32_t slot = pkt->fw_flags, gc = ntohl(pkt->guildcard);
-    char char_class_name_text[64];
+    uint8_t ch_class = full_char->character.dress_data.ch_class;
 
 #ifdef DEBUG
     DBG_LOG("GC %u:%u ch_class %d %s 角色数据如下", gc, slot, full_data_pkt->data.gc.char_class, pso_class[full_data_pkt->data.gc.char_class].cn_name);
     print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
-    if (isPacketEmpty(full_char->character.dress_data.gc_string, sizeof(full_char->character.dress_data.gc_string))) {
-        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数据有误 %s", gc, slot, full_char->character.dress_data.gc_string);
+    if (isPacketEmpty(character->dress_data.gc_string, sizeof(character->dress_data.gc_string))) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数据有误 %s", gc, slot, character->dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    if (db_update_char_inv(&full_char->character.inv, gc, slot)) {
+    if (db_update_char_inv(&character->inv, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家背包数据 (GC %"
@@ -3008,7 +3009,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        if (full_char->character.tech.all[i] == 0xFF) {
+        if (get_technique_level(character, i) == TECHNIQUE_UNLEARN) {
 #ifdef DEBUG
             DBG_LOG("GC %u:%u 法术 %s 等级 %d 为 0xFF!"
                 , gc
@@ -3019,19 +3020,20 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
             continue;
         }
 
-        if (full_char->character.tech.all[i] + 1 > get_bb_max_tech_level(full_char->character.dress_data.ch_class, i)) {
-            full_char->character.tech.all[i] = 0xFF;
+        if (get_technique_level(character, i) + 1 > get_bb_max_tech_level(ch_class, i)) {
             /* 移除不合规的法术 */
-            ERR_LOG("GC %u:%u 法术 %s 等级 %d 高于 %d, 修正为 0 级!"
+            ERR_LOG("GC %u:%u 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
                 , gc
                 , slot
-                , get_technique_comment(i), full_char->character.tech.all[i] + 1
-                , get_bb_max_tech_level(full_char->character.dress_data.ch_class, i)
+                , get_technique_comment(i), get_technique_level(character, i) + 1
+                , get_bb_max_tech_level(ch_class, i)
+                , get_bb_max_tech_level(ch_class, i)
             );
+            set_technique_level(character, i, get_bb_max_tech_level(ch_class, i));
         }
     }
 
-    if (db_update_char_techniques(full_char->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_techniques(character, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
@@ -3039,6 +3041,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    char char_class_name_text[64];
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[full_data_pkt->data.gc.char_class].cn_name, sizeof(char_class_name_text));
 
     if (db_insert_bb_full_char_data(full_data_pkt, gc, slot, full_data_pkt->data.gc.char_class, char_class_name_text)) {
@@ -3175,7 +3178,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_techniques(char_data->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_techniques(&char_data->character, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
@@ -3556,7 +3559,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
         bb_data = db_get_uncompress_char_data(gc, slot);
 
         /* 从数据库中获取玩家角色的背包数据 */
-        if ((err |= db_get_char_inv(gc, slot, &bb_data->character.inv, 0))) {
+        if ((err |= db_get_char_inv(gc, slot, &bb_data->character, 0))) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据, 错误码:%d", gc, slot, err);
         }
 
@@ -3579,7 +3582,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
         bb_data->character.padding = 0;
 
         /* 从数据库中获取玩家角色科技数据 */
-        if ((err |= db_get_char_techniques(gc, slot, &bb_data->character.tech, 0))) {
+        if ((err |= db_get_char_techniques(gc, slot, &bb_data->character, 0))) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色科技数据, 错误码:%d", gc, slot, err);
         }
 
@@ -3627,7 +3630,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             db_update_char_disp(&backupdata.character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_dress_data(&backupdata.character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_name(&backupdata.character.name, gc, slot);
-            db_update_char_techniques(backupdata.character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_techniques(&backupdata.character, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_quest_data1(backupdata.quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_quest_data2(backupdata.quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_tech_menu(backupdata.tech_menu, gc, slot, PSOCN_DB_UPDATA_CHAR);
@@ -5772,7 +5775,6 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
     int rv;
 
     if (!(flags & SHDR_RESPONSE)) {
-        ERR_LOG("舰船发送了无效的登录响应");
         return -1;
     }
 

@@ -353,6 +353,9 @@ uint32_t db_get_char_bank_common_item_count(uint32_t gc) {
 
     item_count = (uint32_t)strtoul(row[0], NULL, 10);
 
+    if (item_count > MAX_PLAYER_BANK_ITEMS)
+        item_count = MAX_PLAYER_BANK_ITEMS;
+
     psocn_db_result_free(result);
 
     return item_count;

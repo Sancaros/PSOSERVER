@@ -123,7 +123,7 @@ typedef struct psocn_bb_char {
     uint16_t unknown_a3; //2
     uint32_t play_time; //4
     uint8_t config[0xE8]; //232
-    techniques_t tech; //20 /* 默认 FF 为空*/
+    techniques_t technique_levels_v1; //20 /* 默认 FF 为空 实际这是V1 版本的法术 */
 } PACKED psocn_bb_char_t;
 
 /* v1v2v3pc 玩家数据结构 1052字节 */
@@ -132,7 +132,7 @@ typedef struct psocn_v1v2v3pc_char {
     psocn_disp_char_t disp;
     psocn_dress_data_t dress_data;
     uint8_t config[0x48];
-    techniques_t tech;
+    techniques_t technique_levels_v1;
 } PACKED psocn_v1v2v3pc_char_t;
 
 /* BB键位设置数据结构 410 字节*/

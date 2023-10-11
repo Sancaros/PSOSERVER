@@ -111,11 +111,11 @@ typedef struct client_game_data {
     size_t shop_items_price[0x14];
 
 
-    uint32_t atpmats_used; //改为多种结构
-    uint32_t mstmats_used; //改为多种结构
-    uint32_t evpmats_used; //改为多种结构
-    uint32_t dfpmats_used; //改为多种结构
-    uint32_t lckmats_used; //改为多种结构
+    //uint32_t atpmats_used; //改为多种结构
+    //uint32_t mstmats_used; //改为多种结构
+    //uint32_t evpmats_used; //改为多种结构
+    //uint32_t dfpmats_used; //改为多种结构
+    //uint32_t lckmats_used; //改为多种结构
 
     uint32_t expboost; //用于开启房间经验倍率的开关 l->exp_mult
     uint32_t death;

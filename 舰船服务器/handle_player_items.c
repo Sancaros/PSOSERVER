@@ -1194,7 +1194,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 return -1;
             }
 
-            character->tech.all[iitem->data.datab[4]] = iitem->data.datab[2];
+            set_technique_level(character, iitem->data.datab[4], iitem->data.datab[2]);
             break;
 
         case ITEM_SUBTYPE_GRINDER: // Grinder
@@ -1217,31 +1217,36 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
         case ITEM_SUBTYPE_MATERIAL:
             switch (iitem->data.datab[2]) {
-            case 0x00: // Power Material
+            case ITEM_SUBTYPE_MATERIAL_POWER: // Power Material
+                set_material_usage(character, MATERIAL_POWER, get_material_usage(character, MATERIAL_POWER) + 1);
                 character->disp.stats.atp += 2;
                 break;
 
-            case 0x01: // Mind Material
+            case ITEM_SUBTYPE_MATERIAL_MIND: // Mind Material
+                set_material_usage(character, MATERIAL_MIND, get_material_usage(character, MATERIAL_MIND) + 1);
                 character->disp.stats.mst += 2;
                 break;
 
-            case 0x02: // Evade Material
+            case ITEM_SUBTYPE_MATERIAL_EVADE: // Evade Material
+                set_material_usage(character, MATERIAL_EVADE, get_material_usage(character, MATERIAL_EVADE) + 1);
                 character->disp.stats.evp += 2;
                 break;
 
-            case 0x03: // HP Material
-                character->inv.hpmats_used += 2;
+            case ITEM_SUBTYPE_MATERIAL_HP: // HP Material
+                set_material_usage(character, MATERIAL_HP, get_material_usage(character, MATERIAL_HP) + 1);
                 break;
 
-            case 0x04: // TP Material
-                character->inv.tpmats_used += 2;
+            case ITEM_SUBTYPE_MATERIAL_TP: // TP Material
+                set_material_usage(character, MATERIAL_TP, get_material_usage(character, MATERIAL_TP) + 1);
                 break;
 
-            case 0x05: // Def Material
+            case ITEM_SUBTYPE_MATERIAL_DEF: // Def Material
+                set_material_usage(character, MATERIAL_DEF, get_material_usage(character, MATERIAL_DEF) + 1);
                 character->disp.stats.dfp += 2;
                 break;
 
-            case 0x06: // Luck Material
+            case ITEM_SUBTYPE_MATERIAL_LUCK: // Luck Material
+                set_material_usage(character, MATERIAL_LUCK, get_material_usage(character, MATERIAL_LUCK) + 1);
                 character->disp.stats.lck += 2;
                 break;
 
@@ -1950,7 +1955,7 @@ int initialize_cmode_iitem(ship_client_t* dest) {
         (char_class == CLASS_FOMARL) || (char_class == CLASS_FOMAR))
     { //对应匹配四种人类模型
       // Monofluids 单流体？
-        character->tech.foie = 0x00;//给基础技能 火球术
+        character->technique_levels_v1.foie = 0x00;//给基础技能 火球术
         character->inv.iitems[4].present = 0x0001;
         character->inv.iitems[4].flags = 0;
         character->inv.iitems[4].data.datab[0] = 0x03;

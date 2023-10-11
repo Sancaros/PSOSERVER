@@ -17,11 +17,17 @@
 
 #include "database.h"
 #include "database_query.h"
+#include "pso_player.h"
 
 #define TABLE1 CHARACTER_TECHNIQUES
 
-static int db_insert_techniques(techniques_t tech_data, uint32_t gc, uint32_t slot) {
+static int db_insert_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t slot) {
     memset(myquery, 0, sizeof(myquery));
+    uint8_t tech_level[20] = { 0 };
+
+    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+        tech_level[i] = get_technique_level(character, i);
+    }
 
     sprintf(myquery, "INSERT INTO %s "
         "(guildcard, slot"
@@ -36,9 +42,9 @@ static int db_insert_techniques(techniques_t tech_data, uint32_t gc, uint32_t sl
         ")",
         TABLE1,
         gc, slot,
-        tech_data.all[0], tech_data.all[1], tech_data.all[2], tech_data.all[3], tech_data.all[4], tech_data.all[5], tech_data.all[6],
-        tech_data.all[7], tech_data.all[8], tech_data.all[9], tech_data.all[10], tech_data.all[11], tech_data.all[12], tech_data.all[13],
-        tech_data.all[14], tech_data.all[15], tech_data.all[16], tech_data.all[17], tech_data.all[18], tech_data.all[19]
+        tech_level[0], tech_level[1], tech_level[2], tech_level[3], tech_level[4], tech_level[5], tech_level[6],
+        tech_level[7], tech_level[8], tech_level[9], tech_level[10], tech_level[11], tech_level[12], tech_level[13],
+        tech_level[14], tech_level[15], tech_level[16], tech_level[17], tech_level[18], tech_level[19]
     );
 
     //DBG_LOG("保存角色更衣室数据 %d", dress_data->create_code);
@@ -54,9 +60,13 @@ static int db_insert_techniques(techniques_t tech_data, uint32_t gc, uint32_t sl
     return 0;
 }
 
-static int db_update_techniques(techniques_t tech_data, uint32_t gc, uint32_t slot) {
-
+static int db_update_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t slot) {
     memset(myquery, 0, sizeof(myquery));
+    uint8_t tech_level[20] = { 0 };
+
+    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+        tech_level[i] = get_technique_level(character, i);
+    }
 
     sprintf(myquery, "UPDATE %s SET "
         "data0 = '%02X', data1 = '%02X', data2 = '%02X', data3 = '%02X', data4 = '%02X', data5 = '%02X', data6 = '%02X', "
@@ -65,9 +75,9 @@ static int db_update_techniques(techniques_t tech_data, uint32_t gc, uint32_t sl
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
         TABLE1,
-        tech_data.all[0], tech_data.all[1], tech_data.all[2], tech_data.all[3], tech_data.all[4], tech_data.all[5], tech_data.all[6],
-        tech_data.all[7], tech_data.all[8], tech_data.all[9], tech_data.all[10], tech_data.all[11], tech_data.all[12], tech_data.all[13],
-        tech_data.all[14], tech_data.all[15], tech_data.all[16], tech_data.all[17], tech_data.all[18], tech_data.all[19]
+        tech_level[0], tech_level[1], tech_level[2], tech_level[3], tech_level[4], tech_level[5], tech_level[6],
+        tech_level[7], tech_level[8], tech_level[9], tech_level[10], tech_level[11], tech_level[12], tech_level[13],
+        tech_level[14], tech_level[15], tech_level[16], tech_level[17], tech_level[18], tech_level[19]
         , gc, slot
     );
 
@@ -123,29 +133,29 @@ static int db_del_techniques(uint32_t gc, uint32_t slot) {
     return 0;
 }
 
-int db_update_char_techniques(techniques_t tech_data, uint32_t gc, uint32_t slot, uint32_t flag) {
+int db_update_char_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t slot, uint32_t flag) {
 
     memset(myquery, 0, sizeof(myquery));
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
-        return db_insert_techniques(tech_data, gc, slot);
+        return db_insert_techniques(character, gc, slot);
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        if (db_update_techniques(tech_data, gc, slot)) {
+        if (db_update_techniques(character, gc, slot)) {
 
             if (db_del_techniques(gc, slot))
                 return -1;
 
             /* TODO 这里需要检测 职业 新建人物的默认魔法值 */
 
-            return db_insert_techniques(tech_data, gc, slot);
+            return db_insert_techniques(character, gc, slot);
         }
     }
 
     return 0;
 }
 
-int db_get_char_techniques(uint32_t gc, uint8_t slot, techniques_t* tech_data, int check) {
+int db_get_char_techniques(uint32_t gc, uint8_t slot, psocn_bb_char_t* character, int check) {
     void* result;
     char** row;
 
@@ -180,7 +190,21 @@ int db_get_char_techniques(uint32_t gc, uint8_t slot, techniques_t* tech_data, i
     if (row != NULL) {
         int i2 = 2;
         for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-            tech_data->all[i] = (uint8_t)strtoul(row[i2], NULL, 16);
+            uint8_t tmp_level = 0xFF;
+            tmp_level = (uint8_t)strtoul(row[i2], NULL, 16);
+            if (tmp_level == 0xFF) {
+                character->technique_levels_v1.all[i] = 0xFF;
+                character->inv.iitems[i].extension_data1 = 0x00;
+            }
+            else if (tmp_level <= 0x0E) {
+                character->technique_levels_v1.all[i] = tmp_level;
+                character->inv.iitems[i].extension_data1 = 0x00;
+            }
+            else {
+                character->technique_levels_v1.all[i] = 0x0E;
+                character->inv.iitems[i].extension_data1 = tmp_level - 0x0E;
+            }
+
             i2++;
         }
     }

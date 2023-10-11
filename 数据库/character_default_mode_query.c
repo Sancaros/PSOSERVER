@@ -29,7 +29,7 @@ int db_update_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, 
     sprintf(myquery, sql_template, CHARACTER_DEFAULT_MODE,
         psocn_db_escape_str(&conn, char_buf, (char*)data, PSOCN_STLENGTH_BB_CHAR2),
         psocn_db_escape_str(&conn, inv_buf, (char*)&data->inv, PSOCN_STLENGTH_INV),
-        psocn_db_escape_str(&conn, tech_buf, (char*)&data->tech, PSOCN_STLENGTH_BB_TECH),
+        psocn_db_escape_str(&conn, tech_buf, (char*)&data->technique_levels_v1, PSOCN_STLENGTH_BB_TECH),
         qid, char_class);
 
     /* 检查 myquery 是否超出了缓冲区边界 */
@@ -100,7 +100,7 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, 
 
     SAFE_STRCAT(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech,
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->technique_levels_v1,
         PSOCN_STLENGTH_BB_TECH);
 
     SAFE_STRCAT(myquery, "')");
@@ -172,7 +172,7 @@ int db_get_character_default_mode(psocn_bb_mode_char_t* data) {
 
             memcpy((char*)&data->cdata[j][i], row[0], PSOCN_STLENGTH_BB_CHAR2);
             memcpy((char*)&data->cdata[j][i].inv, row[1], PSOCN_STLENGTH_INV);
-            memcpy((char*)&data->cdata[j][i].tech, row[2], PSOCN_STLENGTH_BB_TECH);
+            memcpy((char*)&data->cdata[j][i].technique_levels_v1, row[2], PSOCN_STLENGTH_BB_TECH);
 
             psocn_db_result_free(result);
 

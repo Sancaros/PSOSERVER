@@ -187,7 +187,7 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
         bank->meseta = MAX_PLAYER_MESETA;
 
     if (bank->item_count == 0 && bank->meseta == 0) {
-        SQLERR_LOG("保存的角色银行数据为 %d 件 %d 美赛塔 (%" PRIu32 ": %u)", bank->item_count, bank->meseta, gc, slot);
+        //SQLERR_LOG("保存的角色银行数据为 %d 件 %d 美赛塔 (%" PRIu32 ": %u)", bank->item_count, bank->meseta, gc, slot);
         psocn_db_result_free(result);
         return -4;
     }
@@ -298,6 +298,9 @@ uint32_t db_get_char_bank_char_item_count(uint32_t gc, uint8_t slot) {
     }
 
     item_count = (uint32_t)strtoul(row[0], NULL, 10);
+
+    if (item_count > MAX_PLAYER_BANK_ITEMS)
+        item_count = MAX_PLAYER_BANK_ITEMS;
 
     psocn_db_result_free(result);
 
@@ -721,7 +724,7 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
 
     if (rv = db_get_char_bank_param(gc, slot, bank, 1)) {
         if (rv) {
-            SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行数据为空,执行获取总数据计划.", gc, slot);
+            //SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行数据为空,执行获取总数据计划.", gc, slot);
             if (db_get_char_bank_full_data(gc, slot, bank, 0)) {
                 SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行原始数据为空,执行获取备份数据计划.", gc, slot);
                 if (db_get_char_bank_full_data(gc, slot, bank, 1)) {

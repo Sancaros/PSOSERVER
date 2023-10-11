@@ -331,7 +331,7 @@ static int check_aoe_timer(ship_client_t* src,
     uint16_t technique_number = pkt->technique_number;
 
     /* 合理性检查... Does the character have that level of technique? */
-    tech_level = src->pl->bb.character.tech.all[technique_number];
+    tech_level = src->pl->bb.character.technique_levels_v1.all[technique_number];
     if (tech_level == 0xFF) {
         /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
         在我们有真正的库存跟踪之前，我们将不得不篡改这一点。
@@ -1442,7 +1442,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_equip_t), 0x03))
         return -2;
 
-    print_ascii_hex(dbgl,pkt,pkt->hdr.pkt_len);
+    //print_ascii_hex(dbgl,pkt,pkt->hdr.pkt_len);
 
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
@@ -1483,7 +1483,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_unequip_t), 0x03))
         return -2;
 
-    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     if (pkt->shdr.client_id != src->client_id) {
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2725,7 +2725,7 @@ static int sub60_47_dc(ship_client_t* src, ship_client_t* dest,
     }
 
     /* 合理性检查... Does the character have that level of technique? */
-    tech_level = src->pl->v1.character.tech.all[pkt->tech];
+    tech_level = src->pl->v1.character.technique_levels_v1.all[pkt->tech];
     if (tech_level == 0xFF) {
         /* This might happen if the user learns a new tech in a team. Until we
            have real inventory tracking, we'll have to fudge this. Once we have
@@ -2833,7 +2833,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
 
     if (char_class_is_android(src->equip_flags) ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
-        max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == 0
+        get_bb_max_tech_level(src, pkt->technique_number) == 0
         ) {
         ERR_LOG("%s 职业 %s 发送损坏的 %s 法术攻击数据!",
             get_player_describe(src), pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,

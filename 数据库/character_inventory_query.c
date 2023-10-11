@@ -19,6 +19,7 @@
 #include "database_query.h"
 #include "f_checksum.h"
 #include "handle_player_items.h"
+#include "pso_player.h"
 
 static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
@@ -535,6 +536,87 @@ static int db_get_char_inv_full_data(uint32_t gc, uint8_t slot, inventory_t* inv
 	return 0;
 }
 
+/* 优先获取背包数据库中的数量 */
+static uint8_t db_get_char_inv_item_count(uint32_t gc, uint8_t slot) {
+	uint8_t item_count = 0;
+	void* result;
+	char** row;
+
+	memset(myquery, 0, sizeof(myquery));
+
+	/* Build the query asking for the data. */
+	sprintf(myquery, "SELECT COUNT(*) FROM %s WHERE guildcard = '%" PRIu32 "' "
+		"AND slot = '%u'", CHARACTER_INVENTORY_ITEMS, gc, slot);
+
+	if (psocn_db_real_query(&conn, myquery)) {
+		SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return 0;
+	}
+
+	/* Grab the data we got. */
+	if ((result = psocn_db_result_store(&conn)) == NULL) {
+		SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return 0;
+	}
+
+	if ((row = psocn_db_result_fetch(result)) == NULL) {
+		psocn_db_result_free(result);
+		SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return 0;
+	}
+
+	item_count = (uint8_t)strtoul(row[0], NULL, 10);
+
+	if (item_count > MAX_PLAYER_INV_ITEMS)
+		item_count = MAX_PLAYER_INV_ITEMS;
+
+	psocn_db_result_free(result);
+
+	return item_count;
+}
+
+/* 优先获取背包数据checkum */
+static uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot) {
+	uint32_t inv_crc32 = 0;
+	void* result;
+	char** row;
+
+	memset(myquery, 0, sizeof(myquery));
+
+	/* Build the query asking for the data. */
+	sprintf(myquery, "SELECT inv_check_num FROM %s WHERE guildcard = '%" PRIu32 "' "
+		"AND slot = '%u'", CHARACTER_INVENTORY, gc, slot);
+
+	if (psocn_db_real_query(&conn, myquery)) {
+		SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -1;
+	}
+
+	/* Grab the data we got. */
+	if ((result = psocn_db_result_store(&conn)) == NULL) {
+		SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -2;
+	}
+
+	if ((row = psocn_db_result_fetch(result)) == NULL) {
+		psocn_db_result_free(result);
+		SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+		SQLERR_LOG("%s", psocn_db_error(&conn));
+		return -3;
+	}
+
+	inv_crc32 = (uint32_t)strtoul(row[0], NULL, 10);
+
+	psocn_db_result_free(result);
+
+	return inv_crc32;
+}
+
 void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
 	for (item_index; item_index < del_count; item_index++) {
 		inv->iitems[item_index].present = 0;
@@ -608,9 +690,11 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 }
 
 /* 获取玩家角色背包数据数据项 */
-int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
+int db_get_char_inv(uint32_t gc, uint8_t slot, psocn_bb_char_t* character, int check) {
 	size_t i = 0;
 	int rv = 0;
+
+	inventory_t* inv = &character->inv;
 
 	if (rv = db_get_char_inv_param(gc, slot, inv, 1)) {
 		if (rv) {
@@ -622,20 +706,19 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
 					db_insert_inv_param(inv, gc, slot);
 					db_insert_inv_backup_param(inv, gc, slot);
 
-					for (i = 0; i < inv->item_count; i++) {
-						if (inv->iitems[i].present)
-							if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
-								break;
-					}
 				}
 				else {
-					SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色银行备份数据成功,执行初始化2", gc, slot);
+					SQLERR_LOG("获取(GC%" PRIu32 ":%" PRIu8 "槽)角色背包数据成功,执行初始化2", gc, slot);
 					db_insert_inv_param(inv, gc, slot);
 
-					for (i = 0; i < inv->item_count; i++) {
-						if (inv->iitems[i].present)
-							if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
-								break;
+				}
+
+				for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+					if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
+						break;
+					else {
+						SQLERR_LOG("插入(GC%" PRIu32 ":%" PRIu8 "槽)角色背包数据失败", gc, slot);
+						return -1;
 					}
 				}
 			}
@@ -654,82 +737,3 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
 
 	return 0;
 }
-
-/* 优先获取背包数据库中的数量 */
-uint8_t db_get_char_inv_item_count(uint32_t gc, uint8_t slot) {
-	uint8_t item_count = 0;
-	void* result;
-	char** row;
-
-	memset(myquery, 0, sizeof(myquery));
-
-	/* Build the query asking for the data. */
-	sprintf(myquery, "SELECT COUNT(*) FROM %s WHERE guildcard = '%" PRIu32 "' "
-		"AND slot = '%u'", CHARACTER_INVENTORY_ITEMS, gc, slot);
-
-	if (psocn_db_real_query(&conn, myquery)) {
-		SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
-		SQLERR_LOG("%s", psocn_db_error(&conn));
-		return 0;
-	}
-
-	/* Grab the data we got. */
-	if ((result = psocn_db_result_store(&conn)) == NULL) {
-		SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
-		SQLERR_LOG("%s", psocn_db_error(&conn));
-		return 0;
-	}
-
-	if ((row = psocn_db_result_fetch(result)) == NULL) {
-		psocn_db_result_free(result);
-		SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
-		SQLERR_LOG("%s", psocn_db_error(&conn));
-		return 0;
-	}
-
-	item_count = (uint8_t)strtoul(row[0], NULL, 10);
-
-	psocn_db_result_free(result);
-
-	return item_count;
-}
-
-/* 优先获取背包数据checkum */
-uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot) {
-	uint32_t inv_crc32 = 0;
-	void* result;
-	char** row;
-
-	memset(myquery, 0, sizeof(myquery));
-
-	/* Build the query asking for the data. */
-	sprintf(myquery, "SELECT inv_check_num FROM %s WHERE guildcard = '%" PRIu32 "' "
-		"AND slot = '%u'", CHARACTER_INVENTORY, gc, slot);
-
-	if (psocn_db_real_query(&conn, myquery)) {
-		SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
-		SQLERR_LOG("%s", psocn_db_error(&conn));
-		return -1;
-	}
-
-	/* Grab the data we got. */
-	if ((result = psocn_db_result_store(&conn)) == NULL) {
-		SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
-		SQLERR_LOG("%s", psocn_db_error(&conn));
-		return -2;
-	}
-
-	if ((row = psocn_db_result_fetch(result)) == NULL) {
-		psocn_db_result_free(result);
-		SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
-		SQLERR_LOG("%s", psocn_db_error(&conn));
-		return -3;
-	}
-
-	inv_crc32 = (uint32_t)strtoul(row[0], NULL, 10);
-
-	psocn_db_result_free(result);
-
-	return inv_crc32;
-}
-
