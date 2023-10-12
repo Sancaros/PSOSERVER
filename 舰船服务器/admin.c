@@ -124,8 +124,6 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
                             SHIPS_LOG("读取 %s 任务语言 %s",
                                 client_type[i].ver_name_file, language_codes[j]);
 #endif // DEBUG
-                            SHIPS_LOG("读取 %s 任务语言 %s",
-                                client_type[i].ver_name_file, language_codes[j]);
                         }
                         else {
                             SHIPS_LOG("无法索引 %s 任务语言 %s",
