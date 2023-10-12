@@ -497,26 +497,26 @@ static int bb_process_player_menu_skin(ship_client_t* c, uint32_t item_id) {
 
     uint8_t new_skin = (uint8_t)item_id;
     if (new_skin < 0 || new_skin > 5) {
-        send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4无效皮肤参数.(范围0 - 5, 0为角色皮肤)!"));
+        send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC4无效皮肤参数.(范围0 - 5, 0为角色皮肤)!"));
         return send_bb_player_skin_list(c);
     }
 
     if (new_skin == 0) {
         character->dress_data.model = 0x00;
         character->dress_data.v2flags = 0x00;
-        send_txt(c, "皮肤切换为 \tE\tC%d%s\n%s", new_skin, npcskin_desc[new_skin], __(c, "\tE\tC4请切换大厅立即生效."));
+        send_msg(c, BB_SCROLL_MSG_TYPE, "皮肤切换为 \tE\tC%d%s\n%s", new_skin, npcskin_desc[new_skin], __(c, "\tE\tC4请切换大厅立即生效."));
         return send_block_list(c, ship);
     }
 
     if (new_skin == character->dress_data.model + 1) {
-        send_msg(c, TEXT_MSG_TYPE, "%s %s", __(c, "\tE\tC7您当前已经是"), npcskin_desc[new_skin]);
+        send_msg(c, BB_SCROLL_MSG_TYPE, "%s %s", __(c, "\tE\tC7您当前已经是"), npcskin_desc[new_skin]);
         return send_bb_player_skin_list(c);
     }
 
     character->dress_data.model = new_skin - 1;
     character->dress_data.v2flags = 0x02;
 
-    send_txt(c, "皮肤切换为 \tE\tC%d%s\n%s", new_skin, npcskin_desc[new_skin], __(c, "\tE\tC4请切换大厅立即生效."));
+    send_msg(c, BB_SCROLL_MSG_TYPE, "皮肤切换为 \tE\tC%d%s\n%s", new_skin, npcskin_desc[new_skin], __(c, "\tE\tC4请切换大厅立即生效."));
 
     return send_block_list(c, ship);
 }
