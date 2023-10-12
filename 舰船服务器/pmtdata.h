@@ -344,11 +344,15 @@ typedef struct pmt_mag_feed_results_list_offsets {
     uint32_t offsets[8]; // Offsets of MagFeedResultsList structs
 } PACKED pmt_mag_feed_results_list_offsets_t;
 
-typedef struct pmt_special_bb_t {
+typedef struct pmt_special_bb {
     uint16_t type;
     uint16_t amount;
 } PACKED pmt_special_bb_t;
 
+typedef struct pmt_max_tech_bb {
+    // Indexed as [tech_num][char_class]
+    uint8_t max_level[MAX_PLAYER_TECHNIQUES][MAX_PLAYER_CLASS_BB];
+} PACKED pmt_max_tech_bb_t;
 
 /* TODO V2 ItemPMT Offset Struct */
 typedef struct pmt_table_offsets_v2 {
@@ -460,6 +464,12 @@ float pmt_lookup_sale_divisor_bb(uint8_t code1, uint8_t code2);
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
                        sfmt_t* rng, lobby_t* l);
 uint8_t pmt_lookup_stars_bb(uint32_t code);
+uint8_t pmt_lookup_max_tech_level_bb(uint8_t tech_num, uint8_t char_class);
+/* 表中数值均为16进制字符
+, 是从0x00起始为1级 0xFF为未学习
+,如果要获取实际显示等级 则需要 + 1
+*/
+uint8_t get_pmt_max_tech_level_bb(uint8_t tech_num, uint8_t char_class);
 
 pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32_t datal2);
 bool get_item_pmt_bb(const uint32_t datal1, const uint32_t datal2,

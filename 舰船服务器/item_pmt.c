@@ -131,6 +131,8 @@ static pmt_mag_feed_results_list_offsets_t* mag_feed_results_list_offsets;
 
 static pmt_nonweaponsaledivisors_bb_t nonweaponsaledivisors_bb;
 
+static pmt_max_tech_bb_t max_tech_level_bb;
+
 static float* weaponsaledivisors_bb;
 
 static uint8_t unit_weights_table1[0x88];
@@ -1464,6 +1466,40 @@ static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
     return 0;
 }
 
+static int read_max_tech_bb(const uint8_t* pmt, uint32_t sz,
+    const pmt_table_offsets_v3_t* ptrs) {
+    size_t i = 0, j = 0;
+
+    /* Make sure the 指针无效 are sane... */
+    if (ptrs->max_tech_level_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB 的 max_tech_level_table 指针无效. "
+            "请检查其有效性!");
+        return -1;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(&max_tech_level_bb, pmt + ptrs->max_tech_level_table, sizeof(pmt_max_tech_bb_t));
+
+#ifdef DEBUG
+
+    print_ascii_hex(dbgl, (void*)&max_tech_level_bb, sizeof(pmt_max_tech_bb_t));
+
+    for (i = 0; i < MAX_PLAYER_TECHNIQUES; ++i) {
+        DBG_LOG("////////////////");
+        for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
+
+            DBG_LOG("%u %u %u", i, j, max_tech_level_bb.max_level[i][j]);
+        }
+        DBG_LOG("////////////////");
+    }
+
+    getchar();
+
+#endif // DEBUG
+
+    return 0;
+}
+
 static int build_units_v2(int norestrict) {
     uint32_t i, j, k;
     uint8_t star;
@@ -1932,6 +1968,12 @@ int pmt_read_bb(const char *fn, int norestrict) {
     if (read_nonweaponsaledivisors_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -20;
+    }
+
+    /* Read in the max_tech_bb values... */
+    if (read_max_tech_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -21;
     }
 
     /* We're done with the raw PMT data now, clean it up. */
@@ -2923,6 +2965,35 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
     }
 
     return (uint8_t)-1;
+}
+
+uint8_t pmt_lookup_max_tech_level_bb(uint8_t tech_num, uint8_t char_class) {
+    /* Make sure we loaded the PMT stuff to start with and that there is a place
+       to put the returned value */
+    if (!have_bb_pmt) {
+        return -1;
+    }
+
+    if (tech_num > MAX_PLAYER_TECHNIQUES) {
+        return -2;
+    }
+
+    if (char_class > MAX_PLAYER_CLASS_BB) {
+        return -3;
+    }
+
+    return max_tech_level_bb.max_level[tech_num][char_class];
+}
+
+/* 表中数值均为16进制字符
+, 是从0x00起始为1级 0xFF为未学习
+,如果要获取实际显示等级 则需要 + 1
+*/
+uint8_t get_pmt_max_tech_level_bb(uint8_t tech_num, uint8_t char_class) {
+    if (pmt_lookup_max_tech_level_bb(tech_num, char_class) == 0xFF)
+        return 0;
+
+    return pmt_lookup_max_tech_level_bb(tech_num, char_class) + 1;
 }
 
 /*

@@ -21,6 +21,7 @@
 //19 个科技类别 12个 职业 完成结构数据读取
 
 typedef struct bb_max_tech_level {
+    char tech_cn_name[32];
     char tech_name[12];
     uint8_t max_lvl[MAX_PLAYER_CLASS_BB];
 } bb_max_tech_level_t;

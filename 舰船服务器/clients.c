@@ -1800,11 +1800,12 @@ void show_bb_player_info(ship_client_t* src) {
 
 void fix_player_max_tech_level(psocn_bb_char_t* character) {
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        if (get_technique_level(&character->technique_levels_v1, &character->inv, i) == TECHNIQUE_UNLEARN)
+        uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
+        if (player_tech_level == TECHNIQUE_UNLEARN)
             continue;
 
         uint8_t max_level = get_bb_max_tech_level(character->dress_data.ch_class, i);
-        if (get_technique_level(&character->technique_levels_v1, &character->inv, i) >= max_level) {
+        if (player_tech_level >= max_level) {
             /* 移除不合规的法术 */
 #ifdef DEBUG
             DBG_LOG("%s:%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
@@ -1857,7 +1858,8 @@ void show_player_tech_info(ship_client_t* src) {
                 );
             }
             else {
-                if (get_technique_level(&character->technique_levels_v1, &character->inv, i) == TECHNIQUE_UNLEARN) {
+                uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
+                if (player_tech_level == TECHNIQUE_UNLEARN) {
                     sprintf_s(data_str, sizeof(data_str),
                         "%s \tE\tCG未学习\tE\tC7"
                         , get_technique_comment(i)
@@ -1868,7 +1870,7 @@ void show_player_tech_info(ship_client_t* src) {
                     sprintf_s(data_str, sizeof(data_str),
                         "%s Lv%d"
                         , get_technique_comment(i)
-                        , get_technique_level(&character->technique_levels_v1, &character->inv, i)
+                        , player_tech_level
                     );
                 }
             }

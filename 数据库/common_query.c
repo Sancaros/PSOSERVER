@@ -18,6 +18,7 @@
 #include "database.h"
 #include "database_query.h"
 #include "f_checksum.h"
+#include "f_iconv.h"
 #include "handle_player_items.h"
 
 /* 读取玩家最大科技魔法的等级表 */
@@ -26,7 +27,7 @@ int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) 
     void* result;
     char** row;
     int i, j;
-    long long row_count;
+    long long row_count = 0;
 
     for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
         for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
@@ -66,6 +67,8 @@ int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) 
                 return -1;
             }
 
+            //memcpy(&bb_max_tech_level[i].tech_cn_name, (char*)row[1], sizeof(bb_max_tech_level[i].tech_cn_name));
+            istrncpy(ic_utf8_to_gbk, bb_max_tech_level[i].tech_cn_name, (char*)row[1], sizeof(bb_max_tech_level[i].tech_cn_name));
             memcpy(&bb_max_tech_level[i].tech_name, (char*)row[2], sizeof(bb_max_tech_level[i].tech_name));
             bb_max_tech_level[i].tech_name[11] = 0x00;
             bb_max_tech_level[i].max_lvl[j] = (uint8_t)strtoul(row[j + 3], NULL, 10);
