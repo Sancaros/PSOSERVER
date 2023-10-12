@@ -445,7 +445,7 @@ enum CLIENT_LANG {
 };
 
 /* The list of language codes for the quest directories. */
-static const char language_codes[][3] = {
+static const char* language_codes[] = {
     "cn", "tc", "jp", "en", "de", "fr", "es", "kr"
 };
 

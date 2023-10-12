@@ -114,7 +114,7 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
     if(cfg->quests_dir && cfg->quests_dir[0]) {
         for(i = 0; i < CLIENT_VERSION_ALL; ++i) {
             for(j = 0; j < CLIENT_LANG_ALL; ++j) {
-                sprintf(fn, "%s/%s/quests_%s.xml", cfg->quests_dir,
+                sprintf(fn, "%s\\%s\\quests_%s.xml", cfg->quests_dir,
                     client_type[i].ver_name_file, language_codes[j]);
                 // 检查文件是否存在
                 if (_access(fn, 0) == 0) {
@@ -124,6 +124,8 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
                             SHIPS_LOG("读取 %s 任务语言 %s",
                                 client_type[i].ver_name_file, language_codes[j]);
 #endif // DEBUG
+                            SHIPS_LOG("读取 %s 任务语言 %s",
+                                client_type[i].ver_name_file, language_codes[j]);
                         }
                         else {
                             SHIPS_LOG("无法索引 %s 任务语言 %s",
@@ -133,7 +135,7 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
                     }
                 }
                 else {
-                    //printf("File does not exist.\n");
+                    //QERR_LOG("%s 任务文件列表不存在 %s %s", fn, client_type[i].ver_name_file, language_codes[j]);
                     continue;
                 }
             }
