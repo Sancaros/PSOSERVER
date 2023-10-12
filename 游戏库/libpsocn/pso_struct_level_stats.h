@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #define MAX_PLAYER_LEVEL                200
+#define MAX_PLAYER_EXP                  83227800
 #define MAX_PLAYER_CLASS_DC             9
 #define MAX_PLAYER_CLASS_BB             12
 
@@ -59,11 +60,13 @@ typedef struct psocn_lvl_stats {
     uint32_t exp;
 } PACKED psocn_lvl_stats_t;
 
-/* Level-up information table from PlyLevelTbl.prs */
+/* Level-up information table from PlyLevelTbl.prs but edited for psocn */
 typedef struct bb_level_table {
     psocn_pl_stats_t start_stats[MAX_PLAYER_CLASS_BB];
     uint32_t start_stats_index[MAX_PLAYER_CLASS_BB]; /* 应该是的 暂时不知 但是和索引有关系吧 */
     psocn_lvl_stats_t levels[MAX_PLAYER_CLASS_BB][MAX_PLAYER_LEVEL];
+    /* BB最大角色数值表 */
+    psocn_pl_stats_t max_stats[MAX_PLAYER_CLASS_BB];
 } PACKED bb_level_table_t;
 
 /* PSOv2 level-up information table from PlayerTable.prs */

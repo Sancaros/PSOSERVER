@@ -87,6 +87,7 @@ static char myquery[MAX_PACKET_BUFF] = { 0 };
 #define CLIENTS_OPTION "clients_option"
 #define CLIENTS_OPTION_BLUEBURST "clients_option_blueburst"
 
+#define PLAYER_LEVEL_MAX_STATS_TABLE_BB "player_level_max_stats_table_bb"
 #define PLAYER_LEVEL_START_STATS_TABLE_BB "player_level_start_stats_table_bb"
 //全职业数据总表
 //#define PLAYER_LEVEL_TABLE_BB "player_level_table_bb"

@@ -123,8 +123,7 @@ void set_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, ui
 	else if (level <= TECHNIQUE_V1_MAX_LEVEL) {
 		technique_levels_v1->all[which] = level;
 		inv->iitems[which].extension_data1 = 0x00;
-	}
-	else {
+	} else {
 		technique_levels_v1->all[which] = TECHNIQUE_V1_MAX_LEVEL;
 		inv->iitems[which].extension_data1 = level - TECHNIQUE_V1_MAX_LEVEL;
 	}

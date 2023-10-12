@@ -24,6 +24,16 @@ static int db_insert_char_disp(psocn_disp_char_t* disp_data,
     uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
+    if (disp_data->level + 1 > MAX_PLAYER_LEVEL) {
+        disp_data->level = MAX_PLAYER_LEVEL - 1;
+    }
+    else if (disp_data->level + 1 == MAX_PLAYER_LEVEL) {
+        disp_data->exp = MAX_PLAYER_EXP;
+    }
+
+    if (disp_data->meseta > MAX_PLAYER_MESETA)
+        disp_data->meseta = MAX_PLAYER_MESETA;
+
     sprintf(myquery, "INSERT INTO "
         "%s ("
         "guildcard, slot, "
@@ -59,6 +69,16 @@ static int db_insert_char_disp(psocn_disp_char_t* disp_data,
 static int db_upd_char_disp(psocn_disp_char_t* disp_data,
     uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
+
+    if (disp_data->level + 1 > MAX_PLAYER_LEVEL) {
+        disp_data->level = MAX_PLAYER_LEVEL - 1;
+    }
+    else if (disp_data->level + 1 == MAX_PLAYER_LEVEL) {
+        disp_data->exp = MAX_PLAYER_EXP;
+    }
+
+    if (disp_data->meseta > MAX_PLAYER_MESETA)
+        disp_data->meseta = MAX_PLAYER_MESETA;
 
     sprintf(myquery, "UPDATE %s SET"
         " atp='%d', mst='%d', evp='%d', hp='%d', dfp='%d', ata='%d', lck='%d',"
@@ -200,6 +220,18 @@ int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int che
     data->exp = (uint32_t)strtoul(row[j], NULL, 10);
     j++;
     data->meseta = (uint32_t)strtoul(row[j], NULL, 10);
+
+    if (data->level + 1 > MAX_PLAYER_LEVEL) {
+        data->level = MAX_PLAYER_LEVEL - 1;
+    }
+    else if (data->level + 1 == MAX_PLAYER_LEVEL) {
+        data->exp = MAX_PLAYER_EXP;
+    }
+
+    if (data->meseta > MAX_PLAYER_MESETA)
+        data->meseta = MAX_PLAYER_MESETA;
+
+    data->unknown_a1 = 999;
 
     psocn_db_result_free(result);
 

@@ -188,11 +188,61 @@ int read_player_level_table_bb(bb_level_table_t* bb_char_stats) {
             bb_char_stats->levels[j][i].tp = (uint8_t)strtoul(row[10], NULL, 10);
             bb_char_stats->levels[j][i].exp = (uint32_t)strtoul(row[2], NULL, 10);
 
-            //DBG_LOG("职业 %d 等级 %d 经验数值 %d", j, i, bb_char_stats->levels[j][i].exp);
+            //DBG_LOG("职业 %d 等级 %d atp %d", j, i, bb_char_stats->levels[j][i].atp);
 
             psocn_db_next_result_free(&conn, result);
         }
     }
+
+    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+        sprintf(query, "SELECT * FROM %s WHERE id = '%" PRIu32 "'",
+            PLAYER_LEVEL_MAX_STATS_TABLE_BB, i);
+
+        if (psocn_db_real_query(&conn, query)) {
+            ERR_LOG("Couldn't fetch monsters from database!");
+            free_safe(bb_char_stats);
+            return -1;
+        }
+
+        if ((result = psocn_db_result_store(&conn)) == NULL) {
+            ERR_LOG("Could not store results of monster select!");
+            free_safe(bb_char_stats);
+            return -1;
+        }
+
+        /* Make sure we have something. */
+        row_count = psocn_db_result_rows(result);
+
+        if (row_count < 0) {
+            ERR_LOG("无法获取设置数据!");
+            psocn_db_result_free(result);
+            return -1;
+        }
+        else if (!row_count) {
+            ERR_LOG("设置数据库为空.");
+            psocn_db_result_free(result);
+            return 0;
+        }
+
+        row = psocn_db_result_fetch(result);
+        if (!row) {
+            ERR_LOG("无法获取到数组!");
+            free_safe(bb_char_stats);
+            return -1;
+        }
+
+        bb_char_stats->max_stats[i].atp = (uint16_t)strtoul(row[4], NULL, 10);
+        bb_char_stats->max_stats[i].mst = (uint16_t)strtoul(row[5], NULL, 10);
+        bb_char_stats->max_stats[i].evp = (uint16_t)strtoul(row[6], NULL, 10);
+        bb_char_stats->max_stats[i].hp = (uint16_t)strtoul(row[7], NULL, 10);
+        bb_char_stats->max_stats[i].dfp = (uint16_t)strtoul(row[8], NULL, 10);
+        bb_char_stats->max_stats[i].ata = (uint16_t)strtoul(row[9], NULL, 10);
+        bb_char_stats->max_stats[i].lck = (uint16_t)strtoul(row[10], NULL, 10);
+        //DBG_LOG("ATP数值 %d", bb_char_stats->max_stats[i].atp);
+
+        psocn_db_next_result_free(&conn, result);
+    }
+
     return 0;
 }
 

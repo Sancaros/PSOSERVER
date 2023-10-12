@@ -1737,6 +1737,7 @@ void update_bb_mat_use(ship_client_t* src) {
     inventory_t* inv = &character->inv;
     uint8_t ch_class = character->dress_data.ch_class;
     psocn_pl_stats_t* startingData = &bb_char_stats.start_stats[ch_class];
+    uint32_t level = character->disp.level;
 
     atp_base = startingData->atp;
     mst_base = startingData->mst;
@@ -1745,26 +1746,34 @@ void update_bb_mat_use(ship_client_t* src) {
     dfp_base = startingData->dfp;
     ata_base = startingData->ata;
 
-    for (size_t x = 0; x < character->disp.level; x++) {
-        atp_base += bb_char_stats.levels[ch_class][x].atp;
-        mst_base += bb_char_stats.levels[ch_class][x].mst;
-        evp_base += bb_char_stats.levels[ch_class][x].evp;
-        hp_base += bb_char_stats.levels[ch_class][x].hp;
-        dfp_base += bb_char_stats.levels[ch_class][x].dfp;
-        ata_base += bb_char_stats.levels[ch_class][x].ata;
+    //DBG_LOG("startingData atp_base %u mst_base %u evp_base %u hp_base %u dfp_base %u ata_base %u", atp_base, mst_base, evp_base, hp_base, dfp_base, ata_base);
+
+    for (size_t x = 0; x <= character->disp.level; x++) {
+        atp_base += (uint16_t)bb_char_stats.levels[ch_class][x].atp;
+        mst_base += (uint16_t)bb_char_stats.levels[ch_class][x].mst;
+        evp_base += (uint16_t)bb_char_stats.levels[ch_class][x].evp;
+        hp_base += (uint16_t)bb_char_stats.levels[ch_class][x].hp;
+        dfp_base += (uint16_t)bb_char_stats.levels[ch_class][x].dfp;
+        ata_base += (uint16_t)bb_char_stats.levels[ch_class][x].ata;
+        //DBG_LOG("atp_base %u mst_base %u evp_base %u hp_base %u dfp_base %u ata_base %u", atp_base, mst_base, evp_base, hp_base, dfp_base, ata_base);
     }
 
-    set_material_usage(inv, MATERIAL_POWER, (character->disp.stats.atp - atp_base) / 2);
-    set_material_usage(inv, MATERIAL_MIND, (character->disp.stats.mst - mst_base) / 2);
-    set_material_usage(inv, MATERIAL_EVADE, (character->disp.stats.evp - evp_base) / 2);
-    set_material_usage(inv, MATERIAL_DEF, (character->disp.stats.dfp - dfp_base) / 2);
-    set_material_usage(inv, MATERIAL_LUCK, (character->disp.stats.lck - 10) / 2);
+    //DBG_LOG("atp_base %u mst_base %u evp_base %u hp_base %u dfp_base %u ata_base %u", atp_base, mst_base, evp_base, hp_base, dfp_base, ata_base);
+
+    //set_material_usage(inv, MATERIAL_HP, (uint8_t)((character->disp.stats.hp - hp_base) / 2));
+    //set_material_usage(inv, MATERIAL_TP, (character->disp.stats. - bb_char_stats.levels[ch_class][level].atp) / 2);
+    set_material_usage(inv, MATERIAL_POWER, (uint8_t)((character->disp.stats.atp - atp_base) / 2));
+    set_material_usage(inv, MATERIAL_MIND, (uint8_t)((character->disp.stats.mst - mst_base) / 2));
+    set_material_usage(inv, MATERIAL_EVADE, (uint8_t)((character->disp.stats.evp - evp_base) / 2));
+    set_material_usage(inv, MATERIAL_DEF, (uint8_t)((character->disp.stats.dfp - dfp_base) / 2));
+    set_material_usage(inv, MATERIAL_LUCK, (uint8_t)((character->disp.stats.lck - 10) / 2));
 }
 
 void show_bb_player_info(ship_client_t* src) {
     psocn_bb_char_t* character = get_client_char_bb(src);
     inventory_t* inv = &character->inv;
     uint8_t ch_class = character->dress_data.ch_class;
+    update_bb_mat_use(src);
 
     send_msg(src, MSG_BOX_TYPE,
         "-----------------------玩家信息-----------------------\n"
@@ -1795,6 +1804,17 @@ void show_bb_player_info(ship_client_t* src) {
 
 void fix_player_max_tech_level(psocn_bb_char_t* character) {
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+        if (character->technique_levels_v1.all[i] == TECHNIQUE_UNLEARN) {
+            character->inv.iitems[i].extension_data1 = 0x00;
+            character->technique_levels_v1.all[i] = TECHNIQUE_UNLEARN;
+        }
+
+        /* 顺序不能换 要先将余量给到ex1 再初始化为 0x0E */
+        if (character->technique_levels_v1.all[i] > TECHNIQUE_V1_MAX_LEVEL) {
+            character->inv.iitems[i].extension_data1 = character->technique_levels_v1.all[i] - TECHNIQUE_V1_MAX_LEVEL;
+            character->technique_levels_v1.all[i] = TECHNIQUE_V1_MAX_LEVEL;
+        }
+
         uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
         if (player_tech_level == TECHNIQUE_UNLEARN)
             continue;

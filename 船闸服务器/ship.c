@@ -2992,6 +2992,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     DBG_LOG("GC %u:%u ch_class %d %s 角色数据如下", gc, slot, full_data_pkt->data.gc.char_class, pso_class[full_data_pkt->data.gc.char_class].cn_name);
     print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
+
     if (isPacketEmpty(character->dress_data.gc_string, sizeof(character->dress_data.gc_string))) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数据有误 %s", gc, slot, character->dress_data.gc_string);
 
