@@ -845,13 +845,46 @@ char* get_lplayer_describe(login_client_t* src) {
     if (!src)
         return "玩家不存在";
 
+    uint8_t src_version = 0;
+
+    switch (src->version) {
+    case CLIENT_AUTH_BB_LOGIN:
+    case CLIENT_AUTH_BB_CHARACTER:
+        src_version = 4;
+        break;
+
+    case CLIENT_AUTH_DC:
+        src_version = 0;
+        break;
+
+    case CLIENT_AUTH_PC:
+        src_version = 1;
+        break;
+
+    case CLIENT_AUTH_GC:
+        src_version = 2;
+        break;
+
+    case CLIENT_AUTH_EP3:
+        src_version = 3;
+        break;
+
+    case CLIENT_AUTH_DCNTE:
+        src_version = 6;
+        break;
+
+    case CLIENT_AUTH_XBOX:
+        src_version = 7;
+        break;
+    }
+
     /* 初始化角色描述内存 */
     memset(char_des, 0, sizeof(char_des));
 
     sprintf(char_des, "GC %d (%d:%s)"
         , src->guildcard
         , src->sec_data.slot
-        , client_type[src->version].ver_name
+        , client_type[src_version].ver_name
     );
 
     return char_des;

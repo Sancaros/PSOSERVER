@@ -1677,8 +1677,9 @@ uint8_t get_player_section(ship_client_t* src) {
         psocn_bb_char_t* character = get_client_char_bb(src);
         section_id = character->dress_data.section;
         break;
+
     default:
-        ERR_LOG("%s 版本 %s 颜色未获取成功", get_player_describe(src), client_type[0].ver_name);
+        ERR_LOG("%s 版本 %s 颜色未获取成功", get_player_describe(src), client_type[src->version].ver_name);
         break;
     }
 

@@ -472,22 +472,22 @@ static int bb_process_player_menu_section(ship_client_t* c, uint32_t item_id) {
 
     uint8_t new_section = (uint8_t)item_id;
     if (new_section < 0 || new_section > 9) {
-        send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4发生错误!颜色ID超出界限!"));
+        send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC4发生错误!颜色ID超出界限!"));
         return send_bb_player_section_list(c);
     }
 
     if (new_section == character->dress_data.section) {
-        send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7您当前已经是该颜色ID!"));
+        send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC7您当前已经是该颜色ID!"));
         return send_bb_player_section_list(c);
     }
 
     character->dress_data.section = new_section;
 
-    send_msg(c, BB_SCROLL_MSG_TYPE, "%s \tE\tC%s%s.", __(c, "\tE\tC7您当前颜色ID修改为")
-        , section_ids[character->dress_data.section].color_id, section_ids[character->dress_data.section].cn_name);
+    send_msg(c, BB_SCROLL_MSG_TYPE, "%s \tE\tC%s%s %s.", __(c, "\tE\tC7您当前颜色ID修改为")
+        , section_ids[character->dress_data.section].color_id, section_ids[character->dress_data.section].cn_name, __(c, "\tE\tC4请切换大厅立即生效."));
 
     /* All's well in the world if we get here. */
-    return send_ship_list(c, ship, ship->cfg->menu_code);
+    return send_block_list(c, ship);
 }
 
 static int bb_process_player_menu_skin(ship_client_t* c, uint32_t item_id) {
