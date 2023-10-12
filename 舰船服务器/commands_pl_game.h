@@ -1451,3 +1451,38 @@ static int handle_matuse(ship_client_t* c, const char* params) {
         , get_material_usage(inv, MATERIAL_LUCK)
     );
 }
+
+/* 用法: /npcskin 0 - 5*/
+static int handle_npcskin(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+    uint32_t skinid = 0;
+
+    if (l->type == LOBBY_TYPE_GAME) {
+        return send_txt(c, "%s", __(c, "\tE\tC4无法在游戏房间中使用."));
+    }
+
+    /* Figure out the user requested */
+    errno = 0;
+    skinid = (uint32_t)strtoul(params, NULL, 10);
+
+    if (errno != 0 || skinid > 5) {
+        /* Send a message saying invalid page number */
+        return send_txt(c, "%s", __(c, "\tE\tC4无效皮肤参数.(范围0 - 5, 0为角色皮肤)"));
+    }
+
+    if (skinid > 5) {
+        skinid = 5;
+    }
+
+    if (skinid == 0) {
+        c->bb_pl->character.dress_data.model = 0x00;
+        c->bb_pl->character.dress_data.v2flags = 0x00;
+    }
+    else {
+        c->bb_pl->character.dress_data.model = skinid - 1;
+        c->bb_pl->character.dress_data.v2flags = 0x02;
+    }
+
+    send_block_list(c, ship);
+    return send_txt(c, "皮肤切换为 \tE\tC%d%s\n%s", skinid, npcskin_desc[skinid], __(c, "\tE\tC4请切换大厅立即生效."));
+}

@@ -141,6 +141,7 @@ static command_t cmds[] = {
     { "qr"       , handle_quick_return  },
     { "lb"       , handle_lobby         },
     { "matuse"   , handle_matuse        },
+    { "npcskin"  , handle_npcskin       },
     { ""         , NULL                 }     /* End marker -- DO NOT DELETE */
 };
 

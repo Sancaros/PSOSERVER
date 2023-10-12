@@ -2122,6 +2122,7 @@ void show_lobby_cmd_help_msg(ship_client_t* src) {
             send_msg(src, MSG_BOX_TYPE,
                 "-----------------------大厅指令菜单-----------------------\n"
                 "/pl 玩家专属菜单,功能性菜单\n"
+                //"/npcskin 切换为其他NPC皮肤 (范围0 - 5, 0为角色皮肤)\n"
                 //"/save slot 保存某一个槽位角色的数据, slot范围 0 - 3\n"
                 //"/restore slot 从备份数据中恢复角色数据, slot范围 0 - 3 慎用\n"
                 //"/enablebk 当前已默认开启,开启自动备份功能1.\n"

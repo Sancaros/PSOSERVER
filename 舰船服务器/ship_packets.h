@@ -358,4 +358,6 @@ int send_bb_player_info_list(ship_client_t* dest);
 /* ¿ÆÂ×½±Àø */
 int send_bb_coren_dayreward_list(ship_client_t* dest);
 
+int send_bb_player_skin_list(ship_client_t* dest);
+
 #endif /* !SHIP_PACKETS_H */

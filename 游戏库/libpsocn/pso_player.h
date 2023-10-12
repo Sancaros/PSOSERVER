@@ -166,6 +166,16 @@ typedef enum {
     MATERIAL_LUCK = 4
 } MaterialType;
 
+/* 玩家皮肤支持列表描述 */
+static const char* npcskin_desc[] = {
+    "玩家",
+    "神秘人",//0
+    "莉可",//1
+    "索尼克",//2
+    "纳克鲁斯",//3
+    "塔尔斯",//4
+};
+
 bool char_class_is_male(uint8_t equip_flags);
 
 bool char_class_is_female(uint8_t equip_flags);

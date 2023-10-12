@@ -13658,3 +13658,43 @@ int send_bb_coren_dayreward_list(ship_client_t* dest) {
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)menu);
 
 }
+
+/* 玩家菜单修改颜色ID函数 */
+int send_bb_player_skin_list(ship_client_t* dest) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
+    uint16_t len = 0x100;
+    size_t i = 0;
+    char tmp_char[0x20] = { 0 };
+    psocn_bb_char_t* character = get_client_char_bb(dest);
+
+    /* 初始化数据包 */
+    memset(menu, 0, len);
+
+    len = 0;
+
+    /* 填充菜单实例 */
+    for (i = 0; i < _countof(pso_player_menu_skin); ++i) {
+        menu->entries[i].menu_id = LE32(pso_player_menu_skin[i]->menu_id);
+        menu->entries[i].item_id = LE32(pso_player_menu_skin[i]->item_id);
+        menu->entries[i].flags = LE16(pso_player_menu_skin[i]->flag);
+        if ((pso_player_menu_skin[i]->item_id == character->dress_data.model + 1) &&
+            (character->dress_data.v2flags == 0x02)
+            ) {
+            sprintf_s(tmp_char, sizeof(tmp_char), "%s[当前]", pso_player_menu_skin[i]->name);
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, tmp_char, 0x20);
+        }
+        else {
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_player_menu_skin[i]->name, 0x20);
+        }
+        len += 0x2C;
+    }
+
+    /* 填充数据头 */
+    menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+    menu->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
+    menu->hdr.flags = i - 1;
+
+    /* 加密并发送 */
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)menu);
+}
