@@ -1044,7 +1044,8 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
 
     /* See if they got any level ups. */
     do {
-        ent = &bb_char_stats.levels[cl][level];
+        /* 循环遍历升级经验表 要遍历到200级 */
+        ent = &bb_char_stats.levels[cl][level + 1];
 
         if (exp_total >= ent->exp) {
             need_lvlup = 1;
@@ -1059,9 +1060,6 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
         if (subcmd_send_lobby_bb_level(dest))
             return -1;
     }
-
-    if (character->disp.exp > bb_char_stats.levels[cl][199].exp)
-        character->disp.exp = bb_char_stats.levels[cl][199].exp;
 
     return 0;
 }
@@ -1099,9 +1097,6 @@ int client_give_level(ship_client_t* dest, uint32_t level_req) {
     character->disp.level = LE32(level_req);
     if (subcmd_send_lobby_bb_level(dest))
         return -1;
-
-    if (character->disp.exp > bb_char_stats.levels[cl][199].exp)
-        character->disp.exp = bb_char_stats.levels[cl][199].exp;
 
     return 0;
 }
@@ -1750,7 +1745,7 @@ void update_bb_mat_use(ship_client_t* src) {
     dfp_base = startingData->dfp;
     ata_base = startingData->ata;
 
-    for (size_t x = 0; x < character->disp.level + 1; x++) {
+    for (size_t x = 0; x < character->disp.level; x++) {
         atp_base += bb_char_stats.levels[ch_class][x].atp;
         mst_base += bb_char_stats.levels[ch_class][x].mst;
         evp_base += bb_char_stats.levels[ch_class][x].evp;
