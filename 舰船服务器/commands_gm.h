@@ -948,7 +948,6 @@ static void dumpinv_internal(ship_client_t* src) {
             GM_LOG("EXT1: %d", character_v1->inv.iitems[i].extension_data1);
             GM_LOG("EXT2: %d", character_v1->inv.iitems[i].extension_data2);
             GM_LOG("物品: %s", get_item_describe(&character_v1->inv.iitems[i].data, v));
-            GM_LOG("编号: 0x%08X", character_v1->inv.iitems[i].data.item_id);
             GM_LOG(""
                 "槽位 (%d) "
                 "(%s) %04X "
@@ -960,6 +959,7 @@ static void dumpinv_internal(ship_client_t* src) {
                 ((character_v1->inv.iitems[i].flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
                 character_v1->inv.iitems[i].flags
             );
+            GM_LOG("编号: 0x%08X", character_v1->inv.iitems[i].data.item_id);
             GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
                 character_v1->inv.iitems[i].data.datab[0], character_v1->inv.iitems[i].data.datab[1], character_v1->inv.iitems[i].data.datab[2], character_v1->inv.iitems[i].data.datab[3],
                 character_v1->inv.iitems[i].data.datab[4], character_v1->inv.iitems[i].data.datab[5], character_v1->inv.iitems[i].data.datab[6], character_v1->inv.iitems[i].data.datab[7],
@@ -985,7 +985,6 @@ static void dumpinv_internal(ship_client_t* src) {
             GM_LOG("EXT1: %d", character_bb->inv.iitems[i].extension_data1);
             GM_LOG("EXT2: %d", character_bb->inv.iitems[i].extension_data2);
             GM_LOG("物品: %s", get_item_describe(&character_bb->inv.iitems[i].data, v));
-            GM_LOG("编号: 0x%08X", character_bb->inv.iitems[i].data.item_id);
             GM_LOG(""
                 "槽位 (%d) "
                 "(%s) %04X "
@@ -997,6 +996,7 @@ static void dumpinv_internal(ship_client_t* src) {
                 ((character_bb->inv.iitems[i].flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
                 character_bb->inv.iitems[i].flags
             );
+            GM_LOG("编号: 0x%08X", character_bb->inv.iitems[i].data.item_id);
             GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
                 character_bb->inv.iitems[i].data.datab[0], character_bb->inv.iitems[i].data.datab[1], character_bb->inv.iitems[i].data.datab[2], character_bb->inv.iitems[i].data.datab[3],
                 character_bb->inv.iitems[i].data.datab[4], character_bb->inv.iitems[i].data.datab[5], character_bb->inv.iitems[i].data.datab[6], character_bb->inv.iitems[i].data.datab[7],

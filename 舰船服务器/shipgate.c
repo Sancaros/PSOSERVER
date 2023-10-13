@@ -1551,7 +1551,7 @@ static int handle_char_data_req(shipgate_conn_t* conn, shipgate_char_data_pkt* p
                     else if (c->bb_pl) {
                         memcpy(c->bb_pl, pkt->data, clen);
 
-                        fix_equip_item(&c->bb_pl->character.inv);
+                        //fix_equip_item(&c->bb_pl->character.inv);
 
                         //DBG_LOG("%s 玩家背包数据获取", get_player_describe(c));
                         //print_ascii_hex(dbgl, &c->bb_pl->character.inv, PSOCN_STLENGTH_INV);

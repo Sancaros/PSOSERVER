@@ -37,8 +37,8 @@
 #define PLAYER_EQUIP_FLAGS_FEMALE   0x80   // Bit 8 女人
 #define PLAYER_EQUIP_FLAGS_MAX      8
 
-#define EQUIP_FLAGS          0x00000008
-#define UNEQUIP_FLAGS        0xFFFFFFF7
+#define EQUIP_FLAGS          LE32(0x00000008)
+#define UNEQUIP_FLAGS        LE32(0xFFFFFFF7)
 
 /* 每个职业对应的装备FLAGS */
 static uint8_t class_equip_flags[12] = {
@@ -406,7 +406,6 @@ inline void print_titem_data(const item_t* item, int version) {
 /* 打印背包物品数据 */
 inline void print_iitem_data(const iitem_t* iitem, int item_index, int version) {
 	ITEM_LOG("物品: %s", get_item_describe(&iitem->data, version));
-	ITEM_LOG("编号: 0x%08X", iitem->data.item_id);
 	ITEM_LOG(""
 		"槽位 (%d) "
 		"(%s) %04X "
@@ -418,6 +417,7 @@ inline void print_iitem_data(const iitem_t* iitem, int item_index, int version) 
 		((iitem->flags & EQUIP_FLAGS) ? "已装备" : "未装备"),
 		iitem->flags
 	);
+	ITEM_LOG("编号: 0x%08X", iitem->data.item_id);
 	ITEM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
 		iitem->data.datab[0], iitem->data.datab[1], iitem->data.datab[2], iitem->data.datab[3],
 		iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
@@ -429,7 +429,6 @@ inline void print_iitem_data(const iitem_t* iitem, int item_index, int version) 
 /* 打印银行物品数据 */
 inline void print_bitem_data(const bitem_t* bitem, int item_index, int version) {
 	ITEM_LOG("物品: %s", get_item_describe(&bitem->data, version));
-	ITEM_LOG("编号: 0x%08X", bitem->data.item_id);
 	ITEM_LOG(""
 		"槽位 (%d) "
 		"(%s) %04X "
@@ -441,6 +440,7 @@ inline void print_bitem_data(const bitem_t* bitem, int item_index, int version) 
 		((bitem->show_flags & LE32(0x0001)) ? "显示" : "隐藏"),
 		bitem->show_flags
 	);
+	ITEM_LOG("编号: 0x%08X", bitem->data.item_id);
 	ITEM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
 		bitem->data.datab[0], bitem->data.datab[1], bitem->data.datab[2], bitem->data.datab[3],
 		bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],

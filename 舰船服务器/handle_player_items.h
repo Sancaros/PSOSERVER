@@ -82,9 +82,6 @@ bool add_bitem(ship_client_t* src, const bitem_t bitem);
 int player_use_item(ship_client_t* src, uint32_t item_id);
 int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);
 
-/* 挑战模式专用 */
-int initialize_cmode_iitem(ship_client_t* dest);
-
 /* 蓝色脉冲物品管理 */
 //iitem_t player_iitem_init(const item_t item);
 trade_inv_t* player_tinv_init(ship_client_t* src);
@@ -97,7 +94,6 @@ bool item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
 int player_equip_item(ship_client_t* src, uint32_t item_id);
 int player_unequip_item(ship_client_t* src, uint32_t item_id);
 int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count);
-int player_sort_inv(ship_client_t* src);
 /* 给客户端标记可穿戴职业装备的标签 */
 void player_class_tag_item_equip_flag(ship_client_t* c);
 void remove_titem_equip_flags(iitem_t* trade_item);

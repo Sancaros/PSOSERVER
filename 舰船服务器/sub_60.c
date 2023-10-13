@@ -1442,23 +1442,9 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_equip_t), 0x03))
         return -2;
 
-    //print_ascii_hex(dbgl,pkt,pkt->hdr.pkt_len);
-
     if (pkt->shdr.client_id != src->client_id) {
-#ifdef DEBUG
-        DBG_LOG("%s ID不一致!",
-            get_player_describe(src));
-#endif // DEBUG
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
-
-#ifdef DEBUG
-
-    psocn_bb_char_t* character = get_client_char_bb(src);
-
-    DBG_LOG("%s item_id 0x%08X equip_slot 0x%08X", get_player_describe(src), item_id, equip_slot);
-
-#endif // DEBUG
 
     /* 是否存在物品背包中? */
     if ((equip_resault = player_equip_item(src, item_id))) {
@@ -1482,8 +1468,6 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_unequip_t), 0x03))
         return -2;
-
-    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     if (pkt->shdr.client_id != src->client_id) {
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -6556,7 +6540,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     inventory_t* inv = get_client_inv_bb(src);
 
     for (int x = 0; x < inv->item_count; x++) {
-        if (!(inv->iitems[x].flags & 0x00000008)) {
+        if (!(inv->iitems[x].flags & EQUIP_FLAGS)) {
             continue;
         }
         if (inv->iitems[x].data.datab[0] != ITEM_TYPE_GUARD) {

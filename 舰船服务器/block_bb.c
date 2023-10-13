@@ -508,7 +508,9 @@ static int bb_process_player_menu_skin(ship_client_t* c, uint32_t item_id) {
         return send_block_list(c, ship);
     }
 
-    if (new_skin == character->dress_data.model + 1) {
+    if (new_skin == character->dress_data.model + 1 && 
+        character->dress_data.v2flags == 0x02
+        ) {
         send_msg(c, BB_SCROLL_MSG_TYPE, "%s %s", __(c, "\tE\tC7您当前已经是"), npcskin_desc[new_skin]);
         return send_bb_player_skin_list(c);
     }

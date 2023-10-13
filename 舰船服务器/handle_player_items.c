@@ -575,7 +575,7 @@ int find_bitem_pid_index(const psocn_bank_t* bank, const bitem_t* bitem) {
 int find_equipped_weapon(const inventory_t* inv){
     int ret = -1;
     for (int y = 0; y < inv->item_count; y++) {
-        if (!(inv->iitems[y].flags & 0x00000008)) {
+        if (!(inv->iitems[y].flags & EQUIP_FLAGS)) {
             continue;
         }
         if (inv->iitems[y].data.datab[0] != ITEM_TYPE_WEAPON) {
@@ -598,7 +598,7 @@ int find_equipped_weapon(const inventory_t* inv){
 int find_equipped_armor(const inventory_t* inv) {
     int ret = -1;
     for (int y = 0; y < inv->item_count; y++) {
-        if (!(inv->iitems[y].flags & 0x00000008)) {
+        if (!(inv->iitems[y].flags & EQUIP_FLAGS)) {
             continue;
         }
         if (inv->iitems[y].data.datab[0] != ITEM_TYPE_GUARD || 
@@ -622,7 +622,7 @@ int find_equipped_armor(const inventory_t* inv) {
 int find_equipped_mag(const inventory_t* inv) {
     int ret = -1;
     for (int y = 0; y < inv->item_count; y++) {
-        if (!(inv->iitems[y].flags & 0x00000008)) {
+        if (!(inv->iitems[y].flags & EQUIP_FLAGS)) {
             continue;
         }
         if (inv->iitems[y].data.datab[0] != ITEM_TYPE_MAG) {
@@ -804,7 +804,7 @@ item_t remove_invitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
-    //fix_client_inv(&character->inv);
+    fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -1727,7 +1727,7 @@ combintion_other:
 
         for (size_t z = 0; z < character->inv.item_count; z++) {
             iitem_t* inv_item = &character->inv.iitems[z];
-            if (!(inv_item->flags & 0x00000008)) {
+            if (!(inv_item->flags & EQUIP_FLAGS)) {
                 continue;
             }
 
@@ -1866,162 +1866,6 @@ int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
         if (!(item->datab[x] & 128) && (item->datab[x + 1] > 0))
             (char)item->datab[x + 1] += tmp_value;
     }
-
-    return 0;
-}
-
-int initialize_cmode_iitem(ship_client_t* dest) {
-    size_t x = 0;
-    lobby_t* l = dest->cur_lobby;
-
-    psocn_bb_char_t* character = &dest->mode_pl->bb;
-
-    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
-        clear_iitem(&character->inv.iitems[x]);
-    }
-
-    uint8_t char_class = character->dress_data.ch_class;
-    uint16_t costume = character->dress_data.costume;
-    uint16_t skin = character->dress_data.skin;
-    switch (char_class) {
-    case CLASS_HUMAR: //人类男
-    case CLASS_HUNEWEARL: //人类女
-    case CLASS_HUCAST: //机器人战士
-    case CLASS_HUCASEAL: //机器人女战士
-        // Saber战士
-        character->inv.iitems[0].present = 0x0001;
-        character->inv.iitems[0].flags = 0x00000008;
-        character->inv.iitems[0].data.datab[1] = 0x01; //不一样的地方
-        character->inv.iitems[0].data.item_id = 0x00010000;
-        break;
-    case CLASS_RAMAR: //人类男枪
-    case CLASS_RACAST: //人类女枪
-    case CLASS_RACASEAL: //机器人男枪
-    case CLASS_RAMARL: //机器人女枪
-        // Handgun枪手
-        character->inv.iitems[0].present = 0x0001;
-        character->inv.iitems[0].flags = 0x00000008;
-        character->inv.iitems[0].data.datab[1] = 0x06; //不一样的地方
-        character->inv.iitems[0].data.item_id = 0x00010000;
-        break;
-    case CLASS_FONEWM: //新人类男法师
-    case CLASS_FONEWEARL: //新人类女法师
-    case CLASS_FOMARL: //人类女法师
-    case CLASS_FOMAR: //人类男法师
-        // Cane法师
-        character->inv.iitems[0].present = 0x0001;
-        character->inv.iitems[0].flags = 0x00000008;
-        character->inv.iitems[0].data.datab[1] = 0x0A; //不一样的地方
-        character->inv.iitems[0].data.item_id = 0x00010000;
-        break;
-    default:
-        break;
-    }
-    // Frame 框架
-    character->inv.iitems[1].present = 0x0001;
-    character->inv.iitems[1].flags = 0x00000008;
-    character->inv.iitems[1].data.datab[0] = 0x01;
-    character->inv.iitems[1].data.datab[1] = 0x01;
-    character->inv.iitems[1].data.item_id = 0x00010001; //定义物品ID最大长度65537
-
-    // Mag 这里可以修改初始玛古的数据
-    character->inv.iitems[2].present = 0x0001;
-    character->inv.iitems[2].flags = 0x00000008;
-    character->inv.iitems[2].data.datab[0] = 0x02;
-    character->inv.iitems[2].data.datab[2] = 0x05;
-    character->inv.iitems[2].data.datab[4] = 0xF4;
-    character->inv.iitems[2].data.datab[5] = 0x01;
-    character->inv.iitems[2].data.data2b[0] = 0x14; // 20% synchro 20%同步
-    character->inv.iitems[2].data.item_id = 0x00010002;
-
-    if ((char_class == CLASS_HUCAST) || (char_class == CLASS_HUCASEAL) ||
-        (char_class == CLASS_RACAST) || (char_class == CLASS_RACASEAL))
-        character->inv.iitems[2].data.data2b[3] = (uint8_t)skin;
-    else
-        character->inv.iitems[2].data.data2b[3] = (uint8_t)costume;
-
-    if (character->inv.iitems[2].data.data2b[3] > 0x11)
-        character->inv.iitems[2].data.data2b[3] -= 0x11;
-
-    // Monomates 单体
-    character->inv.iitems[3].present = 0x0001;
-    character->inv.iitems[3].data.datab[0] = 0x03;
-    character->inv.iitems[3].data.datab[5] = 0x04;
-    character->inv.iitems[3].data.item_id = 0x00010003;
-
-    if ((char_class == CLASS_FONEWM) || (char_class == CLASS_FONEWEARL) ||
-        (char_class == CLASS_FOMARL) || (char_class == CLASS_FOMAR))
-    { //对应匹配四种人类模型
-      // Monofluids 单流体？
-        character->technique_levels_v1.foie = 0x00;//给基础技能 火球术
-        character->inv.iitems[4].present = 0x0001;
-        character->inv.iitems[4].flags = 0;
-        character->inv.iitems[4].data.datab[0] = 0x03;
-        character->inv.iitems[4].data.datab[1] = 0x01;
-        character->inv.iitems[4].data.datab[2] = 0x00;
-        character->inv.iitems[4].data.datab[3] = 0x00;
-        memset(&character->inv.iitems[4].data.datab[4], 0x00, 8);
-        character->inv.iitems[4].data.datab[5] = 0x04;
-        character->inv.iitems[4].data.item_id = 0x00010004;
-        memset(&character->inv.iitems[3].data.data2b[0], 0x00, 4);
-        character->inv.item_count = 5;
-    }
-    else {
-        character->inv.item_count = 4;
-    }
-
-    //调换一下代码位置 以匹配字节结构
-    character->inv.hpmats_used = 0; //血量
-    character->inv.tpmats_used = 0; //魔力
-    character->inv.language = 0; //语言
-
-    ////定义空白背包 格数为小于30
-    //for (ch = Character_NewE7->item_count; ch < 30; ch++)
-    //{
-    //    player->inv.iitems[ch].num_items = 0x00;
-    //    player->inv.iitems[ch].data.datab[1] = 0xFF;
-    //    player->inv.iitems[ch].data.item_id = EMPTY_STRING;
-    //}
-
-    switch (l->episode)
-    {
-    case GAME_TYPE_EPISODE_1:
-        switch (character->dress_data.ch_class) {
-        case CLASS_HUMAR: // 人类男猎人
-        case CLASS_HUNEWEARL: // 新人类女猎人
-        case CLASS_HUCAST: // 机器人男猎人
-        case CLASS_RAMAR: // 人类男枪手
-        case CLASS_RACAST: // 机器人男枪手
-        case CLASS_RACASEAL: // 机器人女枪手
-        case CLASS_FOMARL: // 人类女法师
-        case CLASS_FONEWM: // 新人类男法师
-        case CLASS_FONEWEARL: // 新人类女法师
-        case CLASS_HUCASEAL: // 机器人女猎人
-        case CLASS_FOMAR: // 人类男法师
-        case CLASS_RAMARL: // 人类女枪手
-            break;
-        default:
-            ERR_LOG("无效角色职业");
-            return -2;
-        }
-
-
-        switch (l->challenge)
-        {
-        default:
-            break;
-        }
-        break;
-
-    case GAME_TYPE_EPISODE_2:
-        break;
-
-    default:
-        ERR_LOG("未知挑战模式章节 %d", l->episode);
-        return -1;
-    }
-
-    DBG_LOG("重置GC %u 职业数据", dest->guildcard);
 
     return 0;
 }

@@ -830,7 +830,7 @@ int subcmd_send_lobby_bb_level(ship_client_t* dest) {
 
     /* 增加MAG的升级奖励. */
     for (i = 0; i < character->inv.item_count; ++i) {
-        if ((character->inv.iitems[i].flags & LE32(0x00000008)) &&
+        if ((character->inv.iitems[i].flags & EQUIP_FLAGS) &&
             character->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
             base = LE16(pkt.dfp);
             mag = LE16(character->inv.iitems[i].data.dataw[2]) / 100;
