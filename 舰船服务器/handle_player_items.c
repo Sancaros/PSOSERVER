@@ -1947,18 +1947,18 @@ bool item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签) {
     return PLAYER_EQUIP_FLAGS_OK;
 }
 
-/* 物品检测装备标签 */
+/* 物品装备函数 */
 int player_equip_item(ship_client_t* src, uint32_t item_id) {
     pmt_weapon_bb_t tmp_wp = { 0 };
     pmt_guard_bb_t tmp_guard = { 0 };
-    uint32_t found = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
+    uint32_t found = 0, j = 0;
+    uint8_t found_slot = 0, slot[4] = { 0 };
 
     psocn_bb_char_t* character = get_client_char_bb(src);
     inventory_t* inv = &character->inv;
 
-    for (int i = 0; i < inv->item_count; i++) {
+    for (size_t i = 0; i < inv->item_count; i++) {
         if (inv->iitems[i].data.item_id == item_id) {
-            found = 1;
             item_t* found_item = &inv->iitems[i].data;
 
             switch (found_item->datab[0]) {
@@ -1974,14 +1974,16 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                 }
                 else {
                     // 解除角色上任何其他武器的装备。（防止堆叠） 
-                    for (j = 0; j < inv_count; j++)
+                    for (j = 0; j < inv->item_count; j++)
                         if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_WEAPON) &&
                             (inv->iitems[j].flags & EQUIP_FLAGS)) {
                             inv->iitems[j].flags &= UNEQUIP_FLAGS;
-                            //DBG_LOG("卸载武器");
+                            DBG_LOG("卸载武器");
                         }
-                    //DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
+                    DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
                 }
+
+                found = 1;
                 break;
 
             case ITEM_TYPE_GUARD:
@@ -2002,9 +2004,9 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         return -7;
                     }
                     else {
-                        //DBG_LOG("装甲识别");
+                        DBG_LOG("装甲识别");
                         // 移除其他装甲和插槽
-                        for (j = 0; j < inv_count; ++j) {
+                        for (j = 0; j < inv->item_count; ++j) {
                             if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
                                 (inv->iitems[j].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
                                 (inv->iitems[j].flags & EQUIP_FLAGS)) {
@@ -2015,6 +2017,8 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         }
                         break;
                     }
+
+                    found = 1;
                     break;
 
                 case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
@@ -2033,35 +2037,36 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         return -10;
                     }
                     else {
-                        //DBG_LOG("护盾识别");
+                        DBG_LOG("护盾识别");
                         // Remove any other barrier
-                        for (j = 0; j < inv_count; ++j) {
+                        for (j = 0; j < inv->item_count; ++j) {
                             if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
                                 (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
                                 (inv->iitems[j].flags & EQUIP_FLAGS)) {
-                                //DBG_LOG("卸载护盾");
+                                DBG_LOG("卸载护盾");
                                 inv->iitems[j].flags &= UNEQUIP_FLAGS;
                                 inv->iitems[j].data.datab[4] = 0x00;
                             }
                         }
                     }
+
+                    found = 1;
                     break;
 
                 case ITEM_SUBTYPE_UNIT:// Assign unit a slot
                     //DBG_LOG("插槽识别");
+                    /* 先初始化插槽临时存储 */
                     for (j = 0; j < 4; j++)
                         slot[j] = 0;
 
-                    for (j = 0; j < inv_count; j++) {
+                    for (j = 0; j < inv->item_count; j++) {
                         // Another loop ;(
                         if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
-                            (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT)) {
-                            //DBG_LOG("插槽 %d 识别", j);
-                            if ((inv->iitems[j].flags & EQUIP_FLAGS) &&
-                                (inv->iitems[j].data.datab[4] < 0x04)) {
-
+                            (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT) &&
+                            (inv->iitems[j].flags & EQUIP_FLAGS)) {
+                            if (inv->iitems[j].data.datab[4] < 0x04) {
                                 slot[inv->iitems[j].data.datab[4]] = 1;
-                                //DBG_LOG("插槽 %d 卸载", j);
+                                //DBG_LOG("插槽 %d 已安装", inv->iitems[j].data.datab[4]);
                             }
                         }
                     }
@@ -2073,14 +2078,28 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         }
                     }
 
+                    //DBG_LOG("0x%02X", found_slot);
                     if (found_slot) {
                         found_slot--;
-                        inv->iitems[j].data.datab[4] = (uint8_t)(found_slot);
+                        inv->iitems[i].data.datab[4] = found_slot;
+                        //DBG_LOG("0x%02X", found_slot);
+                        found = 1;
                     }
                     else {//缺失 TODO
-                        inv->iitems[j].flags &= UNEQUIP_FLAGS;
-                        ERR_LOG("%s 装备了作弊的插槽物品数据!", get_player_describe(src));
-                        return -11;
+                        for (j = 0; j < inv->item_count; j++) {
+                            // Another loop ;(
+                            if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
+                                (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT) &&
+                                (inv->iitems[j].flags & EQUIP_FLAGS)) {
+                                ERR_LOG("%s 装备了 %s 作弊的 %d 插槽物品数据!"
+                                    , get_player_describe(src)
+                                    , get_item_describe(&inv->iitems[j].data, src->version)
+                                    , inv->iitems[j].data.datab[4]
+                                );
+                                inv->iitems[j].data.datab[4] = 0x00;
+                                inv->iitems[i].flags &= UNEQUIP_FLAGS;
+                            }
+                        }
                     }
                     break;
                 }
@@ -2096,10 +2115,15 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         inv->iitems[j].flags &= UNEQUIP_FLAGS;
                         //DBG_LOG("卸载玛古");
                     }
+                found = 1;
                 break;
             }
 
-            //DBG_LOG("完成卸载, 但是未识别成功");
+            if (!found) {
+
+                ERR_LOG("%s 完成装备, 但是未识别成功", get_player_describe(src));
+                return -11;
+            }
 
             /* TODO: Should really make sure we can equip it first... */
             inv->iitems[i].flags |= EQUIP_FLAGS;
@@ -2112,6 +2136,7 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
     return 0;
 }
 
+/* 物品卸装函数 */
 int player_unequip_item(ship_client_t* src, uint32_t item_id) {
     int found_item = 0;
     size_t x = 0, i = 0;
@@ -2132,19 +2157,20 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
                 }
                 break;
             case ITEM_TYPE_GUARD:
-                switch (inv->iitems[x].data.datab[1])
-                {
+                switch (inv->iitems[x].data.datab[1]) {
                 case ITEM_SUBTYPE_FRAME:
                     // Remove any other armor (stacking?) and equipped slot items.
-                    for (i = 0; i < inv->item_count; i++) {
+                    for (i = 0; i < inv->item_count; ++i) {
                         if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
-                            (inv->iitems[i].data.datab[1] != ITEM_SUBTYPE_FRAME) &&
+                            (inv->iitems[i].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
                             (inv->iitems[i].flags & EQUIP_FLAGS)) {
+                            //DBG_LOG("卸载装甲");
                             inv->iitems[i].flags &= UNEQUIP_FLAGS;
                             inv->iitems[i].data.datab[4] = 0x00;
                         }
                     }
                     break;
+
                 case ITEM_SUBTYPE_BARRIER:
                     // Remove any other barrier (stacking?)
                     for (i = 0; i < inv->item_count; i++)
@@ -2157,6 +2183,7 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
                         }
                     }
                     break;
+
                 case ITEM_SUBTYPE_UNIT:
                     // Remove unit from slot
                     inv->iitems[x].data.datab[4] = 0x00;
@@ -2181,6 +2208,7 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
     return 0;
 }
 
+/* 物品整理函数 */
 int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
     inventory_t* inventory = get_client_inv_bb(src);
     iitem_t iitem1, iitem2, swap_item = { 0 };

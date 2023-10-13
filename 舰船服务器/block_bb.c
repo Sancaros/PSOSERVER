@@ -490,6 +490,7 @@ static int bb_process_player_menu_section(ship_client_t* c, uint32_t item_id) {
     return send_block_list(c, ship);
 }
 
+/* Íæ¼ÒÇÐ»»Æ¤·ô TODO Ö§³ÖÊ£ÓàµÄÆ¤·ôÇÐ»» */
 static int bb_process_player_menu_skin(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
 
