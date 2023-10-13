@@ -6123,7 +6123,7 @@ int handle_pkt(ship_t* c) {
         }
     }
 
-    if (sz && rv == 0) {
+    if (sz) {
         if (c->recvbuf_size < sz) {
             tmp = realloc(c->recvbuf, sz);
             if (tmp == NULL) {
@@ -6132,13 +6132,15 @@ int handle_pkt(ship_t* c) {
                 //free_safe(recvbuf);
                 return -6;
             }
+
             c->recvbuf = (unsigned char*)tmp;
             c->recvbuf_size = sz;
         }
+
         memcpy(c->recvbuf, rbp, sz);
         c->recvbuf_cur = sz;
     }
-    else if (c->recvbuf) {
+    else {
         free_safe(c->recvbuf);
         c->recvbuf = NULL;
         c->recvbuf_size = 0;

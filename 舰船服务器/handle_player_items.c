@@ -1978,9 +1978,9 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_WEAPON) &&
                             (inv->iitems[j].flags & EQUIP_FLAGS)) {
                             inv->iitems[j].flags &= UNEQUIP_FLAGS;
-                            DBG_LOG("卸载武器");
+                            //DBG_LOG("卸载武器");
                         }
-                    DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
+                    //DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
                 }
 
                 found = 1;
@@ -2004,7 +2004,7 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         return -7;
                     }
                     else {
-                        DBG_LOG("装甲识别");
+                        //DBG_LOG("装甲识别");
                         // 移除其他装甲和插槽
                         for (j = 0; j < inv->item_count; ++j) {
                             if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
@@ -2015,7 +2015,6 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                                 inv->iitems[j].data.datab[4] = 0x00;
                             }
                         }
-                        break;
                     }
 
                     found = 1;
@@ -2037,13 +2036,13 @@ int player_equip_item(ship_client_t* src, uint32_t item_id) {
                         return -10;
                     }
                     else {
-                        DBG_LOG("护盾识别");
+                        //DBG_LOG("护盾识别");
                         // Remove any other barrier
                         for (j = 0; j < inv->item_count; ++j) {
                             if ((inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD) &&
                                 (inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
                                 (inv->iitems[j].flags & EQUIP_FLAGS)) {
-                                DBG_LOG("卸载护盾");
+                                //DBG_LOG("卸载护盾");
                                 inv->iitems[j].flags &= UNEQUIP_FLAGS;
                                 inv->iitems[j].data.datab[4] = 0x00;
                             }
