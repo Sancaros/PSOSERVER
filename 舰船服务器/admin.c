@@ -475,7 +475,7 @@ int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f) {
                             , __(i2, "\tE\tC6舰船将于")
                             , when
                             , __(i2, "分钟后"), restart ? "重启" : "关闭"
-                            , __(i2, "\tE\tC8更新服务器内容, 请玩家及时下线.")
+                            , __(i2, "\tE\tC8更新服务器内容,请玩家及时下线.")
                         );
                     }
                     else {
@@ -483,7 +483,7 @@ int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f) {
                             , __(i2, "\tE\tC6舰船将于")
                             , when
                             , __(i2, "分钟后"), restart ? "重启" : "关闭"
-                            , __(i2, "\tE\tC8更新服务器内容, 请玩家及时下线.")
+                            , __(i2, "\tE\tC8更新服务器内容,请玩家及时下线.")
                         );
                     }
                 }
@@ -493,7 +493,7 @@ int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f) {
 
     /* Log the event to the log file */
     if (c) {
-        SHIPS_LOG("舰船计划于 %" PRIu32 " 分钟后 %s 操作:%s.", when, restart ? "重启" : "关闭",
+        SHIPS_LOG("舰船计划于 %" PRIu32 " 分钟后 %s 并更新内容 操作:%s.", when, restart ? "重启" : "关闭",
             get_player_describe(c));
     }
     else {
