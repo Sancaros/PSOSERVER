@@ -53,6 +53,8 @@ typedef struct {
     size_t len;
 } Buffer;
 
+char char_for_language_code(uint8_t language);
+
 // 去除字符串中的空格、制表符和换行符，并判断是否包含这些字符
 void removeWhitespace(char* str);
 

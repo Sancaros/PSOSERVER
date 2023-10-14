@@ -750,12 +750,12 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 			break;
 
 		default:
-			area = cur_area;
+			//area = cur_area;
 			///* Everything after Dark Falz -> Ruins 3 */
-			//if (area > 14)
-			//	area = 10;
-			//else
-			//	area = 1;// unknown area
+			if (area > 14)
+				area = 10;
+			else
+				area = 1;// unknown area
 
 			break;
 
@@ -809,14 +809,14 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		area = cur_area + 1;
+		if (area > 10)
+			area = 10;
+
 		break;
 	}
 
 	if (area < 0)
 		return 1;
-
-	if (area > 10)
-		area = 10;
 
 	/* Subtract one, since we want the index in the box_drop array */
 	return --area;

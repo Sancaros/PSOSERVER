@@ -25,6 +25,23 @@
 
 #include "pso_text.h"
 
+char char_for_language_code(uint8_t language) {
+    switch (language) {
+    case 0:
+        return 'J';
+    case 1:
+        return 'E';
+    case 2:
+        return 'G';
+    case 3:
+        return 'F';
+    case 4:
+        return 'S';
+    default:
+        return '?';
+    }
+}
+
 // 去除字符串中的空格、制表符和换行符，并判断是否包含这些字符
 void removeWhitespace(char* str) {
     char* src = str;

@@ -55,9 +55,6 @@
     <ClInclude Include="max_tech_level.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="sg_packets.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
     <ClInclude Include="pso_message.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -103,6 +100,12 @@
     <ClInclude Include="pso_items_coren_reward_list.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_lobby.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sg_packets.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -139,6 +142,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_crash_handle.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pso_lobby.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
