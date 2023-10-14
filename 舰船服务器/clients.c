@@ -527,7 +527,7 @@ void client_send_bb_data(ship_client_t* c) {
         c->need_save_data = false;
 
         /* 将游戏时间存储入人物数据 */
-        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        c->bb_pl->character.play_time += ((uint32_t)now / 60) - ((uint32_t)c->login_time / 60);
 
         c->save_time = now;
 
