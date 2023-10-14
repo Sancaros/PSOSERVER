@@ -51,6 +51,7 @@
 #endif
 
 extern int enable_ipv6;
+extern int restart_on_shutdown;
 extern char ship_host4[32];
 extern char ship_host6[128];
 extern uint32_t ship_ip4;
@@ -146,6 +147,9 @@ static void* ship_thd(void* d) {
     ssize_t sent;
     time_t now = 0;
     time_t last_ban_sweep = time(NULL);
+    /* 格式化时间文本 */
+    char time_str[32];
+    time_t remaining_shutdown_time = 0;
     uint32_t numsocks = 1;
     psocn_event_t* event = NULL, * oldevent = s->cfg->events;
 
@@ -195,6 +199,16 @@ static void* ship_thd(void* d) {
 
         /* Ping pong?! */
         srv_time = time(NULL);
+
+        if (s->shutdown_time && srv_time + 1 < s->shutdown_time) {
+            /* 计算剩余时间 */
+            remaining_shutdown_time =  s->shutdown_time - srv_time;
+
+            snprintf(time_str, sizeof(time_str), "%d分钟%d秒", (int)remaining_shutdown_time / 60, (int)remaining_shutdown_time % 60);
+
+            /* 打印日志 */
+            SHIPS_LOG("距离舰船关闭还有：%s", time_str);
+        }
 
         /* Break out if we're shutting down now */
         if (s->shutdown_time && s->shutdown_time <= srv_time) {
@@ -262,6 +276,17 @@ static void* ship_thd(void* d) {
 
                 it->last_sent = srv_time;
             }
+            //else if (s->shutdown_time && srv_time + 1 < s->shutdown_time) {
+            //    /* 计算剩余时间 */
+
+            //    send_msg(it, BB_SCROLL_MSG_TYPE, "%s %d分钟%d秒后 %s,%s."
+            //        , __(it, "\tE\tC6舰船将于")
+            //        , (int)remaining_shutdown_time / 60
+            //        , (int)remaining_shutdown_time % 60
+            //        , restart_on_shutdown ? "重启" : "关闭"
+            //        , __(it, "\tE\tC8更新服务器内容,请玩家及时下线.")
+            //    );
+            //}
 
             FD_SET(it->sock, &readfds);
 

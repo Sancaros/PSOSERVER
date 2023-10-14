@@ -54,6 +54,7 @@
 #include "pmtdata.h"
 
 extern int enable_ipv6;
+extern int restart_on_shutdown;
 extern char ship_host4[32];
 extern char ship_host6[128];
 extern uint32_t ship_ip4;
@@ -1065,6 +1066,16 @@ static int bb_process_ping(ship_client_t* c) {
     }
 
     c->last_message = time(NULL);
+
+    if (ship->shutdown_time && srv_time < ship->shutdown_time) {
+        time_t remaining_shutdown_time = ship->shutdown_time - srv_time;
+        rv = send_msg(c, BB_SCROLL_MSG_TYPE, "%s %d分钟%d秒后 %s,请玩家及时下线.."
+            , __(c, "\tE\tC6舰船将于")
+            , (int)remaining_shutdown_time / 60
+            , (int)remaining_shutdown_time % 60
+            , restart_on_shutdown ? "重启" : "关闭"
+        );
+    }
 
     return rv;
 }
