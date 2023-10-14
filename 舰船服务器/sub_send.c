@@ -422,7 +422,7 @@ int subcmd_send_bb_create_tekk_item(ship_client_t* src, item_t item) {
     return send_pkt_bb(src, (bb_pkt_hdr_t*)&pkt);
 }
 
-/* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */
+/* 0x29 SUBCMD60_ITEM_DELETE BB 消除物品 */
 int subcmd_send_lobby_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_item_t pkt = { 0 };
@@ -430,6 +430,11 @@ int subcmd_send_lobby_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32
 
     if (!l)
         return -1;
+
+    if (!item_id) {
+        ERR_LOG("%s 试图移除不存在的物品");
+        return 0;
+    }
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
@@ -439,7 +444,7 @@ int subcmd_send_lobby_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32
     /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_ITEM_DELETE;
     pkt.shdr.size = (uint8_t)(pkt_size / 4);
-    pkt.shdr.client_id = c->client_id;
+    pkt.shdr.client_id = (uint16_t)c->client_id;
 
     /* 填充剩余数据 */
     pkt.item_id = item_id;

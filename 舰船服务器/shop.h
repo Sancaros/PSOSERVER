@@ -61,6 +61,10 @@ typedef struct shop_item_params {
 
 #undef PACKED
 
+/* 任务兑换限制 TODO 从数据库读取 */
+//uint32_t* quest_allow = 0; // the "allow" list for the 0x60CA command...
+//uint32_t quest_numallows;
+
 /* 生成商店物品 */
 item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index);
 item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子);

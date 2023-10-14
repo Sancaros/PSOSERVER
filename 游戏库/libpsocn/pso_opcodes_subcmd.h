@@ -311,7 +311,7 @@
 #define SUBCMD60_TRADE_DONE                    0xD4
 #define SUBCMD60_ITEM_EXCHANGE                 0xD5
 #define SUBCMD60_ITEM_EXCHANGE_PD              0xD7
-#define SUBCMD60_SRANK_ATTR                    0xD8   //为S级武器添加属性（尚未实现）  挑战模式
+#define SUBCMD60_ITEM_ADD_SRANK_ATTR           0xD8   //为S级武器添加属性（尚未实现）  挑战模式
 #define SUBCMD60_ITEM_EXCHANGE_MOMOKA          0xD9   // Momoka Item Exchange  Momoka物品交换 
 #define SUBCMD60_PD_COMPARE                    0xDA
 #define SUBCMD60_ITEM_EXCHANGE_IN_QUEST        0xDB

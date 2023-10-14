@@ -250,7 +250,11 @@ static void* block_thd(void* d) {
             }
 
             /* 默认间隔0秒存储一次数据 */
-            if ((it->save_time < srv_time) && (it->need_save_data) && !(it->flags & CLIENT_FLAG_DISCONNECTED)) {
+            if ((it->save_time < srv_time) && 
+                (it->need_save_data) && 
+                !(it->flags & CLIENT_FLAG_DISCONNECTED) &&
+                !(it->flags & CLIENT_FLAG_BURSTING)
+                ) {
                 client_send_bb_data(it);
                 it->need_save_data = true;
             }

@@ -6260,16 +6260,16 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     item_t item = remove_invitem(src, item_id, sell_amount, src->version != CLIENT_VERSION_BB);
-    if (item.datal[0] == 0 && item.data2l == 0) {
-        ERR_LOG("%s:%d 出售 %d 件 ID 0x%08X 失败", 
-            get_player_describe(src), src->sec_data.slot, sell_amount, item_id);
+    if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+        ERR_LOG("%s 出售 %d 件 ID 0x%08X 失败", 
+            get_player_describe(src), sell_amount, item_id);
         return -1;
     }
 
     size_t orignal_price = price_for_item(&item);
     if (orignal_price <= 0) {
-        ERR_LOG("%s:%d 出售 %d 件 ID 0x%04X 发生错误 orignal_price %d",
-            get_player_describe(src), src->sec_data.slot, sell_amount, item_id, orignal_price);
+        ERR_LOG("%s 出售 %d 件 ID 0x%04X 发生错误 orignal_price %d",
+            get_player_describe(src), sell_amount, item_id, orignal_price);
         return -2;
     }
 
@@ -6674,6 +6674,51 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
 }
 
+static int sub60_D5_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_exchange_item_in_quest_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (!in_game(src))
+        return -1;
+
+    //if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_exchange_item_in_quest_t), 0x03)) {
+    //    return -2;
+    //}
+
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+
+    if (pkt->shdr.client_id != src->client_id) {
+        return -3;
+    }
+
+    item_t work_item = pkt->exchange_item;
+
+    item_t del_item = remove_invitem(src, work_item.item_id, 1, src->version != CLIENT_VERSION_BB);
+    if (item_not_identification_bb(del_item.datal[0], del_item.datal[1])) {
+        ERR_LOG("%s 删除物品 %d ID 0x%08X 失败", get_player_describe(src), 1, work_item.item_id);
+        return -2;
+    }
+
+    rv = subcmd_send_lobby_bb_destroy_item(src, del_item.item_id, 1);
+
+    item_t compare_item = pkt->reward_item;
+
+    compare_item.item_id = generate_item_id(l, src->client_id);
+    compare_item.datab[5] = get_item_amount(&compare_item, 1);
+
+    if (!(rv = add_invitem(src, compare_item))) {
+        ERR_LOG("%s 背包空间不足, 无法获得物品! 错误码 %d", get_player_describe(src), rv);
+        return -3;
+    }
+
+    rv = subcmd_send_lobby_bb_create_inv_item(src, compare_item, 1, true);
+    rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->function_id);
+    rv = subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
+
+    return rv;
+}
+
 static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_item_exchange_pd_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -6717,8 +6762,8 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 
     if (work_item.datab[0] != ITEM_TYPE_TOOL) {
         ERR_LOG("兑换失败, 未找到对应物品");
-        send_msg(src, BB_SCROLL_MSG_TYPE, __(src, "兑换失败,未找到对应兑换物品"));
-        return -2;
+        send_msg(src, MSG_BOX_TYPE, __(src, "兑换失败,未找到对应兑换物品"));
+        return -3;
     }
 
     inventory_t* inv = get_client_inv_bb(src);
@@ -6726,8 +6771,8 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
     if (work_item_id == 0) {
         ERR_LOG("%s 兑换失败, 未找到对应物品", get_player_describe(src));
-        send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换失败, 未找到对应物品"));
-        send_bb_item_exchange_state(src, 0x00000001);
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "兑换失败, 未找到兑换所需物品"));
+        return 0;
     }
     else {
         /* 找到PD物品 并删除全部数量 */
@@ -6738,13 +6783,14 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         }
         item_t* del_item = &inv->iitems[index].data;
         size_t max_count = get_item_amount(del_item, 99);
+
         item_t pd = remove_invitem(src, del_item->item_id, max_count, src->version != CLIENT_VERSION_BB);
         if (item_not_identification_bb(pd.datal[0], pd.datal[1])) {
-            ERR_LOG("删除PD %d ID 0x%08X 失败", max_count, del_item->item_id);
+            ERR_LOG("%s 删除PD %d ID 0x%08X 失败", get_player_describe(src), max_count, del_item->item_id);
             return -2;
         }
 
-        rv = subcmd_send_lobby_bb_destroy_item(src, del_item->item_id, max_count);
+        rv = subcmd_send_lobby_bb_destroy_item(src, pd.item_id, max_count);
 
         /* 给玩家背包添加兑换完成的物品 */
         item_t add_item = pkt->add_item;
@@ -6760,7 +6806,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         /* 更新玩家任务状态 */
         rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->function_id);
 
-        rv = send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换成功"));
+        rv = send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "兑换成功"));
 
         if (rv)
             return -3;
@@ -6777,12 +6823,13 @@ static int sub60_D8_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+
     if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s ID不一致!", get_player_describe(src));
         return 0;
     }
 
-    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -6793,34 +6840,22 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-#ifdef DEBUG
-
-    DBG_LOG("sub60_D9_bb 数据包大小 0x%04X SIZE 0x%04X", pkt->hdr.pkt_len, pkt->shdr.size);
-
-#endif // DEBUG
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     inventory_t* inv = get_client_inv_bb(src);
 
-    item_t compare_item = { 0 };
-    compare_item = pkt->compare_item;
-    uint32_t compare_item_id = find_iitem_stack_item_id(inv, &compare_item);
-
+    uint32_t compare_item_id = find_iitem_stack_item_id(inv, &pkt->compare_item);
     if (compare_item_id == 0) {
-
         ERR_LOG("%s 没有兑换卷物品!", get_player_describe(src));
-
         send_bb_item_exchange_state(src, 0x00000001);
     }
     else {
-
         item_t item = remove_invitem(src, compare_item_id, 1, src->version != CLIENT_VERSION_BB);
         if (item.datal[0] == 0 && item.data2l == 0) {
             ERR_LOG("兑换 %d ID 0x%04X 失败", 1, compare_item_id);
             return -1;
         }
-
         subcmd_send_bb_exchange_item_in_quest(src, compare_item_id, 1);
-
         subcmd_send_lobby_bb_destroy_item(src, compare_item_id, 1);
 
         item_t add_item = pkt->add_item;
@@ -6835,6 +6870,134 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
         subcmd_send_lobby_bb_create_inv_item(src, add_item, get_item_amount(&add_item, 1), true);
 
         send_bb_item_exchange_state(src, 0x00000000);
+    }
+
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_upgrade_weapon_attribute_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (!in_game(src))
+        return -1;
+
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    //if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_upgrade_weapon_attribute_t), 0x03)) {
+    //    return -2;
+    //}
+
+    inventory_t* inv = get_client_inv_bb(src);
+
+    iitem_t work_item2;
+    uint32_t del_item_pid = 0;
+    uint32_t ci, ai,
+        compare_itemid = 0, compare_item1 = 0, compare_item2 = 0, num_attribs = 0;
+    char attrib_add;
+
+    memcpy(&compare_item1, &pkt->upgrade_item.datal[0], 3);
+    compare_itemid = pkt->item_id;
+    for (ci = 0; ci < inv->item_count; ci++) {
+        memcpy(&compare_item2, &inv->iitems[ci].data.datab[0], 3);
+        if ((inv->iitems[ci].data.item_id == compare_itemid) &&
+            (compare_item1 == compare_item2) && (inv->iitems[ci].data.datab[0] == ITEM_TYPE_WEAPON)) {
+            if (pkt->is_ps)
+                del_item_pid = BBItem_Photon_Drop;
+            else
+                del_item_pid = BBItem_Photon_Sphere;
+
+            size_t itemid = find_iitem_code_stack_item_id(inv, del_item_pid);
+            if (!itemid) {
+                ERR_LOG("%s 玩家背包中没有 0x%08X", get_player_describe(src), del_item_pid);
+                return -3;
+            }
+
+            item_t remove_item = remove_invitem(src, itemid, pkt->ex_amount, src->version != CLIENT_VERSION_BB);
+            if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
+                ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
+                print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+                return -3;
+            }
+            subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, pkt->ex_amount);
+
+            // Copy before shift
+            memcpy(&work_item2, &inv->iitems[ci], sizeof(iitem_t));
+
+            switch (pkt->ex_amount) {
+            case 0x01:
+                // 1 PS = 30%
+                if (pkt->is_ps)
+                    attrib_add = 30;
+                break;
+            case 0x04:
+                // 4 PDs = 1%
+                attrib_add = 1;
+                break;
+            case 0x14:
+                // 20 PDs = 5%
+                attrib_add = 5;
+                break;
+            default:
+                attrib_add = 0;
+                break;
+            }
+            ai = 0;
+            if ((work_item2.data.datab[6] > 0x00) &&
+                (!(work_item2.data.datab[6] & 128)))
+            {
+                num_attribs++;
+                if (work_item2.data.datab[6] == pkt->is_ps)
+                    ai = 7;
+            }
+            if ((work_item2.data.datab[8] > 0x00) &&
+                (!(work_item2.data.datab[8] & 128)))
+            {
+                num_attribs++;
+                if (work_item2.data.datab[8] == pkt->is_ps)
+                    ai = 9;
+            }
+            if ((work_item2.data.datab[10] > 0x00) &&
+                (!(work_item2.data.datab[10] & 128)))
+            {
+                num_attribs++;
+                if (work_item2.data.datab[10] == pkt->is_ps)
+                    ai = 11;
+            }
+            if (ai)
+            {
+                // Attribute already on weapon, increase it
+                (char)work_item2.data.datab[ai] += attrib_add;
+                if (work_item2.data.datab[ai] > 100)
+                    work_item2.data.datab[ai] = 100;
+            }
+            else
+            {
+                // Attribute not on weapon, add it if there isn't already 3 attributes
+                if (num_attribs < 3)
+                {
+                    work_item2.data.datab[6 + (num_attribs * 2)] = pkt->is_ps;
+                    (char)work_item2.data.datab[7 + (num_attribs * 2)] = attrib_add;
+                }
+            }
+
+            remove_item = remove_invitem(src, work_item2.data.item_id, 1, src->version != CLIENT_VERSION_BB);
+            if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
+                ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
+                print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+                return -3;
+            }
+
+            subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, 1);
+
+            if (!add_invitem(src, remove_item)) {
+                ERR_LOG("%s 获取强化物品失败!", get_player_describe(src));
+                return -5;
+            }
+
+            rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->request_id);
+            break;
+        }
     }
 
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
@@ -6904,14 +7067,13 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000000 )   10 00 60 00 00 00 00 00   DE 02 00 00 02 6F 5F 00  ..`.....?...o_.
 
         /* 删除光子票据 10个 但是会全部删除 */
-    iitem_t remove_item = { 0 };
-    remove_item.data = remove_invitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
-    if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
+    item_t remove_item = remove_invitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
+    if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
         ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -3;
     }
-    subcmd_send_lobby_bb_destroy_item(src, itemid, 1);
+    subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, 1);
 
     subcmd_send_bb_exchange_item_in_quest(src, itemid, 1);
 
@@ -7185,9 +7347,11 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type D0 - DF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
+    { SUBCMD60_ITEM_EXCHANGE              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D5_bb },
     { SUBCMD60_ITEM_EXCHANGE_PD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D7_bb },
-    { SUBCMD60_SRANK_ATTR                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D8_bb },
+    { SUBCMD60_ITEM_ADD_SRANK_ATTR        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D8_bb },
     { SUBCMD60_ITEM_EXCHANGE_MOMOKA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D9_bb },
+    { SUBCMD60_PD_COMPARE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DA_bb },
     { SUBCMD60_BOSS_ACT_SAINT_MILLION     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DC_bb },
     { SUBCMD60_GOOD_LUCK                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DE_bb },
 
