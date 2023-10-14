@@ -128,6 +128,8 @@ typedef struct ship {
 TAILQ_HEAD(ship_queue, ship);
 extern struct ship_queue ships;
 
+static char tmp_ship_desc[128] = { 0 };
+
 /* The key for accessing our thread-specific receive buffer. */
 extern pthread_key_t recvbuf_key;
 
@@ -143,6 +145,8 @@ void destroy_connection(ship_t *c);
 
 /* ¸üÐÂipv4 */
 int update_ship_ipv4(ship_t* c);
+
+char* get_ship_describe(ship_t* s);
 
 /* Handle incoming data to the shipgate. */
 int handle_pkt(ship_t *s);

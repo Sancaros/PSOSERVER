@@ -65,6 +65,8 @@ struct shipgate_conn {
     int sock;
     int hdr_read;
     int has_key;
+    char sg_host[65];
+    uint16_t sg_port;
 
     time_t login_attempt;
     time_t last_message;
@@ -88,6 +90,10 @@ struct shipgate_conn {
 #define SHIPGATE_CONN_DEFINED
 typedef struct shipgate_conn shipgate_conn_t;
 #endif
+
+static char tmp_sg_desc[128] = { 0 };
+
+char* get_shipgate_describe(shipgate_conn_t* sg);
 
 /* Attempt to connect to the shipgate. Returns < 0 on error, returns 0 on
    success. */

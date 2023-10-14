@@ -475,6 +475,8 @@ reconnet:
     /* Save a few other things in the struct */
     rv->sock = sock;
     rv->ship = s;
+    memcpy(rv->sg_host, s->cfg->shipgate_host, sizeof(rv->sg_host));
+    rv->sg_port = s->cfg->shipgate_port;
 
     return 0;
 
@@ -1876,13 +1878,13 @@ static int handle_char_data_req_err(shipgate_conn_t* conn, shipgate_cdata_err_pk
     return 0;
 }
 
-static int handle_usrlogin_err(shipgate_conn_t* conn,
+static int handle_usrlogin_err(shipgate_conn_t* sg,
     shipgate_gm_err_pkt* pkt) {
     uint16_t flags = ntohs(pkt->base.hdr.flags);
     uint32_t gc = ntohl(pkt->guildcard);
     uint32_t block = ntohl(pkt->block);
     uint32_t j;
-    ship_t* s = conn->ship;
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     int rv = 0;
@@ -1917,10 +1919,10 @@ static int handle_usrlogin_err(shipgate_conn_t* conn,
     return rv;
 }
 
-static int handle_blogin_err(shipgate_conn_t* c, shipgate_blogin_err_pkt* pkt) {
+static int handle_blogin_err(shipgate_conn_t* sg, shipgate_blogin_err_pkt* pkt) {
     uint32_t gc = ntohl(pkt->guildcard);
     uint32_t block = ntohl(pkt->blocknum);
-    ship_t* s = c->ship;
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
 
@@ -1945,10 +1947,10 @@ static int handle_blogin_err(shipgate_conn_t* c, shipgate_blogin_err_pkt* pkt) {
     return 0;
 }
 
-static int handle_login_reply(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
+static int handle_login_reply(shipgate_conn_t* sg, shipgate_error_pkt* pkt) {
     uint32_t err = ntohl(pkt->error_code);
     uint16_t flags = ntohs(pkt->hdr.flags);
-    ship_t* s = conn->ship;
+    ship_t* s = sg->ship;
 
     /* Make sure the packet looks sane */
     if (!(flags & SHDR_RESPONSE)) {
@@ -1987,19 +1989,19 @@ static int handle_login_reply(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
     }
     else {
         /* We have a response. Set the has key flag. */
-        conn->has_key = 1;
+        sg->has_key = 1;
         SHIPS_LOG("%s: 舰船与船闸完成对接", s->cfg->ship_name);
     }
 
     /* Send the burst of client data if we have any to send */
-    return shipgate_send_clients(conn);
+    return shipgate_send_clients(sg);
 }
 
-static int handle_friend(shipgate_conn_t* c, shipgate_friend_login_4_pkt* pkt) {
+static int handle_friend(shipgate_conn_t* sg, shipgate_friend_login_4_pkt* pkt) {
     uint16_t type = ntohs(pkt->hdr.pkt_type);
     uint32_t ugc, ubl, fsh, fbl;
     miniship_t* ms;
-    ship_t* s = c->ship;
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* cl;
     int on = type == SHDR_TYPE_FRLOGIN;
@@ -2044,9 +2046,9 @@ static int handle_friend(shipgate_conn_t* c, shipgate_friend_login_4_pkt* pkt) {
     return 0;
 }
 
-static int handle_addfriend(shipgate_conn_t* c, shipgate_friend_err_pkt* pkt) {
+static int handle_addfriend(shipgate_conn_t* sg, shipgate_friend_err_pkt* pkt) {
     uint32_t i;
-    ship_t* s = c->ship;
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* cl;
     uint32_t dest = ntohl(pkt->user_gc);
@@ -2098,9 +2100,9 @@ static int handle_addfriend(shipgate_conn_t* c, shipgate_friend_err_pkt* pkt) {
     return 0;
 }
 
-static int handle_delfriend(shipgate_conn_t* c, shipgate_friend_err_pkt* pkt) {
+static int handle_delfriend(shipgate_conn_t* sg, shipgate_friend_err_pkt* pkt) {
     uint32_t i;
-    ship_t* s = c->ship;
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* cl;
     uint32_t dest = ntohl(pkt->user_gc);
@@ -2152,10 +2154,10 @@ static int handle_delfriend(shipgate_conn_t* c, shipgate_friend_err_pkt* pkt) {
     return 0;
 }
 
-static int handle_kick(shipgate_conn_t* conn, shipgate_kick_pkt* pkt) {
+static int handle_kick(shipgate_conn_t* sg, shipgate_kick_pkt* pkt) {
     uint32_t gc = ntohl(pkt->guildcard);
     uint32_t block = ntohl(pkt->block);
-    ship_t* s = conn->ship;
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
 
@@ -2190,8 +2192,8 @@ static int handle_kick(shipgate_conn_t* conn, shipgate_kick_pkt* pkt) {
     return 0;
 }
 
-static int handle_frlist(shipgate_conn_t* c, shipgate_friend_list_pkt* pkt) {
-    ship_t* s = c->ship;
+static int handle_frlist(shipgate_conn_t* sg, shipgate_friend_list_pkt* pkt) {
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     uint32_t gc = ntohl(pkt->requester), gc2;
@@ -2271,9 +2273,9 @@ static int handle_frlist(shipgate_conn_t* c, shipgate_friend_list_pkt* pkt) {
     return 0;
 }
 
-static int handle_globalmsg(shipgate_conn_t* c, shipgate_global_msg_pkt* pkt) {
+static int handle_globalmsg(shipgate_conn_t* sg, shipgate_global_msg_pkt* pkt) {
     uint16_t text_len;
-    ship_t* s = c->ship;
+    ship_t* s = sg->ship;
     uint32_t i;
     block_t* b;
     ship_client_t* i2;
@@ -2322,8 +2324,8 @@ static int handle_globalmsg(shipgate_conn_t* c, shipgate_global_msg_pkt* pkt) {
     return 0;
 }
 
-static int handle_useropt(shipgate_conn_t* c, shipgate_user_opt_pkt* pkt) {
-    ship_t* s = c->ship;
+static int handle_useropt(shipgate_conn_t* sg, shipgate_user_opt_pkt* pkt) {
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
@@ -2441,8 +2443,8 @@ static int handle_useropt(shipgate_conn_t* c, shipgate_user_opt_pkt* pkt) {
     return 0;
 }
 
-static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
-    ship_t* s = c->ship;
+static int handle_bbopts(shipgate_conn_t* sg, shipgate_bb_opts_pkt* pkt) {
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
@@ -2489,8 +2491,8 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
     return 0;
 }
 
-static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
-    ship_t* s = c->ship;
+static int handle_schunk(shipgate_conn_t* sg, shipgate_schunk_pkt* pkt) {
+    ship_t* s = sg->ship;
     FILE* fp;
     char filename[64];
     uint32_t len, crc;
@@ -2586,7 +2588,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
                     err->base.hdr.flags = htons(SHDR_RESPONSE);
                     err->type = chtype;
                     memcpy(err->filename, pkt->filename, 32);
-                    return send_crypt(c, sizeof(shipgate_schunk_err_pkt),
+                    return send_crypt(sg, sizeof(shipgate_schunk_err_pkt),
                         sendbuf);
                 }
             }
@@ -2606,7 +2608,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
         err->base.error_code = htonl(ERR_SCHUNK_NEED_SCRIPT);
         err->type = chtype;
         memcpy(err->filename, pkt->filename, 32);
-        return send_crypt(c, sizeof(shipgate_schunk_err_pkt), sendbuf);
+        return send_crypt(sg, sizeof(shipgate_schunk_err_pkt), sendbuf);
     }
     else {
         /* Chunk packet */
@@ -2654,11 +2656,11 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
         err->base.hdr.flags = htons(SHDR_RESPONSE);
         memcpy(err->filename, pkt->filename, 32);
         err->type = chtype;
-        return send_crypt(c, sizeof(shipgate_schunk_err_pkt), sendbuf);
+        return send_crypt(sg, sizeof(shipgate_schunk_err_pkt), sendbuf);
     }
 }
 
-static int handle_sset(shipgate_conn_t* c, shipgate_sset_pkt* pkt) {
+static int handle_sset(shipgate_conn_t* sg, shipgate_sset_pkt* pkt) {
     script_action_t action;
 
     /* 合理性检查 the packet. */
@@ -2687,8 +2689,8 @@ static int handle_sset(shipgate_conn_t* c, shipgate_sset_pkt* pkt) {
     }
 }
 
-static int handle_sdata(shipgate_conn_t* c, shipgate_sdata_pkt* pkt) {
-    ship_t* s = c->ship;
+static int handle_sdata(shipgate_conn_t* sg, shipgate_sdata_pkt* pkt) {
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
@@ -2716,8 +2718,8 @@ static int handle_sdata(shipgate_conn_t* c, shipgate_sdata_pkt* pkt) {
     return 0;
 }
 
-static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
-    ship_t* s = c->ship;
+static int handle_qflag(shipgate_conn_t* sg, shipgate_qflag_pkt* pkt) {
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     lobby_t* l;
@@ -2801,13 +2803,13 @@ static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
     return 0;
 }
 
-static int handle_qflag_err(shipgate_conn_t* c, shipgate_qflag_err_pkt* pkt) {
+static int handle_qflag_err(shipgate_conn_t* sg, shipgate_qflag_err_pkt* pkt) {
     uint32_t gc = ntohl(pkt->base.guildcard);
     uint32_t block = ntohl(pkt->base.block);
     uint32_t value = ntohl(pkt->base.error_code);
     uint32_t type = ntohs(pkt->base.hdr.pkt_type);
     uint32_t flag_id = ntohl(pkt->base.reserved);
-    ship_t* s = c->ship;
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     lobby_t* l;
@@ -2886,7 +2888,7 @@ static int handle_qflag_err(shipgate_conn_t* c, shipgate_qflag_err_pkt* pkt) {
     return 0;
 }
 
-static int handle_sctl_sd(shipgate_conn_t* c, shipgate_sctl_shutdown_pkt* pkt,
+static int handle_sctl_sd(shipgate_conn_t* sg, shipgate_sctl_shutdown_pkt* pkt,
     int restart) {
     uint32_t when = ntohl(pkt->when);
     uint8_t* sendbuf = get_sendbuf();
@@ -2908,7 +2910,7 @@ static int handle_sctl_sd(shipgate_conn_t* c, shipgate_sctl_shutdown_pkt* pkt,
     err->acc = pkt->acc;
     err->reserved1 = pkt->reserved1;
     err->reserved2 = pkt->reserved2;
-    return send_crypt(c, sizeof(shipgate_sctl_err_pkt), sendbuf);
+    return send_crypt(sg, sizeof(shipgate_sctl_err_pkt), sendbuf);
 }
 
 static void conv_shaid(uint8_t out[20], const char* shaid) {
@@ -2928,7 +2930,7 @@ static void conv_shaid(uint8_t out[20], const char* shaid) {
 #define GIT_TIMESTAMP 1402221655
 #define GIT_IS_DIST
 
-static int handle_sctl_ver(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
+static int handle_sctl_ver(shipgate_conn_t* sg, shipgate_shipctl_pkt* pkt) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_sctl_ver_reply_pkt* rep = (shipgate_sctl_ver_reply_pkt*)sendbuf;
     uint16_t len;
@@ -2977,10 +2979,10 @@ static int handle_sctl_ver(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
     rep->flags = 0;
 #endif
 
-    return send_crypt(c, len, sendbuf);
+    return send_crypt(sg, len, sendbuf);
 }
 
-static int handle_sctl_uname(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
+static int handle_sctl_uname(shipgate_conn_t* sg, shipgate_shipctl_pkt* pkt) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_sctl_uname_reply_pkt* r = (shipgate_sctl_uname_reply_pkt*)sendbuf;
     struct win_utsname un;
@@ -3005,10 +3007,10 @@ static int handle_sctl_uname(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
     memcpy_str(r->version, un.version, 64);
     memcpy_str(r->machine, un.machine, 64);
 
-    return send_crypt(c, sizeof(shipgate_sctl_uname_reply_pkt), sendbuf);
+    return send_crypt(sg, sizeof(shipgate_sctl_uname_reply_pkt), sendbuf);
 }
 
-static int handle_sctl(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
+static int handle_sctl(shipgate_conn_t* sg, shipgate_shipctl_pkt* pkt) {
     uint32_t type = ntohl(pkt->ctl);
     uint8_t* sendbuf = get_sendbuf();
     shipgate_sctl_err_pkt* err = (shipgate_sctl_err_pkt*)sendbuf;
@@ -3017,16 +3019,16 @@ static int handle_sctl(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
 
     switch (type) {
     case SCTL_TYPE_RESTART:
-        return handle_sctl_sd(c, (shipgate_sctl_shutdown_pkt*)pkt, 1);
+        return handle_sctl_sd(sg, (shipgate_sctl_shutdown_pkt*)pkt, 1);
 
     case SCTL_TYPE_SHUTDOWN:
-        return handle_sctl_sd(c, (shipgate_sctl_shutdown_pkt*)pkt, 0);
+        return handle_sctl_sd(sg, (shipgate_sctl_shutdown_pkt*)pkt, 0);
 
     case SCTL_TYPE_VERSION:
-        return handle_sctl_ver(c, (shipgate_shipctl_pkt*)pkt);
+        return handle_sctl_ver(sg, (shipgate_shipctl_pkt*)pkt);
 
     case SCTL_TYPE_UNAME:
-        return handle_sctl_uname(c, (shipgate_shipctl_pkt*)pkt);
+        return handle_sctl_uname(sg, (shipgate_shipctl_pkt*)pkt);
     }
 
     /* If we get this far, then we don't know what the ctl is, send an error */
@@ -3042,11 +3044,11 @@ static int handle_sctl(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
     err->acc = pkt->acc;
     err->reserved1 = pkt->reserved1;
     err->reserved2 = pkt->reserved2;
-    return send_crypt(c, sizeof(shipgate_sctl_err_pkt), sendbuf);
+    return send_crypt(sg, sizeof(shipgate_sctl_err_pkt), sendbuf);
 }
 
-static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
-    ship_t* s = c->ship;
+static int handle_ubl(shipgate_conn_t* sg, shipgate_user_blocklist_pkt* pkt) {
+    ship_t* s = sg->ship;
     block_t* b;
     ship_client_t* i;
     uint32_t gc, block, count, j;
@@ -3108,7 +3110,7 @@ static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
     return 0;
 }
 
-static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl_bb_pkt* pkt) {
+static int handle_max_tech_level_bb(shipgate_conn_t* sg, shipgate_max_tech_lvl_bb_pkt* pkt) {
     int i, j;
 
     /* TODO 需增加加密传输认证,防止黑客行为 */
@@ -3147,7 +3149,7 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
     return 0;
 }
 
-static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* pkt) {
+static int handle_pl_level_bb(shipgate_conn_t* sg, shipgate_pl_level_bb_pkt* pkt) {
     uint32_t i;
 
     /* TODO 需增加加密传输认证,防止黑客行为 */
@@ -3251,7 +3253,7 @@ static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* p
     return 0;
 }
 
-static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_default_mode_char_data_bb_pkt* pkt) {
+static int handle_default_mode_char_data_bb(shipgate_conn_t* sg, shipgate_default_mode_char_data_bb_pkt* pkt) {
     uint32_t i, j;
 
     /* TODO 需增加加密传输认证,防止黑客行为 */
@@ -3308,11 +3310,11 @@ static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_defa
     return 0;
 }
 
-static int handle_shipgate_recv_data_complete(shipgate_conn_t * conn, shipgate_hdr_t* pkt) {
+static int handle_shipgate_recv_data_complete(shipgate_conn_t * sg, shipgate_hdr_t* pkt) {
     uint16_t flags = ntohs(pkt->flags);
 
     //初始化读写锁
-    pthread_rwlock_init(&conn->rwlock, NULL);
+    pthread_rwlock_init(&sg->rwlock, NULL);
 
     SHIPS_LOG("舰闸数据接收完成.");
     ///* Ignore responses for now... we don't send these just yet. */
@@ -3320,10 +3322,10 @@ static int handle_shipgate_recv_data_complete(shipgate_conn_t * conn, shipgate_h
     //    return 0;
     //}
 
-    return shipgate_send_ping(conn, 1);
+    return shipgate_send_ping(sg, 1);
 }
 
-static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
+static int handle_pkt(shipgate_conn_t* sg, shipgate_hdr_t* pkt) {
     __try {
         uint16_t type = ntohs(pkt->pkt_type);
         uint16_t flags = ntohs(pkt->flags);
@@ -3335,7 +3337,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
 #endif // DEBUG
 
-        if (!conn->has_key) {
+        if (!sg->has_key) {
             /* Silently ignore non-login packets when we're without a key
              当我们没有密钥时，自动忽略非登录数据包
             . */
@@ -3344,10 +3346,10 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             }
 
             if (type == SHDR_TYPE_LOGIN && !(flags & SHDR_RESPONSE)) {
-                return handle_login(conn, (shipgate_login_pkt*)pkt);
+                return handle_login(sg, (shipgate_login_pkt*)pkt);
             }
             else if (type == SHDR_TYPE_LOGIN6 && (flags & SHDR_RESPONSE)) {
-                return handle_login_reply(conn, (shipgate_error_pkt*)pkt);
+                return handle_login_reply(sg, (shipgate_error_pkt*)pkt);
             }
             else {
                 return 0;
@@ -3361,56 +3363,56 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             case SHDR_TYPE_PC:
             case SHDR_TYPE_BB:
                 /* Ignore these for now, we shouldn't get them. */
-                handle_bb_guild_err(conn, (shipgate_error_pkt*)pkt);
+                handle_bb_guild_err(sg, (shipgate_error_pkt*)pkt);
                 return 0;
 
             case SHDR_TYPE_CDATA:
-                return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
+                return handle_char_data_db_save(sg, (shipgate_cdata_err_pkt*)pkt);
 
             case SHDR_TYPE_CREQ:
             case SHDR_TYPE_CBKUP:
-                return handle_char_data_req_err(conn, (shipgate_cdata_err_pkt*)pkt);
+                return handle_char_data_req_err(sg, (shipgate_cdata_err_pkt*)pkt);
 
             case SHDR_TYPE_USRLOGIN:
-                return handle_usrlogin_err(conn, (shipgate_gm_err_pkt*)pkt);
+                return handle_usrlogin_err(sg, (shipgate_gm_err_pkt*)pkt);
 
             case SHDR_TYPE_IPBAN:
             case SHDR_TYPE_GCBAN:
-                return handle_ban(conn, (shipgate_ban_err_pkt*)pkt);
+                return handle_ban(sg, (shipgate_ban_err_pkt*)pkt);
 
             case SHDR_TYPE_BLKLOGIN:
             case SHDR_TYPE_BLKLOGOUT:
-                return handle_blogin_err(conn, (shipgate_blogin_err_pkt*)pkt);
+                return handle_blogin_err(sg, (shipgate_blogin_err_pkt*)pkt);
 
             case SHDR_TYPE_ADDFRIEND:
-                return handle_addfriend(conn, (shipgate_friend_err_pkt*)pkt);
+                return handle_addfriend(sg, (shipgate_friend_err_pkt*)pkt);
 
             case SHDR_TYPE_DELFRIEND:
-                return handle_delfriend(conn, (shipgate_friend_err_pkt*)pkt);
+                return handle_delfriend(sg, (shipgate_friend_err_pkt*)pkt);
 
             case SHDR_TYPE_QFLAG_SET:
             case SHDR_TYPE_QFLAG_GET:
-                return handle_qflag_err(conn, (shipgate_qflag_err_pkt*)pkt);
+                return handle_qflag_err(sg, (shipgate_qflag_err_pkt*)pkt);
 
             default:
                 ERR_LOG("%s: 船闸发送未知错误1! 指令 = 0x%04X 标识 = %d 密钥 = %d"
-                    , conn->ship->cfg->ship_name, type, flags, conn->has_key);
+                    , sg->ship->cfg->ship_name, type, flags, sg->has_key);
                 return -1;
             }
         }
         else {
             switch (type) {
             case SHDR_TYPE_DC:
-                return handle_dc(conn, (shipgate_fw_9_pkt*)pkt);
+                return handle_dc(sg, (shipgate_fw_9_pkt*)pkt);
 
             case SHDR_TYPE_PC:
-                return handle_pc(conn, (shipgate_fw_9_pkt*)pkt);
+                return handle_pc(sg, (shipgate_fw_9_pkt*)pkt);
 
             case SHDR_TYPE_BB:
-                return handle_bb(conn, (shipgate_fw_9_pkt*)pkt);
+                return handle_bb(sg, (shipgate_fw_9_pkt*)pkt);
 
             case SHDR_TYPE_SSTATUS:
-                return handle_sstatus(conn, (shipgate_ship_status6_pkt*)pkt);
+                return handle_sstatus(sg, (shipgate_ship_status6_pkt*)pkt);
 
             case SHDR_TYPE_PING:
                 /* Ignore responses for now... we don't send these just yet. */
@@ -3427,23 +3429,23 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
 #endif // DEBUG
 
-                return shipgate_send_ping(conn, 1);
+                return shipgate_send_ping(sg, 1);
 
             case SHDR_TYPE_CREQ:
-                return handle_char_data_req(conn, (shipgate_char_data_pkt*)pkt);
+                return handle_char_data_req(sg, (shipgate_char_data_pkt*)pkt);
 
             case SHDR_TYPE_USRLOGIN:
-                return handle_usrlogin(conn, (shipgate_usrlogin_reply_pkt*)pkt);
+                return handle_usrlogin(sg, (shipgate_usrlogin_reply_pkt*)pkt);
 
             case SHDR_TYPE_COUNT:
-                return handle_count(conn, (shipgate_cnt_pkt*)pkt);
+                return handle_count(sg, (shipgate_cnt_pkt*)pkt);
 
             case SHDR_TYPE_CDATA:
-                return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
+                return handle_char_data_db_save(sg, (shipgate_cdata_err_pkt*)pkt);
 
             case SHDR_TYPE_IPBAN:
             case SHDR_TYPE_GCBAN:
-                return handle_ban(conn, (shipgate_ban_err_pkt*)pkt);
+                return handle_ban(sg, (shipgate_ban_err_pkt*)pkt);
 
             case SHDR_TYPE_BLKLOGIN:
                 return 0;
@@ -3453,22 +3455,22 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
             case SHDR_TYPE_FRLOGIN:
             case SHDR_TYPE_FRLOGOUT:
-                return handle_friend(conn, (shipgate_friend_login_4_pkt*)pkt);
+                return handle_friend(sg, (shipgate_friend_login_4_pkt*)pkt);
 
             case SHDR_TYPE_ADDFRIEND:
-                return handle_addfriend(conn, (shipgate_friend_err_pkt*)pkt);
+                return handle_addfriend(sg, (shipgate_friend_err_pkt*)pkt);
 
             case SHDR_TYPE_DELFRIEND:
-                return handle_delfriend(conn, (shipgate_friend_err_pkt*)pkt);
+                return handle_delfriend(sg, (shipgate_friend_err_pkt*)pkt);
 
             case SHDR_TYPE_KICK:
-                return handle_kick(conn, (shipgate_kick_pkt*)pkt);
+                return handle_kick(sg, (shipgate_kick_pkt*)pkt);
 
             case SHDR_TYPE_FRLIST:
-                return handle_frlist(conn, (shipgate_friend_list_pkt*)pkt);
+                return handle_frlist(sg, (shipgate_friend_list_pkt*)pkt);
 
             case SHDR_TYPE_GLOBALMSG:
-                return handle_globalmsg(conn, (shipgate_global_msg_pkt*)pkt);
+                return handle_globalmsg(sg, (shipgate_global_msg_pkt*)pkt);
 
             case SHDR_TYPE_USEROPT:
                 /* We really should notify the user either way... but for now,
@@ -3477,19 +3479,19 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
                     return 0;
                 }
 
-                return handle_useropt(conn, (shipgate_user_opt_pkt*)pkt);
+                return handle_useropt(sg, (shipgate_user_opt_pkt*)pkt);
 
             case SHDR_TYPE_BBOPTS:
-                return handle_bbopts(conn, (shipgate_bb_opts_pkt*)pkt);
+                return handle_bbopts(sg, (shipgate_bb_opts_pkt*)pkt);
 
             case SHDR_TYPE_BBMAXTECH:
-                return handle_max_tech_level_bb(conn, (shipgate_max_tech_lvl_bb_pkt*)pkt);
+                return handle_max_tech_level_bb(sg, (shipgate_max_tech_lvl_bb_pkt*)pkt);
 
             case SHDR_TYPE_BBLVLDATA:
-                return handle_pl_level_bb(conn, (shipgate_pl_level_bb_pkt*)pkt);
+                return handle_pl_level_bb(sg, (shipgate_pl_level_bb_pkt*)pkt);
 
             case SHDR_TYPE_BBDEFAULT_MODE_DATA:
-                return handle_default_mode_char_data_bb(conn, (shipgate_default_mode_char_data_bb_pkt*)pkt);
+                return handle_default_mode_char_data_bb(sg, (shipgate_default_mode_char_data_bb_pkt*)pkt);
 
             case SHDR_TYPE_CBKUP:
                 if (!(flags & SHDR_RESPONSE)) {
@@ -3501,23 +3503,23 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
                 return 0;
 
             case SHDR_TYPE_SCHUNK:
-                return handle_schunk(conn, (shipgate_schunk_pkt*)pkt);
+                return handle_schunk(sg, (shipgate_schunk_pkt*)pkt);
 
             case SHDR_TYPE_SSET:
-                return handle_sset(conn, (shipgate_sset_pkt*)pkt);
+                return handle_sset(sg, (shipgate_sset_pkt*)pkt);
 
             case SHDR_TYPE_SDATA:
-                return handle_sdata(conn, (shipgate_sdata_pkt*)pkt);
+                return handle_sdata(sg, (shipgate_sdata_pkt*)pkt);
 
             case SHDR_TYPE_QFLAG_SET:
             case SHDR_TYPE_QFLAG_GET:
-                return handle_qflag(conn, (shipgate_qflag_pkt*)pkt);
+                return handle_qflag(sg, (shipgate_qflag_pkt*)pkt);
 
             case SHDR_TYPE_SHIP_CTL:
-                return handle_sctl(conn, (shipgate_shipctl_pkt*)pkt);
+                return handle_sctl(sg, (shipgate_shipctl_pkt*)pkt);
 
             case SHDR_TYPE_UBLOCKS:
-                return handle_ubl(conn, (shipgate_user_blocklist_pkt*)pkt);
+                return handle_ubl(sg, (shipgate_user_blocklist_pkt*)pkt);
                 /*
             case SHDR_TYPE_8000:
                 return 0;
@@ -3542,7 +3544,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
                 return 0;
 
             case SHDR_TYPE_COMPLETE_DATA:
-                return handle_shipgate_recv_data_complete(conn, (shipgate_hdr_t*)pkt);
+                return handle_shipgate_recv_data_complete(sg, (shipgate_hdr_t*)pkt);
 
             default:
                 DBG_LOG("未知测试数据获取指令 0x%04X", type);
@@ -3562,20 +3564,39 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
     }
 }
 
+char* get_shipgate_describe(shipgate_conn_t* sg) {
+
+    memset(tmp_sg_desc, 0, sizeof(tmp_sg_desc));
+
+    if (!sg) {
+        sprintf_s(tmp_sg_desc, sizeof(tmp_sg_desc), "无效舰闸 %d:%s", sg->sock, sg->sg_host);
+        return tmp_sg_desc;
+    }
+
+    if (!sg->session) {
+        sprintf_s(tmp_sg_desc, sizeof(tmp_sg_desc), "非法GNUTLS舰闸 %d:%s", sg->sock, sg->sg_host);
+        return tmp_sg_desc;
+    }
+
+    sprintf_s(tmp_sg_desc, sizeof(tmp_sg_desc), "%s:%d:%d", sg->sg_host, sg->sg_port, sg->sock);
+
+    return tmp_sg_desc;
+}
+
 /* 从船闸服务器读取数据流. */
-int process_shipgate_pkt(shipgate_conn_t* c) {
+int process_shipgate_pkt(shipgate_conn_t* sg) {
     __try {
-        if (c == NULL) {
+        if (sg == NULL) {
             ERR_LOG("非法舰闸链接");
             return -2; // 参数合法性检查
         }
 
-        if (!c->session) {
+        if (!sg->session) {
             ERR_LOG("非法舰闸session");
             return -3; // 错误检查，确保 c->session 不为空
         }
 
-        pthread_rwlock_rdlock(&c->rwlock);
+        pthread_rwlock_rdlock(&sg->rwlock);
 
         ssize_t sz;
         ssize_t pkt_sz;
@@ -3593,12 +3614,12 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
         }
 
         /* 如果有缓冲区中已有数据，则将其复制到主缓冲区，以便后续处理。 */
-        if (c->recvbuf_cur) {
-            memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
+        if (sg->recvbuf_cur) {
+            memcpy(recvbuf, sg->recvbuf, sg->recvbuf_cur);
         }
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
-        sz = sg_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
+        sz = sg_recv(sg, recvbuf + sg->recvbuf_cur, MAX_PACKET_BUFF - sg->recvbuf_cur);
 
         //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
         //DBG_LOG("process_shipgate_pkt");
@@ -3606,35 +3627,35 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         if (sz <= 0) {
-            pthread_rwlock_unlock(&c->rwlock);
+            pthread_rwlock_unlock(&sg->rwlock);
             if (sz == SOCKET_ERROR) {
-                ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
+                ERR_LOG("%s Gnutls *** 注意: SOCKET_ERROR", get_shipgate_describe(sg));
             }
             else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-                ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+                ERR_LOG("%s Gnutls *** 警告: %s", get_shipgate_describe(sg), gnutls_strerror(sz));
             }
             else if (sz < 0) {
-                ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-                ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
+                ERR_LOG("%s Gnutls *** 错误: %s", get_shipgate_describe(sg), gnutls_strerror(sz));
+                ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_shipgate_describe(sg), sz);
             }
 
             return -4;
         }
 
-        sz += c->recvbuf_cur;
-        c->recvbuf_cur = 0;
+        sz += sg->recvbuf_cur;
+        sg->recvbuf_cur = 0;
         rbp = recvbuf;
 
         /* 只要我们拥有足够长的数据，就进行解密。 */
         while (sz >= recv_size && rv == 0) {
             /* 复制数据包头部，以便知道要处理的数据包的长度。 */
-            if (!c->hdr_read) {
-                memcpy(&c->pkt, rbp, recv_size);
-                c->hdr_read = 1;
+            if (!sg->hdr_read) {
+                memcpy(&sg->pkt, rbp, recv_size);
+                sg->hdr_read = 1;
             }
 
             /* 读取数据包的大小以确定预期的数据大小。 */
-            pkt_sz = ntohs(c->pkt.pkt_len);
+            pkt_sz = ntohs(sg->pkt.pkt_len);
 
             /* 我们始终需要8字节的倍数。 */
             if (pkt_sz & 0x07) {
@@ -3644,13 +3665,13 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
             /* 是否已接收完整的数据包？ */
             if (sz >= (ssize_t)pkt_sz) {
                 /* 是的，将其复制出来。 */
-                memcpy(rbp, &c->pkt, recv_size);
+                memcpy(rbp, &sg->pkt, recv_size);
 
                 /* 将数据包传递给正确的处理程序。 */
-                c->last_message = time(NULL);
-                rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
+                sg->last_message = time(NULL);
+                rv = handle_pkt(sg, (shipgate_hdr_t*)rbp);
                 if (rv) {
-                    pthread_rwlock_unlock(&c->rwlock);
+                    pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("处理数据包出错，rv = %d", rv);
                     //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
                     //print_ascii_hex(errl, errpkt, errpkt->pkt_len);
@@ -3659,7 +3680,7 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
 
                 rbp += pkt_sz;
                 sz -= pkt_sz;
-                c->hdr_read = 0;
+                sg->hdr_read = 0;
             }
             else {
                 /* 没有，说明还缺少部分数据，跳出循环，将剩余数据缓冲起来。 */
@@ -3670,30 +3691,30 @@ int process_shipgate_pkt(shipgate_conn_t* c) {
         /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
         if (sz && rv == 0) {
             /* 如果接收缓冲区大小不够，则重新分配。 */
-            if (c->recvbuf_size < sz) {
-                tmp = realloc(c->recvbuf, sz);
+            if (sg->recvbuf_size < sz) {
+                tmp = realloc(sg->recvbuf, sz);
 
                 if (!tmp) {
-                    pthread_rwlock_unlock(&c->rwlock);
+                    pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("重新分配内存失败");
                     return -6;
                 }
 
-                c->recvbuf = (unsigned char*)tmp;
-                c->recvbuf_size = sz;
+                sg->recvbuf = (unsigned char*)tmp;
+                sg->recvbuf_size = sz;
             }
 
-            memcpy(c->recvbuf, rbp, sz);
-            c->recvbuf_cur = sz;
+            memcpy(sg->recvbuf, rbp, sz);
+            sg->recvbuf_cur = sz;
         }
-        else if (c->recvbuf) {
+        else if (sg->recvbuf) {
             /* 如果接收缓冲区为空，则释放它。 */
-            free_safe(c->recvbuf);
-            c->recvbuf = NULL;
-            c->recvbuf_size = 0;
+            free_safe(sg->recvbuf);
+            sg->recvbuf = NULL;
+            sg->recvbuf_size = 0;
         }
 
-        pthread_rwlock_unlock(&c->rwlock);
+        pthread_rwlock_unlock(&sg->rwlock);
         return 0;
     }
 

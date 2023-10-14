@@ -752,6 +752,29 @@ int update_ship_ipv4(ship_t* s) {
     return 0;
 }
 
+char* get_ship_describe(ship_t* s) {
+    memset(tmp_ship_desc, 0, sizeof(tmp_ship_desc));
+
+    if (!s) {
+        sprintf_s(tmp_ship_desc, sizeof(tmp_ship_desc), "无效舰船 %d:%s", s->sock, s->remote_host4);
+        return tmp_ship_desc;
+    }
+
+    if (!s->session) {
+        sprintf_s(tmp_ship_desc, sizeof(tmp_ship_desc), "非法GNUTLS舰船 %d:%s", s->sock, s->remote_host4);
+        return tmp_ship_desc;
+    }
+
+    if (!s->has_key) {
+        sprintf_s(tmp_ship_desc, sizeof(tmp_ship_desc), "未认证舰船 %d:%s", s->sock, s->remote_host4);
+        return tmp_ship_desc;
+    }
+
+    sprintf_s(tmp_ship_desc, sizeof(tmp_ship_desc), "%s(%d:%d:%s)", s->ship_name, s->key_idx, s->sock, s->remote_host4);
+
+    return tmp_ship_desc;
+}
+
 /* 处理 ship's login response. */
 static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
     char query[512];
@@ -6077,14 +6100,17 @@ int handle_pkt(ship_t* c) {
     if (sz <= 0) {
         pthread_rwlock_unlock(&c->rwlock);
         if (sz == SOCKET_ERROR) {
-            DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
+            DBG_LOG("%s Gnutls *** 注意: SOCKET_ERROR", get_ship_describe(c));
         }
         else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-            ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+            ERR_LOG("%s Gnutls *** 警告: %s", get_ship_describe(c), gnutls_strerror(sz));
         }
         else if (sz < 0) {
-            ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-            ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
+            ERR_LOG("%s Gnutls *** 错误: %s"
+                , get_ship_describe(c)
+                , gnutls_strerror(sz)
+            );
+            ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_ship_describe(c), sz);
         }
 
         //free_safe(recvbuf);

@@ -494,8 +494,8 @@ static void* ship_thd(void* d) {
             /* Process the shipgate */
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &readfds)) {
                 if ((rv = process_shipgate_pkt(&s->sg))) {
-                    ERR_LOG("%s: 失去与船闸的连接1 rv = %d",
-                        s->cfg->ship_name, rv);
+                    ERR_LOG("%s: 失去与船闸 %s 的连接1 rv = %d",
+                        s->cfg->ship_name, get_shipgate_describe(&s->sg), rv);
 
                     /* Close the connection so we can attempt to reconnect */
                     gnutls_bye(s->sg.session, GNUTLS_SHUT_RDWR);
@@ -504,8 +504,8 @@ static void* ship_thd(void* d) {
                     s->sg.sock = SOCKET_ERROR;
 
                     if (rv < -1) {
-                        ERR_LOG("%s: 与船闸连接出错1, 尝试重新对接!",
-                            s->cfg->ship_name);
+                        ERR_LOG("%s: 与船闸 %s 连接出错1, 尝试重新对接!",
+                            s->cfg->ship_name, get_shipgate_describe(&s->sg));
                         shipgate_reconnect(&s->sg);
 
                         //s->run = 0;
@@ -515,8 +515,8 @@ static void* ship_thd(void* d) {
 
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &writefds)) {
                 if (rv = send_shipgate_pkts(&s->sg)) {
-                    ERR_LOG("%s: 失去与船闸的连接2 rv = %d",
-                        s->cfg->ship_name, rv);
+                    ERR_LOG("%s: 失去与船闸 %s 的连接2 rv = %d",
+                        s->cfg->ship_name, get_shipgate_describe(&s->sg), rv);
 
                     /* Close the connection so we can attempt to reconnect */
                     gnutls_bye(s->sg.session, GNUTLS_SHUT_RDWR);
@@ -525,8 +525,8 @@ static void* ship_thd(void* d) {
                     s->sg.sock = SOCKET_ERROR;
 
                     if (rv < -1) {
-                        ERR_LOG("%s: 与船闸连接出错2, 断开!",
-                            s->cfg->ship_name);
+                        ERR_LOG("%s: 与船闸 %s 连接出错2, 断开!",
+                            s->cfg->ship_name, get_shipgate_describe(&s->sg));
                         shipgate_reconnect(&s->sg);
                     }
                 }
