@@ -691,6 +691,8 @@ pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t diffic
 		break;
 	}
 
+	DBG_LOG("ep %d ptid %d", episode, game_ep_pt_index);
+
 	pt_bb_entry_t* tmp = pt_dynamics_read_bb(ship->cfg->bb_ptdata_file, game_ep_pt_index, difficulty, section);
 	if (!tmp)
 		return &bb_ptdata[game_ep_pt_index][difficulty][section];

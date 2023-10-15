@@ -302,6 +302,7 @@ int rt_read_bb(const char* fn) {
     size_t sz = sizeof(rt_table_t);
     pso_error_t err;
     int rv = 0, 章节, 难度, 颜色/*, z*/;
+    size_t i = 0, j = 0;
     rt_table_t* buf;
     rt_table_t* ent;
 
@@ -366,6 +367,50 @@ int rt_read_bb(const char* fn) {
                 ent = &bb_rtdata[章节][难度][颜色];
 
                 memcpy(ent, buf, sz);
+
+                for (i = 0; i < 0x65; i++) {
+                    ent->enemy_rares[i].probability = buf->enemy_rares[i].probability;
+                    for (j = 0; j < 3; j++) {
+                        ent->enemy_rares[i].item_code[j] = buf->enemy_rares[i].item_code[j];
+                    }
+                }
+
+                for (i = 0; i < 0x1E; i++) {
+                    ent->box_areas[i] = buf->box_areas[i];
+                }
+
+                for (i = 0; i < 0x1E; i++) {
+                    ent->box_rares[i].probability = buf->box_rares[i].probability;
+                    for (j = 0; j < 3; j++) {
+                        ent->box_rares[i].item_code[j] = buf->box_rares[i].item_code[j];
+                    }
+                }
+
+                for (i = 0; i < 2; i++) {
+                    ent->unknown_a1[i] = buf->unknown_a1[i];
+                }
+
+                ent->enemy_rares_offset = buf->enemy_rares_offset;
+                ent->box_count = buf->box_count;
+                ent->box_areas_offset = buf->box_areas_offset;
+                ent->box_rares_offset = buf->box_rares_offset;
+                ent->unused_offset1 = buf->unused_offset1;
+
+                for (i = 0; i < 0x10; i++) {
+                    ent->unknown_a2[i] = buf->unknown_a2[i];
+                }
+
+                ent->unknown_a2_offset = buf->unknown_a2_offset;
+                ent->unknown_a2_count = buf->unknown_a2_count;
+                ent->unknown_a3 = buf->unknown_a3;
+                ent->unknown_a3 = buf->unknown_a3;
+                ent->unknown_a4 = buf->unknown_a4;
+                ent->offset_table_offset = buf->offset_table_offset;
+
+                for (i = 0; i < 3; i++) {
+                    ent->unknown_a5[i] = buf->unknown_a5[i];
+                }
+
 #ifdef DEBUG
 
                 if (章节 == 3) {
@@ -450,6 +495,7 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
     int rv = 0;
     rt_table_t* buf;
     rt_table_t* ent;
+    size_t i = 0, j = 0;
 
     if (!(buf = (rt_table_t*)malloc(sizeof(rt_table_t)))) {
         ERR_LOG("无法为 ItemRT 数据条目分配内存空间!");
@@ -506,6 +552,49 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
 
     /* 直接获取子表数据 后面再做解析 */
     memcpy(ent, buf, sz);
+
+    for (i = 0; i < 0x65;i++) {
+        ent->enemy_rares[i].probability = buf->enemy_rares[i].probability;
+        for (j = 0; j < 3; j++) {
+            ent->enemy_rares[i].item_code[j] = buf->enemy_rares[i].item_code[j];
+        }
+    }
+
+    for (i = 0; i < 0x1E; i++) {
+        ent->box_areas[i] = buf->box_areas[i];
+    }
+
+    for (i = 0; i < 0x1E; i++) {
+        ent->box_rares[i].probability = buf->box_rares[i].probability;
+        for (j = 0; j < 3; j++) {
+            ent->box_rares[i].item_code[j] = buf->box_rares[i].item_code[j];
+        }
+    }
+
+    for (i = 0; i < 2; i++) {
+        ent->unknown_a1[i] = buf->unknown_a1[i];
+    }
+
+    ent->enemy_rares_offset = buf->enemy_rares_offset;
+    ent->box_count = buf->box_count;
+    ent->box_areas_offset = buf->box_areas_offset;
+    ent->box_rares_offset = buf->box_rares_offset;
+    ent->unused_offset1 = buf->unused_offset1;
+
+    for (i = 0; i < 0x10; i++) {
+        ent->unknown_a2[i] = buf->unknown_a2[i];
+    }
+
+    ent->unknown_a2_offset = buf->unknown_a2_offset;
+    ent->unknown_a2_count = buf->unknown_a2_count;
+    ent->unknown_a3 = buf->unknown_a3;
+    ent->unknown_a3 = buf->unknown_a3;
+    ent->unknown_a4 = buf->unknown_a4;
+    ent->offset_table_offset = buf->offset_table_offset;
+
+    for (i = 0; i < 3; i++) {
+        ent->unknown_a5[i] = buf->unknown_a5[i];
+    }
 
     have_bbrt = 1;
 out:
