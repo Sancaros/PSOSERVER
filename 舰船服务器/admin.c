@@ -421,12 +421,12 @@ int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
             TAILQ_FOREACH(i2, b->clients, qentry) {
                 if(i2->pl) {
                     if(i2 != c) {
-                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
+                        f(i2, BB_SCROLL_MSG_TYPE, "服务器维护公告: %s %" PRIu32 " %s%s.",
                             __(i2, "\tE\tC6舰船将于"), when,
                             __(i2, "分钟后"), restart ? "重启" : "关闭");
                     }
                     else {
-                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
+                        f(i2, BB_SCROLL_MSG_TYPE, "服务器维护公告: %s %" PRIu32 " %s%s.",
                             __(i2, "\tE\tC6舰船将于"), when,
                             __(i2, "分钟后"), restart ? "重启" : "关闭");
                     }
@@ -471,7 +471,7 @@ int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f) {
             TAILQ_FOREACH(i2, b->clients, qentry) {
                 if (i2->pl) {
                     if (i2 != c) {
-                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s,%s."
+                        f(i2, BB_SCROLL_MSG_TYPE, "服务器更新公告: %s %" PRIu32 " %s%s,%s."
                             , __(i2, "\tE\tC6舰船将于")
                             , when
                             , __(i2, "分钟后"), restart ? "重启" : "关闭"
@@ -479,7 +479,7 @@ int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f) {
                         );
                     }
                     else {
-                        f(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s,%s."
+                        f(i2, BB_SCROLL_MSG_TYPE, "服务器更新公告: %s %" PRIu32 " %s%s,%s."
                             , __(i2, "\tE\tC6舰船将于")
                             , when
                             , __(i2, "分钟后"), restart ? "重启" : "关闭"

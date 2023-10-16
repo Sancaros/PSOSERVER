@@ -1351,11 +1351,14 @@ static int handle_logme(ship_client_t* c, const char* params) {
 #endif /* DEBUG */
 }
 
-/* 用法: /clean [inv/bank] 用于清理背包 银行数据 急救*/
+/* 用法: /clean [inv/bank/quest1/quest2] 用于清理数据 急救*/
 static int handle_clean(ship_client_t* c, const char* params) {
 
+    if (c->cur_lobby->type != LOBBY_TYPE_LOBBY)
+        return send_txt(c, "%s", __(c, "\tE\tC4只可以在大厅使用."));
+
     if (c->version != CLIENT_VERSION_BB)
-        return send_txt(c, "%s", __(c, "\tE\tC7游戏版本不支持."));
+        return send_txt(c, "%s", __(c, "\tE\tC4游戏版本不支持."));
 
     if (*params) {
         if (!strcmp(params, "inv")) {
@@ -1369,7 +1372,8 @@ static int handle_clean(ship_client_t* c, const char* params) {
             c->bb_pl->character.inv.item_count = 0;
             c->pl->bb.character.inv = c->bb_pl->character.inv;
 
-            return send_txt(c, "%s", __(c, "\tE\tC4背包数据已清空."));
+            send_txt(c, "%s", __(c, "\tE\tC4背包数据已清空."));
+            return send_block_list(c, ship);
         }
 
         if (!strcmp(params, "bank")) {
@@ -1383,13 +1387,33 @@ static int handle_clean(ship_client_t* c, const char* params) {
             c->bb_pl->bank.item_count = 0;
             c->bb_pl->bank.meseta = 0;
 
-            return send_txt(c, "%s", __(c, "\tE\tC4银行数据已清空."));
+            send_txt(c, "%s", __(c, "\tE\tC4银行数据已清空."));
+            return send_block_list(c, ship);
+        }
+
+        if (!strcmp(params, "quest1")) {
+
+            for (int i = 0; i < PSOCN_STLENGTH_BB_DB_QUEST_DATA1; i++) {
+                c->bb_pl->quest_data1[i] = 0x00;
+            }
+            send_txt(c, "%s", __(c, "\tE\tC4任务1数据已清空."));
+            return send_block_list(c, ship);
+        }
+
+        if (!strcmp(params, "quest2")) {
+
+            for (int i = 0; i < PSOCN_STLENGTH_BB_DB_QUEST_DATA2; i++) {
+                c->bb_pl->quest_data2[i] = 0x00;
+            }
+
+            send_txt(c, "%s", __(c, "\tE\tC4任务2数据已清空."));
+            return send_block_list(c, ship);
         }
 
         return send_txt(c, "%s", __(c, "\tE\tC7无效清理参数."));
     }
 
-    return send_txt(c, "%s", __(c, "\tE\tC6清空指令不正确\n参数为[inv/bank]."));
+    return send_txt(c, "%s", __(c, "\tE\tC6清空指令不正确\n参数为[inv/bank/quest1/quest2]."));
 }
 
 /* 用法: /bank */

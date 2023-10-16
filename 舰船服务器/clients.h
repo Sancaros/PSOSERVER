@@ -449,6 +449,14 @@ static const char* language_codes[] = {
     "cn", "tc", "jp", "en", "de", "fr", "es", "kr"
 };
 
+static const char mini_language_codes[][4] = {
+    "J", "E", "G", "F", "S", "CS", "CT", "K"
+};
+
+static const char mini_language_codes_cn[][16] = {
+    "中文", "英语", "德语", "法语", "西班牙语", "捷克语", "日语", "韩语"
+};
+
 const char* get_server_DayOfWeek_desc(void);
 
 /* 用于打印角色描述 */

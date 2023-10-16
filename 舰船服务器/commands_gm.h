@@ -2563,3 +2563,34 @@ static int handle_update(ship_client_t* c, const char* params) {
 
     return schedule_update(c, when, 0, send_msg);
 }
+
+/* 用法: /dbgqd [quest1/quest2] 用于DEBUG 任务1 任务2 数据 */
+static int handle_dbgqdata(ship_client_t* c, const char* params) {
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        return get_gm_priv(c);
+    }
+
+    if (c->version != CLIENT_VERSION_BB)
+        return send_txt(c, "%s", __(c, "\tE\tC4游戏版本不支持."));
+
+    if (*params) {
+        if (!strcmp(params, "quest1")) {
+
+            print_ascii_hex(gml, c->bb_pl->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+
+            return send_txt(c, "%s", __(c, "\tE\tC6任务1数据已转储至GM日志."));
+        }
+
+        if (!strcmp(params, "quest2")) {
+
+            print_ascii_hex(gml, c->bb_pl->quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+
+            return send_txt(c, "%s", __(c, "\tE\tC6任务2数据已转储至GM日志."));
+        }
+
+        return send_txt(c, "%s", __(c, "\tE\tC4无效参数\n参数为[quest1/quest2]."));
+    }
+
+    return send_txt(c, "%s", __(c, "\tE\tC6清空指令不正确\n参数为[quest1/quest2]."));
+}

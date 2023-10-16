@@ -1704,7 +1704,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         }
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     /* 在玩家背包中查找物品. */
     int index = find_iitem_index(inv, item_id);
@@ -1963,7 +1963,7 @@ static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
     if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     /* See if its a stackable item, since we have to treat them differently. */
     if (is_stackable(&pkt->data)) {
@@ -3102,7 +3102,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
 
     src->game_data->death = 1;
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
 #ifdef DEBUG
 
@@ -6538,7 +6538,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     bp = en->bp_entry;
     exp_amount = l->bb_params[bp].exp;
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     for (int x = 0; x < inv->item_count; x++) {
         if (!(inv->iitems[x].flags & EQUIP_FLAGS)) {
@@ -6599,7 +6599,7 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     int i = find_iitem_index(inv, ex_item_id);
 
@@ -6767,7 +6767,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         return -3;
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
     if (work_item_id == 0) {
@@ -6843,7 +6843,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
 
     print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     uint32_t compare_item_id = find_iitem_stack_item_id(inv, &pkt->compare_item);
     if (compare_item_id == 0) {
@@ -6889,7 +6889,7 @@ static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
     //    return -2;
     //}
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     iitem_t work_item2;
     uint32_t del_item_pid = 0;
@@ -7052,7 +7052,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     uint32_t ci = 0;
     item_t item = { 0 };
@@ -7101,7 +7101,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     item_t remove_item = { 0 };
     item_t item = { 0 };

@@ -88,7 +88,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
     int i;
 
     if (c->version == CLIENT_VERSION_BB) {
-        inventory_t* inv = get_client_inv_bb(c);
+        inventory_t* inv = get_player_inv(c);
 
         /* 在新房间中修正玩家背包ID */
         id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
@@ -1537,6 +1537,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
             switch (iitem->data.datab[2]) {
                 /* 情人节巧克力 */
+                /* 暂未解析该生成什么物品 */
             case ITEM_SUBTYPE_SERVER_ITEM2_CHOCOLATE:
             case ITEM_SUBTYPE_SERVER_ITEM2_CANDY:
             case ITEM_SUBTYPE_SERVER_ITEM2_CAKE:
@@ -1626,6 +1627,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
                 break;
 
+                /* 暂未解析该生成什么物品 */
             case ITEM_SUBTYPE_SERVER_ITEM2_W_STEEL:
             case ITEM_SUBTYPE_SERVER_ITEM2_W_ALUMINUM:
             case ITEM_SUBTYPE_SERVER_ITEM2_W_LEATHER:
@@ -2135,7 +2137,7 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
     int found_item = 0;
     size_t x = 0, i = 0;
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
 
     for (x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
@@ -2204,18 +2206,18 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
 
 /* 物品整理函数 */
 int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
-    inventory_t* inventory = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
     iitem_t iitem1, iitem2, swap_item = { 0 };
 
     // 如果物品数量小于等于 1，则不需要排序
-    if (inventory->item_count < 1) {
+    if (inv->item_count < 1) {
         ERR_LOG("%s 身上没有物品可以排序", get_player_describe(src));
         return -1;
     }
 
     // 冒泡排序
     for (int i = 0; i < id_count - 1; i++) {
-        memcpy(&iitem1, &inventory->iitems[i], sizeof(iitem_t));
+        memcpy(&iitem1, &inv->iitems[i], sizeof(iitem_t));
         int index1 = -1;
         for (int j = 0; j < id_count; j++) {
             if (id_arr[j] == iitem1.data.item_id) {
@@ -2229,7 +2231,7 @@ int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
         }
 
         for (int j = i + 1; j < id_count; j++) {
-            memcpy(&iitem2, &inventory->iitems[j], sizeof(iitem_t));
+            memcpy(&iitem2, &inv->iitems[j], sizeof(iitem_t));
             int index2 = -1;
             for (int k = 0; k < id_count; k++) {
                 if (id_arr[k] == iitem2.data.item_id) {
@@ -2243,9 +2245,9 @@ int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
             }
 
             if (index2 < index1) {  // 交换两个物品的位置
-                memcpy(&swap_item, &inventory->iitems[i], sizeof(iitem_t));
-                memcpy(&inventory->iitems[i], &inventory->iitems[j], sizeof(iitem_t));
-                memcpy(&inventory->iitems[j], &swap_item, sizeof(iitem_t));
+                memcpy(&swap_item, &inv->iitems[i], sizeof(iitem_t));
+                memcpy(&inv->iitems[i], &inv->iitems[j], sizeof(iitem_t));
+                memcpy(&inv->iitems[j], &swap_item, sizeof(iitem_t));
                 index1 = index2;
             }
         }

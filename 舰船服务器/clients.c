@@ -1584,6 +1584,13 @@ inventory_t* get_player_inv(ship_client_t* src) {
         return get_client_inv_nobb(src);
 }
 
+uint8_t get_player_language(ship_client_t* src) {
+    // 调用 get_player_inv 获取玩家的装备
+    inventory_t* inv = get_player_inv(src);
+    // 返回 inventory_t 结构体中的 language 成员
+    return inv->language;
+}
+
 trade_inv_t* get_client_trade_inv_bb(ship_client_t* src) {
     if (!src) {
         return NULL;
@@ -1822,7 +1829,7 @@ void show_bb_player_info(ship_client_t* src) {
         "玩家名称: %s\n"
         "当前职业: %s\n"
         "当前等级: Lv%d 经验:%d 钱包:%d美赛塔\n"
-        "背包数量: %d 语言: %u\n"
+        "背包数量: %d 语言: %s(%u)\n"
         "银行数量: 角色:%d 公共:%d\n"
         "嗑药情况: HP药:%u TP药:%u 攻药:%u 智药:%u 闪药:%u 防药:%u 运药:%u\n"
         "挑战模式: 详情未完成\n"
@@ -1832,7 +1839,8 @@ void show_bb_player_info(ship_client_t* src) {
         , character->disp.exp
         , character->disp.meseta
         , inv->item_count
-        , inv->language
+        , mini_language_codes_cn[get_player_language(src)]
+        , get_player_language(src)
         , src->bb_pl->bank.item_count, src->common_bank->item_count
         , get_material_usage(inv, MATERIAL_HP)
         , get_material_usage(inv, MATERIAL_TP)
@@ -2148,7 +2156,6 @@ void show_game_cmd_help_msg(ship_client_t* src) {
                 "/qr 非任务情况下返回先驱者2号\n"
                 "/lb 快速返回舰仓\n"
                 "/matuse 显示玩家嗑药情况\n"
-                "/clean [inv/bank] 用于清理背包 银行数据 慎用！！！！\n"
             );
         }
     }
@@ -2164,6 +2171,7 @@ void show_lobby_cmd_help_msg(ship_client_t* src) {
             send_msg(src, MSG_BOX_TYPE,
                 "-----------------------大厅指令菜单-----------------------\n"
                 "/pl 玩家专属菜单,功能性菜单\n"
+                "/clean [inv/bank/quest1/quest2] 用于清理数据 急救 慎用！！！！\n"
                 //"/npcskin 切换为其他NPC皮肤 (范围0 - 5, 0为角色皮肤)\n"
                 //"/save slot 保存某一个槽位角色的数据, slot范围 0 - 3\n"
                 //"/restore slot 从备份数据中恢复角色数据, slot范围 0 - 3 慎用\n"

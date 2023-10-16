@@ -2567,7 +2567,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         return -3;
     }
 
-    inventory_t* inv = get_client_inv_bb(src);
+    inventory_t* inv = get_player_inv(src);
     if (!inv) {
         ERR_LOG("获取角色背包失败");
         return -3;

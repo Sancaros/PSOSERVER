@@ -1665,14 +1665,6 @@ int lobby_send_pkt_ep3(lobby_t *l, ship_client_t *src, void *h) {
     return 0;
 }
 
-static const char mini_language_codes[][4] = {
-    "J", "E", "G", "F", "S", "CS", "CT", "K"
-};
-
-static const char mini_language_codes_cn[][16] = {
-    "中文", "英语", "德语", "法语", "西班牙语", "捷克语", "日语", "韩语"
-};
-
 /* Send an information reply packet with information about the lobby. */
 int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
     char msg[512] = { 0 };
