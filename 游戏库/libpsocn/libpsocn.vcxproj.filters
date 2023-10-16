@@ -106,6 +106,9 @@
     <ClInclude Include="sg_packets.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_item_list_bb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">

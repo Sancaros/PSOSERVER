@@ -23,6 +23,7 @@
 
 #include "pso_player.h"
 #include "pso_item_list.h"
+#include "pso_item_list_bb.h"
 
 // item_equip_flags 职业装备标志 用于识别不同种族
 #define PLAYER_EQUIP_FLAGS_NONE     false

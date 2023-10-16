@@ -88,6 +88,7 @@ enum Log_files_Num {
     TEKK_LOG = 8, //½¢´¬
     BANKD_LOG = 8, //½¢´¬
     BANKT_LOG = 8, //½¢´¬
+    DATA_LOG = 14, //²¹¶¡ µÇÂ½ ½¢´¬
 };
 
 typedef struct log_map {
@@ -130,8 +131,9 @@ static log_map_st log_header[] = {
     { MDROP_LOG,			"¹Öµô" }, //½¢´¬
     { BDROP_LOG,			"Ïäµô" }, //½¢´¬
     { TEKK_LOG,			    "¼ø¶¨" }, //½¢´¬
-    { BANKD_LOG,			"ÒøÈ¡" }, //½¢´¬
-    { BANKT_LOG,			"Òø´æ" }, //½¢´¬
+    { BANKD_LOG,			"Òø´æ" }, //½¢´¬
+    { BANKT_LOG,			"ÒøÈ¡" }, //½¢´¬
+    { DATA_LOG,			    "´«Êä" }, //½¢´¬
 };
 
 /////////////////////////////////////////
@@ -408,6 +410,13 @@ do { \
 do { \
     pthread_mutex_lock(&log_mutex); \
     flog(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define DATA_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, host_log_console_show, DATA_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 

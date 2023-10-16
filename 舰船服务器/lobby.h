@@ -132,7 +132,7 @@ struct lobby {
     bool drop_pso2;
     bool drop_psocn;
     bool drops_disabled;
-    bool questE0;
+    bool questE0_done;
 
     uint32_t exp_mult;
 

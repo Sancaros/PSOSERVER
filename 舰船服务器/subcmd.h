@@ -3174,9 +3174,12 @@ typedef struct subcmd_bb_black_paper_deal_photon_drop_exchange {
 typedef struct subcmd_bb_black_paper_deal_reward {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t area;
-    float x;
-    float z;
+    uint8_t param1;
+    uint8_t area;
+    uint8_t param3;
+    uint8_t param4;
+    float drop_x;
+    float drop_z;
 } PACKED subcmd_bb_black_paper_deal_reward_t;
 
 // 0xE1: Gallon's Plan quest (BB; handled by server)
