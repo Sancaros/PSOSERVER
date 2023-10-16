@@ -6943,39 +6943,37 @@ static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
                 break;
             }
             ai = 0;
+
+            /* 检查是否存在属性 */
             if ((work_item2.data.datab[6] > 0x00) &&
-                (!(work_item2.data.datab[6] & 128)))
-            {
+                (!(work_item2.data.datab[6] & 128))) {
                 num_attribs++;
                 if (work_item2.data.datab[6] == pkt->is_ps)
                     ai = 7;
             }
+
             if ((work_item2.data.datab[8] > 0x00) &&
-                (!(work_item2.data.datab[8] & 128)))
-            {
+                (!(work_item2.data.datab[8] & 128))) {
                 num_attribs++;
                 if (work_item2.data.datab[8] == pkt->is_ps)
                     ai = 9;
             }
+
             if ((work_item2.data.datab[10] > 0x00) &&
-                (!(work_item2.data.datab[10] & 128)))
-            {
+                (!(work_item2.data.datab[10] & 128))) {
                 num_attribs++;
                 if (work_item2.data.datab[10] == pkt->is_ps)
                     ai = 11;
             }
-            if (ai)
-            {
-                // Attribute already on weapon, increase it
+
+            if (ai) {
+                /* 属性存在 则增加数值 */
                 (char)work_item2.data.datab[ai] += attrib_add;
                 if (work_item2.data.datab[ai] > 100)
                     work_item2.data.datab[ai] = 100;
-            }
-            else
-            {
-                // Attribute not on weapon, add it if there isn't already 3 attributes
-                if (num_attribs < 3)
-                {
+            } else {
+                /* 如果是白板 则新增一档属性 直到满3属性 */
+                if (num_attribs < 3) {
                     work_item2.data.datab[6 + (num_attribs * 2)] = pkt->is_ps;
                     (char)work_item2.data.datab[7 + (num_attribs * 2)] = attrib_add;
                 }
