@@ -1983,8 +1983,6 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //id_result->data.item_id = generate_item_id(l, src->client_id);
-
     LOBBY_TEKKITEM_LOG(src, pkt->item_id, src->cur_area, &id_result);
 
     if (!add_invitem(src, id_result)) {
@@ -2320,7 +2318,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
         item_t item;
-        memset(&item, 0, PSOCN_STLENGTH_ITEM);
+        clear_inv_item(&item);
         item.datab[0] = ITEM_TYPE_MESETA;
         item.data2l = meseta_amount;
         item.item_id = generate_item_id(l, 0xFF);
@@ -2359,7 +2357,9 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
     //( 00000010 )   00 00 00 00 00 00 00 00   17 00 01 00 00 00 00 00  ................
     item_t item;
-    memset(&item, 0, PSOCN_STLENGTH_ITEM);
+
+    clear_inv_item(&item);
+
     item = pkt->item_data;
     item.item_id = generate_item_id(l, 0xFF);
 
@@ -2526,7 +2526,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
 
     item_t backup_item = remove_invitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
-    if (backup_item.datal[0] == 0 && backup_item.data2l == 0) {
+    if (item_not_identification_bb(backup_item.datal[0],backup_item.datal[1])) {
         ERR_LOG("%s 转换物品ID %d 失败!", get_player_describe(src), item_data.item_id);
         return -1;
     }
@@ -2537,14 +2537,11 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
         backup_item.datab[4] |= 0x40; // Wrap other
 
     /* 将物品新增至背包. */
-    if (!add_invitem(dest, backup_item)) {
-        if (!add_invitem(src, backup_item)) {
-            ERR_LOG("%s 物品返回玩家背包失败!",
-                get_player_describe(src));
-            return -1;
-        }
+    if (!add_invitem(src, backup_item)) {
         return send_txt(src, __(src, "\tE\tC4转换物品失败"));
     }
+
+    subcmd_send_lobby_bb_create_inv_item(src, backup_item, stack_size(&backup_item), true);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
@@ -2570,9 +2567,11 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         return -3;
     }
 
-    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
-
     inventory_t* inv = get_client_inv_bb(src);
+    if (!inv) {
+        ERR_LOG("获取角色背包失败");
+        return -3;
+    }
 
     size_t item_id = find_iitem_code_stack_item_id(inv, BBItem_Photon_Crystal);
     /* 如果找不到该物品，则将用户从船上推下. */
@@ -2640,30 +2639,28 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
     }
 
-    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
-
     for (int i = 0; i < (bp_type > 0x03 ? (l->difficulty <= 0x01 ? 1 : 2) : l->difficulty + 1); i++) {
         uint32_t reward_item = 0;
 
         switch (bp_type) {
         case 0x00:
             bp_reward_list = bp1_dorphon[l->difficulty];
-            reward_list_count = count_element(bp1_dorphon[l->difficulty]);
+            reward_list_count = count_element_int((void**)bp1_dorphon[l->difficulty]);
             break;
 
         case 0x01:
             bp_reward_list = bp1_rappy[l->difficulty];
-            reward_list_count = count_element(bp1_rappy[l->difficulty]);
+            reward_list_count = count_element_int((void**)bp1_rappy[l->difficulty]);
             break;
 
         case 0x02:
             bp_reward_list = bp1_zu[l->difficulty];
-            reward_list_count = count_element(bp1_zu[l->difficulty]);
+            reward_list_count = count_element_int((void**)bp1_zu[l->difficulty]);
             break;
 
         case 0x04:
             bp_reward_list = bp2[l->difficulty];
-            reward_list_count = count_element(bp2[l->difficulty]);
+            reward_list_count = count_element_int((void**)bp2[l->difficulty]);
             break;
         }
 
@@ -2876,6 +2873,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     reward_percent[2] = weekly_reward_percent[menu_choice][reward_list.wday][2];
     reward_list.rewards = day_reward_list[reward_list.wday][menu_choice];
 
+    clear_inv_item(&item);
+
     /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/
     if (src->game_data->gm_debug) {
         result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
@@ -2929,7 +2928,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     }
 
-    item = result_item;
+    item.datal[0] = result_item.datal[0];
 
     /* 填充物品数据 */
     if (item.datal[0] == BBItem_Meseta) {
@@ -3055,7 +3054,6 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         item.item_id = generate_item_id(l, src->client_id);
-
     }
 
     //print_item_data(&iitem.data, src->version);

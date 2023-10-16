@@ -1171,7 +1171,7 @@ static int bb_process_confirm_open_file(ship_client_t* c, bb_pkt_hdr_t* pkt) {
 
 /* 0x0061 输出完整玩家角色*/
 static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
-    uint16_t type = LE16(pkt->hdr.pkt_type);
+    //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
     uint32_t v;
     int i, version = c->version;
@@ -1257,18 +1257,18 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
         c->iitems[i].data.item_id = LE32(v);
     }
 
-    /* If this packet is coming after the client has left a game, then don't
-       do anything else here, they'll take care of it by sending an 0x84
-        如果此数据包是在客户端退出游戏后发出的，则不要在此处执行任何其他操作
-        ，他们将通过发送0x84来处理此数据包 . */
-    if (type == LEAVE_GAME_PL_DATA_TYPE) {
-        /* Remove the client from the lobby they're in, which will force the
-           0x84 sent later to act like we're adding them to any lobby
-            将客户端从其所在的大厅中删除，
-            这将强制稍后发送的0x84表现为我们正在将其添加到任何大厅中 . */
-        pthread_mutex_unlock(&c->mutex);
-        return lobby_remove_player_bb(c);
-    }
+    ///* If this packet is coming after the client has left a game, then don't
+    //   do anything else here, they'll take care of it by sending an 0x84
+    //    如果此数据包是在客户端退出游戏后发出的，则不要在此处执行任何其他操作
+    //    ，他们将通过发送0x84来处理此数据包 . */
+    //if (type == LEAVE_GAME_PL_DATA_TYPE) {
+    //    /* Remove the client from the lobby they're in, which will force the
+    //       0x84 sent later to act like we're adding them to any lobby
+    //        将客户端从其所在的大厅中删除，
+    //        这将强制稍后发送的0x84表现为我们正在将其添加到任何大厅中 . */
+    //    pthread_mutex_unlock(&c->mutex);
+    //    return lobby_remove_player_bb(c);
+    //}
 
     /* If the client isn't in a lobby already, then add them to the first
        available default lobby 如果客户机不在大厅中，则将其添加到第一个可用的默认大厅中. */
@@ -1401,6 +1401,11 @@ static int bb_process_char_leave_game(ship_client_t* c, bb_char_data_pkt* pkt) {
 
     /* 复制玩家数据至统一结构, 并设置指针. */
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
+    if (!c->pl) {
+        print_ascii_hex(dbgl, &pkt->data, sizeof(bb_player_t));
+        DBG_LOG("atp %d", c->pl->bb.character.disp.stats.atp);
+    }
+
     /* 初始化 模式角色数据 */
     memset(&c->mode_pl->bb, 0, PSOCN_STLENGTH_BB_CHAR2);
     c->infoboard = (char*)c->pl->bb.infoboard;

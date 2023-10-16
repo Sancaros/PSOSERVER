@@ -929,8 +929,8 @@ static int handle_miitem(ship_client_t* src, const char* params) {
             __(src, "\tE\tC6生成成功."));
 }
 
-static void dumpinv_internal(ship_client_t* src) {
-    int i;
+static void dumpinv_internal(ship_client_t* src, bool is_max_item) {
+    int i, item_count = 0;
     int v = src->version;
 
     if (v != CLIENT_VERSION_BB) {
@@ -944,7 +944,12 @@ static void dumpinv_internal(ship_client_t* src) {
         GM_LOG("数量: %u", character_v1->inv.item_count);
 
         GM_LOG("------------------------------------------------------------");
-        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+        if (is_max_item)
+            item_count = MAX_PLAYER_INV_ITEMS;
+        else
+            item_count = character_v1->inv.item_count;
+
+        for (i = 0; i < item_count; ++i) {
             GM_LOG("EXT1: %d", character_v1->inv.iitems[i].extension_data1);
             GM_LOG("EXT2: %d", character_v1->inv.iitems[i].extension_data2);
             GM_LOG("物品: %s", get_item_describe(&character_v1->inv.iitems[i].data, v));
@@ -981,7 +986,13 @@ static void dumpinv_internal(ship_client_t* src) {
         GM_LOG("HP药: %u TP药: %u 语言: %u", character_bb->inv.hpmats_used, character_bb->inv.tpmats_used, character_bb->inv.language);
 
         GM_LOG("------------------------------------------------------------");
-        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+
+        if (is_max_item)
+            item_count = MAX_PLAYER_INV_ITEMS;
+        else
+            item_count = character_bb->inv.item_count;
+
+        for (i = 0; i < item_count; ++i) {
             GM_LOG("EXT1: %d", character_bb->inv.iitems[i].extension_data1);
             GM_LOG("EXT2: %d", character_bb->inv.iitems[i].extension_data2);
             GM_LOG("物品: %s", get_item_describe(&character_bb->inv.iitems[i].data, v));
@@ -1060,20 +1071,57 @@ static void dumpinv_ext_internal(ship_client_t* src) {
     }
 }
 
+static void dumpinv_lobby_internal(lobby_t* l) {
+    litem_t* j;
+
+    pthread_mutex_lock(&l->mutex);
+
+    GM_LOG("////////////////////////////////////////////////////////////");
+    GM_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
+        l->lobby_id);
+
+    GM_LOG("------------------------------------------------------------");
+    TAILQ_FOREACH(j, &l->item_queue, qentry) {
+        GM_LOG("物品: %s", get_item_describe(&j->item, l->version));
+        GM_LOG("编号: 0x%08X", j->item.item_id);
+        GM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
+        GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+            j->item.datab[0], j->item.datab[1], j->item.datab[2], j->item.datab[3],
+            j->item.datab[4], j->item.datab[5], j->item.datab[6], j->item.datab[7],
+            j->item.datab[8], j->item.datab[9], j->item.datab[10], j->item.datab[11],
+            j->item.data2b[0], j->item.data2b[1], j->item.data2b[2], j->item.data2b[3]);
+        GM_LOG("------------------------------------------------------------");
+    }
+    GM_LOG("------------------------------------------------------------");
+
+    pthread_mutex_unlock(&l->mutex);
+
+}
+
 /* 用法: /dbginv [l/client_id/guildcard] */
 static int handle_dbginv(ship_client_t* src, const char* params) {
     lobby_t* l = src->cur_lobby;
-    litem_t* j;
-    int do_lobby = 0, do_ext = 0;
+    int do_lobby = 0, do_ext = 0, do_all = 0;
     uint32_t client;
+    char opcode[2][12] = {0};
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(src)) {
         return get_gm_priv(src);
     }
 
-    do_ext = params && !strcmp(params, "e");
-    do_lobby = params && !strcmp(params, "l");
+    /* Copy over the item data. */
+    int count = sscanf(params, "%s %s", &opcode[0][0], &opcode[1][0]);
+
+    do_ext = opcode[0] && !strcmp(&opcode[0][0], "e");
+    do_lobby = opcode[0] && !strcmp(&opcode[0][0], "l");
+    do_all = opcode[1] && !strcmp(&opcode[1][0], "a");
+
+    if (count == EOF || count == 0) {
+        dumpinv_internal(src, do_all);
+        return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+            , get_player_describe(src), __(src, "\tE\tC7的背包数据已存储到日志."));
+    }
 
     /* If the arguments say "lobby", then dump the lobby's inventory. */
     if (do_ext) {
@@ -1084,36 +1132,29 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
     }
     /* If the arguments say "lobby", then dump the lobby's inventory. */
     else if (do_lobby) {
-        pthread_mutex_lock(&l->mutex);
-
         if (l->type != LOBBY_TYPE_GAME || l->version != CLIENT_VERSION_BB) {
-            pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
-        GM_LOG("////////////////////////////////////////////////////////////");
-        GM_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
-            l->lobby_id);
-
-        GM_LOG("------------------------------------------------------------");
-        TAILQ_FOREACH(j, &l->item_queue, qentry) {
-            GM_LOG("物品: %s", get_item_describe(&j->item, l->version));
-            GM_LOG("编号: 0x%08X", j->item.item_id);
-            GM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
-            GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-                j->item.datab[0], j->item.datab[1], j->item.datab[2], j->item.datab[3],
-                j->item.datab[4], j->item.datab[5], j->item.datab[6], j->item.datab[7],
-                j->item.datab[8], j->item.datab[9], j->item.datab[10], j->item.datab[11],
-                j->item.data2b[0], j->item.data2b[1], j->item.data2b[2], j->item.data2b[3]);
-            GM_LOG("------------------------------------------------------------");
+        if (l->version != CLIENT_VERSION_BB) {
+            return send_txt(src, "%s", __(src, "\tE\tC7非BB版本客户端不支持该指令."));
         }
-        GM_LOG("------------------------------------------------------------");
 
-        pthread_mutex_unlock(&l->mutex);
+        dumpinv_lobby_internal(l);
+
+        return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+            , get_lobby_describe(l), __(src, "\tE\tC7的大厅背包数据已存储到日志."));
     }
     /* If there's no arguments, then dump the caller's inventory. */
     else if (!params || params[0] == '\0') {
-        dumpinv_internal(src);
+        dumpinv_internal(src, do_all);
+
+        return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+            , get_player_describe(src), __(src, "\tE\tC7的背包数据已存储到日志."));
+    }
+    /* If there's no arguments, then dump the caller's inventory. */
+    else if (!params || params[0] == '\0') {
+        dumpinv_internal(src, do_all);
 
         return send_msg(src, TEXT_MSG_TYPE, "%s%s"
             , get_player_describe(src), __(src, "\tE\tC7的背包数据已存储到日志."));
@@ -1138,7 +1179,7 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
             }
 
             if (l->clients[client]) {
-                dumpinv_internal(l->clients[client]);
+                dumpinv_internal(l->clients[client], do_all);
             }
             else {
                 pthread_mutex_unlock(&l->mutex);
@@ -1146,6 +1187,9 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
             }
 
             pthread_mutex_unlock(&l->mutex);
+
+            return send_msg(src, TEXT_MSG_TYPE, "%s%s"
+                , get_player_describe(l->clients[client]), __(src, "\tE\tC7的背包数据已存储到日志."));
         }
         /* Otherwise, assume we're looking for a guild card number. */
         else {
@@ -1155,7 +1199,7 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
                 return send_txt(src, "%s", __(src, "\tE\tC7未找到请求的玩家."));
             }
 
-            dumpinv_internal(target);
+            dumpinv_internal(target, do_all);
 
             return send_msg(src, TEXT_MSG_TYPE, "%s%s"
                 , get_player_describe(target), __(src, "\tE\tC7的背包数据已存储到日志."));
@@ -2340,7 +2384,7 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
     }
 
     /* Copy over the item data. */
-    count = sscanf(params, "%hX, %hX, %[0-9A-Fa-f]", &opcode[0], &opcode[1], data);
+    count = sscanf(params, "%hX,%hX,%[0-9A-Fa-f]", &opcode[0], &opcode[1], data);
 
     if (count == EOF || count == 0) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效参数代码."));

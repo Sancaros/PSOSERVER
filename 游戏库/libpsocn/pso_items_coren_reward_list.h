@@ -191,7 +191,7 @@ static uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
 			BBItem_Delsabers_Right_Arm, BBItem_Delsabers_Left_Arm, BBItem_PROOF_OF_SWORD_SAINT,
 			BBItem_Sl_JORDSf_WJ_LORE, BBItem_FLAMBERGE, BBItem_LAME_DARGENT,
-			BBItem_EXCALIBUR, BBItem_OROTIAGITO_alt, BBItem_AGITO_1980,
+			BBItem_EXCALIBUR, BBItem_AGITO_1975, BBItem_AGITO_1980,
 			BBItem_DELSABERS_BUSTER
 		},
 		//100000 美赛塔 武器剑类 PC 斩龙 最后的生还者 弗罗文大剑 魔法剑 红色大剑 红西诺兽剑 双圣剑拉维斯 二连神威 零度切刃

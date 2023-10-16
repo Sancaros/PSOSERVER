@@ -1408,6 +1408,13 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
         return -27;
     }
 
+    if(pkt_disp.level + 1 > MAX_PLAYER_LEVEL) {
+        ERR_LOG("%s[舰仓%02d]: 角色数据检查失败 %s 错误level %u 大于 200级", ship->cfg->ship_name, src->cur_block->b,
+            get_player_describe(src), pkt_disp.level);
+        src_disp.level = pkt_disp.level;
+        return -28;
+    }
+
     return 0;
 }
 
@@ -1523,6 +1530,10 @@ int client_legit_check(ship_client_t* c, psocn_limits_t* limits) {
 }
 
 psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
+    if (!src) {
+        return NULL;
+    }
+
 #ifdef DEBUG
 
     if (src->bank_type) {
@@ -1531,7 +1542,7 @@ psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
 
 #endif // DEBUG
 
-    return src->bank_type == false ? &src->bb_pl->bank : src->common_bank;
+    return (src->bank_type == false ? &src->bb_pl->bank : src->common_bank);
 }
 
 void print_quest_info(ship_client_t* src) {
@@ -1540,6 +1551,10 @@ void print_quest_info(ship_client_t* src) {
 }
 
 inventory_t* get_client_inv_bb(ship_client_t* src) {
+    if (!src) {
+        return NULL;
+    }
+
     if (src->mode) {
         DBG_LOG("%s BB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
@@ -1547,6 +1562,10 @@ inventory_t* get_client_inv_bb(ship_client_t* src) {
 }
 
 inventory_t* get_client_inv_nobb(ship_client_t* src) {
+    if (!src) {
+        return NULL;
+    }
+
     if (src->mode) {
         DBG_LOG("%s NOBB背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
@@ -1555,6 +1574,10 @@ inventory_t* get_client_inv_nobb(ship_client_t* src) {
 }
 
 inventory_t* get_player_inv(ship_client_t* src) {
+    if (!src) {
+        return NULL;
+    }
+
     if (src->version == CLIENT_VERSION_BB)
         return get_client_inv_bb(src);
     else
@@ -1562,6 +1585,10 @@ inventory_t* get_player_inv(ship_client_t* src) {
 }
 
 trade_inv_t* get_client_trade_inv_bb(ship_client_t* src) {
+    if (!src) {
+        return NULL;
+    }
+
     if (src->mode) {
         DBG_LOG("%s BB交易背包数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
@@ -1569,6 +1596,10 @@ trade_inv_t* get_client_trade_inv_bb(ship_client_t* src) {
 }
 
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
+    if (!src) {
+        return NULL;
+    }
+
     if (src->mode) {
         DBG_LOG("%s BB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
@@ -1577,6 +1608,10 @@ psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
 }
 
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
+    if (!src) {
+        return NULL;
+    }
+
     if (src->mode) {
         DBG_LOG("%s NOBB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
     }
@@ -1585,6 +1620,10 @@ psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
 }
 
 ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
+    if (!l) {
+        return NULL;
+    }
+
     int i = 0;
 
     for (i = 0; i < l->max_clients; ++i) {

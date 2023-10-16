@@ -111,11 +111,11 @@ static uint8_t class_equip_flags[12] = {
 #define ITEM_SUBTYPE_MAG_CELL2          0x0E /* 99 堆叠 */
 #define ITEM_SUBTYPE_ADD_SLOT           0x0F /* 99 堆叠 */
 #define ITEM_SUBTYPE_PHOTON             0x10 /* 99 堆叠 */
-#define ITEM_SUBTYPE_BOOK               0x11
-#define ITEM_SUBTYPE_SERVER_ITEM1       0x12/*todo player_use_item*/
-#define ITEM_SUBTYPE_PRESENT            0x13/*todo player_use_item*/
-#define ITEM_SUBTYPE_SERVER_ITEM2       0x14/*todo player_use_item*/
-#define ITEM_SUBTYPE_PRESENT_EVENT      0x15
+#define ITEM_SUBTYPE_BOOK               0x11 /* 1  堆叠 */
+#define ITEM_SUBTYPE_SERVER_ITEM1       0x12 /* 99 堆叠 *//*todo player_use_item*/
+#define ITEM_SUBTYPE_PRESENT            0x13 /* 1 堆叠 完成 */
+#define ITEM_SUBTYPE_SERVER_ITEM2       0x14 /* 1  堆叠 *//*todo player_use_item*/
+#define ITEM_SUBTYPE_PRESENT_EVENT      0x15 /* 99 堆叠 */
 #define ITEM_SUBTYPE_DISK_MUSIC         0x16 /* 99 堆叠 */
 #define ITEM_SUBTYPE_HUNTER_REPORT      0x17/*todo player_use_item*/
 #define ITEM_SUBTYPE_PART_OF_MAG_CELL   0x18
@@ -311,7 +311,7 @@ size_t stack_size(const item_t* item);
 size_t max_stack_size(const item_t* item);
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
 /* 仅用于房间物品数量 */
-uint32_t get_item_amount(item_t* item, uint32_t amount);
+uint8_t get_item_amount(item_t* item, uint32_t amount);
 
 void clear_tool_item_if_invalid(item_t* item);
 bool is_common_consumable(uint32_t primary_identifier);

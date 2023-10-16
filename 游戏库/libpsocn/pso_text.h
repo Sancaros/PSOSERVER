@@ -53,7 +53,7 @@ typedef struct {
     size_t len;
 } Buffer;
 
-int count_element(void* arr);
+int count_element_int(void** arr);
 
 char char_for_language_code(uint8_t language);
 

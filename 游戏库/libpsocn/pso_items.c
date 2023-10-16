@@ -172,6 +172,9 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 
 		case ITEM_SUBTYPE_DISK:
 		case ITEM_SUBTYPE_SCAPE_DOLL:
+		case ITEM_SUBTYPE_BOOK:
+		case ITEM_SUBTYPE_PRESENT:
+		case ITEM_SUBTYPE_SERVER_ITEM2:
 			return 1;
 
 			/* 支持大量堆叠 99*/
@@ -183,6 +186,8 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_ADD_SLOT:
 		case ITEM_SUBTYPE_PHOTON:
 		case ITEM_SUBTYPE_DISK_MUSIC:
+		case ITEM_SUBTYPE_SERVER_ITEM1:
+		case ITEM_SUBTYPE_PRESENT_EVENT:
 			return 99;
 		}
 
@@ -193,11 +198,11 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 }
 
 /* 仅用于房间物品数量 */
-uint32_t get_item_amount(item_t* item, uint32_t amount) {
+uint8_t get_item_amount(item_t* item, uint32_t amount) {
 	if (is_stackable(item)) {
 		if (item->datab[0] == ITEM_TYPE_MESETA) {
-			item->data2l = amount > MAX_PLAYER_MESETA ? MAX_PLAYER_MESETA : amount;
-			return item->data2l;
+			item->data2l = (amount > MAX_PLAYER_MESETA ? MAX_PLAYER_MESETA : amount);
+			return 0;
 		}
 		else if (item->datab[5] <= 0) {
 			item->datab[5] = 1;
@@ -209,7 +214,7 @@ uint32_t get_item_amount(item_t* item, uint32_t amount) {
 			item->datab[5] = (uint8_t)amount;
 		}
 	}
-	else if (item->datab[0] == 0x03 && item->datab[1] == 0x02) {
+	else if (item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK) {
 		item->datab[5] = 0x00;
 	}
 

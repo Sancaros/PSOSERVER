@@ -28,10 +28,10 @@
 
 #include "pso_text.h"
 
-int count_element(void* arr) {
+int count_element_int(void** arr) {
     int count = 0;
     for (int i = 0; i < INT_MAX; i++) {
-        if (((int**)arr)[i] != 0) {
+        if (arr[i] != NULL) {
             count++;
         }
         else {

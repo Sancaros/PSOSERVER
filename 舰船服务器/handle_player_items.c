@@ -157,7 +157,7 @@ litem_t* add_lobby_litem_locked(lobby_t* l, item_t* item, uint8_t area, float x,
 
 #endif // DEBUG
 
-    /* 如果是新物品,则赋值新ID */
+    /* 如果是新物品,则赋值新ID  玩家丢出的 取出的 购买的物品时 无需再生成新的ID */
     if (is_new_item) {
         litem->item.item_id = LE32(l->item_lobby_id);
         generate_item_id(l, 0xFF);
@@ -166,39 +166,6 @@ litem_t* add_lobby_litem_locked(lobby_t* l, item_t* item, uint8_t area, float x,
     TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
     return litem;
 }
-//
-///* 玩家丢出的 取出的 购买的物品 */
-//litem_t* add_litem_locked(lobby_t* l, item_t* item, uint8_t area, float x, float z) {
-//    
-//    /* 合理性检查... */
-//    if (l->version != CLIENT_VERSION_BB)
-//        return NULL;
-//
-//    if (item_not_identification_bb(item->datal[0], item->datal[1])) {
-//        ERR_LOG("0x%08X 是未识别物品", item->datal[0]);
-//        print_item_data(item, l->version);
-//        return NULL;
-//    }
-//
-//    litem_t* litem = (litem_t*)malloc(sizeof(litem_t));
-//    if (!litem) {
-//        ERR_LOG("malloc");
-//        return NULL;
-//    }
-//
-//    memset(litem, 0, sizeof(litem_t));
-//
-//    /* Copy the item data in. */
-//    memcpy(&litem->item, item, PSOCN_STLENGTH_ITEM);
-//    litem->x = x;
-//    litem->z = z;
-//    litem->area = area;
-//    litem->amount = get_item_amount(item, item->datab[5]);
-//
-//    /* Add it to the queue, and return the new item */
-//    TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
-//    return litem;
-//}
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, item_t* rv) {
 
@@ -206,9 +173,6 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, item_t* rv) {
         return -1;
 
     clear_inv_item(rv);
-
-    //memset(rv, 0, PSOCN_STLENGTH_IITEM);
-    //rv->data.datal[0] = LE32(Item_NoSuchItem);
 
     litem_t* litem = TAILQ_FIRST(&l->item_queue);
     while (litem) {
@@ -899,7 +863,9 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
     return ret;
 }
 
+/* 已支持非堆叠物品 新增物品ID */
 bool add_invitem(ship_client_t* src, const item_t item) {
+    lobby_t* l = src->cur_lobby;
     uint32_t pid = primary_identifier(&item);
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -940,7 +906,7 @@ bool add_invitem(ship_client_t* src, const item_t item) {
     character->inv.iitems[character->inv.item_count].present = LE16(0x0001);
     character->inv.iitems[character->inv.item_count].flags = 0;
     character->inv.item_count++;
-    //fix_client_inv(&character->inv);
+    fix_client_inv(&character->inv);
     return true;
 }
 
@@ -1065,6 +1031,7 @@ void unwrap(item_t* item) {
 }
 
 int player_use_item(ship_client_t* src, uint32_t item_id) {
+    lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &src->cur_block->sfmt_rng;
     iitem_t* weapon = { 0 };
     iitem_t* armor = { 0 };
@@ -1680,36 +1647,42 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 }
                 if (det > entry.probability) {
                     det -= entry.probability;
+                    continue;
                 }
-                else {
-                    iitem->data.datab[0] = entry.item[0];
-                    iitem->data.datab[1] = entry.item[1];
-                    iitem->data.datab[2] = entry.item[2];
-                    iitem->data.datab[3] = 0;
-                    iitem->data.datab[4] = 0;
-                    iitem->data.datab[5] = 0;
-                    iitem->data.data2l = 0;
-                    should_delete_item = false;
 
-                    subcmd_send_lobby_bb_create_inv_item(src, iitem->data, stack_size(&iitem->data), true);
+                item_t event_item = { 0 };
+                clear_inv_item(&event_item);
+                event_item.datab[0] = entry.item[0];
+                event_item.datab[1] = entry.item[1];
+                event_item.datab[2] = entry.item[2];
+                event_item.datab[5] = get_item_amount(&event_item, 1);
+                event_item.item_id = generate_item_id(l, src->client_id);
+                should_delete_item = true;
+
+                /* TODO 出现的武器 装甲 增加随机属性 */
+                switch (iitem->data.datab[2]) {
+                case 0x00:
+                    DBG_LOG("%s 使用圣诞礼物", get_player_describe(src));
+                    break;
+
+                case 0x01:
+                    DBG_LOG("%s 使用复活节礼物", get_player_describe(src));
+                    break;
+
+                case 0x02:
+                    DBG_LOG("%s 使用万圣节礼物", get_player_describe(src));
                     break;
                 }
-            }
 
-            /* TODO 出现的武器 装甲 增加随机属性 */
-            switch (iitem->data.datab[2]) {
-            case 0x00:
-                DBG_LOG("%s 使用圣诞礼物", get_player_describe(src));
-                break;
+                if (!add_invitem(src, event_item)) {
+                    ERR_LOG("%s 背包空间不足, 无法获得物品!", get_player_describe(src));
+                    return -3;
+                }
 
-            case 0x01:
-                DBG_LOG("%s 使用复活节礼物", get_player_describe(src));
-                break;
-
-            case 0x02:
-                DBG_LOG("%s 使用万圣节礼物", get_player_describe(src));
+                subcmd_send_lobby_bb_create_inv_item(src, event_item, stack_size(&event_item), true);
                 break;
             }
+
             break;
 
         case ITEM_SUBTYPE_DISK_MUSIC:

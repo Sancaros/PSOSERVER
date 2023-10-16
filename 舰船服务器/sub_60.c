@@ -1708,8 +1708,6 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 在玩家背包中查找物品. */
     int index = find_iitem_index(inv, item_id);
-
-    /* If the item isn't found, then punt the user from the ship. */
     if (index < 0) {
         ERR_LOG("%s 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符! 错误码 %d",
             get_player_describe(src), inv->iitems[index].data.item_id, item_id, index);
@@ -1727,12 +1725,15 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We have the item... Add it to the lobby's inventory.
     我们有这个物品…把它添加到大厅的背包中 */
-    if (!add_lobby_litem_locked(l, &item, (uint8_t)area, x, z, false)) {
+    litem_t* lobby_drop_item = add_lobby_litem_locked(l, &item, (uint8_t)area, x, z, false);
+    if (!lobby_drop_item) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品新增游戏房间背包!");
         return -2;
     }
+
+    subcmd_send_lobby_drop_stack_bb(src, src->client_id, NULL, lobby_drop_item);
 
     /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -7055,6 +7056,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
 
     uint32_t ci = 0;
     item_t item = { 0 };
+    clear_inv_item(&item);
 
     size_t itemid = find_iitem_code_stack_item_id(inv, 0x00031003);
     if (!itemid) {
@@ -7075,10 +7077,8 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
 
     subcmd_send_bb_exchange_item_in_quest(src, itemid, 1);
 
-    memset(&item, 0, sizeof(item_t));
     item.datal[0] = good_luck[sfmt_genrand_uint32(rng) % (sizeof(good_luck) >> 2)];
     item.item_id = generate_item_id(l, src->client_id);
-    //iitem_t add_item = player_iitem_init(item);
     if (!add_invitem(src, item)) {
         ERR_LOG("%s 获取兑换物品失败!", get_player_describe(src));
         return -5;
@@ -7105,6 +7105,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 
     item_t remove_item = { 0 };
     item_t item = { 0 };
+    clear_inv_item(&item);
 
     size_t pt_itemid = find_iitem_code_stack_item_id(inv, 0x00041003);
     if (!pt_itemid) {
@@ -7126,8 +7127,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 //     宽永通宝
 //( 00000000 )   14 00 60 00 00 00 00 00   E1 03 00 00 3C 3D 01 00  ..`.....?..<=..
 //( 00000010 )   79 00 06 00                                     y...
-
-    memset(&item, 0, sizeof(item_t));
 
     switch (pkt->exchange_choice) {
     case 0x0001:
@@ -7177,7 +7176,6 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_send_bb_exchange_item_in_quest(src, pt_itemid, 0x05 + (pkt->unknown_a2 * 5));
 
     item.item_id = generate_item_id(l, src->client_id);
-    //iitem_t add_item = player_iitem_init(item);
     if (!add_invitem(src, item)) {
         ERR_LOG("%s 获取兑换物品失败!", get_player_describe(src));
         return -5;
