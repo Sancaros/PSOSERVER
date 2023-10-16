@@ -1536,14 +1536,23 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             litem_t* new_litem;
 
             switch (iitem->data.datab[2]) {
-            case 0x03: // WeaponsSilverBadge 031403
+                /* 情人节巧克力 */
+            case ITEM_SUBTYPE_SERVER_ITEM2_CHOCOLATE:
+            case ITEM_SUBTYPE_SERVER_ITEM2_CANDY:
+            case ITEM_SUBTYPE_SERVER_ITEM2_CAKE:
+                break;
+
+                /* 银徽章 增加 100000 经验 */
+            case ITEM_SUBTYPE_SERVER_ITEM2_W_SILVER:
                 //Add Exp
                 if (character->disp.level < 200) {
                     client_give_exp(src, 100000);
+                    send_txt(src, "%s", __(src, "\tE\tC6增加经验 100000 点"));
                 }
                 break;
 
-            case 0x04: // WeaponseGold→ルクミンM150
+                /* 金徽章 获得一个精神玛古 露可敏  */
+            case ITEM_SUBTYPE_SERVER_ITEM2_W_GOLD:
 
                 new_item.datal[0] = 0xA3963C02;
                 new_item.datal[1] = 0;
@@ -1560,9 +1569,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
                 subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
+                send_txt(src, "%s", __(src, "\tE\tC6增加经验 100000 点"));
+
                 break;
 
-            case 0x05: // WeaponseCrystal→DB全セット
+                /* 水晶徽章 DB套装 DB剑 铠 盾 */
+            case ITEM_SUBTYPE_SERVER_ITEM2_W_CRYSTAL:
 
                 //DB鎧 スロット4
                 new_item.datal[0] = 0x00280101;
@@ -1614,6 +1626,14 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
                 break;
 
+            case ITEM_SUBTYPE_SERVER_ITEM2_W_STEEL:
+            case ITEM_SUBTYPE_SERVER_ITEM2_W_ALUMINUM:
+            case ITEM_SUBTYPE_SERVER_ITEM2_W_LEATHER:
+            case ITEM_SUBTYPE_SERVER_ITEM2_W_BONE:
+            case ITEM_SUBTYPE_SERVER_ITEM2_BOUQUET:
+            case ITEM_SUBTYPE_SERVER_ITEM2_DECOCTION:
+                break;
+
             default:
                 goto combintion_other;
             }
@@ -1661,15 +1681,15 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
                 /* TODO 出现的武器 装甲 增加随机属性 */
                 switch (iitem->data.datab[2]) {
-                case 0x00:
+                case ITEM_SUBTYPE_PRESENT_EVENT_CHRISTMAS:
                     DBG_LOG("%s 使用圣诞礼物", get_player_describe(src));
                     break;
 
-                case 0x01:
+                case ITEM_SUBTYPE_PRESENT_EVENT_EASTER:
                     DBG_LOG("%s 使用复活节礼物", get_player_describe(src));
                     break;
 
-                case 0x02:
+                case ITEM_SUBTYPE_PRESENT_EVENT_LANTERN:
                     DBG_LOG("%s 使用万圣节礼物", get_player_describe(src));
                     break;
                 }

@@ -57,70 +57,106 @@ static uint8_t class_equip_flags[12] = {
     PLAYER_EQUIP_FLAGS_RANGER  | PLAYER_EQUIP_FLAGS_HUMAN     | PLAYER_EQUIP_FLAGS_FEMALE   // RAmarl
 };
 
-#define MAX_LOBBY_SAVED_ITEMS           3000
+#define MAX_LOBBY_SAVED_ITEMS					3000
 
-#define ITEM_BASE_STAR_DEFAULT          0
-#define ITEM_RARE_THRESHOLD             9
+#define ITEM_BASE_STAR_DEFAULT					0
+#define ITEM_RARE_THRESHOLD						9
 
-#define ITEM_ID_MESETA                  0xFFFFFFFF
+#define ITEM_ID_MESETA							0xFFFFFFFF
 
 /* Item buckets. Each item gets put into one of these buckets when in the list,
    in order to make searching the list slightly easier. These are all based on
    the least significant byte of the item code. */
-#define ITEM_TYPE_WEAPON                0x00
-#define ITEM_TYPE_GUARD                 0x01
-#define ITEM_TYPE_MAG                   0x02
-#define ITEM_TYPE_TOOL                  0x03
-#define ITEM_TYPE_MESETA                0x04
+#define ITEM_TYPE_WEAPON						0x00
+#define ITEM_TYPE_GUARD							0x01
+#define ITEM_TYPE_MAG							0x02
+#define ITEM_TYPE_TOOL							0x03
+#define ITEM_TYPE_MESETA						0x04
 
-#define MESETA_IDENTIFIER               0x00040000
+#define MESETA_IDENTIFIER						0x00040000
 
 /* ITEM_TYPE_GUARD items are actually slightly more specialized, and fall into
    three subtypes of their own. These are the second least significant byte in
    the item code. */
-#define ITEM_SUBTYPE_FRAME              0x01
-#define ITEM_SUBTYPE_BARRIER            0x02
-#define ITEM_SUBTYPE_UNIT               0x03
+#define ITEM_SUBTYPE_FRAME						0x01
+#define ITEM_SUBTYPE_BARRIER					0x02
+#define ITEM_SUBTYPE_UNIT						0x03
 
 /* ITEM_TYPE_TOOL subtype */
-#define ITEM_SUBTYPE_MATE               0x00 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_FLUID              0x01 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_DISK               0x02 /* 1  ¶Ñµþ */
+#define ITEM_SUBTYPE_MATE						0x00 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_FLUID              		0x01 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK               		0x02 /* 1  ¶Ñµþ */
 
-#define ITEM_SUBTYPE_SOL_ATOMIZER       0x03 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_MOON_ATOMIZER      0x04 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_STAR_ATOMIZER      0x05 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_ANTI_TOOL          0x06 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_TELEPIPE           0x07 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_TRAP_VISION        0x08 /* 10 ¶Ñµþ */
-#define ITEM_SUBTYPE_SCAPE_DOLL         0x09 /* 1  ¶Ñµþ */
+#define ITEM_SUBTYPE_SOL_ATOMIZER       		0x03 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_MOON_ATOMIZER      		0x04 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_STAR_ATOMIZER      		0x05 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_ANTI_TOOL          		0x06 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_TELEPIPE           		0x07 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_TRAP_VISION        		0x08 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_SCAPE_DOLL         		0x09 /* 1  ¶Ñµþ */
 
-#define ITEM_SUBTYPE_GRINDER            0x0A /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_GRINDER            		0x0A /* 99 ¶Ñµþ */
 /////////////////////////////////////////////////////////////////
-#define ITEM_SUBTYPE_MATERIAL           0x0B /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MATERIAL_POWER     0x00 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MATERIAL_MIND      0x01 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MATERIAL_EVADE     0x02 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MATERIAL_HP	    0x03 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MATERIAL_TP	    0x04 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MATERIAL_DEF	    0x05 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MATERIAL_LUCK	    0x06 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL           		0x0B /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_POWER     		0x00 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_MIND      		0x01 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_EVADE     		0x02 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_HP	    		0x03 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_TP	    		0x04 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_DEF	    		0x05 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL_LUCK	    		0x06 /* 99 ¶Ñµþ */
 /////////////////////////////////////////////////////////////////
-#define ITEM_SUBTYPE_MAG_CELL1          0x0C /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MONSTER_LIMBS      0x0D /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_MAG_CELL2          0x0E /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_ADD_SLOT           0x0F /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_PHOTON             0x10 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_BOOK               0x11 /* 1  ¶Ñµþ */
-#define ITEM_SUBTYPE_SERVER_ITEM1       0x12 /* 99 ¶Ñµþ *//*todo player_use_item*/
-#define ITEM_SUBTYPE_PRESENT            0x13 /* 1 ¶Ñµþ Íê³É */
-#define ITEM_SUBTYPE_SERVER_ITEM2       0x14 /* 1  ¶Ñµþ *//*todo player_use_item*/
-#define ITEM_SUBTYPE_PRESENT_EVENT      0x15 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_DISK_MUSIC         0x16 /* 99 ¶Ñµþ */
-#define ITEM_SUBTYPE_HUNTER_REPORT      0x17/*todo player_use_item*/
-#define ITEM_SUBTYPE_PART_OF_MAG_CELL   0x18
-#define ITEM_SUBTYPE_GUILD_REWARD       0x19/*todo player_use_item*/
-#define ITEM_SUBTYPE_UNKNOW_ITEM        0x1A
+#define ITEM_SUBTYPE_MAG_CELL1					0x0C /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MONSTER_LIMBS				0x0D /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MAG_CELL2					0x0E /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_ADD_SLOT					0x0F /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_PHOTON						0x10 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_BOOK						0x11 /* 1  ¶Ñµþ */
+#define ITEM_SUBTYPE_SERVER_ITEM1				0x12 /* 99 ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_PRESENT					0x13 /* 1 ¶Ñµþ Íê³É */
+/////////////////////////////////////////////////////////////////
+#define ITEM_SUBTYPE_SERVER_ITEM2				0x14 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_CHOCOLATE		0x00 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_CANDY			0x01 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_CAKE			0x02 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_W_SILVER		0x03 /* 1  ¶Ñµþ */
+#define ITEM_SUBTYPE_SERVER_ITEM2_W_GOLD		0x04 /* 1  ¶Ñµþ */
+#define ITEM_SUBTYPE_SERVER_ITEM2_W_CRYSTAL		0x05 /* 1  ¶Ñµþ */
+#define ITEM_SUBTYPE_SERVER_ITEM2_W_STEEL		0x06 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_W_ALUMINUM	0x07 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_W_LEATHER		0x08 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_W_BONE		0x09 /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_BOUQUET		0x0A /* 1  ¶Ñµþ *//*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2_DECOCTION		0x0B /* 1  ¶Ñµþ *//*todo player_use_item*/
+/////////////////////////////////////////////////////////////////
+#define ITEM_SUBTYPE_PRESENT_EVENT      		0x15 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_PRESENT_EVENT_CHRISTMAS 	0x00 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_PRESENT_EVENT_EASTER	 	0x01 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_PRESENT_EVENT_LANTERN	 	0x03 /* 99 ¶Ñµþ */
+/////////////////////////////////////////////////////////////////
+#define ITEM_SUBTYPE_DISK_MUSIC         		0x16 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_1         	0x00 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_2         	0x01 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_3         	0x02 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_4         	0x03 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_5         	0x04 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_6         	0x05 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_7         	0x06 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_8         	0x07 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_9         	0x08 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_10         	0x09 /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_11         	0x0A /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK_MUSIC_VOL_12         	0x0B /* 99 ¶Ñµþ */
+/////////////////////////////////////////////////////////////////
+#define ITEM_SUBTYPE_HUNTER_REPORT      		0x17 /* 1  ¶Ñµþ *//*todo player_use_item*/
+/* ÓÐ5¸öÁÔÈË±¨¸æ ÔÝÎ´ÖªÊ¹ÓÃºóÈçºÎ */
+/////////////////////////////////////////////////////////////////
+#define ITEM_SUBTYPE_PART_OF_MAG_CELL   		0x18 /* 99 ¶Ñµþ */
+/////////////////////////////////////////////////////////////////
+#define ITEM_SUBTYPE_GUILD_REWARD       		0x19 /* 99 ¶Ñµþ *//*todo player_use_item*/
+/* ÓÐ4¸ö¹«»áµãÊý ÔÝÎ´ÖªÊ¹ÓÃºóÈçºÎ */
+/////////////////////////////////////////////////////////////////
+#define ITEM_SUBTYPE_UNKNOW_ITEM        		0x1A
 
 /* Default behaviors for the item lists. ITEM_DEFAULT_ALLOW means to accept any
    things NOT in the list read in by default, whereas ITEM_DEFAULT_REJECT causes

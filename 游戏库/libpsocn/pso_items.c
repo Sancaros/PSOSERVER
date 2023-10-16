@@ -153,7 +153,7 @@ size_t max_stack_size(const item_t* item) {
 
 /* 物品类型堆叠检测表函数 */
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
-
+	/* 基本判断美赛塔 和 工具的堆叠 其他类型不适用 */
 	switch (data0) {
 	case ITEM_TYPE_MESETA:
 		return MAX_PLAYER_MESETA;
@@ -175,6 +175,7 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_BOOK:
 		case ITEM_SUBTYPE_PRESENT:
 		case ITEM_SUBTYPE_SERVER_ITEM2:
+		case ITEM_SUBTYPE_HUNTER_REPORT:
 			return 1;
 
 			/* 支持大量堆叠 99*/
@@ -185,9 +186,11 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_MAG_CELL2:
 		case ITEM_SUBTYPE_ADD_SLOT:
 		case ITEM_SUBTYPE_PHOTON:
-		case ITEM_SUBTYPE_DISK_MUSIC:
 		case ITEM_SUBTYPE_SERVER_ITEM1:
 		case ITEM_SUBTYPE_PRESENT_EVENT:
+		case ITEM_SUBTYPE_DISK_MUSIC:
+		case ITEM_SUBTYPE_PART_OF_MAG_CELL:
+		case ITEM_SUBTYPE_GUILD_REWARD:
 			return 99;
 		}
 
