@@ -159,7 +159,7 @@ litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float 
 #endif // DEBUG
 
     /* Increment the item ID, add it to the queue, and return the new item */
-    ++l->item_lobby_id;
+    generate_item_id(l, 0xFF);
     TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
     return litem;
 }

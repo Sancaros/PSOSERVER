@@ -2553,60 +2553,80 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_black_paper_deal_photon_drop_exchange_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
+//[2023年10月16日 13:27:38:107] 调试(f_logs.h 0612): 数据包如下:
+//(00000000) 0C 00 62 00 00 00 00 00  DF 01 00 00    ..b.........
+
     if (!in_game(src))
         return -1;
 
-    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
-
-    psocn_bb_char_t* character = get_client_char_bb(src);
-
-    if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
-        item_t ex_pc = { 0 };
-        ex_pc.datal[0] = BBItem_Photon_Crystal;
-        size_t item_id = find_iitem_stack_item_id(&character->inv, &ex_pc);
-
-        /* 如果找不到该物品，则将用户从船上推下. */
-        if (item_id == 0) {
-            ERR_LOG("%s 没有兑换所需物品!", get_player_describe(src));
-            return -3;
-        }
-
-        item_t item = remove_invitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
-        if (item_not_identification_bb(item.datal[0], item.datal[1])) {
-            ERR_LOG("0x%08X 是未识别物品", item_id);
-            return -4;
-        }
-
-        l->drops_disabled = true;
-        l->questE0_done = false;
-        subcmd_send_lobby_bb_destroy_item(src, item.item_id, 1);
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_black_paper_deal_photon_drop_exchange_t), 0x01)) {
+        return -2;
     }
 
-    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    l->drops_disabled = false;
+    l->questE0_done = false;
+
+    if ((!l->oneperson) && !(l->flags & LOBBY_FLAG_QUESTING) && (l->drops_disabled)) {
+        return -3;
+    }
+
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
+    inventory_t* inv = get_client_inv_bb(src);
+
+    size_t item_id = find_iitem_code_stack_item_id(inv, BBItem_Photon_Crystal);
+    /* 如果找不到该物品，则将用户从船上推下. */
+    if (item_id == 0) {
+        ERR_LOG("%s 没有兑换所需物品!", get_player_describe(src));
+        return -4;
+    }
+
+    item_t item = remove_invitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
+    if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+        ERR_LOG("0x%08X 是未识别物品", item_id);
+        return -5;
+    }
+
+    l->drops_disabled = true;
+
+    return subcmd_send_lobby_bb_destroy_item(src, item_id, 1);
 }
 
 int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_black_paper_deal_reward_t* pkt) {
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &l->block->sfmt_rng;
-    uint32_t area = pkt->area;
+    uint8_t area = pkt->area, bp_type = pkt->bp_type;
     float x = pkt->drop_x, z = pkt->drop_z;
+    bp_reward_list_t* bp_reward_list = NULL;
+    size_t reward_list_count = 0;
+    uint8_t tmp_value = 0;
+    errno_t err = 0;
 
-    //普通难度
+    //普通难度 黑页2
 //[2023年10月15日 21:55:38:535] 舰船服务器 错误(f_logs.h 0599): 数据包如下:
-//
 //(00000000) 18 00 62 00 00 00 00 00  E0 04 00 00 08 04 15 00    ..b.............
 //(00000010) 00 60 60 45 00 00 CD C3     .``E....
-//
-//
 //
 //[2023年10月15日 22:05:00:586] 舰船服务器 错误(f_logs.h 0599): 数据包如下:
-//
 //(00000000) 18 00 62 00 00 00 00 00  E0 04 00 00 08 04 15 00    ..b.............
 //(00000010) 00 60 60 45 00 00 CD C3     .``E....
+// 
 //[2023年10月16日 11:17:45:150] 调试(f_logs.h 0612): 数据包如下:
 //(00000000) 18 00 62 00 00 00 00 00  E0 04 00 00 08 04 15 00    ..b.............
 //(00000010) 00 60 60 45 00 00 CD C3     .``E....
+// 
+//[2023年10月16日 13:36:36:942] 调试(f_logs.h 0612): 数据包如下:
+//(00000000) 18 00 62 00 00 00 00 00  E0 04 00 00 08 04 15 00    ..b.............
+//(00000010) 00 60 60 45 00 00 CD C3     .``E....
+//     //极限难度 黑页2
+//[2023年10月16日 15:13:46:066] 调试(f_logs.h 0612): 数据包如下:
+//(00000000) 18 00 62 00 00 00 00 00  E0 04 00 00 08 04 15 00    ..b.............
+//(00000010) 00 60 60 45 00 00 CD C3     .``E....
+//[2023年10月16日 15:31:00:903] 调试(f_logs.h 0612): 数据包如下:
+//(00000000) 18 00 62 00 00 00 00 00  E0 04 00 00 08 04 15 00    ..b.............
+//(00000010) 00 60 60 45 00 00 CD C3     .``E....
+
 
     if (!in_game(src))
         return -1;
@@ -2622,114 +2642,178 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
 
     print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
 
-    uint32_t bp, bp_reward_count, new_value;
+    for (int i = 0; i < (bp_type > 0x03 ? (l->difficulty <= 0x01 ? 1 : 2) : l->difficulty + 1); i++) {
+        uint32_t reward_item = 0;
 
-    if (area > 0x03)
-        bp_reward_count = 1;
-    else
-        bp_reward_count = l->difficulty + 1;
-
-    for (bp = 0; bp < bp_reward_count; bp++) {
-        new_value = 0;
-
-        switch (area) {
+        switch (bp_type) {
         case 0x00:
-            // bp1 dorphon route
-            switch (l->difficulty) {
-            case GAME_TYPE_DIFFICULTY_NORMARL:
-                new_value = bp_dorphon_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_normal) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_HARD:
-                new_value = bp_dorphon_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_hard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                new_value = bp_dorphon_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_vhard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                new_value = bp_dorphon_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_ultimate) / 4)];
-                break;
-            }
+            bp_reward_list = bp1_dorphon[l->difficulty];
+            reward_list_count = ARRAYSIZE(bp1_dorphon[l->difficulty]);
             break;
+
         case 0x01:
-            // bp1 rappy route
-            switch (l->difficulty) {
-            case GAME_TYPE_DIFFICULTY_NORMARL:
-                new_value = bp_rappy_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_normal) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_HARD:
-                new_value = bp_rappy_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_hard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                new_value = bp_rappy_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_vhard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                new_value = bp_rappy_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_ultimate) / 4)];
-                break;
-            }
+            bp_reward_list = bp1_rappy[l->difficulty];
+            reward_list_count = ARRAYSIZE(bp1_rappy[l->difficulty]);
             break;
+
         case 0x02:
-            // bp1 zu route
-            switch (l->difficulty) {
-            case GAME_TYPE_DIFFICULTY_NORMARL:
-                new_value = bp_zu_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_normal) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_HARD:
-                new_value = bp_zu_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_hard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                new_value = bp_zu_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_vhard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                new_value = bp_zu_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_ultimate) / 4)];
-                break;
-            }
+            bp_reward_list = bp1_zu[l->difficulty];
+            reward_list_count = ARRAYSIZE(bp1_zu[l->difficulty]);
             break;
+
         case 0x04:
-            // bp2
-            switch (l->difficulty) {
-            case GAME_TYPE_DIFFICULTY_NORMARL:
-                new_value = bp2_normal[sfmt_genrand_uint32(rng) % (sizeof(bp2_normal) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_HARD:
-                new_value = bp2_hard[sfmt_genrand_uint32(rng) % (sizeof(bp2_hard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                new_value = bp2_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp2_vhard) / 4)];
-                break;
-            case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                new_value = bp2_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp2_ultimate) / 4)];
-                break;
-            }
+            bp_reward_list = bp2[l->difficulty];
+            reward_list_count = ARRAYSIZE(bp2[l->difficulty]);
             break;
         }
+
+        reward_item = bp_reward_list[(sfmt_genrand_uint32(rng) % reward_list_count)].reward;
+
+        if (reward_item == 0)
+            reward_item = BBItem_Meseta;
 
         l->drops_disabled = false;
         l->questE0_done = true;
 
         item_t item = { 0 };
 
-        item.datal[0] = new_value;
+        item.datal[0] = reward_item;
 
-        if (new_value == 0x04) {
+        /* 填充物品数据 */
+        if (item.datal[0] == BBItem_Meseta) {
             pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, src->bb_pl->character.dress_data.section);
             if (!ent) {
                 ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, src->bb_pl->character.dress_data.section);
                 return 0;
             }
-            new_value = get_random_value(rng, ent->enemy_meseta_ranges[0x2E]);
-            new_value += sfmt_genrand_uint32(rng) % 100;
-            item.data2l = new_value;
+            item.data2l = get_random_value(rng, ent->enemy_meseta_ranges[0x2E]) + (sfmt_genrand_uint32(rng) % 100);
+        }
+        else {
+            /* 检索物品类型 */
+            switch (item.datab[0]) {
+            case ITEM_TYPE_WEAPON: // 武器
+                /* 打磨值 0 - 10*/
+                item.datab[3] = sfmt_genrand_uint32(rng) % 11;
+                /* 特殊攻击 0 - 10 配合难度 0 - 3 33%几率 获得特殊EX */
+                if ((sfmt_genrand_uint32(rng) % 3) == 1) {
+                    item.datab[4] = sfmt_genrand_uint32(rng) % 11 + l->difficulty;
+                }
+                /* datab[5] 在这里不涉及 礼物 未鉴定*/
+
+                /* 如果掉落的是武器 则未鉴定 */
+                item.datab[4] |= 0x80;
+
+                /* 生成属性*/
+                size_t num_percentages = 0;
+                while (num_percentages < 3) {
+                    /*0-5 涵盖所有属性*/
+                    for (size_t x = 0; x < 6; x++) {
+                        /* 后期设置调整 生成属性几率 TODO */
+                        if ((sfmt_genrand_uint32(rng) % 6) == 1) {
+                            /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
+                            item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
+                            tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 21];/* 0 - 5 % 0 - 19*/
+
+                            //if (tmp_value > 50)
+                            //    tmp_value = 50;
+
+                            //if (tmp_value < -50)
+                            //    tmp_value = -50;
+
+                            item.datab[(num_percentages * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
+                            num_percentages++;
+                        }
+                    }
+                }
+
+                break;
+
+            case ITEM_TYPE_GUARD: // 装甲
+                pmt_guard_bb_t pmt_guard = { 0 };
+                pmt_unit_bb_t pmt_unit = { 0 };
+
+                switch (item.datab[1]) {
+                case ITEM_SUBTYPE_FRAME://护甲
+                    if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
+                        ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                        return -1;
+                    }
+
+                    /*随机槽位 0 - 4 33几率新增槽位 */
+                    if ((sfmt_genrand_uint32(rng) % 3) == 1)
+                        item.datab[5] = sfmt_genrand_uint32(rng) % 4 + 1;
+
+                    /* DFP值 */
+                    if (pmt_guard.dfp_range) {
+                        tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
+                        if (tmp_value < 0)
+                            tmp_value = 0;
+                        item.datab[6] = tmp_value;
+                    }
+
+                    /* EVP值 */
+                    if (pmt_guard.evp_range) {
+                        tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
+                        if (tmp_value < 0)
+                            tmp_value = 0;
+                        item.datab[8] = tmp_value;
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_BARRIER://护盾
+                    if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
+                        ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                        return -1;
+                    }
+
+                    /* DFP值 */
+                    if (pmt_guard.dfp_range) {
+                        tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
+                        if (tmp_value < 0)
+                            tmp_value = 0;
+                        item.datab[6] = tmp_value;
+                    }
+
+                    /* EVP值 */
+                    if (pmt_guard.evp_range) {
+                        tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
+                        if (tmp_value < 0)
+                            tmp_value = 0;
+                        item.datab[8] = tmp_value;
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_UNIT://插件
+                    if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
+                        ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                        UNLOCK_CMUTEX(src);
+                        return -1;
+                    }
+
+                    tmp_value = sfmt_genrand_uint32(rng) % 5;
+                    item.datab[6] = unit_bonus_values[tmp_value][0];
+                    item.datab[7] = unit_bonus_values[tmp_value][1];
+
+                    break;
+                }
+                break;
+
+            case ITEM_TYPE_MAG:
+                magitemstat_t stats;
+                ItemMagStats_init(&stats, get_player_msg_color_set(src));
+                assign_mag_stats(&item, &stats);
+                break;
+
+            case ITEM_TYPE_TOOL: // 药品工具
+                item.datab[5] = get_item_amount(&item, 1);
+                break;
+            }
         }
 
-        if (new_value == 0x00)
-            item.datab[4] = 0x80;
-
         litem_t* litem = add_new_litem_locked(l, &item, area, x, z);
-
         if (!litem) {
             return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
         }
-
         subcmd_send_drop_stack_bb(src, 0xFBFF, litem);
     }
 
