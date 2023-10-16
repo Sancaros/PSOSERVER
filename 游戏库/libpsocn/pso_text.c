@@ -16,6 +16,9 @@
 */
 
 #include <stdbool.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <time.h>
 #include <ctype.h>
 #ifndef _WIN32
 #include <unistd.h>
@@ -25,8 +28,21 @@
 
 #include "pso_text.h"
 
-char char_for_language_code(uint8_t language) {
-    switch (language) {
+int count_element(void* arr) {
+    int count = 0;
+    for (int i = 0; i < INT_MAX; i++) {
+        if (((int**)arr)[i] != 0) {
+            count++;
+        }
+        else {
+            break;
+        }
+    }
+    return count;
+}
+
+char char_for_language_code(uint8_t language_code) {
+    switch (language_code) {
     case 0:
         return 'J';
     case 1:
@@ -39,6 +55,29 @@ char char_for_language_code(uint8_t language) {
         return 'S';
     default:
         return '?';
+    }
+}
+
+uint8_t language_code_for_char(char language_char) {
+    switch (language_char) {
+    case 'J':
+    case 'j':
+        return 0;
+    case 'E':
+    case 'e':
+        return 1;
+    case 'G':
+    case 'g':
+        return 2;
+    case 'F':
+    case 'f':
+        return 3;
+    case 'S':
+    case 's':
+        return 4;
+    default:
+        ERR_LOG("unknown language");
+        return 0xFF;
     }
 }
 

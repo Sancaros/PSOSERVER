@@ -66,10 +66,10 @@ int subcmd_send_lobby_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req);
 int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, ship_client_t* dest);
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 单人怪物掉落物品 */
-int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const item_t* item);
+int subcmd_send_bb_drop_box_or_enemy_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const item_t* item);
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 大厅怪物掉落物品 */
-int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const item_t* item);
+int subcmd_send_lobby_bb_drop_box_or_enemy_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const item_t* item);
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
 int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const item_t* item);

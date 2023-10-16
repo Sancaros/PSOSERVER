@@ -1727,7 +1727,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We have the item... Add it to the lobby's inventory.
     我们有这个物品…把它添加到大厅的背包中 */
-    if (!add_litem_locked(l, &item, (uint8_t)area, x, z)) {
+    if (!add_lobby_litem_locked(l, &item, (uint8_t)area, x, z, false)) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品新增游戏房间背包!");
@@ -6310,7 +6310,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* We have the item... Add it to the lobby's inventory. */
-    lt = add_litem_locked(l, &item, area, x, z);
+    lt = add_lobby_litem_locked(l, &item, area, x, z, false);
     if (!lt) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */

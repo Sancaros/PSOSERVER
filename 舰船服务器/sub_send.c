@@ -471,7 +471,7 @@ int subcmd_send_lobby_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* charac
         tmp_meseta.data2l = amount;
 
         /* 当获得物品... 将其新增入房间物品背包. */
-        litem_t* li_meseta = add_litem_locked(l, &tmp_meseta, c->drop_area, c->x, c->z);
+        litem_t* li_meseta = add_lobby_litem_locked(l, &tmp_meseta, c->drop_area, c->x, c->z, false);
         if (!li_meseta) {
             /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
             ERR_LOG("无法将物品添加至游戏房间!");
@@ -577,7 +577,7 @@ int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, shi
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP 怪物掉落物品 */
-int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const item_t* item) {
+int subcmd_send_bb_drop_box_or_enemy_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const item_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
@@ -611,7 +611,7 @@ int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, cons
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const item_t* item) {
+int subcmd_send_lobby_bb_drop_box_or_enemy_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const item_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
     lobby_t* l = src->cur_lobby;
@@ -629,7 +629,7 @@ int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, su
                 continue;
             }
 
-            subcmd_send_bb_drop_item(l->clients[i], req, item);
+            subcmd_send_bb_drop_box_or_enemy_item(l->clients[i], req, item);
         }
     }
 

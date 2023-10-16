@@ -721,7 +721,7 @@ static int handle_item(ship_client_t* src, const char* params) {
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
+        litem = add_lobby_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z, true);
 
         if (!litem) {
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
@@ -901,7 +901,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
+        litem = add_lobby_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z, true);
 
         if (!litem) {
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));

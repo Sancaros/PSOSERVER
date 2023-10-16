@@ -1246,7 +1246,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 continue;
             }
 
-            litem_t* lt = add_new_litem_locked(l, &item, drop_area, pkt->x, pkt->z);
+            litem_t* lt = add_lobby_litem_locked(l, &item, drop_area, pkt->x, pkt->z, true);
             if (!lt) {
                 pthread_mutex_unlock(&p2->mutex);
                 ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(p2));
@@ -1257,7 +1257,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             print_item_data(&lt->item, l->version);
 #endif // DEBUG
 
-            rv = subcmd_send_bb_drop_item(p2, pkt, &lt->item);
+            rv = subcmd_send_bb_drop_box_or_enemy_item(p2, pkt, &lt->item);
             pthread_mutex_unlock(&p2->mutex);
         }
     }
@@ -1279,7 +1279,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        litem_t* lt = add_new_litem_locked(l, &item, drop_area, pkt->x, pkt->z);
+        litem_t* lt = add_lobby_litem_locked(l, &item, drop_area, pkt->x, pkt->z, true);
         if (!lt) {
             pthread_mutex_unlock(&src->mutex);
             ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
@@ -1287,7 +1287,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        rv = subcmd_send_lobby_bb_drop_item(src, NULL, pkt, &lt->item);
+        rv = subcmd_send_lobby_bb_drop_box_or_enemy_item(src, NULL, pkt, &lt->item);
         pthread_mutex_unlock(&src->mutex);
     }
 
@@ -1389,7 +1389,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 continue;
             }
 
-            litem_t* lt = add_new_litem_locked(l, &item, pkt->area, pkt->x, pkt->z);
+            litem_t* lt = add_lobby_litem_locked(l, &item, pkt->area, pkt->x, pkt->z, true);
             if (!lt) {
                 pthread_mutex_unlock(&p2->mutex);
                 ERR_LOG("%s 无法将物品添加至游戏房间! pkt->ignore_def %d", get_player_describe(p2), pkt->ignore_def);
@@ -1397,7 +1397,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 continue;
             }
 
-            rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->item);
+            rv = subcmd_send_bb_drop_box_or_enemy_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->item);
             pthread_mutex_unlock(&p2->mutex);
         }
 
@@ -1422,7 +1422,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        litem_t* lt = add_new_litem_locked(l, &item, pkt->area, pkt->x, pkt->z);
+        litem_t* lt = add_lobby_litem_locked(l, &item, pkt->area, pkt->x, pkt->z, true);
         if (!lt) {
             pthread_mutex_unlock(&src->mutex);
             ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
@@ -1430,7 +1430,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        rv = subcmd_send_lobby_bb_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->item);
+        rv = subcmd_send_lobby_bb_drop_box_or_enemy_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->item);
         pthread_mutex_unlock(&src->mutex);
     }
 
@@ -2505,7 +2505,7 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     drop_item.datab[1] = pkt->item_subtype;
     drop_item.datab[5] = pkt->drop_amount;
 
-    litem_t* new_litem = add_new_litem_locked(l, &drop_item, src->cur_area, x, z);
+    litem_t* new_litem = add_lobby_litem_locked(l, &drop_item, src->cur_area, x, z, true);
 
     if (new_litem == NULL) {
         return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足或生成失败."));
@@ -2648,22 +2648,22 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         switch (bp_type) {
         case 0x00:
             bp_reward_list = bp1_dorphon[l->difficulty];
-            reward_list_count = ARRAYSIZE(bp1_dorphon[l->difficulty]);
+            reward_list_count = count_element(bp1_dorphon[l->difficulty]);
             break;
 
         case 0x01:
             bp_reward_list = bp1_rappy[l->difficulty];
-            reward_list_count = ARRAYSIZE(bp1_rappy[l->difficulty]);
+            reward_list_count = count_element(bp1_rappy[l->difficulty]);
             break;
 
         case 0x02:
             bp_reward_list = bp1_zu[l->difficulty];
-            reward_list_count = ARRAYSIZE(bp1_zu[l->difficulty]);
+            reward_list_count = count_element(bp1_zu[l->difficulty]);
             break;
 
         case 0x04:
             bp_reward_list = bp2[l->difficulty];
-            reward_list_count = ARRAYSIZE(bp2[l->difficulty]);
+            reward_list_count = count_element(bp2[l->difficulty]);
             break;
         }
 
@@ -2810,7 +2810,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             }
         }
 
-        litem_t* litem = add_new_litem_locked(l, &item, area, x, z);
+        litem_t* litem = add_lobby_litem_locked(l, &item, area, x, z, true);
         if (!litem) {
             return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
         }

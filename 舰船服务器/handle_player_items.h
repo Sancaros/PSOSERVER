@@ -39,8 +39,8 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c);
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
-litem_t* add_litem_locked(lobby_t* l, item_t* item, uint8_t area, float x, float z);
+litem_t* add_lobby_litem_locked(lobby_t* l, item_t* item, uint8_t area, float x, float z, bool is_new_item);
+//litem_t* add_litem_locked(lobby_t* l, item_t* item, uint8_t area, float x, float z);
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, item_t* rv);
 
