@@ -1888,26 +1888,21 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_tekk_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &src->sfmt_rng;
-    uint32_t id_item_index = 0, attrib = 0;
+    uint32_t id_item_index = 0;
     uint32_t item_id = pkt->item_id;
     char percent_mod = 0;
 
     if (!in_game(src))
         return -1;
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-        ERR_LOG("%s 发送损坏的物品鉴定数据!",
-            get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_tekk_item_t), 0x02))
         return -2;
-    }
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     if (character->disp.meseta < 100) {
         DBG_LOG("sub62_B8_bb 玩家没钱了 %d", character->disp.meseta);
-        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4你没钱啦"));
-        return -1;
+        return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4你没钱啦"));
     }
 
     id_item_index = find_iitem_index(&character->inv, item_id);
@@ -1919,42 +1914,71 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("%s 发送无法鉴定的物品!",
             get_player_describe(src));
-        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
+        send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
         return -2;
     }
 
     subcmd_send_lobby_bb_delete_meseta(src, character, 100, false);
     iitem_t* id_result = &character->inv.iitems[id_item_index];
-    attrib = id_result->data.datab[4] & ~(0x80);
 
     if (id_result->data.item_id == EMPTY_STRING) {
         ERR_LOG("%s 未发送需要鉴定的物品!",
             get_player_describe(src));
-        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -4"));
+        send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -4"));
         return -3;
     }
 
     if (id_result->data.item_id != item_id) {
         ERR_LOG("%s 接受的物品ID与以前请求的物品ID不匹配 !",
             get_player_describe(src));
-        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
+        send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
         return -4;
     }
 
     /* 获取鉴定的物品结果 */
     src->game_data->identify_result = *id_result;
 
-    if (player_tekker_item(src, &src->sfmt_rng, &src->game_data->identify_result.data)) {
-        ERR_LOG("%s 发送无法鉴定的物品!",
-            get_player_describe(src));
-        send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
-        return -5;
+    //if (player_tekker_item(src, &src->sfmt_rng, &src->game_data->identify_result.data)) {
+    //    ERR_LOG("%s 发送无法鉴定的物品!",
+    //        get_player_describe(src));
+    //    send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
+    //    return -5;
+    //}
+
+    ssize_t luck = player_tekker_item(src, &src->sfmt_rng, &src->game_data->identify_result.data);
+
+    switch (luck) {
+    case 1:
+        break;
+
+    case 2:
+        if (is_item_rare(&src->game_data->identify_result.data))
+            announce_message(src, false, BB_SCROLL_MSG_TYPE, "[奸商鉴定]: "
+                "恭喜 %s \tE\tC8有点幸运\tE\tC7,鉴定出了 "
+                "\tE\tC6%s.",
+                get_player_name(src->pl, src->version, false),
+                get_item_describe(&src->game_data->identify_result.data, src->version)
+            );
+        break;
+
+    case 3:
+        if (is_item_rare(&src->game_data->identify_result.data))
+            announce_message(src, false, BB_SCROLL_MSG_TYPE, "[奸商鉴定]: "
+                "恭喜 %s \tE\tC6最佳运气\tE\tC7,鉴定出了 "
+                "\tE\tC6%s.",
+                get_player_name(src->pl, src->version, false),
+                get_item_describe(&src->game_data->identify_result.data, src->version)
+            );
+        break;
+
+    default:
+        break;
     }
 
     src->drop_item_id = src->game_data->identify_result.data.item_id;
     src->drop_amt = 1;
 
-    LOBBY_TEKKITEM_LOG(src, item_id, src->cur_area, &id_result->data);
+    LOBBY_TEKKITEM_LOG(src, item_id, src->cur_area, &src->game_data->identify_result.data);
 
     if (src->game_data->gm_debug)
         print_item_data(&src->game_data->identify_result.data, src->version);

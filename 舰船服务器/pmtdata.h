@@ -471,6 +471,8 @@ uint8_t pmt_lookup_max_tech_level_bb(uint8_t tech_num, uint8_t char_class);
 */
 uint8_t get_pmt_max_tech_level_bb(uint8_t tech_num, uint8_t char_class);
 
+pmt_special_bb_t* get_special_type_bb(uint8_t datab4);
+
 pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32_t datal2);
 bool get_item_pmt_bb(const uint32_t datal1, const uint32_t datal2,
     pmt_weapon_bb_t* weapon, pmt_guard_bb_t* guard, pmt_unit_bb_t* unit, pmt_mag_bb_t* mag, pmt_tool_bb_t* tool);

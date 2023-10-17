@@ -1820,51 +1820,180 @@ done:
     return err;
 }
 
-int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
-    char percent_mod = 0;
-    uint8_t attrib = item->datab[4];
-    int8_t tmp_value = 0;
+//int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
+//    char percent_mod = 0;
+//    uint8_t attrib = item->datab[4];
+//    int8_t tmp_value = 0;
+//
+//    if (item->datab[0] != ITEM_TYPE_WEAPON) {
+//        ERR_LOG("%s 尝试鉴定非武器物品 %s", get_player_describe(src), get_item_describe(item, src->version));
+//        return -1;
+//    }
+//
+//    // 技能属性提取和随机数处理
+//    if (attrib < ITEM_TYPE_WEAPON_SPECIAL_NUM) {
+//        item->datab[4] = tekker_attributes[(attrib * 3) + 1];
+//        if ((sfmt_genrand_uint32(rng) % 100) > 70)
+//            item->datab[4] += sfmt_genrand_uint32(rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
+//    }
+//    else if ((sfmt_genrand_uint32(rng) % 5 == 1)) {
+//        item->datab[4] = sfmt_genrand_uint32(rng) % 10;
+//    }else
+//        item->datab[4] = 0;
+//
+//    // 各属性值修正处理
+//    static const uint8_t delta_table[5] = { -10, -5, 0, 5, 10 };
+//    for (size_t x = 6; x < 0x0B; x += 2) {
+//        // 百分比修正处理
+//        uint32_t mt_index = sfmt_genrand_uint32(rng) % 5;
+//
+//        tmp_value = delta_table[mt_index];
+//
+//        if (tmp_value > 10)
+//            tmp_value = 10;
+//
+//        if (tmp_value < -10)
+//            tmp_value = -10;
+//
+//        //percent_mod += tmp_value;
+//
+//        //if (mt_index > 5)
+//        //    percent_mod += delta_table[mt_index];
+//        //else
+//        //    percent_mod -= delta_table[mt_index];
+//
+//        if (!(item->datab[x] & 128) && (item->datab[x + 1] > 0))
+//            (char)item->datab[x + 1] += tmp_value;
+//    }
+//
+//    return 0;
+//}
 
-    if (item->datab[0] != ITEM_TYPE_WEAPON)
+/* 根据颜色ID预设武器鉴定加成 */
+static const uint8_t tekke_favored_weapon_by_section_id[10][2] = {
+    {0x09, 0x09}, //铬绿 火箭炮类
+    {0x07, 0x07}, //翠绿 来复枪 狙击枪类
+    {0x02, 0x02}, //天青 剑类
+    {0x04, 0x04}, //纯蓝 长柄类
+    {0x08, 0x08}, //淡紫 机枪类
+    {0x0A, 0x0A}, //粉红 杖类
+    {0x01, 0x06}, //真红 单手剑类 手枪类
+    {0x03, 0x03}, //橙黄 匕首类
+    {0x0B, 0x0C}, //金黄 长杖类 魔杖类
+    {0x05, 0x05}  //羽白 投刃类
+};
+
+bool check_tekke_favored_weapon_by_section_id(uint8_t section, item_t* item) {
+    bool favored = false;
+
+    for (size_t i = 0; i < 2; i++) {
+        if (item->datab[1] == tekke_favored_weapon_by_section_id[section][i])
+            favored = true;
+    }
+
+    return favored;
+}
+
+ssize_t player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
+    errno_t err = 0;
+
+    if (item->datab[0] != ITEM_TYPE_WEAPON) {
+        ERR_LOG("%s 尝试鉴定非武器物品 %s", get_player_describe(src), get_item_describe(item, src->version));
         return -1;
-
-    // 技能属性提取和随机数处理
-    if (attrib < 0x29) {
-        item->datab[4] = tekker_attributes[(attrib * 3) + 1];
-        if ((sfmt_genrand_uint32(rng) % 100) > 70)
-            item->datab[4] += sfmt_genrand_uint32(rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
-    }
-    else if ((sfmt_genrand_uint32(rng) % 5 == 1)) {
-        item->datab[4] = sfmt_genrand_uint32(rng) % 10;
-    }else
-        item->datab[4] = 0;
-
-    // 各属性值修正处理
-    static const uint8_t delta_table[5] = { -10, -5, 0, 5, 10 };
-    for (size_t x = 6; x < 0x0B; x += 2) {
-        // 百分比修正处理
-        uint32_t mt_index = sfmt_genrand_uint32(rng) % 5;
-
-        tmp_value = delta_table[mt_index];
-
-        if (tmp_value > 10)
-            tmp_value = 10;
-
-        if (tmp_value < -10)
-            tmp_value = -10;
-
-        //percent_mod += tmp_value;
-
-        //if (mt_index > 5)
-        //    percent_mod += delta_table[mt_index];
-        //else
-        //    percent_mod -= delta_table[mt_index];
-
-        if (!(item->datab[x] & 128) && (item->datab[x + 1] > 0))
-            (char)item->datab[x + 1] += tmp_value;
     }
 
-    return 0;
+    item->datab[4] &= 0x7F;
+
+    /* 随机表 提升或降低 11种情况 */
+    static const int8_t delta_table[11] = { -10, -5, -3, -2, -1, 0, 1, 2, 3, 5, 10 };
+    uint8_t delta_index = 0;
+    int8_t delta = 0;
+    
+    /* 对应颜色ID的装备类型加成 */
+    bool favored = check_tekke_favored_weapon_by_section_id(get_player_section(src), item);
+    ssize_t luck = 0;
+
+    /* 预设加成 */
+    uint8_t favored_add = 0;
+    if (favored)
+        favored_add = 5;
+
+#ifdef DEBUG
+
+    DBG_LOG("%d %d", favored, favored_add);
+
+#endif // DEBUG
+
+    // 调整武器的特殊能力
+    {
+        delta_index = (uint8_t)(sfmt_genrand_uint32(rng) % 11);
+        delta = delta_table[delta_index] + favored_add;
+#ifdef DEBUG
+        DBG_LOG("%d", delta);
+#endif // DEBUG
+        // 注意：原始代码在这里专门检查了-1和+1，但是数据文件中只包括delta_indexes为4、5、6（对应-1、0、1），
+        // 因此我们只检查正数和负数即可。使用原始的JudgeItem.rel文件时，行为应该是相同的，但这样更准确。
+        uint8_t new_special = 0;
+        if (delta < 0) {
+            new_special = item->datab[4] - 1;
+        }
+        else if (delta > 0) {
+            new_special = item->datab[4] + 1;
+        }
+        else {
+            new_special = item->datab[4];
+        }
+
+        // 如果新的特殊能力仍然属于同一类别，则更新特殊能力
+        if (get_special_type_bb(item->datab[4]) && get_special_type_bb(new_special)) {
+            if ((new_special != item->datab[4]) &&
+                (get_special_type_bb(item->datab[4])->type ==
+                    get_special_type_bb(new_special)->type)) {
+                item->datab[4] = new_special;
+            }
+        }
+
+        if (delta > 0)
+            luck += 1;
+    }
+
+    // 如果武器不是稀有的，则调整武器的磨损度
+    if (!is_item_rare(item)) {
+        pmt_weapon_bb_t pmt_weapon = { 0 };
+
+        if (err = pmt_lookup_weapon_bb(item->datal[0], &pmt_weapon)) {
+            ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
+            return 0;
+        }
+        delta_index = (uint8_t)(sfmt_genrand_uint32(rng) % 11);
+        delta = delta_table[delta_index] + favored_add;
+        int16_t new_grind = (int16_t)(item->datab[3]) + (int16_t)(delta);
+        item->datab[3] = (uint8_t)clamp(new_grind, 0, pmt_weapon.max_grind);
+
+        if (delta > 0)
+            luck += 1;
+    }
+
+    // 调整武器的加成
+    {
+        // 注意：原始代码确实对所有三个加成使用相同的delta。
+        // 注意：原始代码在增加值之前不会检查每个槽位是否实际存在加成。
+        // 可能后面有检查会清除任何无效的加成，但我们没有这样的检查，因此需要在这里检查每个加成是否实际存在。
+        delta_index = (uint8_t)(sfmt_genrand_uint32(rng) % 11);
+        delta = delta_table[delta_index] + favored_add;
+
+        for (size_t z = 6; z <= 10; z += 2) {
+            if (item->datab[z] >= 1 && item->datab[z] <= 5) {
+                item->datab[z + 1] += (int8_t)min(item->datab[z + 1] + delta, 100);
+            }
+        }
+
+        if (delta > 0)
+            luck += 1;
+    }
+
+    return luck;
+
 }
 
 iitem_t player_iitem_init(const item_t item) {

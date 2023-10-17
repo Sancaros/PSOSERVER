@@ -55,34 +55,6 @@
 #pragma pack(push, 1) 
 #endif
 
-struct Special {
-    uint16_t type;
-    uint16_t amount;
-} PACKED;
-
-struct StatBoost {
-    uint8_t stat1;
-    uint8_t stat2;
-    uint16_t amount1;
-    uint16_t amount2;
-} PACKED;
-
-struct TechniqueBoost {
-    uint32_t tech1;
-    float boost1;
-    uint32_t tech2;
-    float boost2;
-    uint32_t tech3;
-    float boost3;
-} PACKED;
-
-struct NonWeaponSaleDivisors {
-    float armor_divisor;
-    float shield_divisor;
-    float unit_divisor;
-    float mag_divisor;
-} PACKED;
-
 typedef struct rang_8bit {
     uint8_t min;
     uint8_t max;

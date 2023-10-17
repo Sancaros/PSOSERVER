@@ -64,6 +64,9 @@ static uint8_t class_equip_flags[12] = {
 
 #define ITEM_ID_MESETA							0xFFFFFFFF
 
+/* 真够讨厌的 暂时没有找到办法统计数量 只能先写常量了 */
+#define ITEM_TYPE_WEAPON_SPECIAL_NUM            0x29
+
 /* Item buckets. Each item gets put into one of these buckets when in the list,
    in order to make searching the list slightly easier. These are all based on
    the least significant byte of the item code. */

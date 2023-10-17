@@ -128,6 +128,7 @@ static uint32_t unsealableitems_max_bb;
 
 static pmt_mag_feed_results_list_t** mag_feed_results_list;
 static pmt_mag_feed_results_list_offsets_t* mag_feed_results_list_offsets;
+static uint32_t mag_feed_results_max_list;
 
 static pmt_nonweaponsaledivisors_bb_t nonweaponsaledivisors_bb;
 
@@ -137,6 +138,9 @@ static float* weaponsaledivisors_bb;
 
 static uint8_t unit_weights_table1[0x88];
 static int8_t unit_weights_table2[0x0D];
+
+static pmt_special_bb_t* special_bb;
+static uint32_t special_max_bb;
 
 static int have_v2_pmt;
 static int have_gc_pmt;
@@ -1410,6 +1414,8 @@ static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
         return -1;
     }
 
+    mag_feed_results_max_list = cnt;
+
     if (!(mag_feed_results_list_offsets = (pmt_mag_feed_results_list_offsets_t*)malloc(sizeof(pmt_mag_feed_results_list_offsets_t)))) {
         ERR_LOG("分配动态内存给 BB mag_feed_results_list_offsets: %s",
             strerror(errno));
@@ -1420,15 +1426,15 @@ static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
     /* Read the pointer and the size... */
     memcpy(mag_feed_results_list_offsets, pmt + ptrs->mag_feed_table, sizeof(pmt_mag_feed_results_list_offsets_t));
 
-    if (!(mag_feed_results_list = (pmt_mag_feed_results_list_t**)malloc(sizeof(pmt_mag_feed_results_list_t*) * cnt))) {
+    if (!(mag_feed_results_list = (pmt_mag_feed_results_list_t**)malloc(sizeof(pmt_mag_feed_results_list_t*) * mag_feed_results_max_list))) {
         ERR_LOG("分配动态内存给 BB mag_feed_results list: %s",
             strerror(errno));
         return -3;
     }
 
-    memset(mag_feed_results_list, 0, sizeof(pmt_mag_feed_results_list_t*) * cnt);
+    memset(mag_feed_results_list, 0, sizeof(pmt_mag_feed_results_list_t*) * mag_feed_results_max_list);
 
-    for (i = 0; i < cnt; ++i) {
+    for (i = 0; i < mag_feed_results_max_list; ++i) {
 
         if (!(mag_feed_results_list[i] = (pmt_mag_feed_results_list_t*)malloc(sizeof(pmt_mag_feed_results_list_t)))) {
             ERR_LOG("分配动态内存给 BB mag_feed_results_list: %s",
@@ -1495,6 +1501,45 @@ static int read_max_tech_bb(const uint8_t* pmt, uint32_t sz,
 
     getchar();
 
+#endif // DEBUG
+
+    return 0;
+}
+
+static int read_special_bb(const uint8_t* pmt, uint32_t sz,
+    const pmt_table_offsets_v3_t* ptrs) {
+    size_t i = 0;
+
+    /* Make sure the 指针无效 are sane... */
+    if (ptrs->special_data_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB 的 special_data_table 指针无效. "
+            "请检查其有效性!");
+        return -1;
+    }
+
+    /* 真够讨厌的 暂时没有找到办法统计数量 只能先写常量了 */
+    special_max_bb = ITEM_TYPE_WEAPON_SPECIAL_NUM;
+
+    if (!(special_bb = (pmt_special_bb_t*)malloc(sizeof(pmt_special_bb_t) * special_max_bb))) {
+        ERR_LOG("分配动态内存给 BB special_bb 错误: %s",
+            strerror(errno));
+        return -3;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(special_bb, pmt + ptrs->special_data_table, sizeof(pmt_special_bb_t) * special_max_bb);
+
+#ifdef DEBUG
+
+    print_ascii_hex(dbgl, (void*)special_bb, sizeof(pmt_special_bb_t) * special_max_bb);
+
+    for (i = 0; i < special_max_bb; ++i) {
+        DBG_LOG("////////////////");
+        DBG_LOG("%u 0x%02X 0x%02X", i, special_bb[i].type, special_bb[i].amount);
+        DBG_LOG("////////////////");
+    }
+
+    getchar();
 #endif // DEBUG
 
     return 0;
@@ -1976,6 +2021,12 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -21;
     }
 
+    /* Read in the special_bb values... */
+    if (read_special_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -22;
+    }
+
     /* We're done with the raw PMT data now, clean it up. */
     free_safe(ucbuf);
 
@@ -2163,6 +2214,18 @@ static void pmt_cleanup_bb(void) {
     unsealableitems_bb = NULL;
     unsealableitems_max_bb = 0;
 
+    for (i = 0; i < mag_feed_results_max_list; i++) {
+        free_safe(mag_feed_results_list[i]);
+    }
+    free_safe(mag_feed_results_list);
+    mag_feed_results_list = NULL;
+    free_safe(mag_feed_results_list_offsets);
+    mag_feed_results_list_offsets = NULL;
+    mag_feed_results_max_list = 0;
+
+    free_safe(special_bb);
+    special_bb = NULL;
+    special_max_bb = 0;
 
     have_bb_pmt = 0;
 }
@@ -2994,6 +3057,18 @@ uint8_t get_pmt_max_tech_level_bb(uint8_t tech_num, uint8_t char_class) {
         return 0;
 
     return pmt_lookup_max_tech_level_bb(tech_num, char_class) + 1;
+}
+
+/* TODO 还缺少对PMT文件的 amount分析 这是影响特殊攻击的数值的 */
+pmt_special_bb_t* get_special_type_bb(uint8_t datab4) {
+    uint8_t special = datab4 & 0x3F;
+
+    if (special >= ITEM_TYPE_WEAPON_SPECIAL_NUM) {
+        ERR_LOG("无效特殊攻击索引");
+        return NULL;
+    }
+
+    return &special_bb[special];
 }
 
 /*

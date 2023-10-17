@@ -309,7 +309,7 @@ typedef union psocn_mode_char {
 const enum SectionIDs {
     SID_Viridia = 0, //铬绿
     SID_Greennill, //翠绿
-    SID_Skyly, // 天青
+    SID_Skyly, //天青
     SID_Bluefull, //纯蓝
     SID_Pinkal, //淡紫
     SID_Purplenum, //粉红

@@ -77,7 +77,8 @@ bool add_invitem(ship_client_t* src, const item_t item);
 bool add_titem(trade_inv_t* trade, const item_t iitem);
 bool add_bitem(ship_client_t* src, const bitem_t bitem);
 int player_use_item(ship_client_t* src, uint32_t item_id);
-int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);
+//int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);
+ssize_t player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);
 
 /* 蓝色脉冲物品管理 */
 //iitem_t player_iitem_init(const item_t item);

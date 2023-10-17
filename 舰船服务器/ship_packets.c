@@ -13530,7 +13530,7 @@ int send_bb_player_section_list(ship_client_t* dest) {
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)menu);
 }
 
-/* 玩家菜单修改颜色ID函数 */
+/* 玩家菜单信息函数 */
 int send_bb_player_info_list(ship_client_t* dest) {
     uint8_t* sendbuf = get_sendbuf();
     bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
@@ -13659,7 +13659,7 @@ int send_bb_coren_dayreward_list(ship_client_t* dest) {
 
 }
 
-/* 玩家菜单修改颜色ID函数 */
+/* 玩家菜单修改皮肤函数 */
 int send_bb_player_skin_list(ship_client_t* dest) {
     uint8_t* sendbuf = get_sendbuf();
     bb_block_list_pkt* menu = (bb_block_list_pkt*)sendbuf;
