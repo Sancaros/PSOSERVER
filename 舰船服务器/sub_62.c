@@ -1192,7 +1192,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     item_t item = { 0 };
     int rv = 0;
-    uint8_t section = 0, pt_index = (uint8_t)get_pt_index(l->episode, pkt->pt_index), drop_area = pkt->area;
+    uint8_t section = 0, pt_index = get_pt_index(l->episode, pkt->pt_index), drop_area = pkt->area;
     uint16_t mid = LE16(pkt->entity_id);
 
     if (!in_game(src))
@@ -1217,9 +1217,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     if(!l->drop_pso2)
         enemy->drop_done = 1;
 
-    pt_index = enemy->rt_index;
+    //pt_index = enemy->rt_index;
 
-    uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
+    //uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
 
     /* ¶ÀÁ¢µôÂäÄ£Ê½ */
     if (l->drop_pso2) {

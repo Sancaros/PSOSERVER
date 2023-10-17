@@ -1119,14 +1119,14 @@ uint8_t fix_bp_entry_index() {
 
 const char* get_lobby_mob_describe(lobby_t* l, uint8_t pt_index, uint8_t language) {
     // PT表位是从NULL为0 客户端是从第一个怪物为0 少一位
-    uint8_t fix_pt_index = pt_index - 1;
+    uint8_t fix_pt_index = pt_index;
 
     const char* enemy_name_cn = NULL;
     const char* enemy_name_en = NULL;
 
     // 根据当前大厅的难度选择不同的怪物名称数组
-    if (l->difficulty == 3) {
-        if (l->episode == 3) {
+    if (l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) {
+        if (l->episode == GAME_TYPE_EPISODE_3 || l->episode == GAME_TYPE_EPISODE_4) {
             // 如果难度和场景都满足条件，则使用 pt_index_raw_mobnames_ep4_ult_cn 和 pt_index_raw_mobnames_ep4_ult 数组
             enemy_name_cn = (pt_index <= ARRAYSIZE(pt_index_raw_mobnames_ep4_ult_cn)) ? pt_index_raw_mobnames_ep4_ult_cn[fix_pt_index] : "未识别怪物";
             enemy_name_en = (pt_index <= ARRAYSIZE(pt_index_raw_mobnames_ep4_ult)) ? pt_index_raw_mobnames_ep4_ult[fix_pt_index] : "未识别怪物";
@@ -1138,7 +1138,7 @@ const char* get_lobby_mob_describe(lobby_t* l, uint8_t pt_index, uint8_t languag
         }
     }
     else {
-        if (l->episode == 3) {
+        if (l->episode == GAME_TYPE_EPISODE_3 || l->episode == GAME_TYPE_EPISODE_4) {
             // 如果场景满足条件，则使用 pt_index_raw_mobnames_ep4_cn 和 pt_index_raw_mobnames_ep4 数组
             enemy_name_cn = (pt_index < ARRAYSIZE(pt_index_raw_mobnames_ep4_cn)) ? pt_index_raw_mobnames_ep4_cn[fix_pt_index] : "未识别怪物";
             enemy_name_en = (pt_index < ARRAYSIZE(pt_index_raw_mobnames_ep4)) ? pt_index_raw_mobnames_ep4[fix_pt_index] : "未识别怪物";
@@ -1163,14 +1163,14 @@ char* get_enemy_describe(lobby_t* l, uint8_t pt_index, const char* enemy_name_cn
     memset(enemy_desc, 0, sizeof(enemy_desc));
 
     snprintf(enemy_desc, sizeof(enemy_desc), "怪物 %s(%s) [PT%d RT%d BP%d]\n击杀:%s",
-        enemy_name_cn, enemy_name_en, pt_index, enemy->rt_index, enemy->bp_entry/*, enemy->clients_hit*/, get_player_describe(l->clients[enemy->last_client]));
+        enemy_name_cn, enemy_name_en, pt_index, pt_index, enemy->bp_entry/*, enemy->clients_hit*/, get_player_describe(l->clients[enemy->last_client]));
 
     return enemy_desc;
 }
 
 const char* get_lobby_enemy_pt_name_with_enemy(lobby_t* l, uint8_t pt_index, game_enemy_t* enemy) {
     /* 从0位开始计算 */
-    uint8_t new_pt_index = pt_index + 1;
+    uint8_t new_pt_index = pt_index;
     /* 很奇怪 客户端返回的数值 缺少了表格中0表位 直接读取了1表位 太恶心了 */
     const char* enemy_name_cn = get_lobby_mob_describe(l, new_pt_index, 0);
     const char* enemy_name_en = get_lobby_mob_describe(l, new_pt_index, 1);
@@ -1180,7 +1180,7 @@ const char* get_lobby_enemy_pt_name_with_enemy(lobby_t* l, uint8_t pt_index, gam
 
 const char* get_lobby_enemy_pt_name_with_mid(lobby_t* l, uint8_t pt_index, uint16_t mid) {
     /* 从0位开始计算 */
-    uint8_t new_pt_index = pt_index + 1;
+    uint8_t new_pt_index = pt_index;
     game_enemy_t* enemy = &l->map_enemies->enemies[mid];
 
     /* 很奇怪 客户端返回的数值 缺少了表格中0表位 直接读取了1表位 太恶心了 */

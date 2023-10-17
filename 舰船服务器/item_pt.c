@@ -691,7 +691,11 @@ pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t diffic
 		break;
 	}
 
+#ifdef DEBUG
+
 	DBG_LOG("ep %d ptid %d", episode, game_ep_pt_index);
+
+#endif // DEBUG
 
 	pt_bb_entry_t* tmp = pt_dynamics_read_bb(ship->cfg->bb_ptdata_file, game_ep_pt_index, difficulty, section);
 	if (!tmp)
@@ -712,11 +716,22 @@ int pt_bb_enabled(void) {
 	return have_bbpt;
 }
 
-size_t get_pt_index(uint8_t episode, size_t pt_index) {
-	size_t ep4_pt_index_offset = 0x58;//88 Item_PT EP4 enemy_index ≤Ó÷µ
-	size_t new_pt_index = pt_index;
+uint8_t get_pt_index(uint8_t episode, uint8_t pt_index) {
+	uint8_t ep4_pt_index_offset = 0x57;//87 Item_PT EP4 enemy_index ≤Ó÷µ
+	uint8_t new_pt_index = pt_index;
 
-	return (episode == GAME_TYPE_EPISODE_3 ? (new_pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index);
+	if (episode == GAME_TYPE_EPISODE_3 || episode == GAME_TYPE_EPISODE_4) {
+		new_pt_index = pt_index - ep4_pt_index_offset;
+	}
+
+#ifdef DEBUG
+
+	DBG_LOG("pt_index %d 0x%02X 0x%02X", pt_index, pt_index, new_pt_index);
+
+#endif // DEBUG
+
+	return new_pt_index;
+	//return (episode == GAME_TYPE_EPISODE_3 ? (new_pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index);
 }
 
 int get_pt_data_area_bb(uint8_t episode, int cur_area) {

@@ -705,7 +705,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 /* Generate an item drop from the PT data. This version uses the v3 PT data set.
    This function only works for PSOBB. */
 pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section);
-size_t get_pt_index(uint8_t episode, size_t pt_index);
+uint8_t get_pt_index(uint8_t episode, uint8_t pt_index);
 int get_pt_data_area_bb(uint8_t episode, int cur_area);
 int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r);
 int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r);
