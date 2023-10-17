@@ -1510,3 +1510,59 @@ static int handle_npcskin(ship_client_t* c, const char* params) {
     send_block_list(c, ship);
     return send_txt(c, "皮肤切换为 \tE\tC%d%s\n%s", skinid, npcskin_desc[skinid], __(c, "\tE\tC4请切换大厅立即生效."));
 }
+
+/* 用法: /susi itemslot*/
+static int handle_susi(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+    size_t item_slot = 0;
+
+    /* Figure out the user requested */
+    errno = 0;
+    item_slot = (size_t)strtoul(params, NULL, 10);
+
+    if (errno != 0 || item_slot > MAX_PLAYER_INV_ITEMS) {
+        /* Send a message saying invalid page number */
+        return send_txt(c, "%s", __(c, "\tE\tC4无效物品槽位,玩家背包最大30件物品"));
+    }
+
+    inventory_t* inv = get_player_inv(c);
+
+    if (!item_slot) {
+        char tmp_msg[4096] = { 0 };
+        char data_str[100] = { 0 };
+
+        for (size_t i = 0; i < inv->item_count; i++) {
+            if (is_unsealable_item(&inv->iitems[i].data)) {
+                // 将要写入的数据格式化为字符串
+                sprintf_s(data_str, sizeof(data_str), "%d.%s", i
+                    , get_item_unsealable_describe(&inv->iitems[i].data, c->version)
+                );
+
+                // 计算剩余可用空间
+                size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
+
+                // 检查剩余空间是否足够
+                if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
+                    break;  // 停止追加数据
+                }
+
+                strcat_s(data_str, sizeof(data_str), " | ");
+
+                // 将格式化后的数据追加到 tmp_msg 字符数组中
+                strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+            }
+        }
+
+        return send_msg(c, BB_SCROLL_MSG_TYPE, "%s %s", __(c, "\tE\tC7未解封物品情况:"), tmp_msg);
+    }
+    else {
+        item_t* item = &inv->iitems[item_slot - 1].data;
+
+        if (is_unsealable_item(item)) {
+            return send_txt(c, "%s\n%s", __(c, "\tE\tC7未解封物品情况:"), get_item_unsealable_describe(item, c->version));
+        }
+
+    }
+
+    return send_txt(c, "\tE\tC4未找到 %d 槽未解封物品", item_slot);
+}

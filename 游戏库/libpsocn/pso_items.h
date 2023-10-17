@@ -391,6 +391,8 @@ typedef void (*print_item)(const item_t* item, int version);
 
 char* get_item_describe(const item_t* item, int version);
 
+char* get_item_unsealable_describe(const item_t* item, int version);
+
 /* 打印物品数据 */
 inline void print_item_data(const item_t* item, int version) {
 	ITEM_LOG("物品: %s", get_item_describe(item, version));

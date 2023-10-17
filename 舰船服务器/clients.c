@@ -2156,6 +2156,7 @@ void show_game_cmd_help_msg(ship_client_t* src) {
                 "/qr 非任务情况下返回先驱者2号\n"
                 "/lb 快速返回舰仓\n"
                 "/matuse 显示玩家嗑药情况\n"
+                "/suci 参数1 显示玩家背包中解封物品情况 参数1[0-29] 不填则显示全部\n"
             );
         }
     }

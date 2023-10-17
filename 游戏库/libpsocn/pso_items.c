@@ -478,7 +478,7 @@ const char* get_unit_bonus_describe(const item_t* item) {
 	// 处理属性1
 	if (x <= attrib_val_len)
 		if (item->datab[10] & 0x80)
-			sprintf(item_attrib_des, "%s 解封数%d", unit_attrib[x], item->datab[11]);
+			sprintf(item_attrib_des, "%s 解封:%d", unit_attrib[x], item->datab[11]);
 		else
 			sprintf(item_attrib_des, "%s", unit_attrib[x]);
 
@@ -506,7 +506,7 @@ char* get_weapon_attrib_describe(const item_t* item) {
 	if (item->datab[10] < attrib_len)
 		sprintf(attrib3, "%s%d", weapon_attrib[item->datab[10]], item->datab[11]);
 	else if (item->datab[10] & 0x80) {
-		sprintf(attrib3, "解封%d", item->datab[11]);
+		sprintf(attrib3, "解封:%d", item->datab[11]);
 	}
 
 	snprintf(item_attrib_des, sizeof(item_attrib_des), "[%s/%s/%s]", attrib1, attrib2, attrib3);
@@ -607,6 +607,66 @@ char* get_item_describe(const item_t* item, int version) {
 		);
 		break;
 
+	}
+
+	return item_des;
+}
+
+const char* get_unit_unsealable_bonus_describe(const item_t* item) {
+	size_t x = 0, attrib_val_len = ARRAYSIZE(unit_attrib_val);
+
+	memset(item_attrib_des, 0, sizeof(item_attrib_des));
+
+	for (x; x < attrib_val_len; x++) {
+		if (item->datab[6] == unit_attrib_val[x]) {
+			break;
+		}
+	}
+
+	// 处理属性1
+	if (x <= attrib_val_len)
+		if (item->datab[10] & 0x80) {
+			sprintf(item_attrib_des, "[解封:%d]", item->datab[11]);
+			return item_attrib_des;
+		}
+
+	return NULL; // 如果没有匹配的项，返回NULL或其他适当的默认值
+}
+
+char* get_weapon_unsealable_attrib_describe(const item_t* item) {
+
+	memset(item_attrib_des, 0, sizeof(item_attrib_des));
+
+	// 处理属性3
+	if (item->datab[10] & 0x80) {
+		snprintf(item_attrib_des, sizeof(item_attrib_des), "[解封:%d]", item->datab[11]);
+		return item_attrib_des;
+	}
+
+	return NULL;
+}
+
+char* get_item_unsealable_describe(const item_t* item, int version) {
+
+	memset(item_des, 0, sizeof(item_des));
+
+	if (item->datab[0] == ITEM_TYPE_WEAPON) {
+		sprintf(item_des, "%s %s"
+			, item_get_name(item, version, 0)
+			, is_s_rank_weapon(item) ? "" : get_weapon_unsealable_attrib_describe(item)
+		);
+	}
+	else if ((item->datab[0] == ITEM_TYPE_GUARD) && (item->datab[1] == ITEM_SUBTYPE_UNIT)) {
+		sprintf(item_des, "%s %s"
+			, item_get_name(item, version, 0)
+			, get_unit_unsealable_bonus_describe(item)
+		);
+	}
+	else {
+		sprintf(item_des, "未解析物品 %s 0x%08X"
+			, item_get_name(item, version, 0)
+			, item->datal[0]
+		);
 	}
 
 	return item_des;

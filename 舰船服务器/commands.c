@@ -143,6 +143,7 @@ static command_t cmds[] = {
     { "lb"       , handle_lobby         },
     { "matuse"   , handle_matuse        },
     { "npcskin"  , handle_npcskin       },
+    { "susi"     , handle_susi          },
     { ""         , NULL                 }     /* End marker -- DO NOT DELETE */
 };
 
