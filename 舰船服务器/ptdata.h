@@ -331,7 +331,7 @@ typedef struct pt_v2_entry {
     int8_t unit_level[10];                  /* 0x0133 */
     uint16_t tool_frequency[28][10];        /* 0x013E */
     uint8_t tech_frequency[19][10];         /* 0x036E */
-    int8_t tech_levels[19][20];             /* 0x042C */
+    rang_8bit_t tech_levels[19][10];            /* 0x042C */
     int8_t enemy_dar[100];                  /* 0x05A8 */
     uint16_t enemy_meseta[100][2];          /* 0x060C */
     int8_t enemy_drop[100];                 /* 0x079C */
@@ -390,7 +390,7 @@ typedef struct pt_v3_entry {
     uint8_t unit_level[10];                 /* 0x01D4 */
     uint16_t tool_frequency[28][10];        /* 0x01DE */
     uint8_t tech_frequency[19][10];         /* 0x040E */
-    uint8_t tech_levels[19][20];            /* 0x04CC */
+    rang_8bit_t tech_levels[19][10];        /* 0x04CC */
     uint8_t enemy_dar[100];                 /* 0x0648 */
     uint16_t enemy_meseta[100][2];          /* 0x06AC */
     uint8_t enemy_drop[100];                /* 0x083C */
@@ -548,7 +548,7 @@ typedef struct pt_bb_entry {
     // indexed as [technique_num][area - 1]. If either min or max in the range
     // is 0xFF, or if max < min, technique disks are not dropped for that
     // technique and area pair.
-    uint8_t technique_level_ranges[19][20];            /* 0x04CC technique_level_ranges */
+    rang_8bit_t technique_level_ranges[19][10];            /* 0x04CC technique_level_ranges */
     // Each byte in this table (indexed by enemy_type) represents the percent
     // chance that the enemy drops anything at all. (This check is done after
     // the rare drop check, so it only applies to non-rare items.)

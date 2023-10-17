@@ -2125,7 +2125,7 @@ static uint32_t generate_tool_base(uint16_t freqs[28][10], int area,
 }
 
 /* XXXX: There's something afoot here generating invalid techs. */
-static int generate_tech(uint8_t freqs[19][10], int8_t levels[19][20],
+static int generate_tech(uint8_t freqs[19][10], rang_8bit_t levels[19][10],
 	int area, uint32_t item[4],
 	sfmt_t* rng, lobby_t* l) {
 	uint32_t rnd, tech, level;
@@ -2156,8 +2156,8 @@ static int generate_tech(uint8_t freqs[19][10], int8_t levels[19][20],
 				ITEM_LOG("    Generating tech.");
 #endif
 
-			t1 = levels[i][area << 1];
-			t2 = levels[i][(area << 1) + 1];
+			t1 = levels[i][area << 1].min;
+			t2 = levels[i][area << 1].max;
 
 #ifdef DEBUG
 			if (l->flags & LOBBY_FLAG_DBG_SDROPS)

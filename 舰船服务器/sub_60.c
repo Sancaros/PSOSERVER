@@ -3251,12 +3251,13 @@ static int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We don't care about these in lobbies. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        lobby_t* l2 = src->create_lobby;
-        if (l2 != NULL && l2 && !l2->lobby_create) {
-            pthread_rwlock_wrlock(&src->cur_block->lobby_lock);
-            lobby_destroy(l2);
-            pthread_rwlock_unlock(&src->cur_block->lobby_lock);
-        }
+        //lobby_t* l2 = src->create_lobby;
+        //if (l2)
+        //    if (l2 != NULL && !l2->lobby_create) {
+        //        pthread_rwlock_wrlock(&src->cur_block->lobby_lock);
+        //        lobby_destroy(l2);
+        //        pthread_rwlock_unlock(&src->cur_block->lobby_lock);
+        //    }
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 

@@ -363,8 +363,8 @@ void generate_common_tool_type(uint8_t tool_class, item_t* item) {
 }
 
 uint8_t generate_tech_disk_level(sfmt_t* rng, uint32_t tech_num, uint32_t area_norm, pt_bb_entry_t* ent) {
-	uint8_t min = ent->technique_level_ranges[tech_num][area_norm];
-	uint8_t max = ent->technique_level_ranges[tech_num][area_norm + 1];
+	uint8_t min = ent->technique_level_ranges[tech_num][area_norm].min;
+	uint8_t max = ent->technique_level_ranges[tech_num][area_norm].max;
 
 	if (((min == 0xFF) || (max == 0xFF)) || (max < min)) {
 		return 0xFF;
