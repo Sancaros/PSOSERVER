@@ -91,14 +91,6 @@ static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
         }
     }
 
-#ifndef DISABLE_CHAT_COMMANDS
-    /* Check for commands. */
-    if (pkt->msg[2] == LE16('/')) {
-        return bbcommand_parse(c, pkt);
-        //return send_bb_empty_chat(l, c, c, "1", 2);
-    }
-#endif
-
     /* Convert it to UTF-8. */
     u8msg = (char*)malloc((len + 1) << 1);
 
@@ -108,6 +100,15 @@ static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
     memset(u8msg, 0, (len + 1) << 1);
 
     istrncpy16(ic_utf16_to_gb18030, u8msg, pkt->msg, (len + 1) << 1);
+
+#ifndef DISABLE_CHAT_COMMANDS
+    /* Check for commands. */
+    if (pkt->msg[2] == LE16('/')) {
+        GM_LOG("%s 正在使用指令%s", get_player_describe(c), u8msg);
+        return bbcommand_parse(c, pkt);
+        //return send_bb_empty_chat(l, c, c, "1", 2);
+    }
+#endif
 
     /* Don't send the message if they have the protection flag on. */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
