@@ -342,6 +342,7 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 
 void generate_common_mag_variances(item_t* item, uint8_t color) {
 	if (item->datab[0] == ITEM_TYPE_MAG) {
+		/* 掉落空白初始玛古 */
 		item->datab[1] = 0x00;
 		magitemstat_t stats;
 		ItemMagStats_init(&stats, color);
@@ -357,7 +358,7 @@ void generate_common_tool_type(uint8_t tool_class, item_t* item) {
 #endif // DEBUG
 		return;
 	}
-	item->datab[0] = 0x03;
+	item->datab[0] = ITEM_TYPE_TOOL;
 	item->datab[1] = data[0];
 	item->datab[2] = data[1];
 }
@@ -381,7 +382,9 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 	uint8_t tool_class = get_rand_from_weighted_tables_2d_vertical(rng,
 		ent->tool_class_prob_table, area_norm, 28, 10);
 
+	/* 如果随机到了问号物品 则先让其掉落PD */
 	if (tool_class == 0x1A) {
+		DBG_LOG("物品PT索引到底, 预设 0x73 ");
 		/* 如果到底了 则让它掉落PD 这是PD的PMT索引ID */
 		tool_class = 0x73;
 	}
@@ -399,25 +402,30 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 
 /* drop_sub TODO */
 uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
-	if (!item_drop_sub || (area < 0x10) || (area > 0x11)) {
-		uint8_t new_area = area;
+	if (!item_drop_sub /*|| (area < 0x10) || (area > 0x11)*/) {
+		uint8_t pt_area = area;
 		switch (l->episode) {
+		case GAME_TYPE_EPISODE_NORMAL:
 		case GAME_TYPE_EPISODE_1:
 			switch (area) {
 			case 11:
-				new_area = 3; // Dragon -> Cave 1
+				pt_area = 3; // Dragon -> Cave 1
 				break;
 			case 12:
-				new_area = 6; // De Rol Le -> Mine 1
+				pt_area = 6; // De Rol Le -> Mine 1
 				break;
 			case 13:
-				new_area = 8; // Vol Opt -> Ruins 1
+				pt_area = 8; // Vol Opt -> Ruins 1
 				break;
 			case 14:
-				new_area = 10; // Dark Falz -> Ruins 3
+				pt_area = 10; // Dark Falz -> Ruins 3
 				break;
 			default:
-				new_area = area;
+				if (area > 14) {
+					ERR_LOG("%s 章节 %d 区域数字大于10 %d", get_lobby_leader_describe(l), l->episode, area);
+					pt_area = 10;
+				}else
+					pt_area = area;
 				break;
 			}
 			break;
@@ -444,29 +452,36 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 			};
 
 			if ((area >= 0x13) && (area < 0x24)) {
-				new_area = area_subs[area - 0x13];
-			}else
-				new_area = area;
+				pt_area = area_subs[area - 0x13];
+			}
+			else if (area < 0x0C)
+				area = ep2_rtremap[(area * 2) + 1];
+			else
+				pt_area = 0x0A;
+			
 			break;
 
 		case GAME_TYPE_EPISODE_3:
 		case GAME_TYPE_EPISODE_4:
 			// TODO: Figure out remaps for Episode 4 (if there are any)
-			new_area = area + 1;
+			pt_area = area + 1;
+			if (pt_area > 10) {
+				ERR_LOG("%s 章节 %d 区域数字大于10 %d", get_lobby_leader_describe(l), l->episode, area);
+				pt_area = 10;
+			}
+
 			break;
 
 		default:
 			ERR_LOG("%s 无效章节 %d 区域 %d", get_lobby_leader_describe(l), l->episode, area);
-			new_area = 1;
+			pt_area = 1;
 			break;
 		}
 
-		if (area >= 10) {
-			ERR_LOG("%s 章节 %d 区域数字大于10 %d", get_lobby_leader_describe(l), l->episode, area);
-			new_area = 10;
-		}
+		if (pt_area < 0)
+			return 1;
 
-		return new_area;
+		return --pt_area;
 	}
 	else {
 		return item_drop_sub[l->episode].override_area;
@@ -486,14 +501,17 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 		// Forbid HP/TP-restoring units and meseta in challenge mode
 		// Note: PSO GC doesn't check for 0x61 or 0x62 here since those items
 		// (HP/Resurrection and TP/Resurrection) only exist on BB.
-		if (item->datab[0] == 1) {
-			if ((item->datab[1] == 3) && (((item->datab[2] >= 0x33) && (item->datab[2] <= 0x38)) || (item->datab[2] == 0x61) || (item->datab[2] == 0x62))) {
+		if (item->datab[0] == ITEM_TYPE_GUARD) {
+			if ((item->datab[1] == ITEM_SUBTYPE_UNIT) &&
+				(((item->datab[2] >= 0x33) && (item->datab[2] <= 0x38)) || 
+					(item->datab[2] == 0x61) || 
+					(item->datab[2] == 0x62))) {
 				ERR_LOG("Restricted: restore units not allowed in Challenge mode");
 				clear_inv_item(item);
 				return;
 			}
 		}
-		else if (item->datab[0] == 4) {
+		else if (item->datab[0] == ITEM_TYPE_MESETA) {
 			ERR_LOG("Restricted: meseta not allowed in Challenge mode");
 			clear_inv_item(item);
 			return;
@@ -508,32 +526,38 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 			case WEAPON_AND_ARMOR_MODE_ALL_ON:
 			case WEAPON_AND_ARMOR_MODE_ONLY_PICKING:
 				break;
+
 			case WEAPON_AND_ARMOR_MODE_NO_RARE:
 				if (is_item_rare(item)) {
 					ERR_LOG("Restricted: rare items not allowed");
 					clear_inv_item(item);
 				}
 				break;
+
 			case WEAPON_AND_ARMOR_MODE_ALL_OFF:
 				ERR_LOG("Restricted: weapons and armors not allowed");
 				clear_inv_item(item);
 				break;
+
 			default:
 				ERR_LOG("invalid weapon and armor mode");
+				return;
 			}
 			break;
+
 		case ITEM_TYPE_MAG:
 			if (restrictions->forbid_mags) {
 				ERR_LOG("Restricted: mags not allowed");
 				clear_inv_item(item);
 			}
 			break;
+
 		case ITEM_TYPE_TOOL:
 			if (restrictions->tool_mode == TOOL_MODE_ALL_OFF) {
 				ERR_LOG("Restricted: tools not allowed");
 				clear_inv_item(item);
 			}
-			else if (item->datab[1] == 2) {
+			else if (item->datab[1] == ITEM_SUBTYPE_DISK) {
 				switch (restrictions->tech_disk_mode) {
 				case TECH_DISK_MODE_ON:
 					break;
@@ -553,21 +577,25 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 					break;
 				default:
 					ERR_LOG("invalid tech disk mode");
+					return;
 				}
 			}
-			else if ((item->datab[1] == 9) && restrictions->forbid_scape_dolls) {
+			else if ((item->datab[1] == ITEM_SUBTYPE_SCAPE_DOLL) && restrictions->forbid_scape_dolls) {
 				ERR_LOG("Restricted: scape dolls not allowed");
 				clear_inv_item(item);
 			}
 			break;
+
 		case ITEM_TYPE_MESETA:
 			if (restrictions->meseta_drop_mode == MESETA_DROP_MODE_OFF) {
 				ERR_LOG("Restricted: meseta not allowed");
 				clear_inv_item(item);
 			}
 			break;
+
 		default:
 			ERR_LOG("invalid item");
+			return;
 		}
 	}
 }
@@ -781,12 +809,13 @@ item_t on_box_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 	return item;
 }
 
-item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint8_t section_id) {
+item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t pkt_area, uint8_t area, uint8_t section_id) {
 	item_t item = { 0 };
-	uint8_t new_area = normalize_area_number(l, area) - 1;
+	uint8_t new_area = normalize_area_number(l, pkt_area);
 #ifdef DEBUG
-	DBG_LOG("new_area %d 新area %d", new_area, area);
+	DBG_LOG("new_area %d area %d", new_area, area);
 #endif // DEBUG
+	DBG_LOG("新new_area %d area %d", new_area, area);
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);
@@ -914,12 +943,13 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 	return item;
 }
 
-item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_t area, uint8_t section_id) {
+item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_t pkt_area, uint8_t area, uint8_t section_id) {
 	item_t item = { 0 };
-	uint8_t new_area = normalize_area_number(l, area) - 1;
+	uint8_t new_area = normalize_area_number(l, pkt_area);
 #ifdef DEBUG
 	DBG_LOG("new_area %d 新area %d", new_area, area);
 #endif // DEBUG
+	DBG_LOG("新new_area %d area %d", new_area, area);
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);

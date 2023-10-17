@@ -670,7 +670,7 @@ pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t diffic
 
 	switch (episode)
 	{
-	case GAME_TYPE_NORMAL:
+	case GAME_TYPE_EPISODE_NORMAL:
 	case GAME_TYPE_EPISODE_1:
 		if (challenge)
 			game_ep_pt_index = 2;
@@ -734,11 +734,11 @@ uint8_t get_pt_index(uint8_t episode, uint8_t pt_index) {
 	//return (episode == GAME_TYPE_EPISODE_3 ? (new_pt_index - ep4_pt_index_offset) : episode == GAME_TYPE_EPISODE_4 ? (new_pt_index - ep4_pt_index_offset) : new_pt_index);
 }
 
-int get_pt_data_area_bb(uint8_t episode, int cur_area) {
-	int area = 0;
+uint8_t get_pt_data_area_bb(uint8_t episode, int cur_area) {
+	uint8_t area = 0;
 
 	switch (episode) {
-	case GAME_TYPE_NORMAL:
+	case GAME_TYPE_EPISODE_NORMAL:
 	case GAME_TYPE_EPISODE_1:
 	{
 		switch (cur_area) {
@@ -772,7 +772,7 @@ int get_pt_data_area_bb(uint8_t episode, int cur_area) {
 			if (area > 14)
 				area = 10;
 			else
-				area = 1;// unknown area
+				area = cur_area;// unknown area
 
 			break;
 

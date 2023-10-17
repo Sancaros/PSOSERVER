@@ -741,7 +741,7 @@ rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficul
     else {
         switch (episode)
         {
-        case GAME_TYPE_NORMAL:
+        case GAME_TYPE_EPISODE_NORMAL:
         case GAME_TYPE_EPISODE_1:
             game_ep_rt_index = 0;
             break;

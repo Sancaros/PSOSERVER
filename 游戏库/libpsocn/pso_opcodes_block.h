@@ -36,7 +36,7 @@
 */
 
 /* 游戏房间指令定义 */
-#define GAME_TYPE_NORMAL                             0x00
+#define GAME_TYPE_EPISODE_NORMAL                     0x00
 #define GAME_TYPE_EPISODE_1                          0x01
 #define GAME_TYPE_EPISODE_2                          0x02
 #define GAME_TYPE_EPISODE_3                          0x03

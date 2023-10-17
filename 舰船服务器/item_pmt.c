@@ -1063,7 +1063,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
     }
 
     /* 算出我们有多少张表... */
-    num_tool_types_bb = cnt = (ptrs->weapon_table - ptrs->tool_table) / 8;
+    num_tool_types_bb = cnt = (ptrs->weapon_table - ptrs->tool_table) / sizeof(pmt_countandoffset_t);
 
 #ifdef DEBUG
 

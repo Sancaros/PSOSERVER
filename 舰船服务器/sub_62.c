@@ -1192,7 +1192,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     item_t item = { 0 };
     int rv = 0;
-    uint8_t section = 0, pt_index = get_pt_index(l->episode, pkt->pt_index), drop_area = pkt->area;
+    uint8_t section = 0, pt_index = get_pt_index(l->episode, pkt->pt_index), drop_area = pkt->area, pt_area = get_pt_data_area_bb(l->episode, drop_area);
     uint16_t mid = LE16(pkt->entity_id);
 
     if (!in_game(src))
@@ -1237,9 +1237,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            item = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
+            item = on_monster_item_drop(l, &p2->sfmt_rng, pt_index, drop_area, pt_area, section);
 
-            LOBBY_MOB_DROPITEM_LOG(p2, mid, pt_index, drop_area, &item);
+            LOBBY_MOB_DROPITEM_LOG(p2, mid, pt_index, drop_area, pt_area, &item);
             if (is_item_empty(&item)) {
                 pthread_mutex_unlock(&p2->mutex);
                 ITEM_LOG("未产生掉落");
@@ -1270,9 +1270,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
 
-        item = on_monster_item_drop(l, &src->sfmt_rng, pt_index, get_pt_data_area_bb(l->episode, drop_area), section);
+        item = on_monster_item_drop(l, &src->sfmt_rng, pt_index, drop_area, pt_area, section);
 
-        LOBBY_MOB_DROPITEM_LOG(src, mid, pt_index, drop_area, &item);
+        LOBBY_MOB_DROPITEM_LOG(src, mid, pt_index, drop_area, pt_area, &item);
         if (is_item_empty(&item)) {
             pthread_mutex_unlock(&src->mutex);
             ITEM_LOG("未产生掉落");
@@ -1350,7 +1350,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bitemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
-    uint8_t drop_area = get_pt_data_area_bb(l->episode, pkt->area), section = 0, pt_index = pkt->pt_index;                   /* Always 0x30 */
+    uint8_t drop_area = pkt->area, pt_area = get_pt_data_area_bb(l->episode, drop_area), section = 0, pt_index = pkt->pt_index;                   /* Always 0x30 */
     uint16_t request_id = pkt->request_id, ignore_def = pkt->ignore_def;
     item_t item = { 0 };
 
@@ -1376,14 +1376,14 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             if (ignore_def) {
-                item = on_box_item_drop(l, &p2->sfmt_rng, drop_area, section);
+                item = on_box_item_drop(l, &p2->sfmt_rng, drop_area, pt_area, section);
             }
             else
-                item = on_specialized_box_item_drop(l, &p2->sfmt_rng, drop_area,
+                item = on_specialized_box_item_drop(l, &p2->sfmt_rng, pt_area,
                     pkt->def[0], pkt->def[1], pkt->def[2]);
 
-            LOBBY_BOX_DROPITEM_LOG(p2, request_id, pt_index, ignore_def
-                , drop_area, &item);
+            LOBBY_BOX_DROPITEM_LOG(p2, request_id, pt_index, ignore_def, drop_area
+                , pt_area, &item);
             if (is_item_empty(&item)) {
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
@@ -1409,14 +1409,14 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         //drop_area = src->cur_area;
 
         if (ignore_def) {
-            item = on_box_item_drop(l, &src->sfmt_rng, drop_area, section);
+            item = on_box_item_drop(l, &src->sfmt_rng, drop_area, pt_area, section);
         }
         else
-            item = on_specialized_box_item_drop(l, &src->sfmt_rng, drop_area,
+            item = on_specialized_box_item_drop(l, &src->sfmt_rng, pt_area,
                 pkt->def[0], pkt->def[1], pkt->def[2]);
 
-        LOBBY_BOX_DROPITEM_LOG(src, request_id, pt_index, ignore_def
-            , drop_area, &item);
+        LOBBY_BOX_DROPITEM_LOG(src, request_id, pt_index, ignore_def, drop_area
+            , pt_area, &item);
         if (is_item_empty(&item)) {
             pthread_mutex_unlock(&src->mutex);
             return 0;

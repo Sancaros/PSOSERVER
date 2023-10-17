@@ -230,13 +230,13 @@ do { \
     } \
 } while (0)
 
-#define LOBBY_MOB_DROPITEM_LOG(c, mid, pt_index, area, item) \
+#define LOBBY_MOB_DROPITEM_LOG(c, mid, pt_index, area, pt_area, item) \
 do { \
     lobby_t* l = (c)->cur_lobby; \
     if (l) { \
         char buff[512]; \
         int len = 0; \
-        len += snprintf(buff + len, sizeof(buff) - len, "\n---------区域 %d 第 %d 个怪物(最大:%d)掉落情况--------- \n", area, mid, l->map_enemies->enemy_count); \
+        len += snprintf(buff + len, sizeof(buff) - len, "\n---------区域 %d(pt_area %d) 第 %d 个怪物(最大:%d)掉落情况--------- \n", area, pt_area, mid, l->map_enemies->enemy_count); \
         len += snprintf(buff + len, sizeof(buff) - len, "%s %s 在区域 %d 怪物掉落\n" \
             , get_player_describe(c) \
             , get_section_describe(c, get_player_section(c), true) \
@@ -266,14 +266,14 @@ do { \
         ERR_LOG("%s 不在一个有效的房间内", get_player_describe(c)); \
 } while (0) \
 
-#define LOBBY_BOX_DROPITEM_LOG(c, request_id, pt_index, ignore_def, area, item) \
+#define LOBBY_BOX_DROPITEM_LOG(c, request_id, pt_index, ignore_def, area, pt_area, item) \
 do { \
     lobby_t* l = (c)->cur_lobby; \
     if (l) { \
         char buff[512]; \
         int len = 0; \
-        len += snprintf(buff + len, sizeof(buff) - len, "\n---------区域 %d ID %d 箱子掉落情况--------- \n", area, request_id); \
-        len += snprintf(buff + len, sizeof(buff) - len, "%s %s 请求 %d 在区域 %d 箱子掉落!\n" \
+        len += snprintf(buff + len, sizeof(buff) - len, "\n---------区域 %d(pt_area %d) ID %d 箱子掉落情况--------- \n", area, pt_area, request_id); \
+        len += snprintf(buff + len, sizeof(buff) - len, "%s %s 忽略预设 %d 在区域 %d 箱子掉落!\n" \
             , get_player_describe(c) \
             , get_section_describe(c, get_player_section(c), true) \
             , ignore_def\
@@ -291,7 +291,7 @@ do { \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
-                len += snprintf(buff + len, sizeof(buff) - len, "请求 %d 箱子掉落无效物品\n", ignore_def); \
+                len += snprintf(buff + len, sizeof(buff) - len, "忽略预设 %d 箱子掉落无效物品\n", ignore_def); \
                 print_ascii_hex(bdropl, item, PSOCN_STLENGTH_ITEM); \
             } \
         } \
