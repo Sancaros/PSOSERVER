@@ -1869,22 +1869,22 @@ done:
 //    return 0;
 //}
 
-/* 根据颜色ID预设武器鉴定加成 */
-static const uint8_t tekke_favored_weapon_by_section_id[10][2] = {
-    {0x09, 0x09}, //铬绿 火箭炮类
-    {0x07, 0x07}, //翠绿 来复枪 狙击枪类
-    {0x02, 0x02}, //天青 剑类
-    {0x04, 0x04}, //纯蓝 长柄类
-    {0x08, 0x08}, //淡紫 机枪类
-    {0x0A, 0x0A}, //粉红 杖类
-    {0x01, 0x06}, //真红 单手剑类 手枪类
-    {0x03, 0x03}, //橙黄 匕首类
-    {0x0B, 0x0C}, //金黄 长杖类 魔杖类
-    {0x05, 0x05}  //羽白 投刃类
-};
-
 bool check_tekke_favored_weapon_by_section_id(uint8_t section, item_t* item) {
     bool favored = false;
+
+    /* 根据颜色ID预设武器鉴定加成 */
+    static const uint8_t tekke_favored_weapon_by_section_id[10][2] = {
+        {0x09, 0x09}, //铬绿 火箭炮类
+        {0x07, 0x07}, //翠绿 来复枪 狙击枪类
+        {0x02, 0x02}, //天青 剑类
+        {0x04, 0x04}, //纯蓝 长柄类
+        {0x08, 0x08}, //淡紫 机枪类
+        {0x0A, 0x0A}, //粉红 杖类
+        {0x01, 0x06}, //真红 单手剑类 手枪类
+        {0x03, 0x03}, //橙黄 匕首类
+        {0x0B, 0x0C}, //金黄 长杖类 魔杖类
+        {0x05, 0x05}  //羽白 投刃类
+    };
 
     for (size_t i = 0; i < 2; i++) {
         if (item->datab[1] == tekke_favored_weapon_by_section_id[section][i])
