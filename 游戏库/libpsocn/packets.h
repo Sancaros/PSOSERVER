@@ -1055,8 +1055,8 @@ typedef struct bb_item_exchange_state {
 
 typedef struct bb_item_exchange_good_luck {
     /* 0x00 - 0x07 */bb_pkt_hdr_t hdr;
-    /* 0x08 - 0x09 */ uint16_t unknown_a1;
-    /* 0x0A - 0x0B */ uint16_t subcmd_code;
+    /* 0x08 - 0x09 */uint16_t subcmd_code;
+    /* 0x0A - 0x0B */uint16_t flags;
     /* 0x0C - */ uint32_t items_res[8];
 } PACKED bb_item_exchange_good_luck_pkt;
 

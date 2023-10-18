@@ -318,7 +318,7 @@ int send_bb_quest_state(ship_client_t* c);
 
 int send_bb_item_exchange_state(ship_client_t* c, uint32_t done);
 
-int send_bb_item_exchange_good_luck(ship_client_t* c, uint32_t done, uint16_t subcmd, uint8_t unkonw1);
+int send_bb_item_exchange_good_luck(ship_client_t* c, uint32_t done, uint8_t flags, uint16_t subcmd);
 
 int send_bb_item_exchange_gallon_result(ship_client_t* c, uint32_t done, uint16_t subcmd, uint8_t unkonw1);
 

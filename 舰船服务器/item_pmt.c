@@ -3617,19 +3617,19 @@ uint8_t get_common_weapon_subtype_range_for_difficult(uint8_t ÄÑ¶È, uint8_t Çø¼ä
 
     switch (ÄÑ¶È) {
     case GAME_TYPE_DIFFICULTY_NORMAL:
-        subtype_offset = 1;
+        subtype_offset = 1;/* 1 - 3 */
         break;
 
     case GAME_TYPE_DIFFICULTY_HARD:
-        subtype_offset = 4;
+        subtype_offset = 4;/* 4 - 6 */
         break;
 
     case GAME_TYPE_DIFFICULTY_VERY_HARD:
-        subtype_offset = 8;
+        subtype_offset = 7;/* 7 - 9 */
         break;
 
     case GAME_TYPE_DIFFICULTY_ULTIMATE:
-        subtype_offset = 11;
+        subtype_offset = 10;/* 10 - 12 */
         break;
     }
 
@@ -3669,15 +3669,15 @@ uint8_t get_common_barrier_subtype_range_for_difficult(uint8_t ÄÑ¶È, uint8_t Çø¼
         break;
 
     case GAME_TYPE_DIFFICULTY_HARD:
-        subtype_offset = 5;/* 5 - 9*/
+        subtype_offset = 5;/* 5 - 10*/
         break;
 
     case GAME_TYPE_DIFFICULTY_VERY_HARD:
-        subtype_offset = 10;/* 10 - 14*/
+        subtype_offset = 10;/* 10 - 15*/
         break;
 
     case GAME_TYPE_DIFFICULTY_ULTIMATE:
-        subtype_offset = 15;/* 15 - 20*/
+        subtype_offset = 16;/* 16 - 21*/
         break;
     }
 

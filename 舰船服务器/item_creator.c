@@ -962,17 +962,21 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 	case ITEM_TYPE_WEAPON: // ÎäÆ÷
 		item.datab[1] = get_common_weapon_subtype_range_for_difficult(ÄÑ¶È, 0x03, Ëæ»úÒò×Ó); /* 01 - 0C ÆÕÍ¨ÎäÆ÷ÎïÆ·*/
 
-		/* ´òÄ¥Öµ 0 - 10*/
+			/* 9 ÒÔÏÂ¶¼ÊÇ 0/1 + ÄÑ¶È 9ÒÔÉÏÔò 0-3£¨ÄÑ¶È£©ÀàĞÍID*/
+		if (item.datab[1] > 9) {
+			item.datab[2] = ÄÑ¶È;
+		}
+		else
+			item.datab[2] = rand_int(Ëæ»úÒò×Ó, 2) + ÄÑ¶È; /* ÄÑ¶È×î´óÖµ 3 Ôö¼ÓÖµ 0 1 2 */
 
+		/* ´òÄ¥Öµ 0 - 10*/
 		int8_t subtype_base = ent->subtype_base_table[item.datab[1] - 1];
 		uint8_t area_length = ent->subtype_area_length_table[item.datab[1] - 1];
 		if (subtype_base < 0) {
-			item.datab[2] = (normarea + subtype_base) / area_length;
 			generate_common_weapon_grind(Ëæ»úÒò×Ó,
 				&item, (normarea + subtype_base) - (item.datab[2] * area_length), ent);
 		}
 		else {
-			item.datab[2] = subtype_base + (normarea / area_length);
 			generate_common_weapon_grind(Ëæ»úÒò×Ó,
 				&item, normarea - (normarea / area_length) * area_length, ent);
 		}
@@ -1001,7 +1005,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 					//if (tmp_value < -50)
 					//	tmp_value = -50;
 
-					item.datab[(num_percentages * 2) + 7] += tmp_value;
+					item.datab[(num_percentages * 2) + 7] = tmp_value;
 					num_percentages++;
 				}
 			}

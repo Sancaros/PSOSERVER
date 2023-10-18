@@ -71,46 +71,6 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子);
 item_t create_bb_shop_items(uint32_t 商店类型, uint8_t 难度, uint8_t 物品索引, sfmt_t* 随机因子);
 size_t price_for_item(const item_t* item);
 
-/*祝你好运任务的物品清单*/
-const static uint32_t good_luck[] = {
-	0x00004C00,
-	0x00004500,
-	0x00078F00,
-	0x00004400,
-	0x00009A00,
-	0x00006A00,
-	0x002B0201,
-	0x00310101,
-	0x00300101,
-	0x00320101,
-	0x00003400,
-	0x00001300,
-	0x00003C00,
-	0x00002700,
-	0x00003E00,
-	0x00003900,
-	0x00004100,
-	0x00290101,
-	0x00290101,
-	0x00290201,
-	0x00350201,
-	0x00330101,
-	0x001C0101,
-	0x00002000,
-	0x00060600,
-	0x00002C00,
-	0x00060100,
-	0x00070100,
-	0x00210201,
-	0x00070800,
-	0x00070400,
-	0x00010D00,
-	0x00240201,
-	0x001B0101,
-	0x00060200,
-	0x00001003
-};
-
 // Gallon's shop "Hopkins' Dad's" item list + Photon Drops required for each
 const static uint32_t gallons_shop_hopkins[] = {
 	0x00000003, 1,

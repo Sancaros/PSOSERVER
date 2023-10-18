@@ -44,7 +44,8 @@
 #include "records.h"
 #include "handle_player_items.h"
 #include "subcmd_handle.h"
-#include <pso_items_coren_reward_list.h>
+#include "pso_items_coren_reward_list.h"
+#include "pso_items_good_luck_reward_lish.h"
 
 extern char ship_host4[32];
 extern char ship_host6[128];
@@ -13160,7 +13161,7 @@ int send_bb_item_exchange_state(ship_client_t* c, uint32_t done) {
 }
 
 /* 物品兑换完成 祝你好运 */
-int send_bb_item_exchange_good_luck(ship_client_t* c, uint32_t done, uint16_t subcmd, uint8_t unkonw1) {
+int send_bb_item_exchange_good_luck(ship_client_t* c, uint32_t done, uint8_t flags, uint16_t subcmd) {
     bb_item_exchange_good_luck_pkt pkt = { 0 };
     sfmt_t* rng = &c->sfmt_rng;
 
@@ -13170,12 +13171,12 @@ int send_bb_item_exchange_good_luck(ship_client_t* c, uint32_t done, uint16_t su
     /* flags 0x00000000 Done 0x00000001 unDone*/
     pkt.hdr.flags = done;
 
-    pkt.unknown_a1 = unkonw1;
     pkt.subcmd_code = subcmd;
+    pkt.flags = flags;
 
     for (size_t x = 0; x < 8; x++) {
 
-        pkt.items_res[x] = good_luck[(sfmt_genrand_uint32(rng) % (sizeof(good_luck) >> 2)) + 1];
+        pkt.items_res[x] = good_luck[(sfmt_genrand_uint32(rng) % ARRAYSIZE(good_luck) + 1)];
 
         DBG_LOG(" pkt.items_res[%d] = 0x%08X", x, pkt.items_res[x]);
     }

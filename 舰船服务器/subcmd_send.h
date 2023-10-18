@@ -84,7 +84,7 @@ int subcmd_send_lobby_bb_exp(ship_client_t* dest, uint32_t exp_amount);
 int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
 
 /* 0xDB SUBCMD60_EXCHANGE_ITEM_IN_QUEST BB 任务中兑换物品 */
-int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, uint32_t amount);
+int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, uint32_t amount, uint32_t is_exchange_success);
 
 /* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */
 int subcmd_send_lobby_bb_level(ship_client_t* dest);

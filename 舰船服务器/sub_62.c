@@ -2584,6 +2584,11 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
+    if (pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("%s ID不一致, 错误的黑页扣除PD", get_player_describe(src));
+        return -3;
+    }
+
     l->drops_disabled = false;
     l->questE0_done = false;
 
@@ -2901,7 +2906,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/
     if (src->game_data->gm_debug) {
-        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+        result_item.datal[0] = reward_list.rewards[lottery_num(rng, TOTAL_COREN_ITEMS)];
     }
     else {
         uint32_t rng_value = sfmt_genrand_uint32(rng) % 100 + 1;
@@ -2911,7 +2916,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
         for (size_t i = 0; i < tmp_choice; i++) {
             if ((rng_value <= reward_percent[i]) && (reward_percent[i] != 0)) {
-                result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+                result_item.datal[0] = reward_list.rewards[lottery_num(rng, TOTAL_COREN_ITEMS)];
                 break;
             }
         }

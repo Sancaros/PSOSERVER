@@ -404,46 +404,4 @@ static uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 	}
 };
 
-// 抽奖函数
-static inline int lottery_num(sfmt_t* rng) {
-
-	// 计算权重总和
-	int totalWeight = 0;
-	for (int i = 0; i < TOTAL_COREN_ITEMS; i++) {
-		if (i < 7) {  // 前7个物品占比70%
-			totalWeight += 7;
-		}
-		else if (i < 17) {  // 接下来的10个物品占比20%
-			totalWeight += 2;
-		}
-		else {  // 剩下的8个物品占比10%
-			totalWeight += 1;
-		}
-	}
-
-	// 生成随机数（范围：0 到 totalWeight-1）
-	int randomNumber = sfmt_genrand_uint32(rng) % totalWeight;
-
-	// 根据随机数确定中奖物品
-	int winningItem = -1;
-	int cumulativeWeight = 0;
-	for (int i = 0; i < TOTAL_COREN_ITEMS; i++) {
-		if (i < 7) {
-			cumulativeWeight += 7;
-		}
-		else if (i < 17) {
-			cumulativeWeight += 2;
-		}
-		else {
-			cumulativeWeight += 1;
-		}
-		if (randomNumber < cumulativeWeight) {
-			winningItem = i;
-			break;
-		}
-	}
-
-	return winningItem;
-}
-
 #endif // !COREN_REWARD_LISH_H

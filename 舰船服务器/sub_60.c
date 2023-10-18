@@ -41,6 +41,7 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 #include "ship.h"
+#include "pso_items_good_luck_reward_lish.h"
 
 #include "subcmd_handle.h"
 
@@ -6861,7 +6862,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("兑换 %d ID 0x%04X 失败", 1, compare_item_id);
             return -1;
         }
-        subcmd_send_bb_exchange_item_in_quest(src, compare_item_id, 1);
+        subcmd_send_bb_exchange_item_in_quest(src, compare_item_id, 1, 0x00000001);
         subcmd_send_lobby_bb_destroy_item(src, compare_item_id, 1);
 
         item_t add_item = pkt->add_item;
@@ -7050,8 +7051,90 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &src->sfmt_rng;
 
+    //uint32_t compare_item, ci;
+    //uint32_t itemid = 0;
+    //PLAYER_INVENTORY add_item;
+
+    //dont_send = 1;
+
+    //if (client->lobby_room_num > 0x0F)
+    //{
+    //    compare_item = 0x00031003;
+    //    for (ci = 0; ci < client->character.item_count; ci++)
+    //    {
+    //        if (*(uint32_t*)&client->character.inventory[ci].item.item_data1[0] == compare_item)
+    //        {
+    //            itemid = client->character.inventory[ci].item.item_id;
+    //            break;
+    //        }
+    //    }
+    //    if (!itemid)
+    //    {
+    //        memset(&client->send_pkt[0x00], 0, 0x2C);
+    //        client->send_pkt[0x00] = 0x2C;
+    //        client->send_pkt[0x02] = ITEM_EXCHANGE_GOOD_LUCK;
+    //        client->send_pkt[0x04] = 0x01;
+    //        client->send_pkt[0x08] = client->rcv_pkt[0x0E];
+    //        client->send_pkt[0x0A] = client->rcv_pkt[0x0D];
+    //        for (ci = 0; ci < 8; ci++)
+    //            client->send_pkt[0x0C + (ci << 2)] = (mt_lrand() % (sizeof(good_luck) >> 2)) + 1;
+    //        server_cipher_ptr = &client->server_cipher;
+    //        send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x2C);
+    //    }
+    //    else
+    //    {
+    //        memset(&add_item, 0, sizeof(PLAYER_INVENTORY));
+    //        *(uint32_t*)&add_item.item.item_data1[0] = good_luck[mt_lrand() % (sizeof(good_luck) >> 2)];
+    //        delete_item_from_client(itemid, 1, 0, client);
+
+    //        memset(&client->send_pkt[0x00], 0, 0x18);
+    //        client->send_pkt[0x00] = 0x18;
+    //        client->send_pkt[0x02] = GAME_COMMAND60_TYPE;
+    //        client->send_pkt[0x08] = SUBCMD60_ITEM_EXCHANGE_IN_QUEST;
+    //        client->send_pkt[0x09] = 0x06;
+    //        client->send_pkt[0x0C] = 0x01;
+    //        *(uint32_t*)&client->send_pkt[0x10] = itemid;
+    //        client->send_pkt[0x14] = 0x01;
+    //        server_cipher_ptr = &client->server_cipher;
+    //        send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x18);
+
+    //        // Let everybody else know that item no longer exists...
+
+    //        memset(&client->send_pkt[0x00], 0, 0x14);
+    //        client->send_pkt[0x00] = 0x14;
+    //        client->send_pkt[0x02] = GAME_COMMAND60_TYPE;
+    //        client->send_pkt[0x08] = SUBCMD60_DELETE_ITEM;
+    //        client->send_pkt[0x09] = 0x05;
+    //        client->send_pkt[0x0A] = client->clientID;
+    //        *(uint32_t*)&client->send_pkt[0x0C] = itemid;
+    //        client->send_pkt[0x10] = 0x01;
+    //        send_bb_lobby_pkt(l, 4, &client->send_pkt[0x00], 0x14, client->guildcard);
+
+    //        add_item.item.item_id = l->playerItemID[client->clientID];
+    //        l->playerItemID[client->clientID]++;
+
+    //        add_to_inv(&add_item, 1, 0, client);
+
+    //        memset(&client->send_pkt[0x00], 0, 0x2C);
+    //        client->send_pkt[0x00] = 0x2C;
+    //        client->send_pkt[0x02] = ITEM_EXCHANGE_GOOD_LUCK;
+    //        client->send_pkt[0x04] = 0x00;
+    //        client->send_pkt[0x08] = client->rcv_pkt[0x0E];
+    //        client->send_pkt[0x0A] = client->rcv_pkt[0x0D];
+    //        for (ci = 0; ci < 8; ci++)
+    //            client->send_pkt[0x0C + (ci << 2)] = (mt_lrand() % (sizeof(good_luck) >> 2)) + 1;
+    //        server_cipher_ptr = &client->server_cipher;
+    //        send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x2C);
+    //    }
+    //}
     if (!in_game(src))
         return -1;
+
+//[2023年10月18日 20:21:51:496] 错误(f_logs.h 0608): 数据包如下:
+//(00000000) 10 00 60 00 00 00 00 00  DE 02 00 00 01 6F 33 00    ..`..........o3.
+//                                                  11 12  13 14 15
+//                                                       flags subcmd_code
+//( 00000000 )   10 00 60 00 00 00 00 00   DE 02 00 00 02  6F 5F 00  ..`.....?...o_.
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_good_luck_act_t), 0x02)) {
         return -2;
@@ -7063,36 +7146,36 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     item_t item = { 0 };
     clear_inv_item(&item);
 
-    size_t itemid = find_iitem_code_stack_item_id(inv, 0x00031003);
+    size_t itemid = find_iitem_code_stack_item_id(inv, BBItem_Secret_Ticket);
     if (!itemid) {
         ERR_LOG("%s 玩家背包中没有秘密点卷", get_player_describe(src));
-        return send_bb_item_exchange_good_luck(src, 0x00000001, pkt->subcmd_code, pkt->flags);
+        send_bb_item_exchange_good_luck(src, 0x00000001, pkt->flags, pkt->subcmd_code);
     }
-//               00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F
-//( 00000000 )   10 00 60 00 00 00 00 00   DE 02 00 00 02 6F 5F 00  ..`.....?...o_.
+    else {
+        item_t remove_item = remove_invitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
+        if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
+            ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
+            print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+            return -3;
+        }
+        subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, 1);
 
-        /* 删除光子票据 10个 但是会全部删除 */
-    item_t remove_item = remove_invitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
-    if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
-        ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
+        subcmd_send_bb_exchange_item_in_quest(src, itemid, 1, 0x00000001);
+
+        item.datal[0] = good_luck[sfmt_genrand_uint32(rng) % ARRAYSIZE(good_luck)];
+        item.item_id = generate_item_id(l, src->client_id);
+        if (!add_invitem(src, item)) {
+            ERR_LOG("%s 获取兑换物品失败!", get_player_describe(src));
+            return -5;
+        }
+        subcmd_send_lobby_bb_create_inv_item(src, item, stack_size(&item), true);
+
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        return -3;
+        send_bb_item_exchange_good_luck(src, 0x00000000, pkt->flags, pkt->subcmd_code);
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "物品兑换成功"));
     }
-    subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, 1);
 
-    subcmd_send_bb_exchange_item_in_quest(src, itemid, 1);
-
-    item.datal[0] = good_luck[sfmt_genrand_uint32(rng) % (sizeof(good_luck) >> 2)];
-    item.item_id = generate_item_id(l, src->client_id);
-    if (!add_invitem(src, item)) {
-        ERR_LOG("%s 获取兑换物品失败!", get_player_describe(src));
-        return -5;
-    }
-    subcmd_send_lobby_bb_create_inv_item(src, item, stack_size(&item), true);
-
-    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-    send_bb_item_exchange_good_luck(src, 0x00000000, pkt->subcmd_code, pkt->flags);
-    return send_msg(src, MSG_BOX_TYPE, "%s", __(src, "物品兑换成功"));
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
@@ -7178,7 +7261,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 
     subcmd_send_lobby_bb_destroy_item(src, pt_itemid, 99);
 
-    subcmd_send_bb_exchange_item_in_quest(src, pt_itemid, 0x05 + (pkt->unknown_a2 * 5));
+    subcmd_send_bb_exchange_item_in_quest(src, pt_itemid, 0x05 + (pkt->unknown_a2 * 5), 0x00000001);
 
     item.item_id = generate_item_id(l, src->client_id);
     if (!add_invitem(src, item)) {

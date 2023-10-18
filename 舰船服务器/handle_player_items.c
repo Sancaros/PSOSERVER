@@ -1983,8 +1983,8 @@ ssize_t player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
         delta = delta_table[delta_index] + favored_add;
 
         for (size_t z = 6; z <= 10; z += 2) {
-            if (item->datab[z] >= 1 && item->datab[z] <= 5) {
-                item->datab[z + 1] += (int8_t)min(item->datab[z + 1] + delta, 100);
+            if (!(item->datab[z] & 128) && item->datab[z + 1] > 0) {
+                item->datab[z + 1] += (uint8_t)min(item->datab[z + 1] + delta, 100);
             }
         }
 

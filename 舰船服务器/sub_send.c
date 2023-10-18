@@ -780,7 +780,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
 }
 
 /* 0xDB SUBCMD60_EXCHANGE_ITEM_IN_QUEST BB 任务中兑换物品 */
-int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, uint32_t amount) {
+int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, uint32_t amount, uint32_t is_exchange_success) {
     subcmd_bb_item_exchange_in_quest_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_item_exchange_in_quest_t);
 
@@ -794,7 +794,7 @@ int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, ui
     pkt.shdr.size = pkt_size / 4;
     pkt.shdr.params = 0;
 
-    pkt.unknown_a3 = 1;
+    pkt.is_exchange_success = is_exchange_success;
     pkt.item_id = item_id;
     pkt.amount = amount;
 

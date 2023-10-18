@@ -61,6 +61,49 @@ uint64_t get_ms_time(void);
 
 void memcpy_str(void * restrict d, const char * restrict s, size_t sz);
 
+// 抽奖函数
+static inline int lottery_num(sfmt_t* rng, size_t items_count) {
+	size_t i = 0;
+
+	// 计算权重总和
+	int totalWeight = 0;
+	for (i = 0; i < items_count; i++) {
+		if (i < 7) {  // 前7个物品占比70%
+			totalWeight += 7;
+		}
+		else if (i < 17) {  // 接下来的10个物品占比20%
+			totalWeight += 2;
+		}
+		else {  // 剩下的8个物品占比10%
+			totalWeight += 1;
+		}
+	}
+
+	// 生成随机数（范围：0 到 totalWeight-1）
+	int randomNumber = sfmt_genrand_uint32(rng) % totalWeight;
+
+	// 根据随机数确定中奖物品
+	int winningItem = -1;
+	int cumulativeWeight = 0;
+	for (i = 0; i < items_count; i++) {
+		if (i < 7) {
+			cumulativeWeight += 7;
+		}
+		else if (i < 17) {
+			cumulativeWeight += 2;
+		}
+		else {
+			cumulativeWeight += 1;
+		}
+		if (randomNumber < cumulativeWeight) {
+			winningItem = i;
+			break;
+		}
+	}
+
+	return winningItem;
+}
+
 /* Internationalization support */
 #ifdef HAVE_LIBMINI18N
 #include <mini18n-multi.h>

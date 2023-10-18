@@ -52,6 +52,7 @@
     <ClInclude Include="pso_items_coren_reward_list.h" />
     <ClInclude Include="pso_lobby.h" />
     <ClInclude Include="pso_item_list_bb.h" />
+    <ClInclude Include="pso_items_good_luck_reward_lish.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_crash_handle.c" />

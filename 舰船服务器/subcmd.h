@@ -3129,7 +3129,7 @@ typedef struct subcmd_bb_upgrade_weapon_attribute {
 typedef struct subcmd_bb_item_exchange_in_quest {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
-    uint32_t unknown_a3;
+    uint32_t is_exchange_success;
     uint32_t item_id;
     uint32_t amount;
 } PACKED subcmd_bb_item_exchange_in_quest_t;
@@ -3155,7 +3155,7 @@ typedef struct subcmd_bb_set_exp_rate {
 typedef struct subcmd_bb_good_luck_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint8_t unknown_a1; /* 得获得更多参数才能查明 */
+    uint8_t reward_num; /* 得获得更多参数才能查明 */
     uint8_t flags;
     uint16_t subcmd_code;
 } PACKED subcmd_bb_good_luck_act_t;
