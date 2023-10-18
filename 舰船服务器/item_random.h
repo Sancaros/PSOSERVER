@@ -55,6 +55,10 @@ typedef struct table_spec {
 
 static table_spec_t armorrandomset[3];
 
+uint32_t rand_int(sfmt_t* rng, uint64_t max);
+
+float rand_float_0_1_from_crypt(sfmt_t* rng);
+
 int load_ArmorRandomSet_data(const char* fn);
 
 

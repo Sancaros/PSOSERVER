@@ -176,59 +176,105 @@ static uint8_t class_equip_flags[12] = {
 
 /* 游戏固定武器属性加成 */
 static const int8_t weapon_bonus_values[21] = {
-    50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
+    -50, -45, -40, -35, -30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
 };
 
 static char* weapon_attrib[6] = { "无", "原生", "变异", "机械", "暗黑", "命中" };
 
+/* Weapon Attributes -- Stored in byte #4 of weapons. */
+typedef enum psocn_weapon_attr_e {
+    Weapon_Attr_None     = 0x00,
+    Weapon_Attr_Draw     = 0x01,
+    Weapon_Attr_Drain    = 0x02,
+    Weapon_Attr_Fill     = 0x03,
+    Weapon_Attr_Gush     = 0x04,
+    Weapon_Attr_Heart    = 0x05,
+    Weapon_Attr_Mind     = 0x06,
+    Weapon_Attr_Soul     = 0x07,
+    Weapon_Attr_Geist    = 0x08,
+    Weapon_Attr_Masters  = 0x09,
+    Weapon_Attr_Lords    = 0x0A,
+    Weapon_Attr_Kings    = 0x0B,
+    Weapon_Attr_Charge   = 0x0C,
+    Weapon_Attr_Spirit   = 0x0D,
+    Weapon_Attr_Berserk  = 0x0E,
+    Weapon_Attr_Ice      = 0x0F,
+    Weapon_Attr_Frost    = 0x10,
+    Weapon_Attr_Freeze   = 0x11,
+    Weapon_Attr_Blizzard = 0x12,
+    Weapon_Attr_Bind     = 0x13,
+    Weapon_Attr_Hold     = 0x14,
+    Weapon_Attr_Seize    = 0x15,
+    Weapon_Attr_Arrest   = 0x16,
+    Weapon_Attr_Heat     = 0x17,
+    Weapon_Attr_Fire     = 0x18,
+    Weapon_Attr_Flame    = 0x19,
+    Weapon_Attr_Burning  = 0x1A,
+    Weapon_Attr_Shock    = 0x1B,
+    Weapon_Attr_Thunder  = 0x1C,
+    Weapon_Attr_Storm    = 0x1D,
+    Weapon_Attr_Tempest  = 0x1E,
+    Weapon_Attr_Dim      = 0x1F,
+    Weapon_Attr_Shadow   = 0x20,
+    Weapon_Attr_Dark     = 0x21,
+    Weapon_Attr_Hell     = 0x22,
+    Weapon_Attr_Panic    = 0x23,
+    Weapon_Attr_Riot     = 0x24,
+    Weapon_Attr_Havoc    = 0x25,
+    Weapon_Attr_Chaos    = 0x26,
+    Weapon_Attr_Devils   = 0x27,
+    Weapon_Attr_Demons   = 0x28,
+    Weapon_Attr_MAX      = 0x29
+} psocn_weapon_attr_t;
+
 typedef struct weapon_special {
-    uint8_t id;
+	uint8_t id;
     const char* name;
     const char* cn_name;
 } weapon_special_t;
 
 static const weapon_special_t weapon_specials[] = {
-	{0x00, "NULL", "无EX"},
-    {0x01, "Draw", "吸血"},
-    {0x02, "Drain", "饮血"},
-    {0x03, "Fill", "噬血"},
-    {0x04, "Gush", "嗜血"},
-    {0x05, "Heart", "心之"},
-    {0x06, "Mind", "智之"},
-    {0x07, "Soul", "魂之"},
-    {0x08, "Geist", "魄之"},
-    {0x09, "Master\'s", "将之"},
-    {0x0A, "Lord\'s", "相之"},
-    {0x0B, "King\'s", "王之"},
-    {0x0C, "Charge", "销金"},
-    {0x0D, "Spirit", "销魂"},
-    {0x0E, "Berserk", "销血"},
-    {0x0F, "Ice", "冰晶"},
-    {0x10, "Frost", "冰霜"},
-    {0x11, "Freeze", "冰冻"},
-    {0x12, "Blizzard", "冰暴"},
-    {0x13, "Bind", "小麻痹"},
-    {0x14, "Hold", "中麻痹"},
-    {0x15, "Seize", "强麻痹"},
-    {0x16, "Arrest", "全麻痹"},
-    {0x17, "Heat", "高热"},
-    {0x18, "Fire", "火热"},
-    {0x19, "Flame", "灼热"},
-    {0x1A, "Burning", "炽热"},
-    {0x1B, "Shock", "雷鸣"},
-    {0x1C, "Thunder", "雷击"},
-    {0x1D, "Storm", "雷爆"},
-    {0x1E, "Tempest", "雷霆"},
-    {0x1F, "Dim", "暗淡"},
-    {0x20, "Shadow", "暗影"},
-    {0x21, "Dark", "暗黑"},
-    {0x22, "Hell", "地狱"},
-    {0x23, "Panic", "混乱"},
-    {0x24, "Riot", "暴动"},
-    {0x25, "Havoc", "浩劫"},
-    {0x26, "Chaos", "混沌"},
-    {0x27, "Devil\'s", "魔鬼的"},
-    {0x28, "Demon\'s", "恶魔的"},
+	{Weapon_Attr_None,    "NULL",      "无EX"},
+	{Weapon_Attr_Draw,    "Draw",      "吸血"},
+	{Weapon_Attr_Drain,   "Drain",     "饮血"},
+	{Weapon_Attr_Fill,    "Fill",      "噬血"},
+	{Weapon_Attr_Gush,    "Gush",      "嗜血"},
+	{Weapon_Attr_Heart,   "Heart",     "心之"},
+	{Weapon_Attr_Mind,    "Mind",      "智之"},
+	{Weapon_Attr_Soul,    "Soul",      "魂之"},
+	{Weapon_Attr_Geist,   "Geist",     "魄之"},
+	{Weapon_Attr_Masters, "Master's",  "将之"},
+	{Weapon_Attr_Lords,   "Lord's",    "相之"},
+	{Weapon_Attr_Kings,   "King's",    "王之"},
+	{Weapon_Attr_Charge,  "Charge",    "销金"},
+	{Weapon_Attr_Spirit,  "Spirit",    "销魂"},
+	{Weapon_Attr_Berserk, "Berserk",   "销血"},
+	{Weapon_Attr_Ice,     "Ice",       "冰晶"},
+	{Weapon_Attr_Frost,   "Frost",     "冰霜"},
+	{Weapon_Attr_Freeze,  "Freeze",    "冰冻"},
+	{Weapon_Attr_Blizzard,"Blizzard",  "冰暴"},
+	{Weapon_Attr_Bind,    "Bind",      "小麻痹"},
+	{Weapon_Attr_Hold,    "Hold",      "中麻痹"},
+	{Weapon_Attr_Seize,   "Seize",     "强麻痹"},
+	{Weapon_Attr_Arrest,  "Arrest",    "全麻痹"},
+	{Weapon_Attr_Heat,    "Heat",      "高热"},
+	{Weapon_Attr_Fire,    "Fire",      "火热"},
+	{Weapon_Attr_Flame,   "Flame",     "灼热"},
+	{Weapon_Attr_Burning, "Burning",   "炽热"},
+	{Weapon_Attr_Shock,   "Shock",     "雷鸣"},
+	{Weapon_Attr_Thunder, "Thunder",   "雷击"},
+	{Weapon_Attr_Storm,   "Storm",     "雷爆"},
+	{Weapon_Attr_Tempest, "Tempest",   "雷霆"},
+	{Weapon_Attr_Dim,     "Dim",       "暗淡"},
+	{Weapon_Attr_Shadow,  "Shadow",    "暗影"},
+	{Weapon_Attr_Dark,    "Dark",      "暗黑"},
+	{Weapon_Attr_Hell,    "Hell",      "地狱"},
+	{Weapon_Attr_Panic,   "Panic",     "混乱"},
+	{Weapon_Attr_Riot,    "Riot",      "暴动"},
+	{Weapon_Attr_Havoc,   "Havoc",     "浩劫"},
+	{Weapon_Attr_Chaos,   "Chaos",     "混沌"},
+	{Weapon_Attr_Devils,  "Devil's",   "魔鬼的"},
+	{Weapon_Attr_Demons,  "Demon's",   "恶魔的"},
 };
 
 typedef struct s_rank_special {
@@ -256,6 +302,38 @@ static const s_rank_special_t s_rank_specials[] = {
     {0x0F, "Geist", "魄之"},
     {0x10, "King\'s", "王之"},
 };
+
+/* Elemental attributes, sorted by their ranking. This is based on the table
+   that is in Tethealla. This is probably in some data file somewhere, and we
+   should probably read it from that data file, but this will work for now. */
+static const psocn_weapon_attr_t attr_list[4][12] = {
+	{
+		Weapon_Attr_Draw, Weapon_Attr_Heart, Weapon_Attr_Ice,
+		Weapon_Attr_Bind, Weapon_Attr_Heat, Weapon_Attr_Shock,
+		Weapon_Attr_Dim, Weapon_Attr_Panic, Weapon_Attr_None,
+		Weapon_Attr_None, Weapon_Attr_None, Weapon_Attr_None
+	},
+	{
+		Weapon_Attr_Drain, Weapon_Attr_Mind, Weapon_Attr_Frost,
+		Weapon_Attr_Hold, Weapon_Attr_Fire, Weapon_Attr_Thunder,
+		Weapon_Attr_Shadow, Weapon_Attr_Riot, Weapon_Attr_Masters,
+		Weapon_Attr_Charge, Weapon_Attr_None, Weapon_Attr_None
+	},
+	{
+		Weapon_Attr_Fill, Weapon_Attr_Soul, Weapon_Attr_Freeze,
+		Weapon_Attr_Seize, Weapon_Attr_Flame, Weapon_Attr_Storm,
+		Weapon_Attr_Dark, Weapon_Attr_Havoc, Weapon_Attr_Lords,
+		Weapon_Attr_Charge, Weapon_Attr_Spirit, Weapon_Attr_Devils
+	},
+	{
+		Weapon_Attr_Gush, Weapon_Attr_Geist, Weapon_Attr_Blizzard,
+		Weapon_Attr_Arrest, Weapon_Attr_Burning, Weapon_Attr_Tempest,
+		Weapon_Attr_Hell, Weapon_Attr_Chaos, Weapon_Attr_Kings,
+		Weapon_Attr_Charge, Weapon_Attr_Berserk, Weapon_Attr_Demons
+	}
+};
+
+static const int attr_count[4] = { 8, 10, 12, 12 };
 
 /* 游戏固定插件属性加成 */
 static const uint8_t unit_bonus_values[5][2] = {

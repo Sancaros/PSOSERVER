@@ -68,19 +68,6 @@ void deduplicate_weapon_bonuses(item_t* item) {
 	}
 }
 
-uint32_t rand_int(sfmt_t* rng, uint64_t max) {
-	return sfmt_genrand_uint32(rng) % max;
-}
-
-float rand_float_0_1_from_crypt(sfmt_t* rng) {
-	uint32_t next = sfmt_genrand_uint32(rng);
-	next = next ^ (next << 11);
-	next = next ^ (next >> 8);
-	next = next ^ ((next << 19) & 0xffffffff);
-	next = next ^ ((next >> 4) & 0xffffffff);
-	return (float)(next >> 16) / 65536.0f;
-}
-
 // 从一维加权表中随机选择一个值
 uint8_t get_rand_from_weighted_tables(sfmt_t* rng,
 	uint8_t* data, size_t offset, size_t num_values, size_t stride) {
@@ -179,7 +166,7 @@ void generate_common_weapon_special(sfmt_t* rng,
 	if (rand_int(rng, 100) >= ent->special_percent[area_norm]) {
 		return;
 	}
-	item->datab[4] = choose_weapon_special(
+	item->datab[4] = choose_weapon_special(rng, 
 		special_mult * (uint8_t)rand_float_0_1_from_crypt(rng));
 }
 
@@ -960,12 +947,12 @@ item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_
 	return item;
 }
 
-item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint8_t normarea, uint8_t 颜色ID, uint8_t 物品类型) {
+item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint8_t normarea, uint8_t 颜色ID, uint8_t 物品类型) {
 	static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
 	static const uint8_t max_tech_lvl[4] = { 4,  7, 10, 15 };
 	static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 	item_t item = { 0 };
-	uint8_t tmp_value = 0;
+	int8_t tmp_value = 0;
 	item.datab[0] = 物品类型;
 	errno_t err = 0;
 	uint8_t 难度 = l->difficulty, 章节 = l->episode, 挑战 = l->challenge;
@@ -973,23 +960,26 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 	/* 检索物品类型 */
 	switch (item.datab[0]) {
 	case ITEM_TYPE_WEAPON: // 武器
-		item.datab[1] = rand_int(随机因子, 12) + 1; /* 01 - 0C 普通武器物品*/
-
-		/* 9 以下都是 0/1 + 难度 9以上则 0-3（难度）类型ID*/
-		if (item.datab[1] > 9) {
-			item.datab[2] = 难度;
-		}
-		else
-			item.datab[2] = rand_int(随机因子, 2) + 难度; /* 难度最大值 3 增加值 0 1 2 */
+		item.datab[1] = get_common_weapon_subtype_range_for_difficult(难度, 0x03, 随机因子); /* 01 - 0C 普通武器物品*/
 
 		/* 打磨值 0 - 10*/
-		item.datab[3] = rand_int(随机因子, 11);
 
-		/* 特殊攻击 0 - 10 配合难度 0 - 3*/
-		//generate_common_weapon_special(随机因子, &item, normarea, ent);
-		item.datab[4] = rand_int(随机因子, 11) + 难度;
-		if (item.datab[4])
-			item.datab[4] |= 0x80;
+		int8_t subtype_base = ent->subtype_base_table[item.datab[1] - 1];
+		uint8_t area_length = ent->subtype_area_length_table[item.datab[1] - 1];
+		if (subtype_base < 0) {
+			item.datab[2] = (normarea + subtype_base) / area_length;
+			generate_common_weapon_grind(随机因子,
+				&item, (normarea + subtype_base) - (item.datab[2] * area_length), ent);
+		}
+		else {
+			item.datab[2] = subtype_base + (normarea / area_length);
+			generate_common_weapon_grind(随机因子,
+				&item, normarea - (normarea / area_length) * area_length, ent);
+		}
+
+		/* 特殊攻击 0 - 12 配合区域 0 - 3*/
+		item.datab[4] = generate_weapon_special(ent, normarea, 随机因子);
+		set_item_identified_flag(l->challenge, &item);
 
 		/* datab[5] 在这里不涉及 礼物 未鉴定*/
 
@@ -999,7 +989,8 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 			/*0-5 涵盖所有属性*/
 			for (size_t x = 0; x < 6; x++) {
 				/* 后期设置调整 生成属性几率 TODO */
-				if ((sfmt_genrand_uint32(随机因子) % 6) == 1) {
+				uint32_t r = rand_int(随机因子, 6);
+				if (r == 1) {
 					/*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
 					item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
 					tmp_value = /*sfmt_genrand_uint32(随机因子) % 6 +*/ weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 21];/* 0 - 5 % 0 - 19*/
@@ -1010,7 +1001,7 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 					//if (tmp_value < -50)
 					//	tmp_value = -50;
 
-					item.datab[(num_percentages * 2) + 7] = tmp_value;
+					item.datab[(num_percentages * 2) + 7] += tmp_value;
 					num_percentages++;
 				}
 			}
@@ -1030,7 +1021,7 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 		switch (item.datab[1]) {
 		case ITEM_SUBTYPE_FRAME://护甲
 			/*护甲物品子类型*/
-			item.datab[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 6); /* 0x00 - 0x17 普通盔甲 随难度提升掉落物品类型 */
+			item.datab[2] = get_common_frame_subtype_range_for_difficult(难度, 0x06, 随机因子); /* 0x00 - 0x17 普通盔甲 随难度提升掉落物品类型 */
 			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
 				ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
 				break;
@@ -1056,7 +1047,7 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 		case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
 
 			/*护盾物品子类型*/
-			item.datab[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 5); /* 0x00 - 0x14 普通护盾*/
+			item.datab[2] = get_common_barrier_subtype_range_for_difficult(难度, 0x06, 随机因子); /* 0x00 - 0x14 普通护盾*/
 			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
 				ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
 				break;
@@ -1078,22 +1069,30 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 			break;
 
 		case ITEM_SUBTYPE_UNIT://插件 不生成带属性的 省的麻烦 TODO 以后再做更详细的
-			item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2);
+			item.datab[2] = get_common_random_unit_subtype_value(随机因子);
 			if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
 				ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
 				break;
 			}
 
-			float f1 = (float)(1.0 + ent->unit_maxes[normarea]);
-			float f2 = rand_float_0_1_from_crypt(随机因子);
-			generate_common_unit_variances(随机因子, (uint32_t)(f1 * f2) & 0xFF, &item);
-			if (item.datab[2] == 0xFF) {
-				clear_inv_item(&item);
+			pmt_unit_bb_t def;
+			pmt_lookup_unit_bb(item.datab[2], &def);
+			switch (rand_int(随机因子, 5)) {
+			case 0:
+				set_unit_bonus(&item, -(def.pm_range * 2));
+				break;
+			case 1:
+				set_unit_bonus(&item, -def.pm_range);
+				break;
+			case 2:
+				break;
+			case 3:
+				set_unit_bonus(&item, def.pm_range);
+				break;
+			case 4:
+				set_unit_bonus(&item, def.pm_range * 2);
+				break;
 			}
-			//tmp_value = sfmt_genrand_uint32(随机因子) % 5;
-			//item.datab[6] = unit_bonus_values[tmp_value][0];
-			//item.datab[7] = unit_bonus_values[tmp_value][1];
-
 			break;
 		}
 		break;
@@ -1110,7 +1109,7 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 		case ITEM_SUBTYPE_MATE:
 		case ITEM_SUBTYPE_FLUID:
 			switch (难度) {
-			case GAME_TYPE_DIFFICULTY_NORMARL:
+			case GAME_TYPE_DIFFICULTY_NORMAL:
 				item.datab[2] = 0;
 				item.datab[5] = get_item_amount(&item, 1);
 				break;
@@ -1193,7 +1192,7 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 	return item;
 }
 
-item_t create_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint32_t def0, uint32_t def1, uint32_t def2) {
+item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint32_t def0, uint32_t def1, uint32_t def2) {
 	item_t item = { 0 };
 	uint8_t tmp_value = 0;
 	errno_t err = 0;
@@ -1235,7 +1234,8 @@ item_t create_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子
 			/*0-5 涵盖所有属性*/
 			for (size_t x = 0; x < 6; x++) {
 				/* 后期设置调整 生成属性几率 TODO */
-				if ((sfmt_genrand_uint32(随机因子) % 4) == 1) {
+				uint32_t r = rand_int(随机因子, 4);
+				if (r == 1) {
 					/*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
 					item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
 					tmp_value = /*sfmt_genrand_uint32(随机因子) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 21];/* 0 - 5 % 0 - 19*/
@@ -1324,9 +1324,9 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 	}
 
 	if (choice_rng)
-		item = create_bb_box_item(l, ent, rng, area, section_id, item.datab[0]);
+		item = create_common_bb_box_item(l, ent, rng, area, section_id, item.datab[0]);
 	else
-		item = create_bb_box_waste_item(l, ent, rng, def0, def1, def2);
+		item = create_common_bb_box_waste_item(l, ent, rng, def0, def1, def2);
 	
 	return item;
 }

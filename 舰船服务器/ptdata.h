@@ -695,5 +695,6 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_t pkt_area, uint8_t area, uint8_t section_id);
 
 uint16_t get_random_value(sfmt_t* rng, rang_16bit_t range);
+uint8_t generate_weapon_special(pt_bb_entry_t* ent, uint8_t normarea, sfmt_t* rng);
 
 #endif /* !PTDATA_H */

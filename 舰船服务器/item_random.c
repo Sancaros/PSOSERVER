@@ -29,6 +29,19 @@
 
 #include "item_random.h"
 
+uint32_t rand_int(sfmt_t* rng, uint64_t max) {
+    return sfmt_genrand_uint32(rng) % max;
+}
+
+float rand_float_0_1_from_crypt(sfmt_t* rng) {
+    uint32_t next = sfmt_genrand_uint32(rng);
+    next = next ^ (next << 11);
+    next = next ^ (next >> 8);
+    next = next ^ ((next << 19) & 0xffffffff);
+    next = next ^ ((next >> 4) & 0xffffffff);
+    return (float)(next >> 16) / 65536.0f;
+}
+
 int load_ArmorRandomSet_data(const char* fn) {
     StringReader* r = StringReader_file(fn);
     uint32_t tmp, tmp2 = 0;

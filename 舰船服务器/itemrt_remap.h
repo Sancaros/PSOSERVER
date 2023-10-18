@@ -49,38 +49,6 @@ static const int tool_base[28] = {
 	Item_NoSuchItem
 };
 
-/* Elemental attributes, sorted by their ranking. This is based on the table
-   that is in Tethealla. This is probably in some data file somewhere, and we
-   should probably read it from that data file, but this will work for now. */
-static const psocn_weapon_attr_t attr_list[4][12] = {
-	{
-		Weapon_Attr_Draw, Weapon_Attr_Heart, Weapon_Attr_Ice,
-		Weapon_Attr_Bind, Weapon_Attr_Heat, Weapon_Attr_Shock,
-		Weapon_Attr_Dim, Weapon_Attr_Panic, Weapon_Attr_None,
-		Weapon_Attr_None, Weapon_Attr_None, Weapon_Attr_None
-	},
-	{
-		Weapon_Attr_Drain, Weapon_Attr_Mind, Weapon_Attr_Frost,
-		Weapon_Attr_Hold, Weapon_Attr_Fire, Weapon_Attr_Thunder,
-		Weapon_Attr_Shadow, Weapon_Attr_Riot, Weapon_Attr_Masters,
-		Weapon_Attr_Charge, Weapon_Attr_None, Weapon_Attr_None
-	},
-	{
-		Weapon_Attr_Fill, Weapon_Attr_Soul, Weapon_Attr_Freeze,
-		Weapon_Attr_Seize, Weapon_Attr_Flame, Weapon_Attr_Storm,
-		Weapon_Attr_Dark, Weapon_Attr_Havoc, Weapon_Attr_Lords,
-		Weapon_Attr_Charge, Weapon_Attr_Spirit, Weapon_Attr_Devils
-	},
-	{
-		Weapon_Attr_Gush, Weapon_Attr_Geist, Weapon_Attr_Blizzard,
-		Weapon_Attr_Arrest, Weapon_Attr_Burning, Weapon_Attr_Tempest,
-		Weapon_Attr_Hell, Weapon_Attr_Chaos, Weapon_Attr_Kings,
-		Weapon_Attr_Charge, Weapon_Attr_Berserk, Weapon_Attr_Demons
-	}
-};
-
-static const int attr_count[4] = { 8, 10, 12, 12 };
-
 #define EPSILON 0.001f
 
 // For remapping Episode IV monsters to Episode I counterparts...

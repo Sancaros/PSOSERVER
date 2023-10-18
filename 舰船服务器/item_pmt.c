@@ -34,6 +34,7 @@
 #include "utils.h"
 #include "packets.h"
 #include "handle_player_items.h"
+#include "item_random.h"
 
 /* PSOv1/PSOv2 data. */
 static pmt_weapon_v2_t** weapons;
@@ -3460,12 +3461,12 @@ bool is_item_rare(const item_t* item) {
     return is_rare;
 }
 
-uint8_t choose_weapon_special(uint8_t det) {
+uint8_t choose_weapon_special(sfmt_t* rng, uint8_t det) {
     if (det < 4) {
         static const uint8_t maxes[4] = { 8, 10, 11, 11 };
-        uint8_t det2 = rand() & maxes[det];
+        uint8_t det2 = rand_int(rng, maxes[det]);
         size_t index = 0;
-        for (uint8_t z = 1; z < 0x29; z++) {
+        for (uint8_t z = 1; z < Weapon_Attr_MAX; z++) {
             if (det + 1 == get_special_stars(z)) {
                 if (index == det2) {
                     return z;
@@ -3543,7 +3544,7 @@ void set_item_identified_flag(bool is_mode, item_t* item) {
     pmt_weapon_bb_t weapon;
     if (item->datab[0] == ITEM_TYPE_WEAPON) {
         errno_t err;
-        /* 先确保他是一把武器 */
+        /* 先确保他是一把有效的武器 */
         if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
             ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
             return;
@@ -3609,4 +3610,114 @@ size_t get_unit_weights_table1_size() {
 
 size_t get_num_eventitems_bb(uint8_t datab2) {
     return num_eventitems_bb[datab2];
+}
+
+uint8_t get_common_weapon_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng) {
+    uint8_t subtype_offset = 0;
+
+    switch (难度) {
+    case GAME_TYPE_DIFFICULTY_NORMAL:
+        subtype_offset = 1;
+        break;
+
+    case GAME_TYPE_DIFFICULTY_HARD:
+        subtype_offset = 4;
+        break;
+
+    case GAME_TYPE_DIFFICULTY_VERY_HARD:
+        subtype_offset = 8;
+        break;
+
+    case GAME_TYPE_DIFFICULTY_ULTIMATE:
+        subtype_offset = 11;
+        break;
+    }
+
+    return (uint8_t)(rand_int(rng, 区间值) + subtype_offset);
+}
+
+uint8_t get_common_frame_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng) {
+    uint8_t subtype_offset = 0;
+
+    switch (难度) {
+    case GAME_TYPE_DIFFICULTY_NORMAL:
+        subtype_offset = 0;/* 0 - 5*/
+        break;
+
+    case GAME_TYPE_DIFFICULTY_HARD:
+        subtype_offset = 6;/* 6 - 11*/
+        break;
+
+    case GAME_TYPE_DIFFICULTY_VERY_HARD:
+        subtype_offset = 12;/* 12 - 17*/
+        break;
+
+    case GAME_TYPE_DIFFICULTY_ULTIMATE:
+        subtype_offset = 18;/* 18 - 23*/
+        break;
+    }
+
+    return (uint8_t)(rand_int(rng, 区间值) + subtype_offset);
+}
+
+uint8_t get_common_barrier_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng) {
+    uint8_t subtype_offset = 0;
+
+    switch (难度) {
+    case GAME_TYPE_DIFFICULTY_NORMAL:
+        subtype_offset = 0;/* 0 - 5*/
+        break;
+
+    case GAME_TYPE_DIFFICULTY_HARD:
+        subtype_offset = 5;/* 5 - 9*/
+        break;
+
+    case GAME_TYPE_DIFFICULTY_VERY_HARD:
+        subtype_offset = 10;/* 10 - 14*/
+        break;
+
+    case GAME_TYPE_DIFFICULTY_ULTIMATE:
+        subtype_offset = 15;/* 15 - 20*/
+        break;
+    }
+
+    return (uint8_t)(rand_int(rng, 区间值) + subtype_offset);
+}
+
+// 每个单位子类型包含的值
+const uint8_t UNIT_SUBTYPES[9][4] = {
+    {0x00, 0x01, 0x02, 0x03},
+    {0x04, 0x05, 0x06, 0x07},
+    {0x08, 0x09, 0x0A, 0x0B},
+    {0x0C, 0x0D, 0x0E, 0x0F},
+    {0x10, 0x11, 0x12, 0x13},
+    {0x14, 0x15, 0x16, 0x17},
+    {0x18, 0x19, 0x1A, 0x1B},
+    {0x1C, 0x1D, 0x1C, 0x1D},
+    {0x1E, 0x1F, 0x1E, 0x20},
+};
+
+uint8_t get_common_random_unit_subtype_value(sfmt_t* rng) {
+    // 随机选择单位子类型
+    uint8_t unit_subtype;
+    int r = rand_int(rng, 10);
+    if (r < 5) {
+        unit_subtype = 0;
+    }
+    else if (r < 8) {
+        unit_subtype = 1;
+    }
+    else if (r < 9) {
+        unit_subtype = 2;
+    }
+    else {
+        unit_subtype = 3;
+    }
+
+    // 在选定的单位子类型中随机选择值
+    const uint8_t* values = UNIT_SUBTYPES[rand_int(rng, 10)];
+    uint8_t num_values = 4;  // 单位子类型 3 包含 4 个值
+
+    uint8_t random_value = values[unit_subtype];
+    return random_value;
 }

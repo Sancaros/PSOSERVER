@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <SFMT.h>
 
 #include <pso_character.h>
 
@@ -31,13 +32,13 @@ uint16_t encode_xrgb1555(uint32_t xrgb8888) {
     return ((xrgb8888 >> 9) & 0x7C00) | ((xrgb8888 >> 6) & 0x03E0) | ((xrgb8888 >> 3) & 0x001F);
 }
 
-uint32_t encrypt_challenge_time(uint16_t value) {
+uint32_t encrypt_challenge_time(sfmt_t* rng, uint16_t value) {
     uint8_t available_bits[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
     uint16_t mask = 0;
-    uint8_t num_one_bits = (rand() % 9) + 4; // Range [4, 12]
+    uint8_t num_one_bits = (sfmt_genrand_uint32(rng) % 9) + 4; // Range [4, 12]
     for (; num_one_bits; num_one_bits--) {
-        uint8_t index = rand() % (sizeof(available_bits) / sizeof(available_bits[0]));
+        uint8_t index = sfmt_genrand_uint32(rng) % (sizeof(available_bits) / sizeof(available_bits[0]));
         uint8_t* it = &available_bits[index];
         mask |= (1 << *it);
         memmove(it, it + 1, sizeof(available_bits) - (index + 1));

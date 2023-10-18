@@ -43,51 +43,6 @@ typedef int8_t s8;
 
 #define FULL_ATTR_VALID 0x1FFFFFFFFFFULL
 
-/* List of valid weapon attributes. */
-static const char *weapon_attrs[Weapon_Attr_MAX + 1] = {
-    "None",
-    "Draw",
-    "Drain",
-    "Fill",
-    "Gush",
-    "Heart",
-    "Mind",
-    "Soul",
-    "Geist",
-    "Master's",
-    "Lord's",
-    "King's",
-    "Charge",
-    "Spirit",
-    "Berserk",
-    "Ice",
-    "Frost",
-    "Freeze",
-    "Blizzard",
-    "Bind",
-    "Hold",
-    "Seize",
-    "Arrest",
-    "Heat",
-    "Fire",
-    "Flame",
-    "Burning",
-    "Shock",
-    "Thunder",
-    "Storm",
-    "Tempest",
-    "Dim",
-    "Shadow",
-    "Dark",
-    "Hell",
-    "Panic",
-    "Riot",
-    "Havoc",
-    "Chaos",
-    "Devil's",
-    "Demon's"
-};
-
 #define NUM_PBS 8
 
 /* List of Mag Photon Blasts */
@@ -236,7 +191,7 @@ static int handle_attributes(xmlNode *n, uint64_t *valid) {
     while(tok) {
         /* Look through the list of attributes for what we have */
         for(i = 0; i <= Weapon_Attr_MAX; ++i) {
-            if(!strcmp(weapon_attrs[i], tok)) {
+            if(!strcmp(weapon_specials[i].name, tok)) {
                 *valid &= ~(1 << i);
                 break;
             }
@@ -2179,5 +2134,5 @@ const char *psocn_weapon_attr_name(psocn_weapon_attr_t num) {
         return NULL;
     }
 
-    return weapon_attrs[num];
+    return weapon_specials[num].cn_name;
 }

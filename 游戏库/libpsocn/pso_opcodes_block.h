@@ -53,7 +53,7 @@
 #define GAME_TYPE_MODE_BATTLE                        0x03
 #define GAME_TYPE_MODE_ONEPERSON                     0x04
 
-#define GAME_TYPE_DIFFICULTY_NORMARL                 0x00
+#define GAME_TYPE_DIFFICULTY_NORMAL                  0x00
 #define GAME_TYPE_DIFFICULTY_HARD                    0x01
 #define GAME_TYPE_DIFFICULTY_VERY_HARD               0x02
 #define GAME_TYPE_DIFFICULTY_ULTIMATE                0x03

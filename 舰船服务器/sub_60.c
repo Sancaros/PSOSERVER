@@ -6688,7 +6688,7 @@ static int sub60_D5_bb(ship_client_t* src, ship_client_t* dest,
     //    return -2;
     //}
 
-    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
 
     if (pkt->shdr.client_id != src->client_id) {
         return -3;
@@ -6842,7 +6842,11 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+#ifdef DEBUG
+
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
+#endif // DEBUG
 
     inventory_t* inv = get_player_inv(src);
 

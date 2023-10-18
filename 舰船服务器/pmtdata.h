@@ -486,7 +486,7 @@ uint8_t get_special_stars(uint8_t det);
 uint8_t get_item_adjusted_stars(const item_t* item);
 
 bool is_item_rare(const item_t* item);
-uint8_t choose_weapon_special(uint8_t det);
+uint8_t choose_weapon_special(sfmt_t* rng, uint8_t det);
 int find_tool_by_class(uint8_t tool_class, uint8_t data[2]);
 bool is_unsealable_item(const item_t* item);
 void set_sealed_item_kill_count(item_t* item, int16_t v);
@@ -497,5 +497,11 @@ uint8_t get_unit_weights_table1(size_t det);
 uint8_t get_unit_weights_table2(size_t det);
 size_t get_unit_weights_table1_size();
 size_t get_num_eventitems_bb(uint8_t datab2);
+
+/* 用于自定义难度区间生成 */
+uint8_t get_common_weapon_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng);
+uint8_t get_common_frame_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng);
+uint8_t get_common_barrier_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng);
+uint8_t get_common_random_unit_subtype_value(sfmt_t* rng);
 
 #endif /* !PMTDATA_H */

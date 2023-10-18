@@ -60,7 +60,7 @@ static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 char* get_difficulty_describe(uint8_t difficulty) {
     switch (difficulty) {
-    case GAME_TYPE_DIFFICULTY_NORMARL:
+    case GAME_TYPE_DIFFICULTY_NORMAL:
         return "ÆÕÍ¨";
 
     case GAME_TYPE_DIFFICULTY_HARD:
@@ -1003,7 +1003,7 @@ static int td(ship_client_t *c, lobby_t *l, void *req) {
     r = sfmt_genrand_uint32(&c->cur_block->sfmt_rng);
 
     switch(l->difficulty) {
-        case GAME_TYPE_DIFFICULTY_NORMARL:
+        case GAME_TYPE_DIFFICULTY_NORMAL:
             i[3] = r & 0x1F;
             break;
 

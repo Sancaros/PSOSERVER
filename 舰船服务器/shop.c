@@ -30,6 +30,7 @@
 
 #include "shop.h"
 #include "pmtdata.h"
+#include "ptdata.h"
 
 item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index) {
     static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
@@ -46,7 +47,7 @@ item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t i
         case ITEM_SUBTYPE_MATE:
         case ITEM_SUBTYPE_FLUID:
             switch (难度) {
-            case GAME_TYPE_DIFFICULTY_NORMARL:
+            case GAME_TYPE_DIFFICULTY_NORMAL:
                 item.datab[2] = 0;
                 break;
 
@@ -93,18 +94,19 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     /* 检索物品类型 */
     switch (item.datab[0]) {
     case ITEM_TYPE_WEAPON: // 武器
-        item.datab[1] = (sfmt_genrand_uint32(随机因子) % 12) + 1; /* 01 - 0C 普通物品*/
+        item.datab[1] = get_common_weapon_subtype_range_for_difficult(难度, 0x03, 随机因子); /* 01 - 0C 普通物品*/
 
         /* 9 以下都是 0/1 + 难度 9以上则 0-3（难度）类型ID*/
         if (item.datab[1] > 9) {
             item.datab[2] = 难度;
         }
         else
-            item.datab[2] = (sfmt_genrand_uint32(随机因子) & 1) + 难度;
+            item.datab[2] = rand_int(随机因子, 2) + 难度;
 
         /* 打磨值 0 - 10*/
         if (sfmt_genrand_uint32(随机因子) % 2)
-            item.datab[3] = sfmt_genrand_uint32(随机因子) % 11;
+            item.datab[3] = sfmt_genrand_uint32(随机因子) % 8;
+
         /* 特殊攻击 0 - 10 配合难度 0 - 3*/
         if (sfmt_genrand_uint32(随机因子) % 2)
             item.datab[4] = sfmt_genrand_uint32(随机因子) % 11 + 难度;
@@ -146,7 +148,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
         switch (item.datab[1]) {
         case ITEM_SUBTYPE_FRAME://护甲
             /*护甲物品子类型*/
-            item.datab[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 6);
+            item.datab[2] = get_common_frame_subtype_range_for_difficult(难度, 0x06, 随机因子);
             if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
                 ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
                 break;
@@ -175,7 +177,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
         case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
 
             /*护盾物品子类型*/
-            item.datab[2] = (sfmt_genrand_uint32(随机因子) % 5) + (难度 * 5);
+            item.datab[2] = get_common_barrier_subtype_range_for_difficult(难度, 0x06, 随机因子);
             if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
                 ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
                 break;
@@ -217,7 +219,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
         case ITEM_SUBTYPE_MATE:
         case ITEM_SUBTYPE_FLUID:
             switch (难度) {
-            case GAME_TYPE_DIFFICULTY_NORMARL:
+            case GAME_TYPE_DIFFICULTY_NORMAL:
                 item.datab[2] = 0;
                 break;
 

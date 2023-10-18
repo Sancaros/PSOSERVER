@@ -4807,3 +4807,14 @@ uint16_t get_random_value(sfmt_t* rng, rang_16bit_t range) {
 	// 将随机数加上 min 得到最终的区间随机值
 	return random_value + range.min;
 }
+
+uint8_t generate_weapon_special(pt_bb_entry_t* ent, uint8_t normarea, sfmt_t* rng) {
+	uint8_t datab4 = 0x00;
+	uint32_t rnd = sfmt_genrand_uint32(rng) % 100;
+	if (rnd < ent->special_percent[normarea]) {
+		rnd = sfmt_genrand_uint32(rng) %
+			attr_count[ent->special_mult[normarea] - 1];
+		datab4 = 0x80 | attr_list[ent->special_mult[normarea] - 1][rnd];
+	}
+	return datab4;
+}

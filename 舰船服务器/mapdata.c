@@ -34,6 +34,7 @@
 #include "mapdata.h"
 #include "lobby.h"
 #include "clients.h"
+#include "ptdata.h"
 
 #define FLOAT_PRECISION 0.00001
 
@@ -249,32 +250,32 @@ RareEnemyRates default_rare_rates = {
     .kondrieu = 0x1999999A
 };
 
-bool check_rare(bool default_is_rare, uint32_t rare_rate, int* rare_enemy_indexes, size_t enemy_size) {
+bool check_rare(bool default_is_rare, uint32_t rare_rate, int* rare_enemy_indexes, size_t enemy_size, sfmt_t* sfmt) {
     if (default_is_rare) {
         return true;
     }
-    if ((*rare_enemy_indexes < 0x10) && ((uint32_t)rand() < rare_rate)) {
+    if ((*rare_enemy_indexes < 0x10) && ((uint32_t)rand_float_0_1_from_crypt(sfmt) < rare_rate)) {
         rare_enemy_indexes[(*rare_enemy_indexes)++] = enemy_size;
         return true;
     }
     return false;
 }
 
-bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, size_t enemy_size) {
+bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, size_t enemy_size, sfmt_t* sfmt) {
     if (!rare_rates) {
         rare_rates = &default_rare_rates;
     }
 
     bool is_rare = false;
     is_rare = 
-        check_rare(false, rare_rates->hildeblue, rare_enemy_indexes, enemy_size) || 
-        check_rare(false, rare_rates->rappy, rare_enemy_indexes, enemy_size) ||
-        check_rare(false, rare_rates->nar_lily, rare_enemy_indexes, enemy_size) ||
-        check_rare(false, rare_rates->pouilly_slime, rare_enemy_indexes, enemy_size) ||
-        check_rare(false, rare_rates->merissa_aa, rare_enemy_indexes, enemy_size) ||
-        check_rare(false, rare_rates->pazuzu, rare_enemy_indexes, enemy_size) ||
-        check_rare(false, rare_rates->dorphon_eclair, rare_enemy_indexes, enemy_size) ||
-        check_rare(false, rare_rates->kondrieu, rare_enemy_indexes, enemy_size);
+        check_rare(false, rare_rates->hildeblue, rare_enemy_indexes, enemy_size, sfmt) ||
+        check_rare(false, rare_rates->rappy, rare_enemy_indexes, enemy_size, sfmt) ||
+        check_rare(false, rare_rates->nar_lily, rare_enemy_indexes, enemy_size, sfmt) ||
+        check_rare(false, rare_rates->pouilly_slime, rare_enemy_indexes, enemy_size, sfmt) ||
+        check_rare(false, rare_rates->merissa_aa, rare_enemy_indexes, enemy_size, sfmt) ||
+        check_rare(false, rare_rates->pazuzu, rare_enemy_indexes, enemy_size, sfmt) ||
+        check_rare(false, rare_rates->dorphon_eclair, rare_enemy_indexes, enemy_size, sfmt) ||
+        check_rare(false, rare_rates->kondrieu, rare_enemy_indexes, enemy_size, sfmt);
 
     return is_rare;
 }
