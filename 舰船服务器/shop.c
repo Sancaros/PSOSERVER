@@ -94,7 +94,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     /* 检索物品类型 */
     switch (item.datab[0]) {
     case ITEM_TYPE_WEAPON: // 武器
-        item.datab[1] = get_common_weapon_subtype_range_for_difficult(难度, 0x03, 随机因子); /* 01 - 0C 普通物品*/
+        item.datab[1] = rand_int(随机因子, 12) + 1; /* 01 - 0C 普通物品*/
 
         /* 9 以下都是 0/1 + 难度 9以上则 0-3（难度）类型ID*/
         if (item.datab[1] > 9) {

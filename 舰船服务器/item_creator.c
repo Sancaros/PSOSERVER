@@ -960,7 +960,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 	/* ¼ìË÷ÎïÆ·ÀàÐÍ */
 	switch (item.datab[0]) {
 	case ITEM_TYPE_WEAPON: // ÎäÆ÷
-		item.datab[1] = get_common_weapon_subtype_range_for_difficult(ÄÑ¶È, 0x03, Ëæ»úÒò×Ó); /* 01 - 0C ÆÕÍ¨ÎäÆ÷ÎïÆ·*/
+		item.datab[1] = rand_int(Ëæ»úÒò×Ó, 12) + 1; /* 01 - 0C ÆÕÍ¨ÎäÆ÷ÎïÆ·*/
 
 			/* 9 ÒÔÏÂ¶¼ÊÇ 0/1 + ÄÑ¶È 9ÒÔÉÏÔò 0-3£¨ÄÑ¶È£©ÀàÐÍID*/
 		if (item.datab[1] > 9) {

@@ -3612,29 +3612,29 @@ size_t get_num_eventitems_bb(uint8_t datab2) {
     return num_eventitems_bb[datab2];
 }
 
-uint8_t get_common_weapon_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng) {
-    uint8_t subtype_offset = 0;
-
-    switch (难度) {
-    case GAME_TYPE_DIFFICULTY_NORMAL:
-        subtype_offset = 1;/* 1 - 3 */
-        break;
-
-    case GAME_TYPE_DIFFICULTY_HARD:
-        subtype_offset = 4;/* 4 - 6 */
-        break;
-
-    case GAME_TYPE_DIFFICULTY_VERY_HARD:
-        subtype_offset = 7;/* 7 - 9 */
-        break;
-
-    case GAME_TYPE_DIFFICULTY_ULTIMATE:
-        subtype_offset = 10;/* 10 - 12 */
-        break;
-    }
-
-    return (uint8_t)(rand_int(rng, 区间值) + subtype_offset);
-}
+//uint8_t get_common_weapon_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng) {
+//    uint8_t subtype_offset = 0;
+//
+//    switch (难度) {
+//    case GAME_TYPE_DIFFICULTY_NORMAL:
+//        subtype_offset = 1;/* 1 - 3 */
+//        break;
+//
+//    case GAME_TYPE_DIFFICULTY_HARD:
+//        subtype_offset = 4;/* 4 - 6 */
+//        break;
+//
+//    case GAME_TYPE_DIFFICULTY_VERY_HARD:
+//        subtype_offset = 7;/* 7 - 9 */
+//        break;
+//
+//    case GAME_TYPE_DIFFICULTY_ULTIMATE:
+//        subtype_offset = 10;/* 10 - 12 */
+//        break;
+//    }
+//
+//    return (uint8_t)(rand_int(rng, 区间值) + subtype_offset);
+//}
 
 uint8_t get_common_frame_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng) {
     uint8_t subtype_offset = 0;

@@ -499,7 +499,7 @@ size_t get_unit_weights_table1_size();
 size_t get_num_eventitems_bb(uint8_t datab2);
 
 /* 用于自定义难度区间生成 */
-uint8_t get_common_weapon_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng);
+//uint8_t get_common_weapon_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng);
 uint8_t get_common_frame_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng);
 uint8_t get_common_barrier_subtype_range_for_difficult(uint8_t 难度, uint8_t 区间值, sfmt_t* rng);
 uint8_t get_common_random_unit_subtype_value(sfmt_t* rng);
