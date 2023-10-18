@@ -183,17 +183,17 @@ int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
     SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->gc.guildcard_desc,
-        88);
+        PSOCN_STLENGTH_BB_DB_GC_DESC);
 
     SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->autoreply,
-        172);
+        PSOCN_STLENGTH_BB_DB_AUTOREPLY / 2);
 
     SAFE_STRCAT(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->infoboard,
-        172);
+        PSOCN_STLENGTH_BB_DB_INFOBOARD / 2);
 
     SAFE_STRCAT(myquery, "', '");
 

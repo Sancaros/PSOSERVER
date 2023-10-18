@@ -3042,6 +3042,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
                 , get_technique_comment(i), full_char->character.tech.all[i]
             );
 #endif // DEBUG
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
             continue;
         }
 
@@ -3072,7 +3073,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[full_data_pkt->data.gc.char_class].cn_name, sizeof(char_class_name_text));
 
     if (db_insert_bb_full_char_data(full_data_pkt, gc, slot, full_data_pkt->data.gc.char_class, char_class_name_text)) {
-        //DBG_LOG("qid %d %s 数据已存在,进行更新操作", slot, pso_class[full_data_pkt->data.gc.char_class].cn_name);
+        //DBG_LOG("slot %d %s 数据已存在,进行更新操作", slot, pso_class[full_data_pkt->data.gc.char_class].cn_name);
         db_update_bb_full_char_data(full_data_pkt, gc, slot, full_data_pkt->data.gc.char_class, char_class_name_text);
     }
 

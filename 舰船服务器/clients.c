@@ -1854,11 +1854,6 @@ void show_bb_player_info(ship_client_t* src) {
 
 void fix_player_max_tech_level(psocn_bb_char_t* character) {
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        if (character->technique_levels_v1.all[i] == TECHNIQUE_UNLEARN) {
-            character->inv.iitems[i].extension_data1 = 0x00;
-            character->technique_levels_v1.all[i] = TECHNIQUE_UNLEARN;
-        }
-
         /* 顺序不能换 要先将余量给到ex1 再初始化为 0x0E */
         if (character->technique_levels_v1.all[i] > TECHNIQUE_V1_MAX_LEVEL) {
             character->inv.iitems[i].extension_data1 = character->technique_levels_v1.all[i] - TECHNIQUE_V1_MAX_LEVEL;
@@ -1866,8 +1861,10 @@ void fix_player_max_tech_level(psocn_bb_char_t* character) {
         }
 
         uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
-        if (player_tech_level == TECHNIQUE_UNLEARN)
+        if (player_tech_level == TECHNIQUE_UNLEARN) {
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
             continue;
+        }
 
         uint8_t max_level = get_bb_max_tech_level(character->dress_data.ch_class, i);
         if (player_tech_level >= max_level) {

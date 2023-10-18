@@ -704,6 +704,19 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             return -1;
         }
 
+        bb_full_char_pkt full_data_pkt = { 0 };
+        memcpy(&full_data_pkt.data.character, &char_data->character, PSOCN_STLENGTH_BB_CHAR2);
+        //memcpy(&full_data_pkt.data.bank, &char_data->bank, PSOCN_STLENGTH_BANK);
+        //memcpy(&full_data_pkt.data.quest_data1, &char_data->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+        //memcpy(&full_data_pkt.data.gc.guildcard_desc, &char_data->guildcard_desc, sizeof(uint16_t) * PSOCN_STLENGTH_BB_DB_GC_DESC);
+
+        char char_class_name_text[64];
+        istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[char_data->character.dress_data.ch_class].cn_name, sizeof(char_class_name_text));
+
+        if (db_insert_bb_full_char_data(&full_data_pkt, c->guildcard, pkt->slot, char_data->character.dress_data.ch_class, char_class_name_text)) {
+            DBG_LOG("GC %u slot %d %s 数据已存在,进行更新操作", c->guildcard, pkt->slot, pso_class[char_data->character.dress_data.ch_class].cn_name);
+        }
+
         /* 获取玩家角色背包数据数据项 */
         if (db_insert_char_inv(&char_data->character.inv, c->guildcard, pkt->slot)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
