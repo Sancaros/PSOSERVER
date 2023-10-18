@@ -1234,7 +1234,7 @@ item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ë
 			/*0-5 º­¸ÇËùÓĞÊôĞÔ*/
 			for (size_t x = 0; x < 6; x++) {
 				/* ºóÆÚÉèÖÃµ÷Õû Éú³ÉÊôĞÔ¼¸ÂÊ TODO */
-				uint32_t r = rand_int(Ëæ»úÒò×Ó, 4);
+				uint32_t r = rand_int(Ëæ»úÒò×Ó, 6);
 				if (r == 1) {
 					/*+6 ¶ÔÓ¦ÊôĞÔ²Û£¨½á¹û·Ö±ğÎª 6 8 10£© +7¶ÔÓ¦ÊıÖµ£¨½á¹û·Ö±ğÎª Ëæ»úÊı1-20 1-35 1-45 1-50£©*/
 					item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
@@ -1313,7 +1313,7 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 	clear_inv_item(&item);
 	item.datab[0] = (def0 >> 0x18) & 0x0F;
 	/* Ëæ»úÑ¡ÔñµôÂÊÆÕÍ¨ÎïÆ·»¹ÊÇÏ¡ÓĞÎïÆ· */
-	uint32_t choice_rng = rand_int(rng, 2); /* 50% ¼¸ÂÊÑ¡ÔñµôÂäÀ¬»øÎïÆ·»¹ÊÇÆäËûÎïÆ· */
+	uint32_t choice_rng = rand_int(rng, 4); /* 50% ¼¸ÂÊÑ¡ÔñµôÂäÀ¬»øÎïÆ·»¹ÊÇÆäËûÎïÆ· */
 	/* »ñÈ¡·¿Ö÷Íæ¼ÒµÄÑÕÉ«ID */
 	uint8_t section_id = get_lobby_leader_section(l);
 
@@ -1323,7 +1323,7 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 		return item;
 	}
 
-	if (choice_rng)
+	if (choice_rng == 0)
 		item = create_common_bb_box_item(l, ent, rng, area, section_id, item.datab[0]);
 	else
 		item = create_common_bb_box_waste_item(l, ent, rng, def0, def1, def2);
