@@ -861,7 +861,7 @@ int subcmd_send_lobby_bb_level(ship_client_t* dest) {
 }
 
 /* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
-int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_items, bool create) {
+int subcmd_bb_send_shop(ship_client_t* dest, uint8_t random_shop, uint8_t shop_type, uint8_t num_items, bool create) {
     lobby_t* l = dest->cur_lobby;
     subcmd_bb_shop_inv_t shop = { 0 };
 
@@ -892,7 +892,7 @@ int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_item
 
     /* 填充副指令数据 */
     shop.shdr.type = SUBCMD60_SHOP_INV;
-    shop.shdr.size = sizeof(dest->game_data->shop_items) / 4;
+    shop.shdr.size = sizeof(dest->game_data->shop_items[random_shop][shop_type]) / 4;
     shop.shdr.params = LE16(0x0000);
 
     /* 填充剩余数据 */
@@ -901,7 +901,7 @@ int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_item
 
     for (uint8_t i = 0; i < num_items; ++i) {
         clear_inv_item(&shop.items[i]);
-        shop.items[i] = dest->game_data->shop_items[i];
+        shop.items[i] = dest->game_data->shop_items[random_shop][shop_type][i];
     }
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)&shop);

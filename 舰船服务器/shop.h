@@ -66,9 +66,9 @@ typedef struct shop_item_params {
 //uint32_t quest_numallows;
 
 /* 生成商店物品 */
-item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index);
-item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子);
-item_t create_bb_shop_items(uint32_t 商店类型, uint8_t 难度, uint8_t 物品索引, sfmt_t* 随机因子);
+item_t create_common_bb_shop_tool_item(uint8_t 难度, uint8_t index);
+item_t create_common_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子);
+item_t create_bb_shop_items(uint32_t player_level, uint8_t random_shop, uint32_t 商店类型, uint8_t 难度, uint8_t 物品索引, sfmt_t* 随机因子);
 size_t price_for_item(const item_t* item);
 
 // Gallon's shop "Hopkins' Dad's" item list + Photon Drops required for each

@@ -1727,13 +1727,6 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_shop_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
-    uint32_t shop_type = LE32(pkt->shop_type);
-    //uint8_t num_item_count = 9 + (mt19937_genrand_int32(&b->rng) % 4);
-    uint8_t num_item_count = 9 + (sfmt_genrand_uint32(&b->sfmt_rng) % 4);
-    size_t shop_item_count = ARRAYSIZE(src->game_data->shop_items);
-    bool create = true;
-    uint8_t i = 0;
-    uint32_t uniqueNumbers[20] = { 0 };  // 用于保存已生成的唯一数据
 
     if (!in_game(src))
         return -1;
@@ -1741,49 +1734,122 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_shop_req_t), 0x02))
         return -2;
 
-    memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * ARRAYSIZE(src->game_data->shop_items));
+    uint32_t shop_type = LE32(pkt->shop_type);
+    uint8_t num_item_count = 10;
+    uint32_t player_level = get_player_level(src);
+    uint8_t random_shop = src->game_data->random_shop;
 
-    for (size_t x = 0; x < ARRAYSIZE(src->game_data->shop_items_price); x++) {
-        src->game_data->shop_items_price[x] = 0;
+    if (player_level < 11) {
+        num_item_count = 10;
+    }
+    else if (player_level < 43) {
+        num_item_count = 12;
+    }
+    else {
+        num_item_count = 16;
+    }
+
+    size_t shop_item_count = ARRAYSIZE(src->game_data->shop_items[random_shop][shop_type]);
+    bool create = true;
+    uint8_t i = 0;
+    uint32_t uniqueNumbers[2][3][40] = { 0 };  // 用于保存已生成的唯一数据
+
+    sfmt_t sfmt_rng = { 0 };
+    sfmt_init_gen_rand(&sfmt_rng, (uint32_t)srv_time);
+
+    sfmt_t* 随机因子 = NULL;
+
+    if (random_shop)
+        随机因子 = &sfmt_rng;
+    else
+        随机因子 = &src->sfmt_rng;
+
+    for (size_t x = 0; x < 0x14; x++) {
+        clear_inv_item(&src->game_data->shop_items[random_shop][shop_type][x]);
+        src->game_data->shop_items_price[random_shop][shop_type][x] = 0;
     }
 
     while (i < num_item_count) {
+        create = true;
         if (num_item_count > shop_item_count) {
             ERR_LOG("%s 商店物品生成错误 num_items %d > shop_size %d", get_player_describe(src), num_item_count, shop_item_count);
+            create = false;
             break;
         }
 
-        item_t item = create_bb_shop_items(shop_type, l->difficulty, i, &b->sfmt_rng);
-
-        if (&item == NULL) {
+        item_t item = create_bb_shop_items(player_level, random_shop, shop_type, l->difficulty, i, 随机因子);
+        if (item_not_identification_bb(item.datal[0], item.datal[1])) {
             create = false;
             send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4商店生成错误,菜单类型缺失,请联系管理员处理!"));
             return -1;
         }
 
-        if (create) {
-            if (isUnique(uniqueNumbers, i, item.datal[0])) {  // 检查是否已经生成过该数
-                uniqueNumbers[i] = item.datal[0];  // 将生成的唯一数据添加到数组中
-#ifdef DEBUG
-                DBG_LOG("生成独一无二的物品: 0x%08X", item.datal[0]);
-#endif // DEBUG
+        pmt_weapon_bb_t tmp_wp = { 0 };
+        pmt_guard_bb_t tmp_guard = { 0 };
 
+        switch (item.datab[0]) {
+        case ITEM_TYPE_WEAPON:
+            if (pmt_lookup_weapon_bb(item.datal[0], &tmp_wp)) {
+                create = false;
+                continue;
+            }
+
+            if (!item_check_equip(tmp_wp.equip_flag, src->equip_flags)) {create = false;
+                continue;
+            }
+            break;
+
+        case ITEM_TYPE_GUARD:
+            switch (item.datab[1]) {
+            case ITEM_SUBTYPE_FRAME:
+                if (pmt_lookup_guard_bb(item.datal[0], &tmp_guard)) {create = false;
+                    continue;
+                }
+
+                if (!item_check_equip(tmp_guard.equip_flag, src->equip_flags)) {create = false;
+                    continue;
+                }
+                break;
+
+            case ITEM_SUBTYPE_BARRIER:
+                if (pmt_lookup_guard_bb(item.datal[0], &tmp_guard)) {
+                    create = false;
+                    continue;
+                }
+
+                if (!item_check_equip(tmp_guard.equip_flag, src->equip_flags)) {create = false;
+                    continue;
+                }
+                break;
+
+            case ITEM_SUBTYPE_UNIT:
+                if (char_class_is_android(src->equip_flags)) {
+                    for (size_t x = 4; x < 7;x++) {
+                        if (item.datab[2] == x) {
+                            create = false;
+                            continue;
+                        }
+                    }
+                }
+                break;
+            }
+            break;
+        }
+
+        if (create) {
+            if (isUnique(uniqueNumbers[random_shop][shop_type], i, item.datal[0])) {  // 检查是否已经生成过该数
+                uniqueNumbers[random_shop][shop_type][i] = item.datal[0];  // 将生成的唯一数据添加到数组中
                 size_t shop_price = price_for_item(&item);
                 if (shop_price <= 0) {
                     ERR_LOG("%s:%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d"
                         , get_player_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version, 0), item.datal[0], shop_price);
+                    create = false;
                     continue;
                 }
 
                 item.item_id = generate_item_id(l, src->client_id);
-#ifdef DEBUG
-
-                print_item_data(&item_data, src->version);
-                DBG_LOG("price_for_item %d", item_data.data2l);
-
-#endif // DEBUG
-                src->game_data->shop_items[i] = item;
-                src->game_data->shop_items_price[i] = shop_price;
+                src->game_data->shop_items[random_shop][shop_type][i] = item;
+                src->game_data->shop_items_price[random_shop][shop_type][i] = shop_price;
 
                 i++;
             }
@@ -1795,7 +1861,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         return -4;
     }
 
-    return subcmd_bb_send_shop(src, shop_type, num_item_count, create);
+    return subcmd_bb_send_shop(src, random_shop, shop_type, num_item_count, create);
 }
 
 int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
@@ -1803,7 +1869,10 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int found = -1;
     uint32_t new_inv_item_id = pkt->new_inv_item_id;
-    uint8_t shop_type = pkt->shop_type, shop_item_index = pkt->shop_item_index, num_bought = pkt->num_bought;
+    uint8_t random_shop = src->game_data->random_shop, 
+        shop_type = pkt->shop_type, 
+        shop_item_index = pkt->shop_item_index, 
+        num_bought = pkt->num_bought;
 
     if (!in_game(src))
         return -1;
@@ -1820,7 +1889,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
     /* 填充物品数据 */
-    item_t item = src->game_data->shop_items[shop_item_index];
+    item_t item = src->game_data->shop_items[random_shop][shop_type][shop_item_index];
 
     /* 如果是堆叠物品 */
     if (is_stackable(&item)) {
@@ -1832,46 +1901,28 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
                 get_player_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             print_item_data(&item, src->version);
-            return -1;
+            return -3;
         }
     }
 
     item.item_id = new_inv_item_id;
+    item.datab[5] = get_item_amount(&item, num_bought);
 
-#ifdef DEBUG
-
-    print_iitem_data(&ii, 0, src->version);
-
-#endif // DEBUG
-
-#ifdef DEBUG
-
-    print_item_data(&item, src->version);
-    DBG_LOG("num_bought %d", num_bought);
-
-#endif // DEBUG
-
-    uint32_t price = src->game_data->shop_items_price[shop_item_index] * num_bought;
+    uint32_t price = src->game_data->shop_items_price[random_shop][shop_type][shop_item_index] * num_bought;
 
     if (character->disp.meseta < price) {
         ERR_LOG("%s 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
             get_player_describe(src), pkt->shdr.type, character->disp.meseta, price);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         print_item_data(&item, src->version);
-        return -1;
+        return -4;
     }
 
     if (!add_invitem(src, item)) {
         ERR_LOG("%s 背包空间不足, 无法获得物品!",
             get_player_describe(src));
-        return -1;
+        return -5;
     }
-
-#ifdef DEBUG
-
-    DBG_LOG("扣款前 meseta %d price %d", character->disp.meseta, price);
-
-#endif // DEBUG
 
     subcmd_send_lobby_bb_delete_meseta(src, character, price, false);
 

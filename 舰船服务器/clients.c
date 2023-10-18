@@ -1734,6 +1734,38 @@ uint8_t get_player_section(ship_client_t* src) {
     return section_id;
 }
 
+/* 获取等级原始值 从 0 开始计算 */
+uint32_t get_player_level(ship_client_t* src) {
+    /* 初始化一个颜色ID数值 */
+    uint32_t level = 0;
+
+    if (!src)
+        return level;
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        psocn_v1v2v3pc_char_t* v2character = get_client_char_nobb(src);
+        level = v2character->disp.level;
+        break;
+
+    case CLIENT_VERSION_BB:
+        psocn_bb_char_t* character = get_client_char_bb(src);
+        level = character->disp.level;
+        break;
+
+    default:
+        ERR_LOG("%s 版本 %s 等级未获取成功", get_player_describe(src), client_type[src->version].ver_name);
+        break;
+    }
+
+    return level;
+}
+
 char* get_section_describe(ship_client_t* src, uint8_t section, bool overwrite) {
     uint8_t section_id = 0, language_code = 0;
 

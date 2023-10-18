@@ -139,6 +139,7 @@ static command_t cmds[] = {
     { "logme"    , handle_logme         },
     { "clean"    , handle_clean         },
     { "bank"     , handle_bank          },
+    { "rshop"    , handle_rshop         },
     { "qr"       , handle_quick_return  },
     { "lb"       , handle_lobby         },
     { "matuse"   , handle_matuse        },

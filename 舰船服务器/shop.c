@@ -32,55 +32,66 @@
 #include "pmtdata.h"
 #include "ptdata.h"
 
-item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index) {
-    static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
-    item_t item = { 0 };
-    item.datab[0] = 物品类型;
-
-    /* 检索物品类型 */
-    switch (item.datab[0]) {
-    case ITEM_TYPE_TOOL: // 武器
-
-        item.datab[1] = index;
-
-        switch (item.datab[1]) {
-        case ITEM_SUBTYPE_MATE:
-        case ITEM_SUBTYPE_FLUID:
-            switch (难度) {
-            case GAME_TYPE_DIFFICULTY_NORMAL:
-                item.datab[2] = 0;
-                break;
-
-            case GAME_TYPE_DIFFICULTY_HARD:
-                item.datab[2] = 1;
-                break;
-
-            case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                item.datab[2] = 2;
-                break;
-
-            case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                item.datab[2] = 2;
-                break;
-            }
-            item.datab[5] = max_quantity[难度];
-            break;
-        }
-
-        break;
+static const uint32_t stable_shop_common_tool_item_subtype[4][10] = {
+    {
+    BBItem_Monomate,
+    BBItem_Monofluid,
+    BBItem_Dimate,
+    BBItem_Difluid,
+    BBItem_Trimate,
+    BBItem_Trifluid,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
+    BBItem_Scape_Doll
+    },
+    {
+    BBItem_Monomate,
+    BBItem_Monofluid,
+    BBItem_Dimate,
+    BBItem_Difluid,
+    BBItem_Trimate,
+    BBItem_Trifluid,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
+    BBItem_Scape_Doll
+    },
+    {
+    BBItem_Monomate,
+    BBItem_Monofluid,
+    BBItem_Dimate,
+    BBItem_Difluid,
+    BBItem_Trimate,
+    BBItem_Trifluid,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
+    BBItem_Scape_Doll
+    },
+    {
+    BBItem_Monomate,
+    BBItem_Monofluid,
+    BBItem_Dimate,
+    BBItem_Difluid,
+    BBItem_Trimate,
+    BBItem_Trifluid,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
+    BBItem_Scape_Doll
     }
-#ifdef DEBUG
+};
 
-    DBG_LOG("难度 %d item 0x%08X", 难度, item.datal[0]);
-
-#endif // DEBUG
-
+item_t create_common_bb_shop_tool_item(uint8_t 难度, uint8_t index) {
+    item_t item = { 0 };
+    item.datal[0] = stable_shop_common_tool_item_subtype[难度][index];
     return item;
 }
 
-item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
+item_t create_common_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
-    static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
+    static const uint8_t max_tech_lvl[4] = { 4,  7, 10, 15 };
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
     item_t item = { 0 };
     uint8_t tmp_value = 0;
@@ -201,7 +212,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             break;
 
         case ITEM_SUBTYPE_UNIT://插件
-            item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2);
+            item.datab[2] = common_unit_subtypes[(sfmt_genrand_uint32(随机因子) % 9)][(sfmt_genrand_uint32(随机因子) % 2)];
             if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
                 break;
@@ -296,23 +307,68 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     return item;
 }
 
-item_t create_bb_shop_items(uint32_t 商店类型, uint8_t 难度, uint8_t 物品索引, sfmt_t* 随机因子) {
+item_t create_bb_shop_items(uint32_t player_level, 
+    uint8_t random_shop, uint32_t 商店类型,
+    uint8_t 难度, uint8_t 物品索引, 
+    sfmt_t* 随机因子) {
     item_t item = { 0 };
+
+    size_t table_index;
+    if (难度 == GAME_TYPE_DIFFICULTY_ULTIMATE) {
+        if (player_level < 11) {
+            table_index = 2;
+        }
+        else if (player_level < 26) {
+            table_index = 4;
+        }
+        else if (player_level < 43) {
+            table_index = 4;
+        }
+        else if (player_level < 61) {
+            table_index = 6;
+        }
+        else if (player_level < 100) {
+            table_index = 6;
+        }
+        else if (player_level < 151) {
+            table_index = 8;
+        }
+        else {
+            table_index = 10;
+        }
+    }
+    else {
+        if (player_level < 11) {
+            table_index = 2;
+        }
+        else if (player_level < 26) {
+            table_index = 4;
+        }
+        else if (player_level < 43) {
+            table_index = 4;
+        }
+        else if (player_level < 61) {
+            table_index = 6;
+        }
+        else {
+            table_index = 8;
+        }
+    }
 
     switch (商店类型) {
     case BB_SHOPTYPE_TOOL:// 工具商店
-        if (物品索引 < 2)
-            item = create_bb_shop_tool_common_item(难度, ITEM_TYPE_TOOL, 物品索引);
+        if (物品索引 < table_index && !random_shop)
+            item = create_common_bb_shop_tool_item(难度, 物品索引);
         else
-            item = create_bb_shop_item(难度, ITEM_TYPE_TOOL, 随机因子);
+            item = create_common_bb_shop_item(难度, ITEM_TYPE_TOOL, 随机因子);
         break;
 
     case BB_SHOPTYPE_WEAPON:// 武器商店
-        item = create_bb_shop_item(难度, ITEM_TYPE_WEAPON, 随机因子);
+        item = create_common_bb_shop_item(难度, ITEM_TYPE_WEAPON, 随机因子);
         break;
 
     case BB_SHOPTYPE_ARMOR:// 装甲商店
-        item = create_bb_shop_item(难度, ITEM_TYPE_GUARD, 随机因子);
+        item = create_common_bb_shop_item(难度, ITEM_TYPE_GUARD, 随机因子);
         break;
     }
 
@@ -434,12 +490,6 @@ size_t price_for_item(const item_t* item) {
     }
     ERR_LOG("不会吧 还能跑到这里吗？ 0x%08X", item->datal[0]);
 }
-
-//ItemData shop[100]; // 假设 shop 数组有 100 个元素
-//// 填充 shop 数组的数据
-//
-//size_t shopSize = sizeof(shop) / sizeof(shop[0]);
-//qsort(shop, shopSize, sizeof(ItemData), compare_for_sort)
 
 size_t get_shp_size(item_t* shop) {
     size_t sz = 0;

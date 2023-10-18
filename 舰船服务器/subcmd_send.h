@@ -90,7 +90,7 @@ int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, ui
 int subcmd_send_lobby_bb_level(ship_client_t* dest);
 
 /* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
-int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_items, bool create);
+int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_page, uint8_t shop_type, uint8_t num_items, bool create);
 
 /* 0xE3 SUBCMD62_COREN_ACT_RESULT BB 向玩家发送科伦赌博结果 */
 int subcmd_bb_send_coren_reward(ship_client_t* dest, uint32_t flags, item_t item);

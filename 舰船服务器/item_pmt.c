@@ -3677,47 +3677,16 @@ uint8_t get_common_barrier_subtype_range_for_difficult(uint8_t ÄÑ¶È, uint8_t Çø¼
         break;
 
     case GAME_TYPE_DIFFICULTY_ULTIMATE:
-        subtype_offset = 16;/* 16 - 21*/
+        subtype_offset = 15;/* 15 - 20*/
         break;
     }
 
     return (uint8_t)(rand_int(rng, Çø¼äÖµ) + subtype_offset);
 }
 
-// Ã¿¸öµ¥Î»×ÓÀàÐÍ°üº¬µÄÖµ
-const uint8_t UNIT_SUBTYPES[9][4] = {
-    {0x00, 0x01, 0x02, 0x03},
-    {0x04, 0x05, 0x06, 0x07},
-    {0x08, 0x09, 0x0A, 0x0B},
-    {0x0C, 0x0D, 0x0E, 0x0F},
-    {0x10, 0x11, 0x12, 0x13},
-    {0x14, 0x15, 0x16, 0x17},
-    {0x18, 0x19, 0x1A, 0x1B},
-    {0x1C, 0x1D, 0x1C, 0x1D},
-    {0x1E, 0x1F, 0x1E, 0x20},
-};
-
-uint8_t get_common_random_unit_subtype_value(sfmt_t* rng) {
-    // Ëæ»úÑ¡Ôñµ¥Î»×ÓÀàÐÍ
-    uint8_t unit_subtype;
-    int r = rand_int(rng, 10);
-    if (r < 5) {
-        unit_subtype = 0;
-    }
-    else if (r < 8) {
-        unit_subtype = 1;
-    }
-    else if (r < 9) {
-        unit_subtype = 2;
-    }
-    else {
-        unit_subtype = 3;
-    }
-
+uint8_t get_common_random_unit_subtype_value(uint8_t ÄÑ¶È, sfmt_t* rng) {
     // ÔÚÑ¡¶¨µÄµ¥Î»×ÓÀàÐÍÖÐËæ»úÑ¡ÔñÖµ
-    const uint8_t* values = UNIT_SUBTYPES[rand_int(rng, 10)];
-    uint8_t num_values = 4;  // µ¥Î»×ÓÀàÐÍ 3 °üº¬ 4 ¸öÖµ
+    const uint8_t* values = common_unit_subtypes[rand_int(rng, 10)];
 
-    uint8_t random_value = values[unit_subtype];
-    return random_value;
+    return values[ÄÑ¶È];
 }

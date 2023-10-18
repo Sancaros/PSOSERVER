@@ -1428,6 +1428,21 @@ static int handle_bank(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC6角色仓库."));
 }
 
+/* 用法: /rshop */
+static int handle_rshop(ship_client_t* c, const char* params) {
+
+    if(get_player_level(c) + 1 < MAX_PLAYER_LEVEL)
+        return send_txt(c, "%s", __(c, "\tE\tC4非满级玩家无法使用."));
+
+    if (!c->game_data->random_shop) {
+        c->game_data->random_shop = 1;
+        return send_txt(c, "%s", __(c, "\tE\tC6随机商店已开启."));
+    }
+
+    c->game_data->random_shop = 0;
+    return send_txt(c, "%s", __(c, "\tE\tC7随机商店已关闭."));
+}
+
 /* 用法: /qr */
 static int handle_quick_return(ship_client_t* c, const char* params) {
     lobby_t* l = c->cur_lobby;

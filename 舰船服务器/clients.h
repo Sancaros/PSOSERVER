@@ -107,15 +107,9 @@ typedef struct client_game_data {
     trade_inv_t pending_item_trade;
     trade_card_t pending_card_trade;
     iitem_t identify_result;
-    item_t shop_items[0x14];
-    size_t shop_items_price[0x14];
-
-
-    //uint32_t atpmats_used; //改为多种结构
-    //uint32_t mstmats_used; //改为多种结构
-    //uint32_t evpmats_used; //改为多种结构
-    //uint32_t dfpmats_used; //改为多种结构
-    //uint32_t lckmats_used; //改为多种结构
+    uint8_t random_shop;
+    item_t shop_items[2][3][0x14];
+    size_t shop_items_price[2][3][0x14];
 
     uint32_t expboost; //用于开启房间经验倍率的开关 l->exp_mult
     uint32_t death;
@@ -529,6 +523,7 @@ char* get_player_describe(ship_client_t* src);
 char* get_lobby_leader_describe(lobby_t* l);
 uint8_t get_player_msg_color_set(ship_client_t* src);
 uint8_t get_player_section(ship_client_t* src);
+uint32_t get_player_level(ship_client_t* src);
 char* get_section_describe(ship_client_t* src, uint8_t section, bool overwrite);
 uint8_t get_lobby_leader_section(lobby_t* l);
 uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech);

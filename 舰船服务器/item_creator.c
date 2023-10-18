@@ -1073,7 +1073,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 			break;
 
 		case ITEM_SUBTYPE_UNIT://²å¼ş ²»Éú³É´øÊôĞÔµÄ Ê¡µÄÂé·³ TODO ÒÔºóÔÙ×ö¸üÏêÏ¸µÄ
-			item.datab[2] = get_common_random_unit_subtype_value(Ëæ»úÒò×Ó);
+			item.datab[2] = get_common_random_unit_subtype_value(ÄÑ¶È, Ëæ»úÒò×Ó);
 			if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
 				ERR_LOG("pmt_lookup_unit_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.datal[0]);
 				break;
