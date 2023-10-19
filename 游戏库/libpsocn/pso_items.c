@@ -638,12 +638,10 @@ char* get_weapon_unsealable_attrib_describe(const item_t* item) {
 	memset(item_attrib_des, 0, sizeof(item_attrib_des));
 
 	// 处理属性3
-	if (item->datab[10] & 0x80) {
-		snprintf(item_attrib_des, sizeof(item_attrib_des), "[解封:%d]", item->datab[11]);
-		return item_attrib_des;
-	}
-
-	return NULL;
+	//if (item->datab[10] & 0x80) {
+	//}
+	snprintf(item_attrib_des, sizeof(item_attrib_des), "[解封:%d]", item->datab[11]);
+	return item_attrib_des;
 }
 
 char* get_item_unsealable_describe(const item_t* item, int version) {

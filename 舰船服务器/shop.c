@@ -32,7 +32,7 @@
 #include "pmtdata.h"
 #include "ptdata.h"
 
-static const uint32_t stable_shop_common_tool_item_subtype[4][10] = {
+static const uint32_t stable_shop_common_tool_item_subtype[4][12] = {
     {
     BBItem_Monomate,
     BBItem_Monofluid,
@@ -43,7 +43,9 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][10] = {
     BBItem_Sol_Atomizer,
     BBItem_Moon_Atomizer,
     BBItem_Star_Atomizer,
-    BBItem_Scape_Doll
+    BBItem_Antidote,
+    BBItem_Antiparalysis,
+    BBItem_Telepipe,
     },
     {
     BBItem_Monomate,
@@ -55,7 +57,9 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][10] = {
     BBItem_Sol_Atomizer,
     BBItem_Moon_Atomizer,
     BBItem_Star_Atomizer,
-    BBItem_Scape_Doll
+    BBItem_Antidote,
+    BBItem_Antiparalysis,
+    BBItem_Telepipe,
     },
     {
     BBItem_Monomate,
@@ -67,7 +71,9 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][10] = {
     BBItem_Sol_Atomizer,
     BBItem_Moon_Atomizer,
     BBItem_Star_Atomizer,
-    BBItem_Scape_Doll
+    BBItem_Antidote,
+    BBItem_Antiparalysis,
+    BBItem_Telepipe,
     },
     {
     BBItem_Monomate,
@@ -79,7 +85,9 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][10] = {
     BBItem_Sol_Atomizer,
     BBItem_Moon_Atomizer,
     BBItem_Star_Atomizer,
-    BBItem_Scape_Doll
+    BBItem_Antidote,
+    BBItem_Antiparalysis,
+    BBItem_Telepipe,
     }
 };
 
@@ -322,19 +330,19 @@ item_t create_bb_shop_items(uint32_t player_level,
             table_index = 4;
         }
         else if (player_level < 43) {
-            table_index = 4;
+            table_index = 6;
         }
         else if (player_level < 61) {
             table_index = 6;
         }
         else if (player_level < 100) {
-            table_index = 6;
+            table_index = 8;
         }
         else if (player_level < 151) {
             table_index = 8;
         }
         else {
-            table_index = 10;
+            table_index = 12;
         }
     }
     else {
@@ -345,13 +353,13 @@ item_t create_bb_shop_items(uint32_t player_level,
             table_index = 4;
         }
         else if (player_level < 43) {
-            table_index = 4;
-        }
-        else if (player_level < 61) {
             table_index = 6;
         }
-        else {
+        else if (player_level < 61) {
             table_index = 8;
+        }
+        else {
+            table_index = 12;
         }
     }
 
