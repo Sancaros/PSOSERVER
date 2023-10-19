@@ -26,6 +26,8 @@
 #include <Windows.h>
 #endif
 
+#include <f_iconv.h>
+
 #include "pso_text.h"
 
 int count_element_int(void** arr) {
@@ -82,7 +84,7 @@ uint8_t language_code_for_char(char language_char) {
 }
 
 // 去除字符串中的空格、制表符和换行符，并判断是否包含这些字符
-void removeWhitespace(char* str) {
+void fix_char_name(char* str) {
     char* src = str;
     char* dst = str;
     int hasWhitespace = 0;
@@ -99,12 +101,14 @@ void removeWhitespace(char* str) {
     *dst = '\0';
 
     if (hasWhitespace) {
-        ERR_LOG("%s 字符串中包含空格、制表符或换行符, 已修正", str);
+        char tmp_name[32];
+        istrncpy16_raw(ic_utf8_to_gbk, tmp_name, str, 32, 10);
+        ERR_LOG("%s 字符串中包含空格、制表符或换行符, 已修正", tmp_name);
     }
 }
 
 // 去除宽字符字符串中的空格、制表符和换行符，并判断是否包含这些字符
-void removeWhitespace_w(wchar_t* str) {
+void fix_char_name_w(wchar_t* str) {
     wchar_t* src = str;
     wchar_t* dst = str;
     int hasWhitespace = 0;
@@ -121,7 +125,9 @@ void removeWhitespace_w(wchar_t* str) {
     *dst = L'\0';
 
     if (hasWhitespace) {
-        ERR_LOG("%s 字符串中包含空格、制表符或换行符, 已修正", str);
+        char tmp_name[32];
+        istrncpy16(ic_utf16_to_gbk, tmp_name, (uint16_t*)str, 32);
+        ERR_LOG("%s 字符串中包含空格、制表符或换行符, 已修正", tmp_name);
     }
 }
 

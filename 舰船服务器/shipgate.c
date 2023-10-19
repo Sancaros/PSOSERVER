@@ -177,8 +177,8 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
 
         shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
 
-        //DATA_LOG("shipgate_conn_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
-        //    , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
+        DATA_LOG("shipgate_conn_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
         pthread_rwlock_wrlock(&c->rwlock);
         //print_ascii_hex(dbgl, sendbuf, len);
@@ -3629,8 +3629,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         sz = sg_recv(sg, recvbuf + sg->recvbuf_cur, MAX_PACKET_BUFF - sg->recvbuf_cur);
 
-        //DATA_LOG("从端口 %d 接收数据 %d 字节", sg->sock, sz);
-        //DATA_LOG("process_shipgate_pkt");
+        DATA_LOG("从端口 %d 接收数据 %d 字节", sg->sock, sz);
+        DATA_LOG("process_shipgate_pkt");
         //print_ascii_hex(dbgl, recvbuf, sz);
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
@@ -4258,7 +4258,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
                             16);
                     }
                     else {
-                        removeWhitespace_w(cl->bb_pl->character.name.char_name);
+                        fix_char_name_w(cl->bb_pl->character.name.char_name);
                         memcpy(pkt->entries[count].ch_name,
                             cl->bb_pl->character.name.char_name, BB_CHARACTER_CHAR_NAME_WLENGTH);
                     }

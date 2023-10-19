@@ -88,7 +88,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
     int i;
 
     if (c->version == CLIENT_VERSION_BB) {
-        inventory_t* inv = get_player_inv(c);
+        inventory_t* inv = get_client_inv(c);
 
         /* 在新房间中修正玩家背包ID */
         id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
@@ -1040,17 +1040,15 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
     errno_t err = 0;
 
-    psocn_bb_char_t* character = get_client_char_bb(src);
+    //psocn_bb_char_t* character = get_client_char_bb(src);
+    inventory_t* inv = get_client_inv(src);
 
-    int index = find_iitem_index(&character->inv, item_id);
+    int index = find_iitem_index(inv, item_id);
     if (index < 0) {
         err = index;
         ERR_LOG("%s 使用物品发生错误 错误码 %d", get_player_describe(src), index);
         return err;
     }
-
-    inventory_t* inv = get_player_inv(src);
-
     item_t* item = &inv->iitems[index].data;
 
     LOBBY_USE_ITEM_LOG(src, item_id, src->cur_area, item);
@@ -1116,7 +1114,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     case ITEM_TYPE_MAG:
         switch (item->datab[1]) {
         case 0x2B:
-            weapon = &inv->iitems[find_equipped_weapon(&character->inv)];
+            weapon = &inv->iitems[find_equipped_weapon(inv)];
             // Chao Mag used
             if ((weapon->data.datab[1] == 0x68) &&
                 (weapon->data.datab[2] == 0x00)) {
@@ -1128,7 +1126,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case 0x2C:
-            armor = &inv->iitems[find_equipped_armor(&character->inv)];
+            armor = &inv->iitems[find_equipped_armor(inv)];
             // Chu Chu mag used
             if ((armor->data.datab[2] == 0x1C)) {
                 armor->data.datab[2] = 0x2C; // Chuchu Fever
@@ -1158,7 +1156,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
             //DBG_LOG("类型 %d 等级 %d", item->datab[4], item->datab[2]);
 
-            set_technique_level(&character->technique_levels_v1, &character->inv, item->datab[4], item->datab[2]);
+            set_technique_level(get_player_v1_tech(src), inv, item->datab[4], item->datab[2]);
             break;
 
         case ITEM_SUBTYPE_GRINDER: // Grinder
@@ -1166,7 +1164,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 ERR_LOG("%s 无效打磨物品值", get_player_describe(src));
                 return -2;
             }
-            weapon = &inv->iitems[find_equipped_weapon(&character->inv)];
+            weapon = &inv->iitems[find_equipped_weapon(inv)];
             pmt_weapon_bb_t weapon_def = { 0 };
             if (pmt_lookup_weapon_bb(weapon->data.datal[0], &weapon_def)) {
                 ERR_LOG("%s 装备了不存在的物品数据!", get_player_describe(src));
@@ -1182,36 +1180,36 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         case ITEM_SUBTYPE_MATERIAL:
             switch (item->datab[2]) {
             case ITEM_SUBTYPE_MATERIAL_POWER: // Power Material
-                set_material_usage(&character->inv, MATERIAL_POWER, get_material_usage(&character->inv, MATERIAL_POWER) + 1);
-                character->disp.stats.atp += 2;
+                set_material_usage(inv, MATERIAL_POWER, get_material_usage(inv, MATERIAL_POWER) + 1);
+                get_player_stats(src)->atp += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_MIND: // Mind Material
-                set_material_usage(&character->inv, MATERIAL_MIND, get_material_usage(&character->inv, MATERIAL_MIND) + 1);
-                character->disp.stats.mst += 2;
+                set_material_usage(inv, MATERIAL_MIND, get_material_usage(inv, MATERIAL_MIND) + 1);
+                get_player_stats(src)->mst += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_EVADE: // Evade Material
-                set_material_usage(&character->inv, MATERIAL_EVADE, get_material_usage(&character->inv, MATERIAL_EVADE) + 1);
-                character->disp.stats.evp += 2;
+                set_material_usage(inv, MATERIAL_EVADE, get_material_usage(inv, MATERIAL_EVADE) + 1);
+                get_player_stats(src)->evp += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_HP: // HP Material
-                set_material_usage(&character->inv, MATERIAL_HP, get_material_usage(&character->inv, MATERIAL_HP) + 1);
+                set_material_usage(inv, MATERIAL_HP, get_material_usage(inv, MATERIAL_HP) + 1);
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_TP: // TP Material
-                set_material_usage(&character->inv, MATERIAL_TP, get_material_usage(&character->inv, MATERIAL_TP) + 1);
+                set_material_usage(inv, MATERIAL_TP, get_material_usage(inv, MATERIAL_TP) + 1);
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_DEF: // Def Material
-                set_material_usage(&character->inv, MATERIAL_DEF, get_material_usage(&character->inv, MATERIAL_DEF) + 1);
-                character->disp.stats.dfp += 2;
+                set_material_usage(inv, MATERIAL_DEF, get_material_usage(inv, MATERIAL_DEF) + 1);
+                get_player_stats(src)->dfp += 2;
                 break;
 
             case ITEM_SUBTYPE_MATERIAL_LUCK: // Luck Material
-                set_material_usage(&character->inv, MATERIAL_LUCK, get_material_usage(&character->inv, MATERIAL_LUCK) + 1);
-                character->disp.stats.lck += 2;
+                set_material_usage(inv, MATERIAL_LUCK, get_material_usage(inv, MATERIAL_LUCK) + 1);
+                get_player_stats(src)->lck += 2;
                 break;
 
             default:
@@ -1221,7 +1219,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_MAG_CELL1:
-            int mag_index = find_equipped_mag(&character->inv);
+            int mag_index = find_equipped_mag(inv);
             if (mag_index == -1) {
                 ERR_LOG("%s 没有装备玛古,玛古细胞 0x%08X", get_player_describe(src), item->datal[0]);
                 break;
@@ -1231,12 +1229,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             switch (item->datab[2]) {
             case 0x00:
                 // Cell of MAG 502
-                mag->data.datab[1] = (character->dress_data.section & SID_Greennill) ? 0x1D : 0x21;
+                mag->data.datab[1] = (get_player_section(src) & SID_Greennill) ? 0x1D : 0x21;
                 break;
 
             case 0x01:
                 // Cell of MAG 213
-                mag->data.datab[1] = (character->dress_data.section & SID_Greennill) ? 0x27 : 0x22;
+                mag->data.datab[1] = (get_player_section(src) & SID_Greennill) ? 0x27 : 0x22;
                 break;
 
             case 0x02:
@@ -1266,7 +1264,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_ADD_SLOT:
-            armor = &inv->iitems[find_equipped_armor(&character->inv)];
+            armor = &inv->iitems[find_equipped_armor(inv)];
 
             if (armor->data.datab[5] >= 4) {
                 ERR_LOG("%s 物品已达最大插槽数量", get_player_describe(src));
@@ -1276,7 +1274,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_SERVER_ITEM1:
-            size_t eq_wep = find_equipped_weapon(&character->inv);
+            size_t eq_wep = find_equipped_weapon(inv);
             weapon = &inv->iitems[eq_wep];
 
             //アイテムIDの5, 6文字目が1, 2のアイテムの場合（0x0312 * *のとき）
@@ -1544,7 +1542,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 /* 银徽章 增加 100000 经验 */
             case ITEM_SUBTYPE_SERVER_ITEM2_W_SILVER:
                 //Add Exp
-                if (character->disp.level < 200) {
+                if (get_player_level(src) + 1 < 200) {
                     client_give_exp(src, 100000);
                     send_txt(src, "%s", __(src, "\tE\tC6增加经验 100000 点"));
                 }
@@ -1734,12 +1732,12 @@ combintion_other:
                     continue;
                 }
 
-                if (combo.char_class != 0xFF && combo.char_class != character->dress_data.ch_class) {
+                if (combo.char_class != 0xFF && combo.char_class != get_player_class(src)) {
                     ERR_LOG("%s 物品合成需要特定的玩家职业", get_player_describe(src));
-                    ERR_LOG("combo.class %d player %d", combo.char_class, character->dress_data.ch_class);
+                    ERR_LOG("combo.class %d player %d", combo.char_class, get_player_class(src));
                 }
                 if (combo.mag_level != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(&character->inv) == -1) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(inv) == -1) {
                         ERR_LOG("%s 物品合成适用于mag级别要求,但装备的物品不是mag", get_player_describe(src));
                         ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
                         return -1;
@@ -1750,7 +1748,7 @@ combintion_other:
                     }
                 }
                 if (combo.grind != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(&character->inv) == -1) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(inv) == -1) {
                         ERR_LOG("%s 物品合成适用于研磨要求,但装备的物品不是武器", get_player_describe(src));
                         return -3;
                     }
@@ -1759,7 +1757,7 @@ combintion_other:
                         return -4;
                     }
                 }
-                if (combo.level != 0xFF && character->disp.level + 1 < combo.level) {
+                if (combo.level != 0xFF && get_player_level(src) + 1 < combo.level) {
 #ifdef DEBUG
                     ERR_LOG("%s 物品合成适用于等级要求,但玩家等级过低", get_player_describe(src));
 #endif // DEBUG
@@ -2263,7 +2261,7 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
     int found_item = 0;
     size_t x = 0, i = 0;
 
-    inventory_t* inv = get_player_inv(src);
+    inventory_t* inv = get_client_inv(src);
 
     for (x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
@@ -2332,7 +2330,7 @@ int player_unequip_item(ship_client_t* src, uint32_t item_id) {
 
 /* 物品整理函数 */
 int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
-    inventory_t* inv = get_player_inv(src);
+    inventory_t* inv = get_client_inv(src);
     iitem_t iitem1, iitem2, swap_item = { 0 };
 
     // 如果物品数量小于等于 1，则不需要排序
@@ -2385,7 +2383,7 @@ int player_sort_inv_by_id(ship_client_t* src, uint32_t* id_arr, int id_count) {
 /* 给客户端标记可穿戴职业装备的标签 */
 void player_class_tag_item_equip_flag(ship_client_t* c) {
     psocn_bb_char_t* character = get_client_char_bb(c);
-    c->equip_flags = class_equip_flags[character->dress_data.ch_class];
+    c->equip_flags = class_equip_flags[get_player_class(c)];
 }
 
 void remove_titem_equip_flags(iitem_t* trade_item) {

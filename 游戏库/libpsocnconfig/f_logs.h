@@ -382,9 +382,9 @@ do { \
 
 #define SQLERR_LOG(...) \
 do { \
-    pthread_mutex_lock(&log_mutex); \
+    pthread_mutex_lock(&pkt_mutex); \
     flog_err(logfilename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__); \
-    pthread_mutex_unlock(&log_mutex); \
+    pthread_mutex_unlock(&pkt_mutex); \
 } while (0)
 
 #define QERR_LOG(...) \
@@ -424,9 +424,9 @@ do { \
 
 #define DATA_LOG(...) \
 do { \
-    pthread_mutex_lock(&log_mutex); \
+    pthread_mutex_lock(&pkt_mutex); \
     flog(__LINE__, host_log_console_show, DATA_LOG, __VA_ARGS__); \
-    pthread_mutex_unlock(&log_mutex); \
+    pthread_mutex_unlock(&pkt_mutex); \
 } while (0)
 
 #define DC_LOG(...) \

@@ -2247,7 +2247,7 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
     c->dress_data.prop_x = mc->dress_data.prop_x;
     c->dress_data.prop_y = mc->dress_data.prop_y;
 
-    removeWhitespace_w(mc->name.char_name);
+    fix_char_name_w(mc->name.char_name);
     memcpy(&c->name, &mc->name, sizeof(mc->name));
 
     return 0;

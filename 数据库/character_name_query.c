@@ -137,7 +137,7 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 
 	iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
 
-	removeWhitespace_w(name->char_name);
+	fix_char_name_w(name->char_name);
 
 	psocn_db_result_free(result);
 

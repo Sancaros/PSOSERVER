@@ -118,8 +118,8 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
 
         shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
 
-        //DATA_LOG("ship_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
-        //    , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
+        DATA_LOG("ship_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
         pthread_rwlock_wrlock(&c->rwlock);
         //pthread_mutex_lock(&c->pkt_mutex);

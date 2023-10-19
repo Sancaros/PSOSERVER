@@ -1540,7 +1540,7 @@ static int handle_susi(ship_client_t* c, const char* params) {
         return send_txt(c, "%s", __(c, "\tE\tC4无效物品槽位,玩家背包最大30件物品"));
     }
 
-    inventory_t* inv = get_player_inv(c);
+    inventory_t* inv = get_client_inv(c);
 
     if (!item_slot) {
         char tmp_msg[4096] = { 0 };

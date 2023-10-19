@@ -289,7 +289,7 @@ static int handle_restorebk(ship_client_t* c, const char* params) {
         //return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
         /* Send the request to the shipgate. */
 
-        removeWhitespace_w(c->pl->bb.character.name.char_name);
+        fix_char_name_w(c->pl->bb.character.name.char_name);
         char tmp_name[32] = { 0 };
         istrncpy16_raw(ic_utf16_to_utf8, tmp_name, (char*)&c->pl->bb.character.name.char_name, 32, 10);
 

@@ -908,7 +908,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     memcpy(&c->character.technique_levels_v1, &sp->technique_levels_v1, sizeof(sp->technique_levels_v1));
 
     /* Copy the name over */
-    removeWhitespace_w(sp->name.char_name);
+    fix_char_name_w(sp->name.char_name);
     istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.gc_string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
 }
 

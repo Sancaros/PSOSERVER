@@ -1573,7 +1573,7 @@ inventory_t* get_client_inv_nobb(ship_client_t* src) {
     return src->mode == 0 ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
 }
 
-inventory_t* get_player_inv(ship_client_t* src) {
+inventory_t* get_client_inv(ship_client_t* src) {
     if (!src) {
         return NULL;
     }
@@ -1584,9 +1584,9 @@ inventory_t* get_player_inv(ship_client_t* src) {
         return get_client_inv_nobb(src);
 }
 
-uint8_t get_player_language(ship_client_t* src) {
+uint8_t get_client_language(ship_client_t* src) {
     // 调用 get_player_inv 获取玩家的装备
-    inventory_t* inv = get_player_inv(src);
+    inventory_t* inv = get_client_inv(src);
     // 返回 inventory_t 结构体中的 language 成员
     return inv->language;
 }
@@ -1672,6 +1672,20 @@ char* get_player_describe(ship_client_t* src) {
     );
 
     return char_des;
+}
+
+psocn_pl_stats_t* get_player_stats(ship_client_t* src) {
+    if (!src)
+        return NULL;
+
+    if (src->version == CLIENT_VERSION_BB) {
+        return &get_client_char_bb(src)->disp.stats;
+    }
+    else {
+        return &get_client_char_nobb(src)->disp.stats;
+    }
+
+    return NULL;
 }
 
 char* get_lobby_leader_describe(lobby_t* l) {
@@ -1766,6 +1780,38 @@ uint32_t get_player_level(ship_client_t* src) {
     return level;
 }
 
+/* 获取玩家职业数值 */
+uint8_t get_player_class(ship_client_t* src) {
+    /* 初始化一个数值 */
+    uint8_t ch_class = 0;
+
+    if (!src)
+        return ch_class;
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        psocn_v1v2v3pc_char_t* v2character = get_client_char_nobb(src);
+        ch_class = v2character->dress_data.ch_class;
+        break;
+
+    case CLIENT_VERSION_BB:
+        psocn_bb_char_t* character = get_client_char_bb(src);
+        ch_class = character->dress_data.ch_class;
+        break;
+
+    default:
+        ERR_LOG("%s 版本 %s 职业未获取成功", get_player_describe(src), client_type[src->version].ver_name);
+        break;
+    }
+
+    return ch_class;
+}
+
 char* get_section_describe(ship_client_t* src, uint8_t section, bool overwrite) {
     uint8_t section_id = 0, language_code = 0;
 
@@ -1805,6 +1851,20 @@ uint8_t get_lobby_leader_section(lobby_t* l) {
     return get_player_section(src);
 }
 
+techniques_t* get_player_v1_tech(ship_client_t* src) {
+    if (!src)
+        return NULL;
+
+    if (src->version == CLIENT_VERSION_BB) {
+        return &get_client_char_bb(src)->technique_levels_v1;
+    }
+    else {
+        return &get_client_char_nobb(src)->technique_levels_v1;
+    }
+
+    return NULL;
+}
+
 uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech) {
     if(ch_class < MAX_PLAYER_CLASS_BB)
         return max_tech_level[tech].max_lvl[ch_class];
@@ -1818,7 +1878,7 @@ void update_bb_mat_use(ship_client_t* src) {
     inventory_t* inv = &character->inv;
     uint8_t ch_class = character->dress_data.ch_class;
     psocn_pl_stats_t* startingData = &bb_char_stats.start_stats[ch_class];
-    uint32_t level = character->disp.level;
+    uint32_t level = character->disp.level + 1;
 
     atp_base = startingData->atp;
     mst_base = startingData->mst;
@@ -1829,7 +1889,7 @@ void update_bb_mat_use(ship_client_t* src) {
 
     //DBG_LOG("startingData atp_base %u mst_base %u evp_base %u hp_base %u dfp_base %u ata_base %u", atp_base, mst_base, evp_base, hp_base, dfp_base, ata_base);
 
-    for (size_t x = 0; x <= character->disp.level; x++) {
+    for (size_t x = 0; x < level; x++) {
         atp_base += (uint16_t)bb_char_stats.levels[ch_class][x].atp;
         mst_base += (uint16_t)bb_char_stats.levels[ch_class][x].mst;
         evp_base += (uint16_t)bb_char_stats.levels[ch_class][x].evp;
@@ -1871,8 +1931,8 @@ void show_bb_player_info(ship_client_t* src) {
         , character->disp.exp
         , character->disp.meseta
         , inv->item_count
-        , mini_language_codes_cn[get_player_language(src)]
-        , get_player_language(src)
+        , mini_language_codes_cn[get_client_language(src)]
+        , get_client_language(src)
         , src->bb_pl->bank.item_count, src->common_bank->item_count
         , get_material_usage(inv, MATERIAL_HP)
         , get_material_usage(inv, MATERIAL_TP)
@@ -1990,7 +2050,7 @@ void show_player_tech_info(ship_client_t* src) {
 }
 
 void show_player_inv_info(ship_client_t* src) {
-    inventory_t* inv = get_player_inv(src);
+    inventory_t* inv = get_client_inv(src);
     char tmp_msg[4096] = { 0 };
     char data_str[100] = { 0 };
 

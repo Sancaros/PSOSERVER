@@ -6096,8 +6096,8 @@ int handle_pkt(ship_t* c) {
     //    ERR_LOG("Gnutls *** 错误: 发送的数据无效.");
     //}
 
-    //DATA_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
-    //DATA_LOG("handle_pkt");
+    DATA_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
+    DATA_LOG("handle_pkt");
     //print_ascii_hex(dbgl, recvbuf, sz);
     if (sz <= 0) {
         pthread_rwlock_unlock(&c->rwlock);

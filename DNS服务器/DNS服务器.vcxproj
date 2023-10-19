@@ -79,7 +79,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\通用库\cvector;..\通用库\sfmt;..\通用库\pthread_win32;..\游戏库\libpsocn;..\游戏库\libpsocnconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\通用库\libiconv-win-build\include;..\通用库\cvector;..\通用库\sfmt;..\通用库\pthread_win32;..\游戏库\libpsocn;..\游戏库\libpsocnconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -87,8 +87,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>urlmon.lib;ws2_32.lib;wsock32.lib;netapi32.lib;libevent.lib;libevent_core.lib;libevent_extras.lib;libevent_openssl.lib;pthread_static_lib.lib;libpsoconfig.lib;libpsoarchive.lib;libpsocn.lib;sfmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\Library;..\通用库\libevent\lib;..\通用库\pthread_win32\windows\VS2022\bin\Release-MultiByte-32bit-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libiconv.lib;urlmon.lib;ws2_32.lib;wsock32.lib;netapi32.lib;libevent.lib;libevent_core.lib;libevent_extras.lib;libevent_openssl.lib;pthread_static_lib.lib;libpsoconfig.lib;libpsoarchive.lib;libpsocn.lib;sfmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\Library;..\通用库\libevent\lib;..\通用库\pthread_win32\windows\VS2022\bin\Release-MultiByte-32bit-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
