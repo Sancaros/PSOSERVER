@@ -22,6 +22,8 @@
 
 #include "handle_player_items.h"
 #include "utils.h"
+#include "pmtdata.h"
+#include "lobby_f.h"
 
 // subcmd 直接发送指令至客户端
 /* 发送副指令数据包至房间 ignore_check 是否忽略被拉入被忽略的玩家 */
@@ -98,6 +100,8 @@ int subcmd_send_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, litem_t*
     if (src->version == CLIENT_VERSION_GC)
         bswap_data2_if_mag(&dc.data);
 
+    LOBBY_DROPITEM_LOG(src, litem->item.item_id, src->cur_area, &litem->item);
+
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
@@ -155,6 +159,8 @@ int subcmd_send_drop_stack_dc(ship_client_t* src,
 
     if (src->version == CLIENT_VERSION_GC)
         bswap_data2_if_mag(&dc.data);
+
+    LOBBY_DROPITEM_LOG(src, item.item_id, src->cur_area, &item);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
@@ -221,6 +227,8 @@ int subcmd_send_lobby_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, sh
     if (src->version == CLIENT_VERSION_GC)
         bswap_data2_if_mag(&dc.data);
 
+    LOBBY_DROPITEM_LOG(src, litem->item.item_id, src->cur_area, &litem->item);
+
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
@@ -286,6 +294,8 @@ int subcmd_send_lobby_drop_stack_dc(ship_client_t* src,
 
     if (src->version == CLIENT_VERSION_GC)
         bswap_data2_if_mag(&dc.data);
+
+    LOBBY_DROPITEM_LOG(src, item.item_id, src->cur_area, &item);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:

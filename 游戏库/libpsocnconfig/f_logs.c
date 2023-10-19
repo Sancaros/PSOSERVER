@@ -39,38 +39,6 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp)
 }
 #endif
 
-/////////////////////////////////////////
-// 日志
-int32_t console_log_hide_or_show;
-
-int32_t patch_log_console_show;
-int32_t auth_log_console_show;
-int32_t ships_log_console_show;
-int32_t blocks_log_console_show;
-int32_t lobbys_log_console_show;
-int32_t sgate_log_console_show;
-int32_t dns_log_console_show;
-int32_t crash_log_console_show;
-
-int32_t login_log_console_show;
-int32_t item_log_console_show;
-int32_t mysqlerr_log_console_show;
-int32_t questerr_log_console_show;
-int32_t gmc_log_console_show;
-int32_t debug_log_console_show;
-int32_t error_log_console_show;
-int32_t file_log_console_show;
-int32_t host_log_console_show;
-int32_t unknow_packet_log_console_show;
-int32_t undone_packet_log_console_show;
-int32_t unused_log_show;
-int32_t disconnect_log_console_show;
-int32_t dont_send_log_console_show;
-int32_t test_log_console_show;
-int32_t monster_error_log_console_show;
-int32_t config_log_console_show;
-int32_t script_log_console_show;
-
 bool is_all_zero(const char* data, size_t length) {
 	for (size_t i = 0; i < length; i++) {
 		if (data[i] != 0) {
@@ -260,13 +228,10 @@ void load_log_config(void)
 	int32_t config_index = 0;
 	char config_data[255] = { 0 };
 	uint32_t ch;
-	//int32_t spot = 0;
 
 	FILE* fp;
 	const char* Log_config = "Config\\Config_Log.ini";
-	//printf("加载日志设置文件 %s ", Log_config);
 	errno_t err = fopen_s(&fp, Log_config, "r");
-	//printf(".");
 	if (err)
 	{
 		printf("设置文件 %s 缺失了.\n", Log_config); //12.22
@@ -288,149 +253,13 @@ void load_log_config(void)
 						config_data[ch--] = 0x00;
 					config_data[ch] = 0;
 				}
-				//printf("%d \n", atoi(&config_data[0]));
-				switch (config_index) // 解析行数
-				{
-				case PATCH_LOG:
-					// 控制台LOG显示开关
-					patch_log_console_show = atoi(&config_data[0]);
-					break;
 
-				case AUTH_LOG:
-					auth_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case SHIPS_LOG:
-					// 控制台LOG显示开关
-					ships_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case BLOCK_LOG:
-					// 控制台LOG显示开关
-					blocks_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case ERR_LOG:
-					// 控制台LOG显示开关
-					error_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case LOBBY_LOG:
-					// 控制台LOG显示开关
-					lobbys_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case SGATE_LOG:
-					// 控制台LOG显示开关
-					sgate_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case LOGIN_LOG:
-					// 控制台LOG显示开关
-					login_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case ITEMS_LOG:
-					// 控制台LOG显示开关
-					item_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case MYSQLERR_LOG:
-					// 控制台LOG显示开关
-					mysqlerr_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case QUESTERR_LOG:
-					// 控制台LOG显示开关
-					questerr_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case GMC_LOG:
-					// 控制台LOG显示开关
-					gmc_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case DEBUG_LOG:
-					// 控制台LOG显示开关
-					debug_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case FILE_LOG:
-					// 控制台LOG显示开关
-					file_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case HOST_LOG:
-					// 控制台LOG显示开关
-					host_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case UNKNOW_PACKET_LOG:
-					// 控制台LOG显示开关
-					unknow_packet_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case UNDONE_PACKET_LOG:
-					// 控制台LOG显示开关
-					undone_packet_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case UNUSED:
-					// 控制台LOG显示开关
-					unused_log_show = atoi(&config_data[0]);
-					break;
-
-				case DC_LOG:
-					// 控制台LOG显示开关
-					disconnect_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case DONT_SEND_LOG:
-					// 控制台LOG显示开关
-					dont_send_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case TEST_LOG:
-					// 控制台LOG显示开关
-					test_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case MONSTERID_ERR_LOG:
-					// 控制台LOG显示开关
-					monster_error_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case CONFIG_LOG:
-					// 控制台LOG显示开关
-					config_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case SCRIPT_LOG:
-					// 控制台LOG显示开关
-					script_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case DNS_LOG:
-					// 控制台LOG显示开关
-					dns_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case CRASH_LOG:
-					// 控制台LOG显示开关
-					crash_log_console_show = atoi(&config_data[0]);
-					break;
-
-				case LOG:
-					console_log_hide_or_show = atoi(&config_data[0]);
-					break;
-
-				default:
-					break;
-				}
+				log_file_show[config_index] = atoi(&config_data[0]);
+				//printf("%s %d \n", log_header[config_index].name, atoi(&config_data[0]));
+				
 				config_index++;
 			}
 		}
-		//printf(".");
 		fclose(fp);
 	}
 
@@ -441,8 +270,6 @@ void load_log_config(void)
 		gets_s(&dp[0], 0);
 		exit(EXIT_FAILURE);
 	}
-	//printf(".");
-	//printf(" 完成!\n");
 }
 
 void color(uint32_t x)	//自定义函根据参数改变颜色 
@@ -458,7 +285,7 @@ void color(uint32_t x)	//自定义函根据参数改变颜色
 	//	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 
-void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog(int32_t codeline, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -509,9 +336,9 @@ void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
 
-		if (console_log_hide_or_show)
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[files_num])
 			{
 				color(files_num);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -523,7 +350,7 @@ void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 	}
 }
 
-void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog_item(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -575,9 +402,10 @@ void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_
 				func, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
-		if (console_log_hide_or_show)
+
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[files_num])
 			{
 				color(files_num);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -590,7 +418,7 @@ void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_
 	}
 }
 
-void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...) {
+void flog_file(int32_t codeline, uint32_t files_num, const char* file, const char* fmt, ...) {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
@@ -640,9 +468,9 @@ void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
 
-		if (console_log_hide_or_show)
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[files_num])
 			{
 				color(files_num);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -654,7 +482,7 @@ void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const
 	}
 }
 
-void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog_err(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -706,9 +534,10 @@ void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 				func, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
-		if (console_log_hide_or_show)
+
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[files_num])
 			{
 				color(4);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -721,7 +550,7 @@ void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 	}
 }
 
-void flog_crash(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog_crash(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -773,9 +602,10 @@ void flog_crash(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 				func, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
-		if (console_log_hide_or_show)
+
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[files_num])
 			{
 				color(4);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -788,7 +618,7 @@ void flog_crash(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 	}
 }
 
-void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog_debug(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -843,9 +673,10 @@ void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 				func, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
-		if (console_log_hide_or_show)
+
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[files_num])
 			{
 				color(files_num);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -858,7 +689,7 @@ void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 	}
 }
 
-void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
+void flog_undone(int32_t codeline, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -906,9 +737,10 @@ void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNDONE_PACKET_LOG].name, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNDONE_PACKET_LOG].name);
 		}
-		if (console_log_hide_or_show)
+
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[UNDONE_PACKET_LOG])
 			{
 				color(UNDONE_PACKET_LOG);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -920,7 +752,7 @@ void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	}
 }
 
-void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
+void flog_unknow(int32_t codeline, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -968,9 +800,10 @@ void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNKNOW_PACKET_LOG].name);
 		}
-		if (console_log_hide_or_show)
+
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[UNKNOW_PACKET_LOG])
 			{
 				color(UNKNOW_PACKET_LOG);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -982,7 +815,7 @@ void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	}
 }
 
-void flog_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
+void flog_err_packet(int32_t codeline, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
 	char mes[MAX_PACKET_BUFF] = { 0 };
@@ -1030,9 +863,10 @@ void flog_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_n
 				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNKNOW_PACKET_LOG].name);
 		}
-		if (console_log_hide_or_show)
+
+		if (log_file_show[LOG])
 		{
-			if (consoleshow)
+			if (log_file_show[ERR_LOG])
 			{
 				color(UNKNOW_PACKET_LOG);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -1048,45 +882,45 @@ void flog_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_n
 void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog(codeline, error_log_console_show, ERR_LOG, "%s %s 指令 0x%02X%02X 未处理.", filename, cmd, pkt[3], pkt[2]);
+	flog(codeline, ERR_LOG, "%s %s 指令 0x%02X%02X 未处理.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
-	flog(codeline, error_log_console_show, ERR_LOG, "\n%s\n", &dp[0]);
+	flog(codeline, ERR_LOG, "\n%s\n", &dp[0]);
 }
 
 /* 截取舰船未完成的数据包 */
 void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 未完成.", filename, cmd, pkt[3], pkt[2]);
+	flog_undone(codeline, cmd, "%s %s 指令 0x%02X%02X 未完成.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
-	flog_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+	flog_undone(codeline, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取舰船错误的数据包 */
 void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog_err_packet(codeline, undone_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 数据错误.", filename, cmd, pkt[3], pkt[2]);
+	flog_err_packet(codeline, cmd, "%s %s 指令 0x%02X%02X 数据错误.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
-	flog_err_packet(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+	flog_err_packet(codeline, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取客户端未处理的数据包 */
 void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog_unknow(codeline, unknow_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 未处理.", filename, cmd, pkt[3], pkt[2]);
+	flog_unknow(codeline, cmd, "%s %s 指令 0x%02X%02X 未处理.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
-	flog_unknow(codeline, unknow_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+	flog_unknow(codeline, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取客户端未处理的数据包 */
 void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 未完成.", filename, cmd, pkt[3], pkt[2]);
+	flog_undone(codeline, cmd, "%s %s 指令 0x%02X%02X 未完成.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
-	flog_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+	flog_undone(codeline, cmd, "\n%s\n", &dp[0]);
 }
 
 void cpd_log(int32_t codeline, int code, void* data, int flag) {

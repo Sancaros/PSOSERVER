@@ -78,18 +78,18 @@ enum Log_files_Num {
 	SCRIPT_LOG,
 	DNS_LOG,
 	CRASH_LOG,
+    TRADE_LOG, //½¢´¬
+    PICK_LOG, //½¢´¬
+    DROP_LOG, //½¢´¬
+    MDROP_LOG, //½¢´¬
+    BDROP_LOG, //½¢´¬
+    TEKK_LOG, //½¢´¬
+    BANKD_LOG, //½¢´¬
+    BANKT_LOG, //½¢´¬
+    USE_LOG, //½¢´¬
+    DATA_LOG, //²¹¶¡ µÇÂ½ ½¢´¬
 	LOG,
 	LOG_FILES_MAX,
-    TRADE_LOG = 8, //½¢´¬
-    PICK_LOG = 8, //½¢´¬
-    DROP_LOG = 8, //½¢´¬
-    MDROP_LOG = 8, //½¢´¬
-    BDROP_LOG = 8, //½¢´¬
-    TEKK_LOG = 8, //½¢´¬
-    BANKD_LOG = 8, //½¢´¬
-    BANKT_LOG = 8, //½¢´¬
-    USE_LOG = 8, //½¢´¬
-    DATA_LOG = 14, //²¹¶¡ µÇÂ½ ½¢´¬
 };
 
 typedef struct log_map {
@@ -124,8 +124,6 @@ static log_map_st log_header[] = {
 	{ SCRIPT_LOG,			"½Å±¾" },
 	{ DNS_LOG,				"DNS" },
 	{ CRASH_LOG,			"±ÀÀ£" },
-	{ LOG,					"ÈÕÖ¾" },
-	{ LOG_FILES_MAX, "Î´ÖªÈÕÖ¾´íÎó" },
     { TRADE_LOG,			"½»Ò×" }, //½¢´¬
     { PICK_LOG,			    "Ê°È¡" }, //½¢´¬
     { DROP_LOG,			    "µôÂä" }, //½¢´¬
@@ -136,39 +134,11 @@ static log_map_st log_header[] = {
     { BANKT_LOG,			"ÒøÈ¡" }, //½¢´¬
     { USE_LOG,			    "Ê¹ÓÃ" }, //½¢´¬
     { DATA_LOG,			    "´«Êä" }, //½¢´¬
+	{ LOG,					"ÈÕÖ¾" },
+	{ LOG_FILES_MAX, "Î´ÖªÈÕÖ¾´íÎó" },
 };
 
-/////////////////////////////////////////
-// ÈÕÖ¾
-extern int32_t console_log_hide_or_show;
-
-extern int32_t patch_log_console_show;
-extern int32_t auth_log_console_show;
-extern int32_t ships_log_console_show;
-extern int32_t blocks_log_console_show;
-extern int32_t lobbys_log_console_show;
-extern int32_t sgate_log_console_show;
-extern int32_t dns_log_console_show;
-extern int32_t crash_log_console_show;
-
-extern int32_t login_log_console_show;
-extern int32_t item_log_console_show;
-extern int32_t mysqlerr_log_console_show;
-extern int32_t questerr_log_console_show;
-extern int32_t gmc_log_console_show;
-extern int32_t debug_log_console_show;
-extern int32_t error_log_console_show;
-extern int32_t file_log_console_show;
-extern int32_t host_log_console_show;
-extern int32_t unknow_packet_log_console_show;
-extern int32_t undone_packet_log_console_show;
-extern int32_t unused_log_show;
-extern int32_t disconnect_log_console_show;
-extern int32_t dont_send_log_console_show;
-extern int32_t test_log_console_show;
-extern int32_t monster_error_log_console_show;
-extern int32_t config_log_console_show;
-extern int32_t script_log_console_show;
+static bool log_file_show[LOG_FILES_MAX];
 
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
 #define LE16(x) (((x >> 8) & 0xFF) | ((x & 0xFF) << 8))
@@ -254,56 +224,56 @@ extern int32_t script_log_console_show;
 #define PATCH_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, patch_log_console_show, PATCH_LOG, __VA_ARGS__); \
+    flog(__LINE__, PATCH_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define AUTH_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, auth_log_console_show, AUTH_LOG, __VA_ARGS__); \
+    flog(__LINE__, AUTH_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define SHIPS_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, ships_log_console_show, SHIPS_LOG, __VA_ARGS__); \
+    flog(__LINE__, SHIPS_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define BLOCK_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, blocks_log_console_show, BLOCK_LOG, __VA_ARGS__); \
+    flog(__LINE__, BLOCK_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define DNS_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, dns_log_console_show, DNS_LOG, __VA_ARGS__); \
+    flog(__LINE__, DNS_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define ERR_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog_err(logfilename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__); \
+    flog_err(logfilename(__FILE__), __LINE__, ERR_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define LOBBY_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, lobbys_log_console_show, LOBBY_LOG, __VA_ARGS__); \
+    flog(__LINE__, LOBBY_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define SGATE_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, sgate_log_console_show, SGATE_LOG, __VA_ARGS__); \
+    flog(__LINE__, SGATE_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
@@ -311,70 +281,70 @@ do { \
 #define ITEM_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, ITEMS_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define ITEM_USE_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, USE_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, USE_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define BANK_DEPOSIT_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, BANKD_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, BANKD_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define BANK_TAKE_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, BANKT_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, BANKT_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define TEKKS_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, TEKK_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, TEKK_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define TRADES_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, TRADE_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, TRADE_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define PICKS_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, PICK_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, PICK_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define DROPS_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, DROP_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, DROP_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define MDROPS_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, MDROP_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, MDROP_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
 #define BDROPS_LOG(...) \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
-    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, BDROP_LOG, __VA_ARGS__); \
+    flog_item(logfilename(__FILE__), __LINE__, BDROP_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 
@@ -383,105 +353,105 @@ do { \
 #define SQLERR_LOG(...) \
 do { \
     pthread_mutex_lock(&pkt_mutex); \
-    flog_err(logfilename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__); \
+    flog_err(logfilename(__FILE__), __LINE__, MYSQLERR_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&pkt_mutex); \
 } while (0)
 
 #define QERR_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog_err(logfilename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__); \
+    flog_err(logfilename(__FILE__), __LINE__, QUESTERR_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define DBG_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__); \
+    flog_debug(logfilename(__FILE__), __LINE__, DEBUG_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define GM_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, gmc_log_console_show, GMC_LOG, __VA_ARGS__); \
+    flog(__LINE__, GMC_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define FILE_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, file_log_console_show, FILE_LOG, __VA_ARGS__); \
+    flog(__LINE__, FILE_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define HOST_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__); \
+    flog(__LINE__, HOST_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define DATA_LOG(...) \
 do { \
     pthread_mutex_lock(&pkt_mutex); \
-    flog(__LINE__, host_log_console_show, DATA_LOG, __VA_ARGS__); \
+    flog(__LINE__, DATA_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&pkt_mutex); \
 } while (0)
 
 #define DC_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__); \
+    flog(__LINE__, DC_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define DSENT_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, dont_send_log_console_show, DONT_SEND_LOG, __VA_ARGS__); \
+    flog(__LINE__, DONT_SEND_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define TEST_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__); \
+    flog_debug(logfilename(__FILE__), __LINE__, TEST_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define MERR_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog_err(logfilename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__); \
+    flog_err(logfilename(__FILE__), __LINE__, MONSTERID_ERR_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define CONFIG_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__); \
+    flog(__LINE__, CONFIG_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define SCRIPT_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__); \
+    flog(__LINE__, SCRIPT_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define CRASH_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog_crash(logfilename(__FILE__), __LINE__, crash_log_console_show, CRASH_LOG, __VA_ARGS__); \
+    flog_crash(logfilename(__FILE__), __LINE__, CRASH_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
 #define LOG_LOG(...) \
 do { \
     pthread_mutex_lock(&log_mutex); \
-    flog(__LINE__, config_log_console_show, LOG, __VA_ARGS__); \
+    flog(__LINE__, LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_mutex); \
 } while (0)
 
@@ -594,14 +564,14 @@ extern void color(uint32_t x);
 extern void packet_to_text(uint8_t* buf, size_t len, bool show);
 extern void display_packet_old(const void* buf, size_t len);
 
-extern void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-extern void flog_item(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-extern void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...);
-extern void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-extern void flog_crash(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-extern void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-extern void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
-extern void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
+extern void flog(int32_t codeline, uint32_t files_num, const char* fmt, ...);
+extern void flog_item(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...);
+extern void flog_file(int32_t codeline, uint32_t files_num, const char* file, const char* fmt, ...);
+extern void flog_err(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...);
+extern void flog_crash(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...);
+extern void flog_debug(const char* func, int32_t codeline, uint32_t files_num, const char* fmt, ...);
+extern void flog_undone(int32_t codeline, const char* files_name, const char* fmt, ...);
+extern void flog_unknow(int32_t codeline, const char* files_name, const char* fmt, ...);
 
 extern void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 extern void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);

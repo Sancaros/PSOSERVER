@@ -1932,8 +1932,6 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         return -2;
     }
 
-    pthread_mutex_lock(&l->mutex);
-
     ERR_LOG("///////////////bb_process_trade start %s", get_player_describe(src));
 
     print_ascii_hex(errl, pkt, LE16(pkt->hdr.pkt_len));
@@ -1941,7 +1939,6 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     /* 搜索目标客户端. */
     ship_client_t* dest = ge_target_client_by_id(l, target_client_id);
     if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
         ERR_LOG("%s 尝试与不存在的玩家交易!",
             get_player_describe(src));
         send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
@@ -1977,7 +1974,6 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
             /* 客户端已经自动移除该物品 所以这里只需要进行内存操作即可 */
             item_t item = remove_invitem(src, item_id, item_amount, src->version != CLIENT_VERSION_BB);
             if (item_not_identification_bb(item.datal[0], item.datal[1])) {
-                pthread_mutex_unlock(&l->mutex);
                 ERR_LOG("%s 交易物品失败!",
                     get_player_describe(src));
                 return -2;
@@ -1988,7 +1984,6 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
             }
 
             if (!add_invitem(dest, item)) {
-                pthread_mutex_unlock(&l->mutex);
                 ERR_LOG("%s 获取交易物品失败! 错误码 %d",
                     get_player_describe(dest));
                 return -3;
@@ -2005,7 +2000,6 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     if (dest->game_data->pending_item_trade.confirmed) {
         send_simple(src, TRADE_1_TYPE, 0x00);
     }
-    pthread_mutex_unlock(&l->mutex);
 
     return 0;
 }
@@ -2025,15 +2019,12 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
 
     print_ascii_hex(errl, pkt, LE16(pkt->hdr.pkt_len));
 
-    pthread_mutex_lock(&l->mutex);
-
     trade_inv_t* src_trade_inv = get_client_trade_inv_bb(src);
     uint8_t target_client_id = src_trade_inv->other_client_id;
 
     /* 搜索目标客户端. */
     ship_client_t* dest = ge_target_client_by_id(l, target_client_id);
     if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
         ERR_LOG("%s 尝试与不存在的玩家交易!",
             get_player_describe(src));
         send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
@@ -2043,7 +2034,6 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
 
     trade_inv_t* dest_trade_inv = get_client_trade_inv_bb(dest);
     if (!dest_trade_inv->confirmed) {
-        pthread_mutex_unlock(&l->mutex);
         ERR_LOG("%s 对方未确认交易!",
             get_player_describe(dest));
         send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
@@ -2055,8 +2045,6 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
     send_simple(dest, TRADE_4_TYPE, 0x01);
     if (dest_trade_inv->confirmed) {
     }
-
-    pthread_mutex_unlock(&l->mutex);
 
     ERR_LOG("///////////////bb_process_trade_excute end %s", get_player_describe(src));
 
@@ -2073,8 +2061,6 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         return 0;
     }
 
-    pthread_mutex_lock(&l->mutex);
-
     //ERR_LOG("///////////////bb_process_trade_error start GC %" PRIu32 "", src->guildcard);
 
     //print_ascii_hex(errl, pkt, LE16(pkt->hdr.pkt_len));
@@ -2088,13 +2074,11 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     /* 搜索目标客户端. */
     dest = ge_target_client_by_id(l, other_client_id);
     if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
         ERR_LOG("%s 尝试与不存在的玩家交易!",
             get_player_describe(src));
         return -1;
     }
     if (!dest->game_data->pending_item_trade.confirmed) {
-        pthread_mutex_unlock(&l->mutex);
         ERR_LOG("%s 的未确认交易!",
             get_player_describe(dest));
         return -2;
@@ -2103,7 +2087,6 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     DBG_LOG("交易错误 %s 至 %s", get_player_describe(src), get_player_describe(dest));
     trade_inv_t* trade_inv_dest = player_tinv_init(dest);
     send_simple(dest, TRADE_4_TYPE, 0x00);
-    pthread_mutex_unlock(&l->mutex);
 
     return 0;
 }
