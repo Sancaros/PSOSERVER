@@ -1074,8 +1074,8 @@ already_picked:
 		rnd = sfmt_genrand_uint32(rng) % 100;
 		if (rnd < ent->element_probability[area]) {
 			rnd = sfmt_genrand_uint32(rng) %
-				attr_count[ent->element_ranking[area] - 1];
-			item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
+				weapon_common_special_attr_count[ent->element_ranking[area] - 1];
+			item[1] = 0x80 | weapon_common_special_attr_list[ent->element_ranking[area] - 1][rnd];
 		}
 	}
 	else if (rare || (v1 && semirare)) {
@@ -1240,8 +1240,8 @@ already_picked:
 		rnd = sfmt_genrand_uint32(rng) % 100;
 		if (rnd < ent->element_probability[area]) {
 			rnd = sfmt_genrand_uint32(rng) %
-				attr_count[ent->element_ranking[area] - 1];
-			item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
+				weapon_common_special_attr_count[ent->element_ranking[area] - 1];
+			item[1] = 0x80 | weapon_common_special_attr_list[ent->element_ranking[area] - 1][rnd];
 		}
 	}
 	else if (rare) {
@@ -1421,8 +1421,8 @@ already_picked:
 		rnd = sfmt_genrand_uint32(rng) % 100;
 		if (rnd < ent->special_percent[area]) {
 			rnd = sfmt_genrand_uint32(rng) %
-				attr_count[ent->special_mult[area] - 1];
-			item[1] = 0x80 | attr_list[ent->special_mult[area] - 1][rnd];
+				weapon_common_special_attr_count[ent->special_mult[area] - 1];
+			item[1] = 0x80 | weapon_common_special_attr_list[ent->special_mult[area] - 1][rnd];
 		}
 	}
 	else if (rare) {
@@ -4813,8 +4813,8 @@ uint8_t generate_weapon_special(pt_bb_entry_t* ent, uint8_t normarea, sfmt_t* rn
 	uint32_t rnd = sfmt_genrand_uint32(rng) % 100;
 	if (rnd < ent->special_percent[normarea]) {
 		rnd = sfmt_genrand_uint32(rng) %
-			attr_count[ent->special_mult[normarea] - 1];
-		datab4 = 0x80 | attr_list[ent->special_mult[normarea] - 1][rnd];
+			weapon_common_special_attr_count[ent->special_mult[normarea] - 1];
+		datab4 = 0x80 | weapon_common_special_attr_list[ent->special_mult[normarea] - 1][rnd];
 	}
 	return datab4;
 }

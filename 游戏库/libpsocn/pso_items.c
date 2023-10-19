@@ -434,13 +434,13 @@ bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
 
 const char* get_weapon_special_describe(uint8_t value, int lang) {
 	if (value < 0x29 && value >= 0x00) {
-		size_t len_weapon = ARRAYSIZE(weapon_specials);
+		size_t len_weapon = ARRAYSIZE(weapon_common_specials);
 		for (size_t i = 0; i < len_weapon; i++) {
-			if (weapon_specials[i].id == value) {
+			if (weapon_common_specials[i].id == value) {
 				if (!lang)
-					return weapon_specials[i].cn_name;
+					return weapon_common_specials[i].cn_name;
 				else
-					return weapon_specials[i].name;
+					return weapon_common_specials[i].name;
 
 			}
 		}
@@ -450,13 +450,13 @@ const char* get_weapon_special_describe(uint8_t value, int lang) {
 
 const char* get_s_rank_special_describe(uint8_t value, int lang) {
 	if (value < 0x11 && value >= 0x00) {
-		size_t len_s_rank = ARRAYSIZE(s_rank_specials);
+		size_t len_s_rank = ARRAYSIZE(weapon_srank_specials);
 		for (size_t i = 0; i < len_s_rank; i++) {
-			if (s_rank_specials[i].id == value) {
+			if (weapon_srank_specials[i].id == value) {
 				if (!lang)
-					return s_rank_specials[i].cn_name;
+					return weapon_srank_specials[i].cn_name;
 				else
-					return s_rank_specials[i].name;
+					return weapon_srank_specials[i].name;
 
 			}
 		}

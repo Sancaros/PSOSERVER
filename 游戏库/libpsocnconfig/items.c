@@ -191,7 +191,7 @@ static int handle_attributes(xmlNode *n, uint64_t *valid) {
     while(tok) {
         /* Look through the list of attributes for what we have */
         for(i = 0; i <= Weapon_Attr_MAX; ++i) {
-            if(!strcmp(weapon_specials[i].name, tok)) {
+            if(!strcmp(weapon_common_specials[i].name, tok)) {
                 *valid &= ~(1 << i);
                 break;
             }
@@ -2129,10 +2129,10 @@ int psocn_limits_check_item(psocn_limits_t *l, iitem_t *i,
     return 0;
 }
 
-const char *psocn_weapon_attr_name(psocn_weapon_attr_t num) {
+const char *psocn_weapon_attr_name(psocn_weapon_common_attr_t num) {
     if(num > Weapon_Attr_MAX) {
         return NULL;
     }
 
-    return weapon_specials[num].cn_name;
+    return weapon_common_specials[num].cn_name;
 }

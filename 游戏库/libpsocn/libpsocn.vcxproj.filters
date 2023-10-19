@@ -112,6 +112,9 @@
     <ClInclude Include="pso_items_good_luck_reward_lish.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_items_hopkins_exchange_lish.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">

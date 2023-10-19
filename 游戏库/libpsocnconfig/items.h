@@ -163,6 +163,6 @@ extern int psocn_limits_check_item(psocn_limits_t *l,
                                        iitem_t *i, uint32_t version);
 
 /* Retrieve the name of a given weapon attribute. */
-extern const char *psocn_weapon_attr_name(psocn_weapon_attr_t num);
+extern const char *psocn_weapon_attr_name(psocn_weapon_common_attr_t num);
 
 #endif /* !PSOCN_ITEMS_H */

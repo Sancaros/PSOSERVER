@@ -181,8 +181,14 @@ static const int8_t weapon_bonus_values[21] = {
 
 static char* weapon_attrib[6] = { "无", "原生", "变异", "机械", "暗黑", "命中" };
 
+typedef struct weapon_special {
+	uint8_t id;
+	const char* name;
+	const char* cn_name;
+} weapon_special_t;
+
 /* Weapon Attributes -- Stored in byte #4 of weapons. */
-typedef enum psocn_weapon_attr_e {
+typedef enum psocn_weapon_common_attr {
     Weapon_Attr_None     = 0x00,
     Weapon_Attr_Draw     = 0x01,
     Weapon_Attr_Drain    = 0x02,
@@ -225,15 +231,10 @@ typedef enum psocn_weapon_attr_e {
     Weapon_Attr_Devils   = 0x27,
     Weapon_Attr_Demons   = 0x28,
     Weapon_Attr_MAX      = 0x29
-} psocn_weapon_attr_t;
+} psocn_weapon_common_attr_t;
 
-typedef struct weapon_special {
-	uint8_t id;
-    const char* name;
-    const char* cn_name;
-} weapon_special_t;
-
-static const weapon_special_t weapon_specials[] = {
+/* 武器普通特殊攻击 -- 存储于物品datab[4]. */
+static const weapon_special_t weapon_common_specials[] = {
 	{Weapon_Attr_None,    "NULL",      "无EX"},
 	{Weapon_Attr_Draw,    "Draw",      "吸血"},
 	{Weapon_Attr_Drain,   "Drain",     "饮血"},
@@ -277,36 +278,51 @@ static const weapon_special_t weapon_specials[] = {
 	{Weapon_Attr_Demons,  "Demon's",   "恶魔的"},
 };
 
-typedef struct s_rank_special {
-    uint8_t id;
-    const char* name;
-    const char* cn_name;
-} s_rank_special_t;
+typedef enum psocn_weapon_srank_attr {
+	Weapon_Srank_Attr_None		= 0x00,
+	Weapon_Srank_Attr_Jellen	= 0x01,
+	Weapon_Srank_Attr_Zalure	= 0x02,
+	Weapon_Srank_Attr_HP_Regen	= 0x03,
+	Weapon_Srank_Attr_TP_Regen	= 0x04,
+	Weapon_Srank_Attr_Burning	= 0x05,
+	Weapon_Srank_Attr_Tempest	= 0x06,
+	Weapon_Srank_Attr_Blizzard	= 0x07,
+	Weapon_Srank_Attr_Arrest	= 0x08,
+	Weapon_Srank_Attr_Chaos		= 0x09,
+	Weapon_Srank_Attr_Hell		= 0x0A,
+	Weapon_Srank_Attr_Spirit	= 0x0B,
+	Weapon_Srank_Attr_Berserk	= 0x0C,
+	Weapon_Srank_Attr_Demons	= 0x0D,
+	Weapon_Srank_Attr_Gush		= 0x0E,
+	Weapon_Srank_Attr_Geist		= 0x0F,
+	Weapon_Srank_Attr_Kings		= 0x10
+} psocn_weapon_srank_attr_t;
 
-static const s_rank_special_t s_rank_specials[] = {
-	{0x00, "NULL", "无EX"},
-    {0x01, "Jellen", "降攻"},
-    {0x02, "Zalure", "降防"},
-	{0x03, "HP Regeneration", "HP再生"},
-	{0x04, "TP Regeneration", "TP再生"},
-    {0x05, "Burning", "炽热"},
-    {0x06, "Tempest", "雷霆"},
-    {0x07, "Blizzard", "冰暴"},
-    {0x08, "Arrest", "全麻痹"},
-    {0x09, "Chaos", "混沌"},
-    {0x0A, "Hell", "地狱"},
-    {0x0B, "Spirit", "销魂"},
-    {0x0C, "Berserk", "销血"},
-    {0x0D, "Demon\'s", "恶魔的"},
-    {0x0E, "Gush", "嗜血"},
-    {0x0F, "Geist", "魄之"},
-    {0x10, "King\'s", "王之"},
+/* 武器S级特殊攻击 -- 存储于物品datab[2]. */
+static const weapon_special_t weapon_srank_specials[] = {
+	{Weapon_Srank_Attr_None,		"NULL",				"无EX"},
+    {Weapon_Srank_Attr_Jellen,		"Jellen",			"降攻"},
+    {Weapon_Srank_Attr_Zalure,		"Zalure",			"降防"},
+	{Weapon_Srank_Attr_HP_Regen,	"HP Regeneration",	"HP再生"},
+	{Weapon_Srank_Attr_TP_Regen,	"TP Regeneration",	"TP再生"},
+    {Weapon_Srank_Attr_Burning,		"Burning",			"炽热"},
+    {Weapon_Srank_Attr_Tempest,		"Tempest",			"雷霆"},
+    {Weapon_Srank_Attr_Blizzard,	"Blizzard",			"冰暴"},
+    {Weapon_Srank_Attr_Arrest,		"Arrest",			"全麻痹"},
+    {Weapon_Srank_Attr_Chaos,		"Chaos",			"混沌"},
+    {Weapon_Srank_Attr_Hell,		"Hell",				"地狱"},
+    {Weapon_Srank_Attr_Spirit,		"Spirit",			"销魂"},
+    {Weapon_Srank_Attr_Berserk,		"Berserk",			"销血"},
+    {Weapon_Srank_Attr_Demons,		"Demon\'s",			"恶魔的"},
+    {Weapon_Srank_Attr_Gush,		"Gush",				"嗜血"},
+    {Weapon_Srank_Attr_Geist,		"Geist",			"魄之"},
+    {Weapon_Srank_Attr_Kings,		"King\'s",			"王之"},
 };
 
-/* Elemental attributes, sorted by their ranking. This is based on the table
-   that is in Tethealla. This is probably in some data file somewhere, and we
-   should probably read it from that data file, but this will work for now. */
-static const psocn_weapon_attr_t attr_list[4][12] = {
+/* 元素属性，按照排名排序。
+这是基于 Tethealla 中的表格。
+这很可能是某个数据文件中的内容，我们应该从那个数据文件中读取，但现在先用这个就可以了。 */
+static const psocn_weapon_common_attr_t weapon_common_special_attr_list[4][12] = {
 	{
 		Weapon_Attr_Draw, Weapon_Attr_Heart, Weapon_Attr_Ice,
 		Weapon_Attr_Bind, Weapon_Attr_Heat, Weapon_Attr_Shock,
@@ -333,7 +349,7 @@ static const psocn_weapon_attr_t attr_list[4][12] = {
 	}
 };
 
-static const int attr_count[4] = { 8, 10, 12, 12 };
+static const int weapon_common_special_attr_count[4] = { 8, 10, 12, 12 };
 
 // 每个单位子类型包含的值
 static const uint8_t common_unit_subtypes[9][4] = {

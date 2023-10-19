@@ -42,6 +42,7 @@
 #include "mag_bb.h"
 #include "ship.h"
 #include "pso_items_good_luck_reward_lish.h"
+#include "pso_items_hopkins_exchange_lish.h"
 
 #include "subcmd_handle.h"
 
@@ -6755,15 +6756,13 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 
     item_t work_item = { 0 };
     for (size_t x = 0; x < ARRAYSIZE(gallons_shop_hopkins); x += 2) {
-        if (pkt->add_item.datal[0] == gallons_shop_hopkins[x]) {
-            work_item.datab[0] = ITEM_TYPE_TOOL;
-            work_item.datab[1] = ITEM_SUBTYPE_PHOTON;
-            work_item.datab[2] = 0x00;
+        if (pkt->add_item.datal[0] == gallons_shop_hopkins[x].item_datal) {
+            work_item.datal[0] = BBItem_Photon_Drop;
             break;
         }
     }
 
-    if (work_item.datab[0] != ITEM_TYPE_TOOL) {
+    if (work_item.datal[0] != BBItem_Photon_Drop) {
         ERR_LOG("兑换失败, 未找到对应物品");
         send_msg(src, MSG_BOX_TYPE, __(src, "兑换失败,未找到对应兑换物品"));
         return -3;
