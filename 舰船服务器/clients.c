@@ -1886,11 +1886,6 @@ void show_bb_player_info(ship_client_t* src) {
 
 void fix_player_max_tech_level(psocn_bb_char_t* character) {
     for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        /* 顺序不能换 要先将余量给到ex1 再初始化为 0x0E */
-        if (character->technique_levels_v1.all[i] > TECHNIQUE_V1_MAX_LEVEL) {
-            character->inv.iitems[i].extension_data1 = character->technique_levels_v1.all[i] - TECHNIQUE_V1_MAX_LEVEL;
-            character->technique_levels_v1.all[i] = TECHNIQUE_V1_MAX_LEVEL;
-        }
 
         uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
         if (player_tech_level == TECHNIQUE_UNLEARN) {
@@ -1898,20 +1893,20 @@ void fix_player_max_tech_level(psocn_bb_char_t* character) {
             continue;
         }
 
-        uint8_t max_level = get_bb_max_tech_level(character->dress_data.ch_class, i);
-        if (player_tech_level >= max_level) {
+        if (player_tech_level > get_bb_max_tech_level(character->dress_data.ch_class, i)) {
             /* 移除不合规的法术 */
 #ifdef DEBUG
+
             DBG_LOG("%s:%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
                 , character->dress_data.gc_string
                 , pso_class[character->dress_data.ch_class].cn_name
-                , get_technique_comment(i), show_technique_level(character, i)
-                , get_bb_max_tech_level(character, i)
-                , get_bb_max_tech_level(character, i)
+                , get_technique_comment(i), get_technique_level(&character->technique_levels_v1, &character->inv, i)
+                , get_bb_max_tech_level(character->dress_data.ch_class, i)
+                , get_bb_max_tech_level(character->dress_data.ch_class, i)
             );
-#endif // DEBUG
 
-            set_technique_level(&character->technique_levels_v1, &character->inv, i, max_level);
+#endif // DEBUG
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
         }
     }
 }
@@ -1964,7 +1959,7 @@ void show_player_tech_info(ship_client_t* src) {
                     sprintf_s(data_str, sizeof(data_str),
                         "%s Lv%d"
                         , get_technique_comment(i)
-                        , player_tech_level
+                        , player_tech_level + 1
                     );
                 }
             }

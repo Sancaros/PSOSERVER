@@ -200,7 +200,7 @@ char* get_player_name(player_t* pl, int version, bool raw);
 
 void set_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which, uint8_t level);
 
-uint8_t get_technique_level(techniques_t* technique_levels_v1, inventory_t* invr, uint8_t which);
+uint8_t get_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which);
 
 uint8_t get_material_usage(inventory_t* inv, MaterialType which);
 

@@ -2098,8 +2098,6 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     /* Clean up the user's bank first... */
     regenerate_bank_item_id(src->client_id, bank, src->bank_type);
 
-    fix_client_bank(bank);
-
     return subcmd_send_bb_bank(src, bank);
 }
 
@@ -2247,8 +2245,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* 发送至房间中的客户端. */
             subcmd_send_lobby_bb_create_inv_item(src, item, pkt_item_amt, true);
-
-            fix_client_bank(bank);
         }
 
         break;

@@ -2266,6 +2266,12 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     /* BB玩家退出游戏后保存的全部数据... */
     /////////////////////////////////////////////////////////////////////////////////////psocn_bb_char_t
     memcpy(&char_data->character.inv, &src->bb_pl->character.inv, PSOCN_STLENGTH_INV);
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+        char_data->character.inv.iitems[i].extension_data1 = src->bb_pl->character.inv.iitems[i].extension_data1;
+    }
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+        char_data->character.inv.iitems[i].extension_data2 = src->bb_pl->character.inv.iitems[i].extension_data2;
+    }
     memcpy(&char_data->character.disp, &src->bb_pl->character.disp, PSOCN_STLENGTH_DISP);
     memcpy(&char_data->character.dress_data, &src->bb_pl->character.dress_data, PSOCN_STLENGTH_DRESS);
     memcpy(&char_data->character.name, &src->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);

@@ -1558,6 +1558,8 @@ static int handle_char_data_req(shipgate_conn_t* conn, shipgate_char_data_pkt* p
                     else if (c->bb_pl) {
                         memcpy(c->bb_pl, pkt->data, clen);
 
+                        fix_player_max_tech_level(&c->bb_pl->character);
+
                         //fix_equip_item(&c->bb_pl->character.inv);
 
                         //DBG_LOG("%s 玩家背包数据获取", get_player_describe(c));
@@ -3129,12 +3131,12 @@ static int handle_max_tech_level_bb(shipgate_conn_t* sg, shipgate_max_tech_lvl_b
     for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
         for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
             if (max_tech_level[i].tech_name == NULL) {
-                ERR_LOG("舰船接收 %s 最大法术等级名称为空, 请检查函数错误", pso_class[i].cn_name);
+                ERR_LOG("舰船接收 %s 最大法术索引 i 等级名称为空, 请检查函数错误", pso_class[j].cn_name, i);
                 return -1;
             }
 
             if (max_tech_level[i].max_lvl[j] != get_pmt_max_tech_level_bb(i, j)) {
-                ERR_LOG("舰船接收 %s %s 最大法术等级与PMT法术等级不符, 请检查是否有修改", pso_class[i].cn_name, max_tech_level[i].tech_cn_name);
+                ERR_LOG("舰船接收 %s %s 最大法术等级与PMT法术等级不符, 请检查是否有修改", pso_class[j].cn_name, max_tech_level[i].tech_cn_name);
                 return -2;
             }
         }
@@ -3144,11 +3146,12 @@ static int handle_max_tech_level_bb(shipgate_conn_t* sg, shipgate_max_tech_lvl_b
     CONFIG_LOG("接收 Blue Burst 玩家 %d 个职业 %d 个法术最大等级数据", j, i);
 
     DBG_LOG("刷新BB职业最大法术数据");
-    for (i = 0; i < MAX_TECH_LEVEL; i++) {
+    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
         for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
-            DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, max_tech_level[i].tech_name, j, max_tech_level[i].max_lvl[j]);
+            DBG_LOG("职业 %s 法术 %d.%s 等级 %d", pso_class[j].cn_name, i, max_tech_level[i].tech_name, max_tech_level[i].max_lvl[j]);
         }
     }
+    getchar();
 #endif // DEBUG
 
     return 0;

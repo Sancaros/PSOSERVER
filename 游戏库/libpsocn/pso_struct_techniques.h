@@ -23,6 +23,7 @@
 
 #define TECHNIQUE_UNLEARN           0xFF
 #define TECHNIQUE_V1_MAX_LEVEL      0x0E
+#define TECHNIQUE_V2_MAX_LEVEL      0x1D
 
 /* 科技函数ID */
 /* 火球术 */

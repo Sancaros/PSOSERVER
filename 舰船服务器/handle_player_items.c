@@ -770,7 +770,6 @@ item_t remove_invitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
-    fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -906,7 +905,6 @@ bool add_invitem(ship_client_t* src, const item_t item) {
     character->inv.iitems[character->inv.item_count].present = LE16(0x0001);
     character->inv.iitems[character->inv.item_count].flags = 0;
     character->inv.item_count++;
-    fix_client_inv(&character->inv);
     return true;
 }
 
@@ -1159,6 +1157,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 ERR_LOG("%s 法术科技光碟等级高于职业可用等级", get_player_describe(src));
                 return -1;
             }
+
+            DBG_LOG("类型 %d 等级 %d", iitem->data.datab[4], iitem->data.datab[2]);
 
             set_technique_level(&character->technique_levels_v1, &character->inv, iitem->data.datab[4], iitem->data.datab[2]);
             break;
@@ -2535,143 +2535,6 @@ void fix_inv_bank_item(item_t* i) {
         break;
     }
 
-}
-
-//修复背包装备数据错误的物品代码
-void fix_equip_item(inventory_t* inv) {
-    uint32_t i, eq_weapon = 0, eq_armor = 0, eq_unit = 0, eq_shield = 0, eq_mag = 0;
-
-    /* 检查所有已装备的物品 */
-    for (i = 0; i < inv->item_count; i++) {
-        if (inv->iitems[i].flags & EQUIP_FLAGS) {
-            switch (inv->iitems[i].data.datab[0])
-            {
-            case ITEM_TYPE_WEAPON:
-                eq_weapon++;
-                break;
-
-            case ITEM_TYPE_GUARD:
-                switch (inv->iitems[i].data.datab[1])
-                {
-                case ITEM_SUBTYPE_FRAME:
-                    eq_armor++;
-                    break;
-
-                case ITEM_SUBTYPE_BARRIER:
-                    eq_shield++;
-                    break;
-
-                case ITEM_SUBTYPE_UNIT:
-                    eq_unit++;
-                    break;
-                }
-                break;
-
-            case ITEM_TYPE_MAG:
-                eq_mag++;
-                break;
-            }
-        }
-    }
-
-    if (eq_weapon > 1) {
-        for (i = 0; i < inv->item_count; i++) {
-            // Unequip all weapons when there is more than one equipped.  
-            // 当装备了多个武器时,取消所装备武器
-            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_WEAPON) &&
-                (inv->iitems[i].flags & EQUIP_FLAGS))
-                inv->iitems[i].flags &= UNEQUIP_FLAGS;
-        }
-
-    }
-
-    if (eq_armor > 1) {
-        for (i = 0; i < inv->item_count; i++) {
-            // Unequip all armor and slot items when there is more than one armor equipped. 
-            // 当装备了多个护甲时，取消装备所有护甲和槽道具。 
-            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
-                (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) &&
-                (inv->iitems[i].flags & EQUIP_FLAGS)) {
-
-                inv->iitems[i].data.datab[3] = 0x00;
-                inv->iitems[i].flags &= UNEQUIP_FLAGS;
-            }
-        }
-    }
-
-    if (eq_unit > 4) {
-        for (i = 0; i < inv->item_count; i++) {
-            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
-                (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) &&
-                (inv->iitems[i].flags & EQUIP_FLAGS)) {
-
-                inv->iitems[i].data.datab[3] = 0x00;
-                inv->iitems[i].flags &= UNEQUIP_FLAGS;
-            }
-        }
-    }
-
-    if (eq_shield > 1) {
-        for (i = 0; i < inv->item_count; i++) {
-            // Unequip all shields when there is more than one equipped. 
-            // 当装备了多个护盾时，取消装备所有护盾。 
-            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
-                (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
-                (inv->iitems[i].flags & EQUIP_FLAGS)) {
-
-                inv->iitems[i].data.datab[3] = 0x00;
-                inv->iitems[i].flags &= UNEQUIP_FLAGS;
-            }
-        }
-    }
-
-    if (eq_mag > 1) {
-        for (i = 0; i < inv->item_count; i++) {
-            // Unequip all mags when there is more than one equipped. 
-            // 当装备了多个玛古时，取消装备所有玛古。 
-            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_MAG) &&
-                (inv->iitems[i].flags & EQUIP_FLAGS))
-                inv->iitems[i].flags &= UNEQUIP_FLAGS;
-        }
-    }
-}
-
-/* 清理背包物品 */
-void fix_client_inv(inventory_t* inv) {
-    uint8_t i, j = 0;
-
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-        clear_iitem(&fix_iitem[i]);
-
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
-        if (item_not_identification_bb(inv->iitems[i].data.datal[0], inv->iitems[i].data.datal[1]))
-            continue;
-
-        fix_iitem[j++] = inv->iitems[i];
-    }
-
-    inv->item_count = j;
-
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-        inv->iitems[i] = fix_iitem[i];
-}
-
-void fix_client_bank(psocn_bank_t* bank) {
-    size_t i, j = 0;
-
-    for (j = 0; j < MAX_PLAYER_BANK_ITEMS; j++)
-        clear_bitem(&fix_bitem[j]);
-
-    j = 0;
-
-    for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++)
-        if ((bank->bitems[i].show_flags == 0x0001) && bank->bitems[i].amount >= 1)
-            fix_bitem[j++] = bank->bitems[i];
-
-    bank->item_count = j;
-
-    for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++)
-        bank->bitems[i] = fix_bitem[i];
 }
 
 //整理仓库物品

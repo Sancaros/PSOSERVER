@@ -100,12 +100,7 @@ void remove_titem_equip_flags(iitem_t* trade_item);
 //修复背包银行数据错误的物品代码
 void fix_inv_bank_item(item_t* i);
 
-//修复背包装备数据错误的物品代码
-void fix_equip_item(inventory_t* inv);
-
-/* 清理背包物品 */
-void fix_client_inv(inventory_t* inv);
-void fix_client_bank(psocn_bank_t* bank);
+/* 整理背包物品 */
 void sort_client_bank(psocn_bank_t* bank);
 
 #endif /* !IITEMS_H */

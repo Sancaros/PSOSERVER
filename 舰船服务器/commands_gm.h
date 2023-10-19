@@ -1035,6 +1035,7 @@ static void dumpinv_ext_internal(ship_client_t* src) {
 
         GM_LOG("------------------------------------------------------------");
         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+            GM_LOG("Ë÷Òý: %d", i);
             GM_LOG("EXT1: %d", character_v1->inv.iitems[i].extension_data1);
             GM_LOG("EXT2: %d", character_v1->inv.iitems[i].extension_data2);
             GM_LOG("------------------------------------------------------------");
@@ -1063,6 +1064,7 @@ static void dumpinv_ext_internal(ship_client_t* src) {
 
         GM_LOG("------------------------------------------------------------");
         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+            GM_LOG("Ë÷Òý: %d", i);
             GM_LOG("EXT1: %d", inv_bb->iitems[i].extension_data1);
             GM_LOG("EXT2: %d", inv_bb->iitems[i].extension_data2);
             GM_LOG("------------------------------------------------------------");

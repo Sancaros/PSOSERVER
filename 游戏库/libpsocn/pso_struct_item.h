@@ -209,8 +209,8 @@ typedef struct bb_item_mst {
 typedef struct psocn_iitem {
     uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用
   // See note above about these fields
-    uint8_t extension_data1;  //是否鉴定
-    uint8_t extension_data2;
+    uint8_t extension_data1;  //部分字节存储法术
+    uint8_t extension_data2;  //部分字节存储吃药数量
     uint32_t flags;// 0x00000008 = 已装备
     item_t data;
 } PACKED iitem_t;

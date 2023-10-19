@@ -3003,6 +3003,39 @@ uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech) {
     return max_tech_level[tech].max_lvl[ch_class];
 }
 
+void fix_player_max_tech_level(psocn_bb_char_t* character) {
+    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
+
+        uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
+        if (player_tech_level == TECHNIQUE_UNLEARN) {
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
+            continue;
+        }
+
+        if (player_tech_level > get_bb_max_tech_level(character->dress_data.ch_class, i)) {
+            /* 移除不合规的法术 */
+#ifdef DEBUG
+            DBG_LOG("%s:%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
+                , character->dress_data.gc_string
+                , pso_class[character->dress_data.ch_class].cn_name
+                , get_technique_comment(i), show_technique_level(character, i)
+                , get_bb_max_tech_level(character, i)
+                , get_bb_max_tech_level(character, i)
+            );
+#endif // DEBUG
+
+            DBG_LOG("%s:%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
+                , character->dress_data.gc_string
+                , pso_class[character->dress_data.ch_class].cn_name
+                , get_technique_comment(i), get_technique_level(&character->technique_levels_v1, &character->inv, i)
+                , get_bb_max_tech_level(character->dress_data.ch_class, i)
+                , get_bb_max_tech_level(character->dress_data.ch_class, i)
+            );
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
+        }
+    }
+}
+
 /* 处理E7指令传输过来的BB角色数据 **************************************************************/
 static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)pkt->pkt;
@@ -3032,34 +3065,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-        uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
-        if (player_tech_level == TECHNIQUE_UNLEARN) {
-#ifdef DEBUG
-            DBG_LOG("GC %u:%u 法术 %s 等级 %d 为 0xFF!"
-                , gc
-                , slot
-                , get_technique_comment(i), full_char->character.tech.all[i]
-            );
-#endif // DEBUG
-            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
-            continue;
-        }
-
-        if (player_tech_level >= get_bb_max_tech_level(ch_class, i)) {
-            /* 移除不合规的法术 */
-#ifdef DEBUG
-            DBG_LOG("GC %u:%u 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
-                , gc
-                , slot
-                , get_technique_comment(i), show_technique_level(character, i)
-                , get_bb_max_tech_level(ch_class, i)
-                , get_bb_max_tech_level(ch_class, i)
-            );
-#endif // DEBUG
-            set_technique_level(&character->technique_levels_v1, &character->inv, i, get_bb_max_tech_level(ch_class, i));
-        }
-    }
+    fix_player_max_tech_level(character);
 
     if (db_update_char_techniques(character, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
@@ -3654,6 +3660,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
 
                 return -2;
             }
+            fix_player_max_tech_level(&backupdata.character);
             db_update_char_inv(&backupdata.character.inv, gc, slot);
             db_update_char_disp(&backupdata.character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_dress_data(&backupdata.character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
@@ -3671,6 +3678,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
         }
         else {
             /* 将数据发回舰船. */
+            fix_player_max_tech_level(&bb_data->character);
             rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
         }
 

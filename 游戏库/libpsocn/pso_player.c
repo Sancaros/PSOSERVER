@@ -116,60 +116,34 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 }
 
 void set_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which, uint8_t level) {
-	if (level == TECHNIQUE_UNLEARN) {
-		technique_levels_v1->all[which] = TECHNIQUE_UNLEARN;
-		inv->iitems[which].extension_data1 = 0x00;
-	}
-	else if (level <= TECHNIQUE_V1_MAX_LEVEL) {
+	if (level <= TECHNIQUE_V1_MAX_LEVEL) {
 		technique_levels_v1->all[which] = level;
-		inv->iitems[which].extension_data1 = 0x00;
-	} else {
+		inv->iitems[which].extension_data1 = level - TECHNIQUE_V1_MAX_LEVEL;
+		//DBG_LOG("%s level %d <= 14 %d %d", get_technique_comment(which), level, technique_levels_v1->all[which], inv->iitems[which].extension_data1);
+	}
+	else if (level <= TECHNIQUE_V2_MAX_LEVEL) {
 		technique_levels_v1->all[which] = TECHNIQUE_V1_MAX_LEVEL;
 		inv->iitems[which].extension_data1 = level - TECHNIQUE_V1_MAX_LEVEL;
+		//DBG_LOG("%s level %d <= 29 %d %d", get_technique_comment(which), level, technique_levels_v1->all[which], inv->iitems[which].extension_data1);
+	}
+	else {
+		technique_levels_v1->all[which] = TECHNIQUE_UNLEARN;
+		inv->iitems[which].extension_data1 = 0x00;
+		//DBG_LOG("%s level %d > 29 %d %d", get_technique_comment(which), level, technique_levels_v1->all[which], inv->iitems[which].extension_data1);
 	}
 }
 
 uint8_t get_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which) {
-	return (technique_levels_v1->all[which] == TECHNIQUE_UNLEARN)
-		? TECHNIQUE_UNLEARN
-		: (technique_levels_v1->all[which] + inv->iitems[which].extension_data1);
-}
-
-uint8_t show_technique_level(psocn_bb_char_t* character, uint8_t which) {
-
-	if (character->technique_levels_v1.all[which] == TECHNIQUE_UNLEARN)
-		return TECHNIQUE_UNLEARN;
-
-	switch (which) {
-		/*这两个法术永远是1级*/
-	case TECHNIQUE_RYUKER:
-	case TECHNIQUE_REVERSER:
-		return character->technique_levels_v1.all[which];
-
-		/*这个法术最高7级*/
-	case TECHNIQUE_ANTI:
-		return character->technique_levels_v1.all[which];
-
-	case TECHNIQUE_FOIE:
-	case TECHNIQUE_GIFOIE:
-	case TECHNIQUE_RAFOIE:
-	case TECHNIQUE_BARTA:
-	case TECHNIQUE_GIBARTA:
-	case TECHNIQUE_RABARTA:
-	case TECHNIQUE_ZONDE:
-	case TECHNIQUE_GIZONDE:
-	case TECHNIQUE_RAZONDE:
-	case TECHNIQUE_GRANTS:
-	case TECHNIQUE_DEBAND:
-	case TECHNIQUE_JELLEN:
-	case TECHNIQUE_ZALURE:
-	case TECHNIQUE_SHIFTA:
-	case TECHNIQUE_RESTA:
-	case TECHNIQUE_MEGID:
-		return character->technique_levels_v1.all[which] + character->inv.iitems[which].extension_data1;
+	uint8_t tech_level = TECHNIQUE_UNLEARN;
+	if (technique_levels_v1->all[which] == TECHNIQUE_UNLEARN) {
+		inv->iitems[which].extension_data1 = 0x00;
+		tech_level = TECHNIQUE_UNLEARN;
+	}
+	else if (technique_levels_v1->all[which] <= TECHNIQUE_V1_MAX_LEVEL) {
+		tech_level = technique_levels_v1->all[which] + inv->iitems[which].extension_data1;
 	}
 
-	return TECHNIQUE_UNLEARN;
+	return tech_level;
 }
 
 uint8_t get_material_usage(inventory_t* inv, MaterialType which) {
