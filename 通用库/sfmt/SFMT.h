@@ -151,6 +151,7 @@ inline static uint32_t sfmt_genrand_uint32(sfmt_t * sfmt) {
 inline static int sfmt_genrand_int32(sfmt_t* sfmt) {
     return (int)sfmt_genrand_uint32(sfmt);
 }
+
 #endif
 /**
  * This function generates and returns 64-bit pseudorandom number.
@@ -303,6 +304,28 @@ inline static double sfmt_genrand_res53_mix(sfmt_t * sfmt)
     x = sfmt_genrand_uint32(sfmt);
     y = sfmt_genrand_uint32(sfmt);
     return sfmt_to_res53_mix(x, y);
+}
+
+inline static uint32_t gen_random_uint32(sfmt_t* sfmt, uint32_t min, uint32_t max)
+{
+    uint32_t range = max - min + 1;
+    uint32_t rand_val;
+
+    // 生成 min 到 max 区间内的随机整数
+    rand_val = (uint32_t)(sfmt_genrand_real1(sfmt) * range) + min;
+
+    return rand_val;
+}
+
+inline static int gen_random_int32(sfmt_t* sfmt, int min, int max)
+{
+    int range = max - min + 1;
+    int rand_val;
+
+    // 生成 min 到 max 区间内的随机整数
+    rand_val = (int)(sfmt_genrand_real1(sfmt) * range) + min;
+
+    return rand_val;
 }
 
 #if defined(__cplusplus)

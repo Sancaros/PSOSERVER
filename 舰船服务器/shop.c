@@ -40,12 +40,12 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][12] = {
     BBItem_Difluid,
     BBItem_Trimate,
     BBItem_Trifluid,
-    BBItem_Sol_Atomizer,
-    BBItem_Moon_Atomizer,
-    BBItem_Star_Atomizer,
     BBItem_Antidote,
     BBItem_Antiparalysis,
     BBItem_Telepipe,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
     },
     {
     BBItem_Monomate,
@@ -54,12 +54,12 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][12] = {
     BBItem_Difluid,
     BBItem_Trimate,
     BBItem_Trifluid,
-    BBItem_Sol_Atomizer,
-    BBItem_Moon_Atomizer,
-    BBItem_Star_Atomizer,
     BBItem_Antidote,
     BBItem_Antiparalysis,
     BBItem_Telepipe,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
     },
     {
     BBItem_Monomate,
@@ -68,12 +68,12 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][12] = {
     BBItem_Difluid,
     BBItem_Trimate,
     BBItem_Trifluid,
-    BBItem_Sol_Atomizer,
-    BBItem_Moon_Atomizer,
-    BBItem_Star_Atomizer,
     BBItem_Antidote,
     BBItem_Antiparalysis,
     BBItem_Telepipe,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
     },
     {
     BBItem_Monomate,
@@ -82,12 +82,12 @@ static const uint32_t stable_shop_common_tool_item_subtype[4][12] = {
     BBItem_Difluid,
     BBItem_Trimate,
     BBItem_Trifluid,
-    BBItem_Sol_Atomizer,
-    BBItem_Moon_Atomizer,
-    BBItem_Star_Atomizer,
     BBItem_Antidote,
     BBItem_Antiparalysis,
     BBItem_Telepipe,
+    BBItem_Sol_Atomizer,
+    BBItem_Moon_Atomizer,
+    BBItem_Star_Atomizer,
     }
 };
 
@@ -98,9 +98,9 @@ item_t create_common_bb_shop_tool_item(uint8_t 难度, uint8_t index) {
 }
 
 item_t create_common_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
-    static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
-    static const uint8_t max_tech_lvl[4] = { 4,  7, 10, 15 };
-    static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
+    static const uint8_t max_quantity[4] = { 1,  1,  1,  1  };
+    static const uint8_t max_tech_lvl[4] = { 4,  8,  12, 18 };
+    static const uint8_t max_anti_lvl[4] = { 2,  3,  4,  5  };
     item_t item = { 0 };
     uint8_t tmp_value = 0;
     item.datab[0] = 物品类型;
@@ -276,7 +276,10 @@ item_t create_common_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因
                 item.datab[2] = 0; // reverser & ryuker always level 1 这两个法术永远是1级
                 break;
             case TECHNIQUE_ANTI:
-                item.datab[2] = sfmt_genrand_uint32(随机因子) % max_anti_lvl[难度];
+                if (难度 == GAME_TYPE_DIFFICULTY_NORMAL)
+                    item.datab[2] = sfmt_genrand_uint32(随机因子) % max_anti_lvl[难度];
+                else
+                    item.datab[2] = gen_random_uint32(随机因子, max_anti_lvl[难度 - 1], max_anti_lvl[难度])/*sfmt_genrand_uint32(随机因子) % max_anti_lvl[难度] + max_anti_lvl[难度 - 1]*/;
                 break;
             case TECHNIQUE_FOIE:
             case TECHNIQUE_GIFOIE:
@@ -294,7 +297,10 @@ item_t create_common_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因
             case TECHNIQUE_SHIFTA:
             case TECHNIQUE_RESTA:
             case TECHNIQUE_MEGID:
-                item.datab[2] = sfmt_genrand_uint32(随机因子) % max_tech_lvl[难度];
+                if (难度 == GAME_TYPE_DIFFICULTY_NORMAL)
+                    item.datab[2] = sfmt_genrand_uint32(随机因子) % max_tech_lvl[难度];
+                else
+                    item.datab[2] = gen_random_uint32(随机因子, max_tech_lvl[难度 - 1], max_tech_lvl[难度])/*sfmt_genrand_uint32(随机因子) % max_tech_lvl[难度] + max_tech_lvl[难度 - 1]*/;
                 break;
             }
             break;

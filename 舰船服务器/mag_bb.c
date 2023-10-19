@@ -307,6 +307,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	DBG_LOG("%d %d %d %d %d %d", feed_result.def, feed_result.pow, feed_result.dex, feed_result.mind, feed_result.synchro, feed_result.iq);
 
 #endif // DEBUG
+	print_item_data(mag_item, src->version);
 
 	update_stat(mag_item, 2, feed_result.def);
 	update_stat(mag_item, 3, feed_result.pow);
@@ -538,6 +539,8 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	print_item_data(mag_item, src->version);
 
 #endif // DEBUG
+
+	print_item_data(mag_item, src->version);
 
 	return err;
 }
