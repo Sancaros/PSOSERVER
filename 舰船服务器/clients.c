@@ -1893,7 +1893,7 @@ void fix_player_max_tech_level(psocn_bb_char_t* character) {
             continue;
         }
 
-        if (player_tech_level > get_bb_max_tech_level(character->dress_data.ch_class, i)) {
+        if (player_tech_level + 1 > get_bb_max_tech_level(character->dress_data.ch_class, i)) {
             /* 移除不合规的法术 */
 #ifdef DEBUG
 

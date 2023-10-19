@@ -3012,18 +3012,9 @@ void fix_player_max_tech_level(psocn_bb_char_t* character) {
             continue;
         }
 
-        if (player_tech_level > get_bb_max_tech_level(character->dress_data.ch_class, i)) {
+        if (player_tech_level + 1 > get_bb_max_tech_level(character->dress_data.ch_class, i)) {
             /* 移除不合规的法术 */
 #ifdef DEBUG
-            DBG_LOG("%s:%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
-                , character->dress_data.gc_string
-                , pso_class[character->dress_data.ch_class].cn_name
-                , get_technique_comment(i), show_technique_level(character, i)
-                , get_bb_max_tech_level(character, i)
-                , get_bb_max_tech_level(character, i)
-            );
-#endif // DEBUG
-
             DBG_LOG("%s:%s 法术 %s 等级 %d 高于 %d, 修正为 %d 级!"
                 , character->dress_data.gc_string
                 , pso_class[character->dress_data.ch_class].cn_name
@@ -3031,6 +3022,7 @@ void fix_player_max_tech_level(psocn_bb_char_t* character) {
                 , get_bb_max_tech_level(character->dress_data.ch_class, i)
                 , get_bb_max_tech_level(character->dress_data.ch_class, i)
             );
+#endif // DEBUG
             set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
         }
     }
@@ -6104,8 +6096,8 @@ int handle_pkt(ship_t* c) {
     //    ERR_LOG("Gnutls *** 错误: 发送的数据无效.");
     //}
 
-    DATA_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
-    DATA_LOG("handle_pkt");
+    //DATA_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
+    //DATA_LOG("handle_pkt");
     //print_ascii_hex(dbgl, recvbuf, sz);
     if (sz <= 0) {
         pthread_rwlock_unlock(&c->rwlock);

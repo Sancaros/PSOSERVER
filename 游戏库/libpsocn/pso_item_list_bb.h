@@ -1578,6 +1578,7 @@ typedef struct bbitem_map_s {
     union {
         bbitem_code_t code;
         uint8_t datab[4];
+        uint32_t datal;
     };
     const char* name;
 } PACKED bbitem_map_t;

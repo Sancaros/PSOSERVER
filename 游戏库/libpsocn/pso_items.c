@@ -292,12 +292,10 @@ const char* bbitem_get_name_by_code(const item_t* item, int languageCheck) {
 	/* Look through the list for the one we want */
 	while (cur->code != BBItem_NoSuchItem) {
 		if (cur->datab[0] == item->datab[0]) {
-			if (item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK)
-				if (cur->datab[2] == item->datab[4])
-					return cur->name;
-
-
-			if (item->datab[0] == ITEM_TYPE_MAG) {
+			if (item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK && cur->datab[2] == item->datab[4]) {
+				return cur->name;
+			}
+			else if (item->datab[0] == ITEM_TYPE_MAG) {
 				if (cur->datab[1] == item->datab[1])
 					return cur->name;
 			}

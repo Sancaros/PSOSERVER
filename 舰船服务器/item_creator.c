@@ -800,9 +800,8 @@ item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t pkt_area, uint8_t area,
 	item_t item = { 0 };
 	uint8_t new_area = normalize_area_number(l, pkt_area);
 #ifdef DEBUG
-	DBG_LOG("new_area %d area %d", new_area, area);
-#endif // DEBUG
 	DBG_LOG("新new_area %d area %d", new_area, area);
+#endif // DEBUG
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);
@@ -934,9 +933,8 @@ item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_
 	item_t item = { 0 };
 	uint8_t new_area = normalize_area_number(l, pkt_area);
 #ifdef DEBUG
-	DBG_LOG("new_area %d 新area %d", new_area, area);
-#endif // DEBUG
 	DBG_LOG("新new_area %d area %d", new_area, area);
+#endif // DEBUG
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);

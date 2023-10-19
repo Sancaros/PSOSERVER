@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #define TECHNIQUE_UNLEARN           0xFF
+#define TECHNIQUE_V1_LEVEL_1        0x00
 #define TECHNIQUE_V1_MAX_LEVEL      0x0E
 #define TECHNIQUE_V2_MAX_LEVEL      0x1D
 

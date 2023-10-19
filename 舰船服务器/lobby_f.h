@@ -54,6 +54,41 @@ do { \
         ERR_LOG("%s 不在一个有效的房间内", get_player_describe(c)); \
 } while (0)
 
+#define LOBBY_USE_ITEM_LOG(c, item_id, area, item) \
+do { \
+    lobby_t* l = (c)->cur_lobby; \
+    if (l) { \
+        char buff[512]; \
+        int len = 0; \
+        len += snprintf(buff + len, sizeof(buff) - len, "\n---------区域 %d 物品ID 0x%08X 使用物品--------- \n", area, item_id); \
+        len += snprintf(buff + len, sizeof(buff) - len, "%s %s 在区域 %d 使用物品!\n" \
+            , get_player_describe(c) \
+            , get_section_describe(c, get_player_section(c), true) \
+            , (c)->cur_area \
+        ); \
+        if (l) { \
+            len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
+            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){\
+	            len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
+                len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
+                len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
+                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
+                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
+                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
+                len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
+            } else { \
+                len += snprintf(buff + len, sizeof(buff) - len, "%s 使用无效物品\n", get_player_describe(c)); \
+                print_ascii_hex(pickl, item, PSOCN_STLENGTH_ITEM); \
+            }\
+        } \
+        buff[sizeof(buff) - 1] = '\0'; \
+        ITEM_USE_LOG("%s", buff); \
+    } \
+    else \
+        ERR_LOG("%s 不在一个有效的房间内", get_player_describe(c)); \
+} while (0)
+
 #define LOBBY_BANK_DEPOSIT_ITEM_LOG(c, item_id, area, item) \
 do { \
     lobby_t* l = (c)->cur_lobby; \

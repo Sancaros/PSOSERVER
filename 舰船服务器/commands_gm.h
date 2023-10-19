@@ -731,20 +731,30 @@ static int handle_item(ship_client_t* src, const char* params) {
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
+
+        send_txt(src, "%s %s %s",
+            __(src, "\tE\tC8物品:"),
+            item_get_name(&idata, src->version, 0),
+            __(src, "\tE\tC6设置成功, 立即生成."));
+
     }
     else {
         ++l->item_player_id[src->client_id];
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
+
+        idata = src->new_item;
+
+        send_txt(src, "%s %s %s",
+            __(src, "\tE\tC8物品:"),
+            item_get_name(&src->new_item, src->version, 0),
+            __(src, "\tE\tC6设置成功, 立即生成."));
     }
 
     LOBBY_GM_MAKE_ITEM_LOG(src, idata.item_id, src->cur_area, &idata);
 
-    return send_txt(src, "%s %s %s",
-        __(src, "\tE\tC8物品:"),
-        item_get_name(&src->new_item, src->version, 0),
-        __(src, "\tE\tC6设置成功, 立即生成."));
+    return 0;
 }
 
 /* 用法 /item1 item1 */

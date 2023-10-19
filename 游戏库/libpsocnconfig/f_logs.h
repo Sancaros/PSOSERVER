@@ -88,6 +88,7 @@ enum Log_files_Num {
     TEKK_LOG = 8, //½¢´¬
     BANKD_LOG = 8, //½¢´¬
     BANKT_LOG = 8, //½¢´¬
+    USE_LOG = 8, //½¢´¬
     DATA_LOG = 14, //²¹¶¡ µÇÂ½ ½¢´¬
 };
 
@@ -133,6 +134,7 @@ static log_map_st log_header[] = {
     { TEKK_LOG,			    "¼ø¶¨" }, //½¢´¬
     { BANKD_LOG,			"Òø´æ" }, //½¢´¬
     { BANKT_LOG,			"ÒøÈ¡" }, //½¢´¬
+    { USE_LOG,			    "Ê¹ÓÃ" }, //½¢´¬
     { DATA_LOG,			    "´«Êä" }, //½¢´¬
 };
 
@@ -310,6 +312,13 @@ do { \
 do { \
     pthread_mutex_lock(&log_item_mutex); \
     flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_item_mutex); \
+} while (0)
+
+#define ITEM_USE_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_item_mutex); \
+    flog_item(logfilename(__FILE__), __LINE__, item_log_console_show, USE_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&log_item_mutex); \
 } while (0)
 

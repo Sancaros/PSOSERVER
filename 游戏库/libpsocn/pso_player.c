@@ -116,20 +116,13 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 }
 
 void set_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which, uint8_t level) {
-	if (level <= TECHNIQUE_V1_MAX_LEVEL) {
-		technique_levels_v1->all[which] = level;
-		inv->iitems[which].extension_data1 = level - TECHNIQUE_V1_MAX_LEVEL;
-		//DBG_LOG("%s level %d <= 14 %d %d", get_technique_comment(which), level, technique_levels_v1->all[which], inv->iitems[which].extension_data1);
-	}
-	else if (level <= TECHNIQUE_V2_MAX_LEVEL) {
-		technique_levels_v1->all[which] = TECHNIQUE_V1_MAX_LEVEL;
-		inv->iitems[which].extension_data1 = level - TECHNIQUE_V1_MAX_LEVEL;
-		//DBG_LOG("%s level %d <= 29 %d %d", get_technique_comment(which), level, technique_levels_v1->all[which], inv->iitems[which].extension_data1);
-	}
-	else {
+	if (level < TECHNIQUE_V1_LEVEL_1 || level > TECHNIQUE_V2_MAX_LEVEL) {
 		technique_levels_v1->all[which] = TECHNIQUE_UNLEARN;
 		inv->iitems[which].extension_data1 = 0x00;
-		//DBG_LOG("%s level %d > 29 %d %d", get_technique_comment(which), level, technique_levels_v1->all[which], inv->iitems[which].extension_data1);
+	}
+	else {
+		technique_levels_v1->all[which] = (level <= TECHNIQUE_V1_MAX_LEVEL) ? level : TECHNIQUE_V1_MAX_LEVEL;
+		inv->iitems[which].extension_data1 = (level > TECHNIQUE_V1_MAX_LEVEL) ? (level - TECHNIQUE_V1_MAX_LEVEL) : 0x00;
 	}
 }
 
