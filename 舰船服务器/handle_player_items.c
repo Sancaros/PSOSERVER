@@ -1039,8 +1039,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     // delete the item here.
     bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
     errno_t err = 0;
-
-    //psocn_bb_char_t* character = get_client_char_bb(src);
+    
     inventory_t* inv = get_client_inv(src);
 
     int index = find_iitem_index(inv, item_id);

@@ -52,7 +52,7 @@ static command_t cmds[] = {
     { "item2"    , handle_item2         },
     { "item3"    , handle_item3         },
     { "item4"    , handle_item4         },
-    { "miitem"   , handle_miitem        },
+    { "mitem"    , handle_mitem         },
     { "dbginv"   , handle_dbginv        },
     { "dbgbank"  , handle_dbgbank       },
     { "stfu"     , handle_stfu          },

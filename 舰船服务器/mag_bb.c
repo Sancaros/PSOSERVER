@@ -250,11 +250,11 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	errno_t err = 0;
 	bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
 
-	psocn_bb_char_t* character = get_client_char_bb(src);
+	inventory_t* inv = get_client_inv(src);
 
 	int mag_item_index = -1;
 	int feed_item_index = -1;
-	if (!find_mag_and_feed_item(&character->inv, mag_item_id, feed_item_id, &mag_item_index, &feed_item_index)) {
+	if (!find_mag_and_feed_item(inv, mag_item_id, feed_item_id, &mag_item_index, &feed_item_index)) {
 		// 没有找到魔法装备和喂养物品
 		ERR_LOG("%s 玛古或物品不存在!", get_player_describe(src));
 		return -1;
@@ -262,10 +262,10 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	// 找到了魔法装备和喂养物品
 	// 可以使用mag_item_index和feed_item_index进行后续操作
-	item_t* mag_item = &character->inv.iitems[mag_item_index].data;
+	item_t* mag_item = &inv->iitems[mag_item_index].data;
 
 	/* 搜索物品的结果索引 */
-	size_t result_index = find_result_index(primary_identifier(&character->inv.iitems[feed_item_index].data));
+	size_t result_index = find_result_index(primary_identifier(&inv->iitems[feed_item_index].data));
 
 	if (should_delete_item) {
 		item_t delete_item = remove_invitem(src, feed_item_id, 1, src->version != CLIENT_VERSION_BB);
@@ -276,12 +276,12 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	}
 
 	/* 玛古再次进行检索 */
-	mag_item_index = find_iitem_index(&character->inv, mag_item_id);
+	mag_item_index = find_iitem_index(inv, mag_item_id);
 	if (mag_item_index < 0) {
 		ERR_LOG("%s 玛古不存在! 错误码 %d", get_player_describe(src), mag_item_index);
 		return mag_item_index;
 	}
-	mag_item = &character->inv.iitems[mag_item_index].data;
+	mag_item = &inv->iitems[mag_item_index].data;
 
 	/* 查找该玛古的喂养表 */
 	pmt_mag_bb_t mag_table = { 0 };
@@ -328,7 +328,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	}
 	else if (mag_level < 35) { // Level 10 evolution
 		if (evolution_number < 1) {
-			switch (character->dress_data.ch_class) {
+			switch (get_player_class(src)) {
 			case CLASS_HUMAR: // HUmar
 			case CLASS_HUNEWEARL: // HUnewearl
 			case CLASS_HUCAST: // HUcast
@@ -348,7 +348,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				mag_item->datab[1] = 0x19; // Vritra
 				break;
 			default:
-				ERR_LOG("%s 无效角色职业 %d", get_player_describe(src), character->dress_data.ch_class);
+				ERR_LOG("%s 无效角色职业 %d", get_player_describe(src), get_player_class(src));
 				err = -2;
 				return err;
 			}
@@ -390,7 +390,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		if (evolution_number < 4) {
 
 			if (mag_level >= 100) {
-				uint8_t section_id_group = character->dress_data.section % 3;
+				uint8_t section_id_group = get_player_section(src) % 3;
 				uint16_t def = mag_item->dataw[2] / 100;
 				uint16_t pow = mag_item->dataw[3] / 100;
 				uint16_t dex = mag_item->dataw[4] / 100;
@@ -408,7 +408,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 					table_index += 6;
 				}
 				else if (!is_hunter) {
-					ERR_LOG("%s 角色职业 %s 不在玛古进化范围中", get_player_describe(src), pso_class[character->dress_data.ch_class].cn_name);
+					ERR_LOG("%s 角色职业 %s 不在玛古进化范围中", get_player_describe(src), pso_class[get_player_class(src)].cn_name);
 					err = -3;
 					return err;
 				}
@@ -443,41 +443,41 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				bool is_ranger = char_class_is_ranger(src->equip_flags);
 				bool is_force = char_class_is_force(src->equip_flags);
 				if (!is_hunter && !is_ranger && !is_force) {
-					ERR_LOG("%s 角色职业 %s 不在范围中", get_player_describe(src), pso_class[character->dress_data.ch_class].cn_name);
+					ERR_LOG("%s 角色职业 %s 不在范围中", get_player_describe(src), pso_class[get_player_class(src)].cn_name);
 					err = -4;
 					return err;
 				}
 
 				if (is_hunter) {
 					if (flags & 0x108) {
-						mag_item->datab[1] = (character->dress_data.section & 1)
+						mag_item->datab[1] = (get_player_section(src) & 1)
 							? ((dex < mind) ? 0x08 : 0x06)
 							: ((dex < mind) ? 0x0C : 0x05);
 					}
 					else if (flags & 0x010) {
-						mag_item->datab[1] = (character->dress_data.section & 1)
+						mag_item->datab[1] = (get_player_section(src) & 1)
 							? ((mind < pow) ? 0x12 : 0x10)
 							: ((mind < pow) ? 0x17 : 0x13);
 					}
 					else if (flags & 0x020) {
-						mag_item->datab[1] = (character->dress_data.section & 1)
+						mag_item->datab[1] = (get_player_section(src) & 1)
 							? ((pow < dex) ? 0x16 : 0x24)
 							: ((pow < dex) ? 0x07 : 0x1E);
 					}
 				}
 				else if (is_ranger) {
 					if (flags & 0x110) {
-						mag_item->datab[1] = (character->dress_data.section & 1)
+						mag_item->datab[1] = (get_player_section(src) & 1)
 							? ((mind < pow) ? 0x0A : 0x05)
 							: ((mind < pow) ? 0x0C : 0x06);
 					}
 					else if (flags & 0x008) {
-						mag_item->datab[1] = (character->dress_data.section & 1)
+						mag_item->datab[1] = (get_player_section(src) & 1)
 							? ((dex < mind) ? 0x0A : 0x26)
 							: ((dex < mind) ? 0x0C : 0x06);
 					}
 					else if (flags & 0x020) {
-						mag_item->datab[1] = (character->dress_data.section & 1)
+						mag_item->datab[1] = (get_player_section(src) & 1)
 							? ((pow < dex) ? 0x18 : 0x1E)
 							: ((pow < dex) ? 0x08 : 0x05);
 					}
@@ -485,7 +485,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				else if (is_force) {
 					if (flags & 0x120) {
 						if (def < 45) {
-							mag_item->datab[1] = (character->dress_data.section & 1)
+							mag_item->datab[1] = (get_player_section(src) & 1)
 								? ((pow < dex) ? 0x17 : 0x09)
 								: ((pow < dex) ? 0x1E : 0x1C);
 						}
@@ -495,7 +495,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 					}
 					else if (flags & 0x008) {
 						if (def < 45) {
-							mag_item->datab[1] = (character->dress_data.section & 1)
+							mag_item->datab[1] = (get_player_section(src) & 1)
 								? ((dex < mind) ? 0x1C : 0x20)
 								: ((dex < mind) ? 0x1F : 0x25);
 						}
@@ -505,7 +505,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 					}
 					else if (flags & 0x010) {
 						if (def < 45) {
-							mag_item->datab[1] = (character->dress_data.section & 1)
+							mag_item->datab[1] = (get_player_section(src) & 1)
 								? ((mind < pow) ? 0x12 : 0x0C)
 								: ((mind < pow) ? 0x15 : 0x11);
 						}
