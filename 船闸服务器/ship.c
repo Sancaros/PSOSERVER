@@ -6056,18 +6056,18 @@ static inline ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
 }
 
 /* 从舰船服务器读取数据流. */
-int handle_pkt(ship_t* c) {
-    if (c == NULL) {
+int handle_pkt(ship_t* ship) {
+    if (ship == NULL) {
         ERR_LOG("非法舰船链接");
         return -2;
     }
 
-    if (!c->session) {
+    if (!ship->session) {
         ERR_LOG("非法舰船session");
         return -3;
     }
 
-    pthread_rwlock_rdlock(&c->rwlock);
+    pthread_rwlock_rdlock(&ship->rwlock);
 
     ssize_t sz;
     uint16_t pkt_sz;
@@ -6077,18 +6077,18 @@ int handle_pkt(ship_t* c) {
     void* tmp;
     int recv_size = 8;
 
-    memset(&c->pkt, 0, recv_size);
+    memset(&ship->pkt, 0, recv_size);
     if (recvbuf == NULL) {
-        pthread_rwlock_unlock(&c->rwlock);
+        pthread_rwlock_unlock(&ship->rwlock);
         ERR_LOG("内存分配失败");
         return -1;
     }
 
-    if (c->recvbuf_cur) {
-        memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
+    if (ship->recvbuf_cur) {
+        memcpy(recvbuf, ship->recvbuf, ship->recvbuf_cur);
     }
 
-    sz = ship_recv(c, recvbuf + c->recvbuf_cur, MAX_PACKET_BUFF - c->recvbuf_cur);
+    sz = ship_recv(ship, recvbuf + ship->recvbuf_cur, MAX_PACKET_BUFF - ship->recvbuf_cur);
 
     //gnutls_datum_t datum = { (void*)recvbuf, sz };
     //int status = gnutls_check_version(datum.data);
@@ -6096,47 +6096,47 @@ int handle_pkt(ship_t* c) {
     //    ERR_LOG("Gnutls *** 错误: 发送的数据无效.");
     //}
 
-    DATA_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
+    DATA_LOG("从端口 %d 接收数据 %d 字节", ship->sock, sz);
     DATA_LOG("handle_pkt");
     //print_ascii_hex(dbgl, recvbuf, sz);
     if (sz <= 0) {
-        pthread_rwlock_unlock(&c->rwlock);
+        pthread_rwlock_unlock(&ship->rwlock);
         if (sz == SOCKET_ERROR) {
-            DBG_LOG("%s Gnutls *** 注意: SOCKET_ERROR", get_ship_describe(c));
+            DBG_LOG("%s Gnutls *** 注意: SOCKET_ERROR", get_ship_describe(ship));
         }
         else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-            ERR_LOG("%s Gnutls *** 警告: %s", get_ship_describe(c), gnutls_strerror(sz));
+            ERR_LOG("%s Gnutls *** 警告: %s", get_ship_describe(ship), gnutls_strerror(sz));
         }
         else if (sz < 0) {
             ERR_LOG("%s Gnutls *** 错误: %s"
-                , get_ship_describe(c)
+                , get_ship_describe(ship)
                 , gnutls_strerror(sz)
             );
-            ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_ship_describe(c), sz);
+            ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_ship_describe(ship), sz);
         }
 
         //free_safe(recvbuf);
         return -4;
     }
 
-    sz += c->recvbuf_cur;
-    c->recvbuf_cur = 0;
+    sz += ship->recvbuf_cur;
+    ship->recvbuf_cur = 0;
     rbp = recvbuf;
 
     while (sz >= recv_size && rv == 0) {
-        if (!c->hdr_read) {
-            memcpy(&c->pkt, rbp, recv_size);
-            c->hdr_read = 1;
+        if (!ship->hdr_read) {
+            memcpy(&ship->pkt, rbp, recv_size);
+            ship->hdr_read = 1;
         }
 
-        pkt_sz = htons(c->pkt.pkt_len);
+        pkt_sz = htons(ship->pkt.pkt_len);
 
         if (sz >= (ssize_t)pkt_sz) {
-            memcpy(rbp, &c->pkt, recv_size);
-            c->last_message = time(NULL);
-            rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
+            memcpy(rbp, &ship->pkt, recv_size);
+            ship->last_message = time(NULL);
+            rv = process_ship_pkt(ship, (shipgate_hdr_t*)rbp);
             if (rv != 0) {
-                pthread_rwlock_unlock(&c->rwlock);
+                pthread_rwlock_unlock(&ship->rwlock);
                 ERR_LOG("process_ship_pkt 错误 rv = %d", rv);
                 //free_safe(recvbuf);
                 return -5;
@@ -6144,7 +6144,7 @@ int handle_pkt(ship_t* c) {
 
             rbp += pkt_sz;
             sz -= pkt_sz;
-            c->hdr_read = 0;
+            ship->hdr_read = 0;
         }
         else {
             break;
@@ -6152,29 +6152,29 @@ int handle_pkt(ship_t* c) {
     }
 
     if (sz) {
-        if (c->recvbuf_size < sz) {
-            tmp = realloc(c->recvbuf, sz);
+        if (ship->recvbuf_size < sz) {
+            tmp = realloc(ship->recvbuf, sz);
             if (tmp == NULL) {
-                pthread_rwlock_unlock(&c->rwlock);
+                pthread_rwlock_unlock(&ship->rwlock);
                 ERR_LOG("重新分配内存失败");
                 //free_safe(recvbuf);
                 return -6;
             }
 
-            c->recvbuf = (unsigned char*)tmp;
-            c->recvbuf_size = sz;
+            ship->recvbuf = (unsigned char*)tmp;
+            ship->recvbuf_size = sz;
         }
 
-        memcpy(c->recvbuf, rbp, sz);
-        c->recvbuf_cur = sz;
+        memcpy(ship->recvbuf, rbp, sz);
+        ship->recvbuf_cur = sz;
     }
     else {
-        free_safe(c->recvbuf);
-        c->recvbuf = NULL;
-        c->recvbuf_size = 0;
+        free_safe(ship->recvbuf);
+        ship->recvbuf = NULL;
+        ship->recvbuf_size = 0;
     }
 
-    pthread_rwlock_unlock(&c->rwlock);
+    pthread_rwlock_unlock(&ship->rwlock);
     //free_safe(recvbuf);
 
     return rv;

@@ -106,7 +106,7 @@ static inline ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
 }
 
 /* Send a raw packet away. */
-static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
+static int send_raw(ship_t* ship, int len, uint8_t* sendbuf) {
     __try {
         ssize_t rv, total = 0;
 
@@ -121,17 +121,17 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
         DATA_LOG("ship_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
-        pthread_rwlock_wrlock(&c->rwlock);
+        pthread_rwlock_wrlock(&ship->rwlock);
         //pthread_mutex_lock(&c->pkt_mutex);
 
         /* Keep trying until the whole thing's sent. */
-        if (!c->has_key || c->sock < 0 || !c->sendbuf_cur) {
+        if (!ship->has_key || ship->sock < 0 || !ship->sendbuf_cur) {
 
             //DBG_LOG("send_raw");
             //print_ascii_hex(dbgl, sendbuf, len);
 
             while (total < len) {
-                rv = ship_send(c, sendbuf + total, len - total);
+                rv = ship_send(ship, sendbuf + total, len - total);
                 //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
 
                 /* 检测数据是否以发送完成? */
@@ -140,7 +140,7 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                     continue;
                 }
                 else if (rv < 0) {
-                    pthread_rwlock_unlock(&c->rwlock);
+                    pthread_rwlock_unlock(&ship->rwlock);
                     //pthread_mutex_unlock(&c->pkt_mutex);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
@@ -152,7 +152,7 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
             }
         }
 
-        pthread_rwlock_unlock(&c->rwlock);
+        pthread_rwlock_unlock(&ship->rwlock);
         //pthread_mutex_unlock(&c->pkt_mutex);
         //free_safe(sendbuf);
 

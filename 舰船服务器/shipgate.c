@@ -166,7 +166,7 @@ static inline ssize_t sg_send(shipgate_conn_t* c, void* buffer, size_t len) {
 }
 
 /* Send a raw packet away. */
-static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
+static int send_raw(shipgate_conn_t* sg, int len, uint8_t* sendbuf, int crypt) {
     __try {
         ssize_t rv, total = 0;
 
@@ -180,7 +180,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
         DATA_LOG("shipgate_conn_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
-        pthread_rwlock_wrlock(&c->rwlock);
+        pthread_rwlock_wrlock(&sg->rwlock);
         //print_ascii_hex(dbgl, sendbuf, len);
 
         //gnutls_datum_t datum = { (void*)sendbuf, len };
@@ -190,9 +190,9 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
         //}
 
         /* Keep trying until the whole thing's sent. */
-        if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
+        if ((!crypt || sg->has_key) && sg->sock >= 0 && !sg->sendbuf_cur) {
             while (total < len) {
-                rv = sg_send(c, sendbuf + total, len - total);
+                rv = sg_send(sg, sendbuf + total, len - total);
 
                 //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
 
@@ -202,7 +202,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                     continue;
                 }
                 else if (rv < 0) {
-                    pthread_rwlock_unlock(&c->rwlock);
+                    pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //print_ascii_hex(errl, sendbuf, len);
@@ -213,7 +213,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
             }
         }
 
-        pthread_rwlock_unlock(&c->rwlock);
+        pthread_rwlock_unlock(&sg->rwlock);
         return 0;
     }
 
