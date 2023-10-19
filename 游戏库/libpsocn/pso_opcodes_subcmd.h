@@ -306,7 +306,7 @@
 #define SUBCMD60_CHARGE_ACT                    0xC7
 #define SUBCMD60_EXP_REQ                       0xC8    /* Blue Burst - Request Experience */
 #define SUBCMD60_ITEM_EXCHANGE_GUILD           0xCC
-#define SUBCMD60_START_BATTLE_MODE             0xCF
+#define SUBCMD60_RESTART_BATTLE_MODE           0xCF
 #define SUBCMD60_GALLON_AREA                   0xD2
 #define SUBCMD60_TRADE_DONE                    0xD4
 #define SUBCMD60_ITEM_EXCHANGE                 0xD5

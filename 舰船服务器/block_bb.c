@@ -283,13 +283,13 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
     }
 }
 
-static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
+static int bb_process_game_version(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
 
     if (l) {
-        l->lobby_create = 1;
         switch (item_id) {
         case 0:
+            l->lobby_choice_version = true;
             l->version = CLIENT_VERSION_BB;
 #ifdef DEBUG
             DBG_LOG("PSOBB 独享");
@@ -297,12 +297,14 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
             break;
 
         case 1:
+            l->lobby_choice_version = true;
 #ifdef DEBUG
             DBG_LOG("允许所有版本");
 #endif // DEBUG
             break;
 
         case 2:
+            l->lobby_choice_version = true;
             l->v2 = 0;
             l->version = CLIENT_VERSION_DCV1;
 #ifdef DEBUG
@@ -311,18 +313,21 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
             break;
 
         case 3:
+            l->lobby_choice_version = true;
 #ifdef DEBUG
             DBG_LOG("允许PSO V2");
 #endif // DEBUG
             break;
 
         case 4:
+            l->lobby_choice_version = true;
 #ifdef DEBUG
             DBG_LOG("允许PSO DC");
 #endif // DEBUG
             break;
 
         case 5:
+            l->lobby_choice_version = true;
             l->flags |= LOBBY_FLAG_GC_ALLOWED;
 #ifdef DEBUG
             DBG_LOG("允许PSO GC");
@@ -330,23 +335,15 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
             break;
 
         case 0xFF:
-            l->lobby_create = 0;
+            l->lobby_choice_version = false;
 #ifdef DEBUG
             DBG_LOG("返回上一级");
 #endif // DEBUG
-            break;
-        }
-
-        //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
-        if (!l->lobby_create) {
-            send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            return 0;
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
         }
-
-        //TODO 这里要判断类型
 
         /* All's well in the world if we get here. */
         return send_bb_game_game_drop_set(c);
@@ -355,62 +352,62 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
     return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
 }
 
+static void join_lobby(ship_client_t* c, lobby_t* l) {
+    /* Add the user to the lobby... */
+    if (join_game(c, l)) {
+        /* Something broke, destroy the created lobby before anyone
+           tries to join it. */
+        pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
+        lobby_destroy(l);
+        pthread_rwlock_unlock(&c->cur_block->lobby_lock);
+    }
+    else {
+        c->create_lobby = NULL;
+
+        ITEM_LOG("%s %s", get_player_describe(c), get_lobby_describe(l));
+    }
+}
+
 static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
 
     if (l) {
         l->drop_pso2 = false;
         l->drop_psocn = false;
-        l->lobby_create = 0;
 
         switch (item_id) {
         case 0:
-            l->lobby_create = 1;
+            l->lobby_choice_drop = true;
             //DBG_LOG("默认掉落模式");
             break;
 
         case 1:
-            l->lobby_create = 1;
+            l->lobby_choice_drop = true;
             //DBG_LOG("PSO2掉落模式");
             l->drop_pso2 = true;
             break;
 
         case 2:
-            l->lobby_create = 1;
-            //l->v2 = 0;
-            //l->version = CLIENT_VERSION_DCV1;
+            l->lobby_choice_drop = true;
             //DBG_LOG("随机掉落模式");
             l->drop_pso2 = true;
             l->drop_psocn = true;
             break;
 
-        case 0xFF:
-            l->lobby_create = 0;
+        case 0xFE:
+            l->lobby_choice_drop = false;
             //DBG_LOG("返回上一级");
             return send_bb_game_type_sel(c);
-        }
 
-        //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
-        if (!l->lobby_create) {
-            send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
+        case 0xFF:
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            return 0;
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
         }
 
-        c->create_lobby = NULL;
-
-        /* Add the user to the lobby... */
-        if (join_game(c, l)) {
-            /* Something broke, destroy the created lobby before anyone
-               tries to join it. */
-            pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
-            lobby_destroy(l);
-            pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-        }
-
-        ITEM_LOG("%s %s", get_player_describe(c), l->drop_pso2 == true ? l->drop_psocn == true ? "随机颜色独立模式" : "独立掉落模式" : "默认掉落模式");
+        // 菜单选项处理完成后调用 join_lobby 函数
+        join_lobby(c, l);
 
         /* All's well in the world if we get here. */
         return 0;
@@ -946,7 +943,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
     /* Game type (PSOBB only) */
     case MENU_ID_GAME_TYPE:
-        return bb_process_game_type(c, item_id);
+        return bb_process_game_version(c, item_id);
 
         /* GM Menu */
     case MENU_ID_GM:
@@ -1833,7 +1830,7 @@ static int bb_process_update_quest_stats(ship_client_t* c,
 
 /* Blue Burst 游戏房间创建 */
 static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
-    lobby_t* l;
+    lobby_t* l = NULL;
     uint8_t event = ship->game_event;
     char name[65], passwd[65];
     uint16_t type = LE16(pkt->hdr.pkt_type);
@@ -1870,34 +1867,39 @@ static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
         return 0;
     }
 
-    /* 创建游戏房间结构. */
-    l = lobby_create_game(c->cur_block, name, passwd, pkt->difficulty,
-        pkt->battle, pkt->challenge, 0, c->version,
-        get_player_section(c), event, pkt->episode, c,
-        pkt->single_player, 1);
-
-    /* If we don't have a game, something went wrong... tell the user. */
-    if (!l) {
-        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
-            __(c, "\tC7请稍后重试."));
-    }
-
     /* If its a non-challenge, non-battle, non-ultimate game, ask the user if
        they want v1 compatibility or not. */
     if (!pkt->battle && !pkt->challenge && pkt->difficulty != 4 &&
         !(c->flags & CLIENT_FLAG_IS_NTE) && !pkt->single_player) {
-        c->create_lobby = l;
+        c->create_lobby = lobby_create_game(c->cur_block, name, passwd, pkt->difficulty,
+            pkt->battle, pkt->challenge, 0, c->version,
+            get_player_section(c), event, pkt->episode, c,
+            pkt->single_player, 1);
+
         return send_bb_game_type_sel(c);
     }
+    else {
+        /* 创建游戏房间结构. */
+        l = lobby_create_game(c->cur_block, name, passwd, pkt->difficulty,
+            pkt->battle, pkt->challenge, 0, c->version,
+            get_player_section(c), event, pkt->episode, c,
+            pkt->single_player, 1);
 
-    /* We've got a new game, but nobody's in it yet... Lets put the requester
-       in the game. */
-    if (join_game(c, l)) {
-        /* Something broke, destroy the created lobby before anyone tries to
-           join it. */
-        pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
-        lobby_destroy(l);
-        pthread_rwlock_unlock(&c->cur_block->lobby_lock);
+        /* If we don't have a game, something went wrong... tell the user. */
+        if (!l) {
+            return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
+                __(c, "\tC7请稍后重试."));
+        }
+
+        /* We've got a new game, but nobody's in it yet... Lets put the requester
+           in the game. */
+        if (join_game(c, l)) {
+            /* Something broke, destroy the created lobby before anyone tries to
+               join it. */
+            pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
+            lobby_destroy(l);
+            pthread_rwlock_unlock(&c->cur_block->lobby_lock);
+        }
     }
 
     /* All is good in the world. */
@@ -3434,7 +3436,7 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
 typedef void (*process_command_t)(ship_t s, ship_client_t* c,
     uint16_t command, uint32_t flag, uint8_t* data);
 
-#define DEBUG_BB_BLOCK1
+#define DEBUG_BB_BLOCK
 
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     __try {
@@ -3452,16 +3454,16 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
 #ifdef DEBUG_BB_BLOCK
 
-        if (type == GAME_SUBCMD60_TYPE ||
-            type == GAME_SUBCMD6C_TYPE ||
-            type == GAME_SUBCMD62_TYPE ||
-            type == GAME_SUBCMD6D_TYPE
-            ) {
-            subcmd_bb_pkt_t* subpkt = (subcmd_bb_pkt_t*)pkt;
-            DBG_LOG("舰仓:BB指令 0x%04X 副指令 0x%02X  %s",
-                subpkt->hdr.pkt_type, subpkt->type, get_player_describe(c));
-        }
-        else
+        //if (type == GAME_SUBCMD60_TYPE ||
+        //    type == GAME_SUBCMD6C_TYPE ||
+        //    type == GAME_SUBCMD62_TYPE ||
+        //    type == GAME_SUBCMD6D_TYPE
+        //    ) {
+        //    subcmd_bb_pkt_t* subpkt = (subcmd_bb_pkt_t*)pkt;
+        //    DBG_LOG("舰仓:BB指令 0x%04X 副指令 0x%02X  %s",
+        //        subpkt->hdr.pkt_type, subpkt->type, get_player_describe(c));
+        //}
+        //else
             DBG_LOG("舰仓:BB指令 0x%04X  %s",
                 type, get_player_describe(c));
 

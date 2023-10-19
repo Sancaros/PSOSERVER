@@ -510,18 +510,18 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 		case ITEM_TYPE_WEAPON:
 		case ITEM_TYPE_GUARD:
 			switch (restrictions->weapon_and_armor_mode) {
-			case WEAPON_AND_ARMOR_MODE_ALL_ON:
-			case WEAPON_AND_ARMOR_MODE_ONLY_PICKING:
+			case WEAPON_AND_ARMOR_MODE_ALLOW:
+			case WEAPON_AND_ARMOR_MODE_CLEAR_AND_ALLOW:
 				break;
 
-			case WEAPON_AND_ARMOR_MODE_NO_RARE:
+			case WEAPON_AND_ARMOR_MODE_FORBID_RARES:
 				if (is_item_rare(item)) {
 					ERR_LOG("Restricted: rare items not allowed");
 					clear_inv_item(item);
 				}
 				break;
 
-			case WEAPON_AND_ARMOR_MODE_ALL_OFF:
+			case WEAPON_AND_ARMOR_MODE_FORBID_ALL:
 				ERR_LOG("Restricted: weapons and armors not allowed");
 				clear_inv_item(item);
 				break;
@@ -533,33 +533,33 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 			break;
 
 		case ITEM_TYPE_MAG:
-			if (restrictions->forbid_mags) {
+			if (restrictions->mag_mode == MAG_MODE_FORBID_ALL) {
 				ERR_LOG("Restricted: mags not allowed");
 				clear_inv_item(item);
 			}
 			break;
 
 		case ITEM_TYPE_TOOL:
-			if (restrictions->tool_mode == TOOL_MODE_ALL_OFF) {
+			if (restrictions->tool_mode == TOOL_MODE_FORBID_ALL) {
 				ERR_LOG("Restricted: tools not allowed");
 				clear_inv_item(item);
 			}
 			else if (item->datab[1] == ITEM_SUBTYPE_DISK) {
 				switch (restrictions->tech_disk_mode) {
-				case TECH_DISK_MODE_ON:
+				case TECH_DISK_MODE_ALLOW:
 					break;
-				case TECH_DISK_MODE_OFF:
+				case TECH_DISK_MODE_FORBID_ALL:
 					ERR_LOG("Restricted: tech disks not allowed");
 					clear_inv_item(item);
 					break;
 				case TECH_DISK_MODE_LIMIT_LEVEL:
 					ERR_LOG("Restricted: tech disk level limited to %hhu",
-						(uint8_t)(restrictions->max_tech_disk_level + 1));
-					if (restrictions->max_tech_disk_level == 0) {
+						(uint8_t)(restrictions->max_tech_level + 1));
+					if (restrictions->max_tech_level == 0) {
 						item->datab[2] = 0;
 					}
 					else {
-						item->datab[2] %= restrictions->max_tech_disk_level;
+						item->datab[2] %= restrictions->max_tech_level;
 					}
 					break;
 				default:
@@ -574,7 +574,7 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 			break;
 
 		case ITEM_TYPE_MESETA:
-			if (restrictions->meseta_drop_mode == MESETA_DROP_MODE_OFF) {
+			if (restrictions->meseta_mode == MESETA_MODE_FORBID_ALL) {
 				ERR_LOG("Restricted: meseta not allowed");
 				clear_inv_item(item);
 			}

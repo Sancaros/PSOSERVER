@@ -595,41 +595,6 @@ typedef struct pt_bb_entry {
     /* 09D4 */ uint32_t unknown_f3[3];
 } pt_bb_entry_t;
 
-typedef enum {
-    TECH_DISK_MODE_ON = 0,
-    TECH_DISK_MODE_OFF = 1,
-    TECH_DISK_MODE_LIMIT_LEVEL = 2
-} TechDiskMode;
-
-typedef enum {
-    WEAPON_AND_ARMOR_MODE_ALL_ON = 0,
-    WEAPON_AND_ARMOR_MODE_ONLY_PICKING = 1,
-    WEAPON_AND_ARMOR_MODE_ALL_OFF = 2,
-    WEAPON_AND_ARMOR_MODE_NO_RARE = 3
-} WeaponAndArmorMode;
-
-typedef enum {
-    TOOL_MODE_ALL_ON = 0,
-    TOOL_MODE_ONLY_PICKING = 1,
-    TOOL_MODE_ALL_OFF = 2
-} ToolMode;
-
-typedef enum {
-    MESETA_DROP_MODE_ON = 0,
-    MESETA_DROP_MODE_OFF = 1,
-    MESETA_DROP_MODE_ONLY_PICKING = 2
-} MesetaDropMode;
-
-typedef struct {
-    TechDiskMode tech_disk_mode;
-    WeaponAndArmorMode weapon_and_armor_mode;
-    int forbid_mags;
-    ToolMode tool_mode;
-    MesetaDropMode meseta_drop_mode;
-    int forbid_scape_dolls;
-    uint8_t max_tech_disk_level; // 0xFF = no maximum
-} Restrictions;
-
 typedef struct {
     uint8_t override_area;
 } ItemDropSub;
@@ -643,7 +608,7 @@ static pt_v3_entry_t gc_ptdata[4][4][10];
 //EP1 0 / EP2 1 /  CHALLENGE1 2/ CHALLENGE2 3/ EP4 4
 static pt_bb_entry_t bb_ptdata[5][4][10];
 static pt_bb_entry_t bb_dymnamic_ptdata[5][4][10];
-static Restrictions* restrictions = NULL;
+static BattleRules_t* restrictions = NULL;
 static ItemDropSub* item_drop_sub;
 
 /* Read the ItemPT data from a v2-style (ItemPT.afs) file. */

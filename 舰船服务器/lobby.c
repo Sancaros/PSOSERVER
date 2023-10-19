@@ -286,7 +286,7 @@ void lobby_print_info2(ship_client_t* src) {
         send_msg(src, TEXT_MSG_TYPE, "Lua 表: %d", l->script_ref);
 #endif /* ENABLE_LUA */
 
-    if(l->lobby_create)
+    if(l->lobby_choice_drop)
         send_msg(src, TEXT_MSG_TYPE, "掉落: %s"
             , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC8随机") : __(src, "\tE\tC6独立") : 
             __(src, "\tE\tC7默认")
@@ -433,6 +433,10 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     /* Set up the specified parameters. */
     l->lobby_id = id;
     l->type = LOBBY_TYPE_GAME;
+
+    l->lobby_create = true;
+    l->lobby_choice_version = false;
+    l->lobby_choice_drop = false;
 
     if(!single_player)
         l->max_clients = 4;

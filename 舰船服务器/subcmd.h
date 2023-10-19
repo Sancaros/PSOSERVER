@@ -2996,24 +2996,12 @@ typedef struct subcmd_bb_guild_master_trans2 {
     uint8_t unknow2[4]; /* ???????? 未知 00 00 E3 23*/
 } PACKED subcmd_bb_guild_master_trans2_t;
 
-//[2023年05月02日 13:30:08:506] 调试(subcmd-bb.c 5292): 暂未完成 0x60: 0xCF
-//
-//( 00000000 )   3C 00 60 00 00 00 00 00  CF 0D 76 00 00 00 00 00    <.`.......v.....
-//( 00000010 )   01 00 00 00 00 01 01 00  03 05 05 05 05 01 05 01    ................
-//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000030 )   0A 00 00 00 01 00 00 00  0A 00 00 00                ............
-//[2023年07月12日 20:08:10:017] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0xCF
-//( 00000000 )   3C 00 60 00 00 00 00 00   CF 0D 76 00 00 00 00 00  <.`.....?v.....
-//( 00000010 )   01 00 00 00 00 01 01 00   03 05 05 05 05 01 05 01  ................
-//( 00000020 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 00000030 )   0A 00 00 00 01 00 00 00   0A 00 00 00             ............
 // 0xCF: 初始化对战模式 (指令生效范围; 仅限游戏; handled by the server on BB)
-typedef struct subcmd_bb_start_battle_mode {
+typedef struct subcmd_bb_restart_battle_mode {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
-    uint32_t unknown_a1[11];
-    uint32_t unknown_a2;
-} PACKED subcmd_bb_start_battle_mode_t;
+    unused_hdr_t shdr;
+    BattleRules_t rules;
+} PACKED subcmd_bb_restart_battle_mode_t;
 
 // 0xD0: Battle mode level up (BB; handled by server)
 // Requests the client to be leveled up by num_levels levels. The server should

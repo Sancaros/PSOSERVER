@@ -292,11 +292,120 @@ typedef struct psocn_bb_db_opts {
 typedef union psocn_mode_char {
     psocn_v1v2v3pc_char_t nobb;
     psocn_bb_char_t bb;
-    //inventory_t inv;
-    //psocn_disp_char_t disp;
-    //psocn_dress_data_t dress_data;
-    //uint8_t techniques[0x14]; //20 /* д╛хо FF н╙©у*/
 } PACKED psocn_mode_char_t;
+
+typedef enum {
+    TECH_DISK_MODE_ALLOW = 0,
+    TECH_DISK_MODE_FORBID_ALL = 1,
+    TECH_DISK_MODE_LIMIT_LEVEL = 2
+} TechDiskMode;
+
+typedef enum {
+    WEAPON_AND_ARMOR_MODE_ALLOW = 0,
+    WEAPON_AND_ARMOR_MODE_CLEAR_AND_ALLOW = 1,
+    WEAPON_AND_ARMOR_MODE_FORBID_ALL = 2,
+    WEAPON_AND_ARMOR_MODE_FORBID_RARES = 3
+} WeaponAndArmorMode;
+
+typedef enum {
+    MAG_MODE_ALLOW = 0,
+    MAG_MODE_FORBID_ALL = 1
+} MagMode;
+
+typedef enum {
+    TOOL_MODE_ALLOW = 0,
+    TOOL_MODE_CLEAR_AND_ALLOW = 1,
+    TOOL_MODE_FORBID_ALL = 2
+} ToolMode;
+
+typedef enum {
+    TRAP_MODE_DEFAULT = 0,
+    TRAP_MODE_ALL_PLAYERS = 1
+} TrapMode;
+
+typedef enum {
+    MESETA_MODE_ALLOW = 0,
+    MESETA_MODE_FORBID_ALL = 1,
+    MESETA_MODE_CLEAR_AND_ALLOW = 2
+} MesetaMode;
+
+typedef struct BattleRules {
+    // Set by quest opcode F812, but values are remapped.
+    //   F812 00 => FORBID_ALL
+    //   F812 01 => ALLOW
+    //   F812 02 => LIMIT_LEVEL
+    /* 00 */ uint8_t tech_disk_mode;
+    // Set by quest opcode F813, but values are remapped.
+    //   F813 00 => FORBID_ALL
+    //   F813 01 => ALLOW
+    //   F813 02 => CLEAR_AND_ALLOW
+    //   F813 03 => FORBID_RARES
+    /* 01 */ uint8_t weapon_and_armor_mode;
+    // Set by quest opcode F814, but values are remapped.
+    //   F814 00 => FORBID_ALL
+    //   F814 01 => ALLOW
+    /* 02 */ uint8_t mag_mode;
+    // Set by quest opcode F815, but values are remapped.
+    //   F815 00 => FORBID_ALL
+    //   F815 01 => ALLOW
+    //   F815 02 => CLEAR_AND_ALLOW
+    /* 03 */ uint8_t tool_mode;
+    // Set by quest opcode F816. Values are not remapped.
+    //   F816 00 => DEFAULT
+    //   F816 01 => ALL_PLAYERS
+    /* 04 */ uint8_t trap_mode;
+    // Set by quest opcode F817. Value appears to be unused in all PSO versions.
+    /* 05 */ uint8_t unused_F817;
+    // Set by quest opcode F818, but values are remapped.
+    //   F818 00 => 01
+    //   F818 01 => 00
+    //   F818 02 => 02
+    // TODO: Define an enum class for this field.
+    /* 06 */ uint8_t respawn_mode;
+    // Set by quest opcode F819.
+    /* 07 */ uint8_t replace_char;
+    // Set by quest opcode F81A, but value is inverted.
+    /* 08 */ uint8_t drop_weapon;
+    // Set by quest opcode F81B.
+    /* 09 */ uint8_t is_teams;
+    // Set by quest opcode F852.
+    /* 0A */ uint8_t hide_target_reticle;
+    // Set by quest opcode F81E. Values are not remapped.
+    //   F81E 00 => ALLOW
+    //   F81E 01 => FORBID_ALL
+    //   F81E 02 => CLEAR_AND_ALLOW
+    /* 0B */ uint8_t meseta_mode;
+    // Set by quest opcode F81D.
+    /* 0C */ uint8_t death_level_up;
+    // Set by quest opcode F851. The trap type is remapped:
+    //   F851 00 XX => set count to XX for trap type 00
+    //   F851 01 XX => set count to XX for trap type 02
+    //   F851 02 XX => set count to XX for trap type 03
+    //   F851 03 XX => set count to XX for trap type 01
+    /* 0D */ uint8_t trap_counts[4];
+    // Set by quest opcode F85E.
+    /* 11 */ uint8_t enable_sonar;
+    // Set by quest opcode F85F.
+    /* 12 */ uint8_t sonar_count;
+    // Set by quest opcode F89E.
+    /* 13 */ uint8_t forbid_scape_dolls;
+    // This value does not appear to be set by any quest opcode.
+    /* 14 */ uint32_t unknown_a1;
+    // Set by quest opcode F86F.
+    /* 18 */ uint32_t lives;
+    // Set by quest opcode F870.
+    /* 1C */ uint32_t max_tech_level;
+    // Set by quest opcode F871.
+    /* 20 */ uint32_t char_level;
+    // Set by quest opcode F872.
+    /* 24 */ uint32_t time_limit;
+    // Set by quest opcode F8A8.
+    /* 28 */ uint16_t death_tech_level_up;
+    /* 2A */ uint8_t unused[2];
+    // Set by quest opcode F86B.
+    /* 2C */ uint32_t box_drop_area;
+    /* 30 */
+} PACKED BattleRules_t;
 
 #ifndef _WIN32
 #else

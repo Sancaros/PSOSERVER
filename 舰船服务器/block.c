@@ -259,6 +259,14 @@ static void* block_thd(void* d) {
                 it->need_save_data = true;
             }
 
+            //if ((it->last_message + 30 < srv_time) && it->create_lobby) {
+            //    if (it->create_lobby->num_clients == 0) {
+            //        pthread_rwlock_wrlock(&it->cur_block->lobby_lock);
+            //        lobby_destroy(it->create_lobby);
+            //        pthread_rwlock_unlock(&it->cur_block->lobby_lock);
+            //    }
+            //}
+
             FD_SET(it->sock, &readfds);
 
             /* Only add to the write fd set if we have something to send out. */

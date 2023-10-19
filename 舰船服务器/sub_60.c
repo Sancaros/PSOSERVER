@@ -6636,13 +6636,25 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_start_battle_mode_t* pkt) {
+    subcmd_bb_restart_battle_mode_t* pkt) {
     lobby_t* l = src->cur_lobby;
+
+    //[2023年05月02日 13:30:08:506] 调试(subcmd-bb.c 5292): 暂未完成 0x60: 0xCF
+    //
+    //( 00000000 )   3C 00 60 00 00 00 00 00  CF 0D 76 00 00 00 00 00    <.`.......v.....
+    //( 00000010 )   01 00 00 00 00 01 01 00  03 05 05 05 05 01 05 01    ................
+    //( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+    //( 00000030 )   0A 00 00 00 01 00 00 00  0A 00 00 00                ............
+    //[2023年07月12日 20:08:10:017] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0xCF
+    //( 00000000 )   3C 00 60 00 00 00 00 00   CF 0D 76 00 00 00 00 00  <.`.....?v.....
+    //( 00000010 )   01 00 00 00 00 01 01 00   03 05 05 05 05 01 05 01  ................
+    //( 00000020 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+    //( 00000030 )   0A 00 00 00 01 00 00 00   0A 00 00 00             ............
 
     if (!in_game(src))
         return -1;
 
-    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_start_battle_mode_t), 0x0D)) {
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_restart_battle_mode_t), 0x0D)) {
         return -2;
     }
 
@@ -7426,7 +7438,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_CHARGE_ACT                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C7_bb },
     { SUBCMD60_EXP_REQ                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C8_bb },
     { SUBCMD60_ITEM_EXCHANGE_GUILD        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
-    { SUBCMD60_START_BATTLE_MODE          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CF_bb },
+    { SUBCMD60_RESTART_BATTLE_MODE        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CF_bb },
 
     //cmd_type D0 - DF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },

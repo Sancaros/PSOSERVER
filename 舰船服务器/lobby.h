@@ -119,7 +119,9 @@ struct lobby {
 
     block_t *block;
 
-    uint8_t lobby_create;
+    bool lobby_create;
+    bool lobby_choice_version;
+    bool lobby_choice_drop;
 
     uint8_t leader_id;
     uint8_t difficulty;
