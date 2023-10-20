@@ -153,12 +153,12 @@ typedef struct item_mag {
     uint8_t mtype;
     uint8_t level;
     uint8_t photon_blasts;
-    int16_t def;
-    int16_t pow;
-    int16_t dex;
-    int16_t mind;
+    uint16_t def;
+    uint16_t pow;
+    uint16_t dex;
+    uint16_t mind;
     uint32_t itemid;
-    int8_t synchro;
+    uint8_t synchro;
     uint8_t IQ;
     uint8_t PBflags;
     uint8_t color;

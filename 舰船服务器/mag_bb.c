@@ -307,7 +307,6 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	DBG_LOG("%d %d %d %d %d %d", feed_result.def, feed_result.pow, feed_result.dex, feed_result.mind, feed_result.synchro, feed_result.iq);
 
 #endif // DEBUG
-	print_item_data(mag_item, src->version);
 
 	update_stat(mag_item, 2, feed_result.def);
 	update_stat(mag_item, 3, feed_result.pow);
@@ -334,19 +333,19 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			case CLASS_HUNEWEARL: // HUnewearl
 			case CLASS_HUCAST: // HUcast
 			case CLASS_HUCASEAL: // HUcaseal
-				mag_item->datab[1] = 0x01; // Varuna
+				mag_item->datab[1] = Mag_Varuna; // Varuna
 				break;
 			case CLASS_RAMAR: // RAmar
 			case CLASS_RAMARL: // RAmarl
 			case CLASS_RACAST: // RAcast
 			case CLASS_RACASEAL: // RAcaseal
-				mag_item->datab[1] = 0x0D; // Kalki
+				mag_item->datab[1] = Mag_Kalki; // Kalki
 				break;
 			case CLASS_FOMAR: // FOmar
 			case CLASS_FOMARL: // FOmarl
 			case CLASS_FONEWM: // FOnewm
 			case CLASS_FONEWEARL: // FOnewearl
-				mag_item->datab[1] = 0x19; // Vritra
+				mag_item->datab[1] = Mag_Vritra; // Vritra
 				break;
 			default:
 				ERR_LOG("%s 无效角色职业 %d", get_player_describe(src), get_player_class(src));
@@ -360,36 +359,35 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			uint16_t flags = compute_mag_strength_flags(mag_item);
 			if (mag_number == 0x0D) {
 				if ((flags & 0x110) == 0) {
-					mag_item->datab[1] = 0x02;
+					mag_item->datab[1] = Mag_Mitra;
 				} else if (flags & 8) {
-					mag_item->datab[1] = 0x03;
+					mag_item->datab[1] = Mag_Surya;
 				} else if (flags & 0x20) {
-					mag_item->datab[1] = 0x0B;
+					mag_item->datab[1] = Mag_Tapas;
 				}
 			}
 			else if (mag_number == 1) {
 				if (flags & 0x108) {
-					mag_item->datab[1] = 0x0E;
+					mag_item->datab[1] = Mag_Rudra;
 				} else if (flags & 0x10) {
-					mag_item->datab[1] = 0x0F;
+					mag_item->datab[1] = Mag_Marutah;
 				} else if (flags & 0x20) {
-					mag_item->datab[1] = 0x04;
+					mag_item->datab[1] = Mag_Vayu;
 				}
 			}
 			else if (mag_number == 0x19) {
 				if (flags & 0x120) {
-					mag_item->datab[1] = 0x1A;
+					mag_item->datab[1] = Mag_Namuci;
 				} else if (flags & 8) {
-					mag_item->datab[1] = 0x1B;
+					mag_item->datab[1] = Mag_Sumba;
 				} else if (flags & 0x10) {
-					mag_item->datab[1] = 0x14;
+					mag_item->datab[1] = Mag_Ashvinau;
 				}
 			}
 		}
 	}
 	else if ((mag_level % 5) == 0) { // Level 50 (and beyond) evolutions
 		if (evolution_number < 4) {
-
 			if (mag_level >= 100) {
 				uint8_t section_id_group = get_player_section(src) % 3;
 				uint16_t def = mag_item->dataw[2] / 100;
@@ -422,10 +420,10 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 					((section_id_group == 2) && (pow + def == mind + dex))) {
 					// clang-format off
 					static const uint8_t result_table[] = {
-						//   M0    F0    M1    F1    M2    F2
-							0x39, 0x3B, 0x3A, 0x3B, 0x3A, 0x3B, // Hunter
-							0x3D, 0x3C, 0x3D, 0x3C, 0x3D, 0x3E, // Ranger
-							0x41, 0x3F, 0x41, 0x40, 0x41, 0x40, // Force
+					//   M0				F0				M1			F1				M2			F2
+						Mag_Deva,	Mag_Savitri,	Mag_Rati,	Mag_Savitri,	Mag_Rati,		Mag_Savitri, // Hunter
+						Mag_Pushan, Mag_Rukmin,		Mag_Pushan, Mag_Rukmin,		Mag_Pushan,		Mag_Dewari, // Ranger
+						Mag_Nidra,	Mag_Sato,		Mag_Nidra,	Mag_Bhima,		Mag_Nidra,		Mag_Bhima, // Force
 					};
 					// clang-format on
 					mag_item->datab[1] = result_table[table_index];
@@ -452,66 +450,66 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				if (is_hunter) {
 					if (flags & 0x108) {
 						mag_item->datab[1] = (get_player_section(src) & 1)
-							? ((dex < mind) ? 0x08 : 0x06)
-							: ((dex < mind) ? 0x0C : 0x05);
+							? ((dex < mind) ? Mag_Apsaras : Mag_Kama)
+							: ((dex < mind) ? Mag_Bhirava : Mag_Varaha);
 					}
 					else if (flags & 0x010) {
 						mag_item->datab[1] = (get_player_section(src) & 1)
-							? ((mind < pow) ? 0x12 : 0x10)
-							: ((mind < pow) ? 0x17 : 0x13);
+							? ((mind < pow) ? Mag_Garuda : Mag_Yaksa)
+							: ((mind < pow) ? Mag_Ila : Mag_Nandin);
 					}
 					else if (flags & 0x020) {
 						mag_item->datab[1] = (get_player_section(src) & 1)
-							? ((pow < dex) ? 0x16 : 0x24)
-							: ((pow < dex) ? 0x07 : 0x1E);
+							? ((pow < dex) ? Mag_Soma : Mag_Bana)
+							: ((pow < dex) ? Mag_Ushasu : Mag_Kabanda);
 					}
 				}
 				else if (is_ranger) {
 					if (flags & 0x110) {
 						mag_item->datab[1] = (get_player_section(src) & 1)
-							? ((mind < pow) ? 0x0A : 0x05)
-							: ((mind < pow) ? 0x0C : 0x06);
+							? ((mind < pow) ? Mag_Kaitabha : Mag_Varaha)
+							: ((mind < pow) ? Mag_Bhirava : Mag_Kama);
 					}
 					else if (flags & 0x008) {
 						mag_item->datab[1] = (get_player_section(src) & 1)
-							? ((dex < mind) ? 0x0A : 0x26)
-							: ((dex < mind) ? 0x0C : 0x06);
+							? ((dex < mind) ? Mag_Kaitabha : Mag_Madhu)
+							: ((dex < mind) ? Mag_Bhirava : Mag_Kama);
 					}
 					else if (flags & 0x020) {
 						mag_item->datab[1] = (get_player_section(src) & 1)
-							? ((pow < dex) ? 0x18 : 0x1E)
-							: ((pow < dex) ? 0x08 : 0x05);
+							? ((pow < dex) ? Mag_Durga : Mag_Kabanda)
+							: ((pow < dex) ? Mag_Apsaras : Mag_Varaha);
 					}
 				}
 				else if (is_force) {
 					if (flags & 0x120) {
 						if (def < 45) {
 							mag_item->datab[1] = (get_player_section(src) & 1)
-								? ((pow < dex) ? 0x17 : 0x09)
-								: ((pow < dex) ? 0x1E : 0x1C);
+								? ((pow < dex) ? Mag_Ila : Mag_Kumara)
+								: ((pow < dex) ? Mag_Kabanda : Mag_Naga);
 						}
 						else {
-							mag_item->datab[1] = 0x24;
+							mag_item->datab[1] = Mag_Bana;
 						}
 					}
 					else if (flags & 0x008) {
 						if (def < 45) {
 							mag_item->datab[1] = (get_player_section(src) & 1)
-								? ((dex < mind) ? 0x1C : 0x20)
-								: ((dex < mind) ? 0x1F : 0x25);
+								? ((dex < mind) ? Mag_Naga : Mag_Marica)
+								: ((dex < mind) ? Mag_Ravana : Mag_Naraka);
 						}
 						else {
-							mag_item->datab[1] = 0x23;
+							mag_item->datab[1] = Mag_Andhaka;
 						}
 					}
 					else if (flags & 0x010) {
 						if (def < 45) {
 							mag_item->datab[1] = (get_player_section(src) & 1)
-								? ((mind < pow) ? 0x12 : 0x0C)
-								: ((mind < pow) ? 0x15 : 0x11);
+								? ((mind < pow) ? Mag_Garuda : Mag_Bhirava)
+								: ((mind < pow) ? Mag_Ribhava : Mag_Sita);
 						}
 						else {
-							mag_item->datab[1] = 0x24;
+							mag_item->datab[1] = Mag_Bana;
 						}
 					}
 				}
@@ -539,8 +537,6 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	print_item_data(mag_item, src->version);
 
 #endif // DEBUG
-
-	print_item_data(mag_item, src->version);
 
 	return err;
 }

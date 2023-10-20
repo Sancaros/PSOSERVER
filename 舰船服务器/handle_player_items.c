@@ -1203,35 +1203,35 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
         case ITEM_SUBTYPE_MATERIAL:
             switch (item->datab[2]) {
-            case ITEM_SUBTYPE_MATERIAL_POWER: // Power Material
+            case ITEM_SUBTYPE_MATERIAL_POWER: // 攻击力药
                 set_material_usage(inv, MATERIAL_POWER, get_material_usage(inv, MATERIAL_POWER) + 1);
                 get_player_stats(src)->atp += 2;
                 break;
 
-            case ITEM_SUBTYPE_MATERIAL_MIND: // Mind Material
+            case ITEM_SUBTYPE_MATERIAL_MIND: // 精神力药
                 set_material_usage(inv, MATERIAL_MIND, get_material_usage(inv, MATERIAL_MIND) + 1);
                 get_player_stats(src)->mst += 2;
                 break;
 
-            case ITEM_SUBTYPE_MATERIAL_EVADE: // Evade Material
+            case ITEM_SUBTYPE_MATERIAL_EVADE: // 闪避力药
                 set_material_usage(inv, MATERIAL_EVADE, get_material_usage(inv, MATERIAL_EVADE) + 1);
                 get_player_stats(src)->evp += 2;
                 break;
 
-            case ITEM_SUBTYPE_MATERIAL_HP: // HP Material
+            case ITEM_SUBTYPE_MATERIAL_HP: // HP药
                 set_material_usage(inv, MATERIAL_HP, get_material_usage(inv, MATERIAL_HP) + 1);
                 break;
 
-            case ITEM_SUBTYPE_MATERIAL_TP: // TP Material
+            case ITEM_SUBTYPE_MATERIAL_TP: // TP药
                 set_material_usage(inv, MATERIAL_TP, get_material_usage(inv, MATERIAL_TP) + 1);
                 break;
 
-            case ITEM_SUBTYPE_MATERIAL_DEF: // Def Material
+            case ITEM_SUBTYPE_MATERIAL_DEF: // 防御力药
                 set_material_usage(inv, MATERIAL_DEF, get_material_usage(inv, MATERIAL_DEF) + 1);
                 get_player_stats(src)->dfp += 2;
                 break;
 
-            case ITEM_SUBTYPE_MATERIAL_LUCK: // Luck Material
+            case ITEM_SUBTYPE_MATERIAL_LUCK: // 幸运值药
                 set_material_usage(inv, MATERIAL_LUCK, get_material_usage(inv, MATERIAL_LUCK) + 1);
                 get_player_stats(src)->lck += 2;
                 break;
@@ -2424,136 +2424,133 @@ void remove_titem_equip_flags(iitem_t* trade_item) {
 }
 
 //修复背包银行数据错误的物品代码
-void fix_inv_bank_item(item_t* i) {
+void fix_inv_bank_item(ship_client_t* src) {
     uint32_t ch3;
     pmt_guard_bb_t tmp_guard = { 0 };
 
-    switch (i->datab[0]) {
-    case ITEM_TYPE_WEAPON:// 修正武器的值
-        int8_t percent_table[6] = { 0 };
-        int8_t percent = 0;
-        uint32_t max_percents = 0, num_percents = 0;
-        int32_t srank = 0;
+    inventory_t* inv = get_client_inv(src);
 
-        if ((i->datab[1] == 0x33) ||  // SJS和Lame最大2%
-            (i->datab[1] == 0xAB))
-            max_percents = 2;
-        else
-            max_percents = 3;
+    for (size_t x = 0; x < inv->item_count; x++) {
+        item_t* item = &inv->iitems[x].data;
 
-        memset(&percent_table[0], 0, 6);
+        switch (item->datab[0]) {
+        case ITEM_TYPE_WEAPON:// 修正武器的值
+            int8_t percent_table[6] = { 0 };
+            int8_t percent = 0;
+            uint32_t max_percents = 0, num_percents = 0;
+            int32_t srank = 0;
 
-        for (ch3 = 6; ch3 <= 4 + (max_percents * 2); ch3 += 2) {
-            if (i->datab[ch3] & 128) {
-                srank = 1; // S-Rank
-                break;
-            }
+            if ((item->datab[1] == 0x33) ||  // 封印的SJS和Lame最大2个属性
+                (item->datab[1] == 0xAB))
+                max_percents = 2;
+            else
+                max_percents = 3;
 
-            if ((i->datab[ch3]) && (i->datab[ch3] < 0x06)) {
-                // Percents over 100 or under -100 get set to 0 
-                // 百分比高于100或低于-100则设为0
-                percent = (int8_t)i->datab[ch3 + 1];
+            memset(&percent_table[0], 0, 6);
 
-                if ((percent > 100) || (percent < -100))
-                    percent = 0;
-                // 保存百分比
-                percent_table[i->datab[ch3]] = percent;
-            }
-        }
-
-        if (!srank) {
             for (ch3 = 6; ch3 <= 4 + (max_percents * 2); ch3 += 2) {
-                // 重置 %s
-                i->datab[ch3] = 0;
-                i->datab[ch3 + 1] = 0;
-            }
+                if (item->datab[ch3] & 128) {
+                    srank = 1; // S-Rank
+                    break;
+                }
 
-            for (ch3 = 1; ch3 <= 5; ch3++) {
-                // 重建 %s
-                if (percent_table[ch3]) {
-                    i->datab[6 + (num_percents * 2)] = ch3;
-                    i->datab[7 + (num_percents * 2)] = (uint8_t)percent_table[ch3];
-                    num_percents++;
-                    if (num_percents == max_percents)
-                        break;
+                if ((item->datab[ch3]) && (item->datab[ch3] < 0x06)) {
+                    // Percents over 100 or under -100 get set to 0 
+                    // 百分比高于100或低于-100则设为0
+                    percent = (int8_t)item->datab[ch3 + 1];
+
+                    if ((percent > 100) || (percent < -100))
+                        percent = 0;
+                    // 保存百分比
+                    percent_table[item->datab[ch3]] = percent;
                 }
             }
-        }
 
-        break;
+            if (!srank) {
+                for (ch3 = 6; ch3 <= 4 + (max_percents * 2); ch3 += 2) {
+                    // 重置 %s
+                    item->datab[ch3] = 0;
+                    item->datab[ch3 + 1] = 0;
+                }
 
-    case ITEM_TYPE_GUARD:// 修正装甲和护盾的值
-        switch (i->datab[1])
-        {
-        case ITEM_SUBTYPE_FRAME:
-
-            if (pmt_lookup_guard_bb(i->datal[0], &tmp_guard)) {
-                ERR_LOG("未从PMT获取到 0x%04X 的数据!", i->datal[0]);
-                break;
+                for (ch3 = 1; ch3 <= 5; ch3++) {
+                    // 重建 %s
+                    if (percent_table[ch3]) {
+                        item->datab[6 + (num_percents * 2)] = ch3;
+                        item->datab[7 + (num_percents * 2)] = (uint8_t)percent_table[ch3];
+                        num_percents++;
+                        if (num_percents == max_percents)
+                            break;
+                    }
+                }
             }
 
-            if (i->datab[6] > tmp_guard.dfp_range && tmp_guard.dfp_range)
-                i->datab[6] = tmp_guard.dfp_range;
-            if (i->datab[8] > tmp_guard.evp_range && tmp_guard.evp_range)
-                i->datab[8] = tmp_guard.evp_range;
             break;
 
-        case ITEM_SUBTYPE_BARRIER:
+        case ITEM_TYPE_GUARD:// 修正装甲和护盾的值
+            switch (item->datab[1]) {
+            case ITEM_SUBTYPE_FRAME:
 
-            if (pmt_lookup_guard_bb(i->datal[0], &tmp_guard)) {
-                ERR_LOG("未从PMT获取到 0x%04X 的数据!", i->datal[0]);
+                if (pmt_lookup_guard_bb(item->datal[0], &tmp_guard)) {
+                    ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->datal[0]);
+                    break;
+                }
+
+                if (item->datab[6] > tmp_guard.dfp_range && tmp_guard.dfp_range)
+                    item->datab[6] = tmp_guard.dfp_range;
+                if (item->datab[8] > tmp_guard.evp_range && tmp_guard.evp_range)
+                    item->datab[8] = tmp_guard.evp_range;
+                break;
+
+            case ITEM_SUBTYPE_BARRIER:
+
+                if (pmt_lookup_guard_bb(item->datal[0], &tmp_guard)) {
+                    ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->datal[0]);
+                    break;
+                }
+
+                if (item->datab[6] > tmp_guard.dfp_range && tmp_guard.dfp_range)
+                    item->datab[6] = tmp_guard.dfp_range;
+                if (item->datab[8] > tmp_guard.evp_range && tmp_guard.evp_range)
+                    item->datab[8] = tmp_guard.evp_range;
                 break;
             }
+            break;
 
-            if (i->datab[6] > tmp_guard.dfp_range && tmp_guard.dfp_range)
-                i->datab[6] = tmp_guard.dfp_range;
-            if (i->datab[8] > tmp_guard.evp_range && tmp_guard.evp_range)
-                i->datab[8] = tmp_guard.evp_range;
+        case ITEM_TYPE_MAG:// 玛古
+            uint16_t mag_def, mag_pow, mag_dex, mag_mind;
+            uint32_t total_levels;
+
+            item_mag_t* mag = (item_mag_t*)&item->datab[0];
+
+            if (mag->synchro > 120)
+                mag->synchro = 120;
+
+            if (mag->synchro < 0)
+                mag->synchro = 0;
+
+            if (mag->IQ > 200)
+                mag->IQ = 200;
+
+            if ((mag->def < 0) || (mag->pow < 0) || (mag->dex < 0) || (mag->mind < 0))
+                total_levels = 201; // Auto fail if any stat is under 0...
+            else {
+                mag_def = mag->def / 100;
+                mag_pow = mag->pow / 100;
+                mag_dex = mag->dex / 100;
+                mag_mind = mag->mind / 100;
+                total_levels = mag_def + mag_pow + mag_dex + mag_mind;
+            }
+
+            if ((total_levels > 200) || (mag->level > 200)) {
+                // 玛古修正失败,则初始化所有数据
+                magitemstat_t stats;
+                ItemMagStats_init(&stats, get_player_msg_color_set(src));
+                assign_mag_stats((item_t*)mag, &stats);
+            }
             break;
         }
-        break;
-
-    case ITEM_TYPE_MAG:// 玛古
-        int16_t mag_def, mag_pow, mag_dex, mag_mind;
-        int32_t total_levels;
-
-        item_mag_t* playermag = (item_mag_t*)&i->datab[0];
-
-        if (playermag->synchro > 120)
-            playermag->synchro = 120;
-
-        if (playermag->synchro < 0)
-            playermag->synchro = 0;
-
-        if (playermag->IQ > 200)
-            playermag->IQ = 200;
-
-        if ((playermag->def < 0) || (playermag->pow < 0) || (playermag->dex < 0) || (playermag->mind < 0))
-            total_levels = 201; // Auto fail if any stat is under 0...
-        else {
-            mag_def = playermag->def / 100;
-            mag_pow = playermag->pow / 100;
-            mag_dex = playermag->dex / 100;
-            mag_mind = playermag->mind / 100;
-            total_levels = mag_def + mag_pow + mag_dex + mag_mind;
-        }
-
-        if ((total_levels > 200) || (playermag->level > 200)) {
-            // 玛古修正失败,则初始化所有数据
-            playermag->def = 500;
-            playermag->pow = 0;
-            playermag->dex = 0;
-            playermag->mind = 0;
-            playermag->level = 5;
-            playermag->photon_blasts = 0;
-            playermag->IQ = 0;
-            playermag->synchro = 20;
-            playermag->mtype = 0;
-            playermag->PBflags = 0;
-        }
-        break;
     }
-
 }
 
 //整理仓库物品

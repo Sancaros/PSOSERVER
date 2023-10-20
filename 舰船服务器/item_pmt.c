@@ -2559,10 +2559,6 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
 
     u32_to_u8(code, parts, false);
 
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
-
     /* 确保我们正在查找 weapon */
     if (code == 0x00000000) {
         /* 光剑0没有任何意义 */
@@ -2597,10 +2593,6 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
     }
 
     u32_to_u8(code, parts, false);
-
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 guard item */
     if(parts[0] != ITEM_TYPE_GUARD) {
@@ -2637,10 +2629,6 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
 
     u32_to_u8(code, parts, false);
 
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
-
     /* 确保我们正在查找 unit */
     if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
         return -2;
@@ -2665,10 +2653,6 @@ int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv) {
     }
 
     u32_to_u8(code, parts, false);
-
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 guard item */
     if (parts[0] != ITEM_TYPE_MAG) {
@@ -2697,16 +2681,6 @@ int pmt_lookup_tools_bb(uint32_t code1, uint32_t code2, pmt_tool_bb_t* rv) {
 
     u32_to_u8(code1, parts, false);
     u32_to_u8(code2, parts2, false);
-
-    //parts[0] = (uint8_t)(code1 & 0xFF);
-    //parts[1] = (uint8_t)((code1 >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code1 >> 16) & 0xFF);
-    //parts[3] = (uint8_t)((code1 >> 24) & 0xFF);
-
-    //parts2[0] = (uint8_t)(code2 & 0xFF);
-    //parts2[1] = (uint8_t)((code2 >> 8) & 0xFF);
-    //parts2[2] = (uint8_t)((code2 >> 16) & 0xFF);
-    //parts2[3] = (uint8_t)((code2 >> 24) & 0xFF);
 
 #ifdef DEBUG
     DBG_LOG("物品, used_item 0x%08X 0x%02X 0x%02X 0x%02X",
@@ -2754,14 +2728,6 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
 
     u32_to_u8(code, parts, false);
     u32_to_u8(equip_code, eparts, false);
-
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
-
-    //eparts[0] = (uint8_t)(equip_code & 0xFF);
-    //eparts[1] = (uint8_t)((equip_code >> 8) & 0xFF);
-    //eparts[2] = (uint8_t)((equip_code >> 16) & 0xFF);
 
 #ifdef DEBUG
     DBG_LOG("物品1, used_item 0x%08X 0x%02X 0x%02X 0x%02X",
@@ -2886,9 +2852,6 @@ int pmt_lookup_eventitem_bb(uint32_t code, uint32_t index, pmt_eventitem_bb_t* r
     }
 
     u32_to_u8(code, parts, false);
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 圣诞物品 */
     if (parts[0] != ITEM_TYPE_TOOL) {
@@ -2924,9 +2887,6 @@ int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t i
     }
 
     u32_to_u8(code, parts, false);
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 圣诞物品 */
     if (parts[0] != ITEM_TYPE_MAG) {
@@ -2990,10 +2950,6 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
         return (uint8_t)-1;
 
     u32_to_u8(code, parts, false);
-
-    //parts[0] = (uint8_t)(code & 0xFF);
-    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     switch(parts[0]) {
         case ITEM_TYPE_WEAPON:                        /* Weapons */
