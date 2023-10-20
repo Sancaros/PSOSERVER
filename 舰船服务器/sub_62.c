@@ -2597,16 +2597,12 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
 
     item_t backup_item = remove_invitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
-
     if (item_not_identification_bb(backup_item.datal[0],backup_item.datal[1])) {
         ERR_LOG("%s 转换物品ID %d 失败!", get_player_describe(src), item_data.item_id);
         return -1;
     }
 
-    if (backup_item.datab[0] == 0x02)
-        backup_item.data2b[2] |= 0x40; // Wrap a mag
-    else
-        backup_item.datab[4] |= 0x40; // Wrap other
+    wrap(&backup_item);
 
     /* 将物品新增至背包. */
     if (!add_invitem(src, backup_item)) {

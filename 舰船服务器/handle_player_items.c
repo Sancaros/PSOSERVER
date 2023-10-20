@@ -767,7 +767,9 @@ item_t remove_invitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     ret = *item;
     character->inv.item_count--;
     for (int x = index; x < character->inv.item_count; x++) {
-        character->inv.iitems[x] = character->inv.iitems[x + 1];
+        character->inv.iitems[x].present = character->inv.iitems[x + 1].present;
+        character->inv.iitems[x].flags = character->inv.iitems[x + 1].flags;
+        character->inv.iitems[x].data = character->inv.iitems[x + 1].data;
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
     return ret;
@@ -901,9 +903,9 @@ bool add_invitem(ship_client_t* src, const item_t item) {
             get_player_describe(src), character->inv.item_count);
         return false;
     }
-    character->inv.iitems[character->inv.item_count].data = item;
     character->inv.iitems[character->inv.item_count].present = LE16(0x0001);
     character->inv.iitems[character->inv.item_count].flags = 0;
+    character->inv.iitems[character->inv.item_count].data = item;
     character->inv.item_count++;
     return true;
 }
@@ -1001,10 +1003,33 @@ bool is_wrapped(const item_t* item) {
         return !is_stackable(item) && (item->datab[3] & 0x40);
     case ITEM_TYPE_MESETA:
         return false;
+    default:
+        ERR_LOG("无效物品数据 %s", get_item_describe(item, 5));
+
     }
 
-    ERR_LOG("无效物品数据 0x%02X", item->datab[0]);
     return false;
+}
+
+void wrap(item_t* item) {
+    switch (item->datab[0]) {
+    case ITEM_TYPE_WEAPON:
+    case ITEM_TYPE_GUARD:
+        item->datab[4] |= 0x40;
+        break;
+    case ITEM_TYPE_MAG:
+        item->data2b[2] |= 0x40;
+        break;
+    case ITEM_TYPE_TOOL:
+        if (!is_stackable(item)) {
+            item->datab[3] |= 0x40;
+        }
+        break;
+    case ITEM_TYPE_MESETA:
+        break;
+    default:
+        ERR_LOG("%s 是无效 wrap 物品类型", get_item_describe(item, 5));
+    }
 }
 
 void unwrap(item_t* item) {
@@ -1021,19 +1046,19 @@ void unwrap(item_t* item) {
             item->datab[3] &= 0xBF;
         }
         break;
-    case 4:
+    case ITEM_TYPE_MESETA:
         break;
     default:
-        ERR_LOG("无效 unwrap 物品类型");
+        ERR_LOG("%s 是无效 unwrap 物品类型", get_item_describe(item, 5));
     }
 }
 
 int player_use_item(ship_client_t* src, uint32_t item_id) {
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &src->cur_block->sfmt_rng;
-    iitem_t* weapon = { 0 };
-    iitem_t* armor = { 0 };
-    iitem_t* mag = { 0 };
+    item_t* weapon = { 0 };
+    item_t* armor = { 0 };
+    item_t* mag = { 0 };
     // On PC (and presumably DC), the client sends a 6x29 after this to delete the
     // used item. On GC and later versions, this does not happen, so we should
     // delete the item here.
@@ -1113,22 +1138,22 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     case ITEM_TYPE_MAG:
         switch (item->datab[1]) {
         case 0x2B:
-            weapon = &inv->iitems[find_equipped_weapon(inv)];
+            weapon = &inv->iitems[find_equipped_weapon(inv)].data;
             // Chao Mag used
-            if ((weapon->data.datab[1] == 0x68) &&
-                (weapon->data.datab[2] == 0x00)) {
-                weapon->data.datab[1] = 0x58; // Striker of Chao
-                weapon->data.datab[2] = 0x00;
-                weapon->data.datab[3] = 0x00;
-                weapon->data.datab[4] = 0x00;
+            if ((weapon->datab[1] == 0x68) &&
+                (weapon->datab[2] == 0x00)) {
+                weapon->datab[1] = 0x58; // Striker of Chao
+                weapon->datab[2] = 0x00;
+                weapon->datab[3] = 0x00;
+                weapon->datab[4] = 0x00;
             }
             break;
 
         case 0x2C:
-            armor = &inv->iitems[find_equipped_armor(inv)];
+            armor = &inv->iitems[find_equipped_armor(inv)].data;
             // Chu Chu mag used
-            if ((armor->data.datab[2] == 0x1C)) {
-                armor->data.datab[2] = 0x2C; // Chuchu Fever
+            if ((armor->datab[2] == 0x1C)) {
+                armor->datab[2] = 0x2C; // Chuchu Fever
             }
             break;
 
@@ -1163,17 +1188,17 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 ERR_LOG("%s 无效打磨物品值", get_player_describe(src));
                 return -2;
             }
-            weapon = &inv->iitems[find_equipped_weapon(inv)];
+            weapon = &inv->iitems[find_equipped_weapon(inv)].data;
             pmt_weapon_bb_t weapon_def = { 0 };
-            if (pmt_lookup_weapon_bb(weapon->data.datal[0], &weapon_def)) {
+            if (pmt_lookup_weapon_bb(weapon->datal[0], &weapon_def)) {
                 ERR_LOG("%s 装备了不存在的物品数据!", get_player_describe(src));
                 return -3;
             }
 
-            weapon->data.datab[3] += (item->datab[2] + 1);
+            weapon->datab[3] += (item->datab[2] + 1);
 
-            if (weapon->data.datab[3] > weapon_def.max_grind)
-                weapon->data.datab[3] = weapon_def.max_grind;
+            if (weapon->datab[3] > weapon_def.max_grind)
+                weapon->datab[3] = weapon_def.max_grind;
             break;
 
         case ITEM_SUBTYPE_MATERIAL:
@@ -1223,37 +1248,37 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 ERR_LOG("%s 没有装备玛古,玛古细胞 0x%08X", get_player_describe(src), item->datal[0]);
                 break;
             }
-            mag = &inv->iitems[mag_index];
+            mag = &inv->iitems[mag_index].data;
 
             switch (item->datab[2]) {
             case 0x00:
                 // Cell of MAG 502
-                mag->data.datab[1] = (get_player_section(src) & SID_Greennill) ? 0x1D : 0x21;
+                mag->datab[1] = (get_player_section(src) & SID_Greennill) ? 0x1D : 0x21;
                 break;
 
             case 0x01:
                 // Cell of MAG 213
-                mag->data.datab[1] = (get_player_section(src) & SID_Greennill) ? 0x27 : 0x22;
+                mag->datab[1] = (get_player_section(src) & SID_Greennill) ? 0x27 : 0x22;
                 break;
 
             case 0x02:
                 // Parts of RoboChao
-                mag->data.datab[1] = 0x28;
+                mag->datab[1] = 0x28;
                 break;
 
             case 0x03:
                 // Heart of Opa Opa
-                mag->data.datab[1] = 0x29;
+                mag->datab[1] = 0x29;
                 break;
 
             case 0x04:
                 // Heart of Pian
-                mag->data.datab[1] = 0x2A;
+                mag->datab[1] = 0x2A;
                 break;
 
             case 0x05:
                 // Heart of Chao
-                mag->data.datab[1] = 0x2B;
+                mag->datab[1] = 0x2B;
                 break;
 
             default:
@@ -1263,18 +1288,18 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_ADD_SLOT:
-            armor = &inv->iitems[find_equipped_armor(inv)];
+            armor = &inv->iitems[find_equipped_armor(inv)].data;
 
-            if (armor->data.datab[5] >= 4) {
+            if (armor->datab[5] >= 4) {
                 ERR_LOG("%s 物品已达最大插槽数量", get_player_describe(src));
                 return -6;
             }
-            armor->data.datab[5]++;
+            armor->datab[5]++;
             break;
 
         case ITEM_SUBTYPE_SERVER_ITEM1:
             size_t eq_wep = find_equipped_weapon(inv);
-            weapon = &inv->iitems[eq_wep];
+            weapon = &inv->iitems[eq_wep].data;
 
             //アイテムIDの5, 6文字目が1, 2のアイテムの場合（0x0312 * *のとき）
             switch (item->datab[2]) {//スイッチ文。「使用」するアイテムIDの7, 8文字目をスイッチに使う。
@@ -1283,38 +1308,38 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     uint32_t ai, plustype, num_attribs = 0;
                     plustype = 1;
                     ai = 0;
-                    if ((weapon->data.datab[6] > 0x00) &&
-                        (!(weapon->data.datab[6] & 128))) {
+                    if ((weapon->datab[6] > 0x00) &&
+                        (!(weapon->datab[6] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[6] == plustype)
+                        if (weapon->datab[6] == plustype)
                             ai = 7;
                     }
 
-                    if ((weapon->data.datab[8] > 0x00) &&
-                        (!(weapon->data.datab[8] & 128))) {
+                    if ((weapon->datab[8] > 0x00) &&
+                        (!(weapon->datab[8] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[8] == plustype)
+                        if (weapon->datab[8] == plustype)
                             ai = 9;
                     }
 
-                    if ((weapon->data.datab[10] > 0x00) &&
-                        (!(weapon->data.datab[10] & 128))) {
+                    if ((weapon->datab[10] > 0x00) &&
+                        (!(weapon->datab[10] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[10] == plustype)
+                        if (weapon->datab[10] == plustype)
                             ai = 11;
                     }
 
                     if (ai) {
                         // Attribute already on weapon, increase it
-                        weapon->data.datab[ai] += 0x0A;
-                        if (weapon->data.datab[ai] > 100)
-                            weapon->data.datab[ai] = 100;
+                        weapon->datab[ai] += 0x0A;
+                        if (weapon->datab[ai] > 100)
+                            weapon->datab[ai] = 100;
                     }
                     else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
-                            weapon->data.datab[6 + (num_attribs * 2)] = 0x01;
-                            weapon->data.datab[7 + (num_attribs * 2)] = 0x0A;
+                            weapon->datab[6 + (num_attribs * 2)] = 0x01;
+                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
                         }
                     }
                 }
@@ -1325,38 +1350,38 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     uint32_t ai, plustype, num_attribs = 0;
                     plustype = 2;
                     ai = 0;
-                    if ((weapon->data.datab[6] > 0x00) &&
-                        (!(weapon->data.datab[6] & 128))) {
+                    if ((weapon->datab[6] > 0x00) &&
+                        (!(weapon->datab[6] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[6] == plustype)
+                        if (weapon->datab[6] == plustype)
                             ai = 7;
                     }
 
-                    if ((weapon->data.datab[8] > 0x00) &&
-                        (!(weapon->data.datab[8] & 128))) {
+                    if ((weapon->datab[8] > 0x00) &&
+                        (!(weapon->datab[8] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[8] == plustype)
+                        if (weapon->datab[8] == plustype)
                             ai = 9;
                     }
 
-                    if ((weapon->data.datab[10] > 0x00) &&
-                        (!(weapon->data.datab[10] & 128))) {
+                    if ((weapon->datab[10] > 0x00) &&
+                        (!(weapon->datab[10] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[10] == plustype)
+                        if (weapon->datab[10] == plustype)
                             ai = 11;
                     }
 
                     if (ai) {
                         // Attribute already on weapon, increase it
-                        weapon->data.datab[ai] += 0x0A;
-                        if (weapon->data.datab[ai] > 100)
-                            weapon->data.datab[ai] = 100;
+                        weapon->datab[ai] += 0x0A;
+                        if (weapon->datab[ai] > 100)
+                            weapon->datab[ai] = 100;
                     }
                     else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
-                            weapon->data.datab[6 + (num_attribs * 2)] = 0x02;
-                            weapon->data.datab[7 + (num_attribs * 2)] = 0x0A;
+                            weapon->datab[6 + (num_attribs * 2)] = 0x02;
+                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
                         }
                     }
                 }
@@ -1367,38 +1392,38 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     uint32_t ai, plustype, num_attribs = 0;
                     plustype = 3;
                     ai = 0;
-                    if ((weapon->data.datab[6] > 0x00) &&
-                        (!(weapon->data.datab[6] & 128))) {
+                    if ((weapon->datab[6] > 0x00) &&
+                        (!(weapon->datab[6] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[6] == plustype)
+                        if (weapon->datab[6] == plustype)
                             ai = 7;
                     }
 
-                    if ((weapon->data.datab[8] > 0x00) &&
-                        (!(weapon->data.datab[8] & 128))) {
+                    if ((weapon->datab[8] > 0x00) &&
+                        (!(weapon->datab[8] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[8] == plustype)
+                        if (weapon->datab[8] == plustype)
                             ai = 9;
                     }
 
-                    if ((weapon->data.datab[10] > 0x00) &&
-                        (!(weapon->data.datab[10] & 128))) {
+                    if ((weapon->datab[10] > 0x00) &&
+                        (!(weapon->datab[10] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[10] == plustype)
+                        if (weapon->datab[10] == plustype)
                             ai = 11;
                     }
 
                     if (ai) {
                         // Attribute already on weapon, increase it
-                        weapon->data.datab[ai] += 0x0A;
-                        if (weapon->data.datab[ai] > 100)
-                            weapon->data.datab[ai] = 100;
+                        weapon->datab[ai] += 0x0A;
+                        if (weapon->datab[ai] > 100)
+                            weapon->datab[ai] = 100;
                     }
                     else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
-                            weapon->data.datab[6 + (num_attribs * 2)] = 0x03;
-                            weapon->data.datab[7 + (num_attribs * 2)] = 0x0A;
+                            weapon->datab[6 + (num_attribs * 2)] = 0x03;
+                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
                         }
                     }
                 }
@@ -1410,38 +1435,38 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     char attrib_add = 10;
                     plustype = 4;
                     ai = 0;
-                    if ((weapon->data.datab[6] > 0x00) &&
-                        (!(weapon->data.datab[6] & 128))) {
+                    if ((weapon->datab[6] > 0x00) &&
+                        (!(weapon->datab[6] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[6] == plustype)
+                        if (weapon->datab[6] == plustype)
                             ai = 7;
                     }
 
-                    if ((weapon->data.datab[8] > 0x00) &&
-                        (!(weapon->data.datab[8] & 128))) {
+                    if ((weapon->datab[8] > 0x00) &&
+                        (!(weapon->datab[8] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[8] == plustype)
+                        if (weapon->datab[8] == plustype)
                             ai = 9;
                     }
 
-                    if ((weapon->data.datab[10] > 0x00) &&
-                        (!(weapon->data.datab[10] & 128))) {
+                    if ((weapon->datab[10] > 0x00) &&
+                        (!(weapon->datab[10] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[10] == plustype)
+                        if (weapon->datab[10] == plustype)
                             ai = 11;
                     }
 
                     if (ai) {
                         // Attribute already on weapon, increase it
-                        weapon->data.datab[ai] += 0x0A;
-                        if (weapon->data.datab[ai] > 100)
-                            weapon->data.datab[ai] = 100;
+                        weapon->datab[ai] += 0x0A;
+                        if (weapon->datab[ai] > 100)
+                            weapon->datab[ai] = 100;
                     }
                     else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
-                            weapon->data.datab[6 + (num_attribs * 2)] = 0x04;
-                            weapon->data.datab[7 + (num_attribs * 2)] = 0x0A;
+                            weapon->datab[6 + (num_attribs * 2)] = 0x04;
+                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
                         }
                     }
                 }
@@ -1452,38 +1477,38 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     uint32_t ai, plustype, num_attribs = 0;
                     plustype = 5;
                     ai = 0;
-                    if ((weapon->data.datab[6] > 0x00) &&
-                        (!(weapon->data.datab[6] & 128))) {
+                    if ((weapon->datab[6] > 0x00) &&
+                        (!(weapon->datab[6] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[6] == plustype)
+                        if (weapon->datab[6] == plustype)
                             ai = 7;
                     }
 
-                    if ((weapon->data.datab[8] > 0x00) &&
-                        (!(weapon->data.datab[8] & 128))) {
+                    if ((weapon->datab[8] > 0x00) &&
+                        (!(weapon->datab[8] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[8] == plustype)
+                        if (weapon->datab[8] == plustype)
                             ai = 9;
                     }
 
-                    if ((weapon->data.datab[10] > 0x00) &&
-                        (!(weapon->data.datab[10] & 128))) {
+                    if ((weapon->datab[10] > 0x00) &&
+                        (!(weapon->datab[10] & 128))) {
                         num_attribs++;
-                        if (weapon->data.datab[10] == plustype)
+                        if (weapon->datab[10] == plustype)
                             ai = 11;
                     }
 
                     if (ai) {
                         // Attribute already on weapon, increase it
-                        weapon->data.datab[ai] += 0x05;
-                        if (weapon->data.datab[ai] > 100)
-                            weapon->data.datab[ai] = 100;
+                        weapon->datab[ai] += 0x05;
+                        if (weapon->datab[ai] > 100)
+                            weapon->datab[ai] = 100;
                     }
                     else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
-                            weapon->data.datab[6 + (num_attribs * 2)] = 0x05;
-                            weapon->data.datab[7 + (num_attribs * 2)] = 0x05;
+                            weapon->datab[6 + (num_attribs * 2)] = 0x05;
+                            weapon->datab[7 + (num_attribs * 2)] = 0x05;
                         }
                     }
                 }
@@ -1500,19 +1525,19 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             case 0x07: // weapons bone
                 //アイテムIDの7,8文字目が0,7のとき。（0x031207のとき　つまりウェポンズバッジ骨のとき）
                 if (eq_wep != -1) {    //詳細不明、武器装備時？
-                    switch (weapon->data.datab[1]) { //スイッチにキャラクターの装備している武器のアイテムIDの3,4文字目をスイッチに使う
+                    switch (weapon->datab[1]) { //スイッチにキャラクターの装備している武器のアイテムIDの3,4文字目をスイッチに使う
 
                     case 0x22:
                         //キャラクターの装備している武器のアイテムIDの3,4文字目が2,2のとき（0x002200のとき　つまりカジューシース）
-                        if (weapon->data.datab[3] == 0x09)
+                        if (weapon->datab[3] == 0x09)
                             //もしキャラクターの装備している武器のアイテムIDの7,8文字目が0,9だったら（つまり強化値が + 9だったら）
                         {
-                            weapon->data.datab[2] = 0x01; // melcrius
+                            weapon->datab[2] = 0x01; // melcrius
                             //キャラクターの装備している武器のアイテムIDの5,6文字目を0,1に変更する
                             //（つまりカジューシース + 9（0x00220009）→メルクリウスロッド + 9（0x00220109）にする）
-                            weapon->data.datab[3] = 0x00; // Not grinded
+                            weapon->datab[3] = 0x00; // Not grinded
                             //強化値を０にする（つまりメルクリウスロッド + 9（0x00220109）→メルクリウスロッド（0x00220100）にする）
-                            weapon->data.datab[4] = 0x00;
+                            weapon->datab[4] = 0x00;
                             //Send_Item(inv->iitems[eq_wep].data.item_id, client);
                             // 詳細不明。装備している武器をインベントリの最終行に送る？
                         }
@@ -2492,7 +2517,7 @@ void fix_inv_bank_item(item_t* i) {
         int16_t mag_def, mag_pow, mag_dex, mag_mind;
         int32_t total_levels;
 
-        magitem_t* playermag = (magitem_t*)&i->datab[0];
+        item_mag_t* playermag = (item_mag_t*)&i->datab[0];
 
         if (playermag->synchro > 120)
             playermag->synchro = 120;

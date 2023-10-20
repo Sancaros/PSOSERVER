@@ -86,9 +86,9 @@ typedef struct item_data {
     // 这导致它与其他版本的 PSO（即所有其他版本）不兼容。
     // 我们需要在接收和发送数据之前手动对 data2 进行字节交换来解决这个问题。
     union {
-        uint8_t datab[12];//字节
+        uint8_t datab[12];//单字节
         uint16_t dataw[6];//宽字节
-        uint32_t datal[3];//32位数值
+        uint32_t datal[3];//4字节
     }PACKED;
     uint32_t item_id;
     union {
@@ -98,11 +98,9 @@ typedef struct item_data {
     }PACKED;
 } PACKED item_t;
 
-// 武器物品参数结构
-typedef struct bb_item_wp {
+// 武器物品参数结构 20字节
+typedef struct item_weapon {
     union data_l {
-        uint32_t data_l[3];//32位数值
-        uint16_t data_w[6];//宽字节
         struct data_b {
             //物品类型
             uint8_t type;
@@ -134,30 +132,46 @@ typedef struct bb_item_wp {
             // 0x00 0x01   0x02    0x03    0x04 0x05
             uint8_t attrb3;
             uint8_t attrb3_add;
-        };
-    };
+        }PACKED;
+        uint32_t data_l[3];//4字节
+        uint16_t data_w[6];//宽字节
+    }PACKED;
 
     uint32_t item_id;              /* Set to 0xFFFFFFFF */
 
+    /* 以下字节武器未涉及? */
     union data2_l {
         uint32_t amt;
         uint16_t data2_w[2];
         uint8_t data2_b[4];
-    };
-} bb_item_wp_t;
+    }PACKED;
+} PACKED item_weapon_t;
 
-static int sadd213213213as = sizeof(bb_item_wp_t);
+/* 玛古结构 20 字节 */
+typedef struct item_mag {
+    uint8_t item_type; // "02" =P
+    uint8_t mtype;
+    uint8_t level;
+    uint8_t photon_blasts;
+    int16_t def;
+    int16_t pow;
+    int16_t dex;
+    int16_t mind;
+    uint32_t itemid;
+    int8_t synchro;
+    uint8_t IQ;
+    uint8_t PBflags;
+    uint8_t color;
+} PACKED item_mag_t;
 
-// BB 美赛塔物品参数结构
-typedef struct bb_item_mst {
-    uint8_t type; //aways 0x04
-    uint8_t unused1;
-    uint8_t unused2;
-    uint8_t unused3;
-    uint32_t unused4;
-    uint32_t unused5;
-    uint32_t amt; //mst amount
-} PACKED bb_item_mst_t;
+// BB 美赛塔物品参数结构 20字节
+typedef struct item_mst {
+    uint32_t type; //永远是 0x00000004
+    uint32_t unused1;
+    uint32_t unused2;
+    uint32_t item_id;              /* Set to 0xFFFFFFFF */
+    uint32_t amt; //美赛塔数量
+} PACKED item_mst_t;
 
 //PSO V2在字符结构中存储了一些额外的数据，格式如下
 //当然，世嘉认为向后兼容性非常聪明，但对我们来说
@@ -182,35 +196,12 @@ typedef struct bb_item_mst {
 //材料和玩家（分别）使用的运气材料。
 //items[13]。extension_data2到items[15]。extension_data2：
 //未知。这些不是一个数组，但看起来确实是相关的。
-// PSO V2 stored some extra data in the character structs in a format that I'm
-// sure Sega thought was very clever for backward compatibility, but for us is
-// just plain annoying. Specifically, they used the third and fourth bytes of
-// the InventoryItem struct to store some things not present in V1. The game
-// stores arrays of bytes striped across these structures. In newserv, we call
-// those fields extension_data. They contain:
-//   items[0].extension_data1 through items[19].extension_data1:
-//       Extended technique levels. The values in the technique_levels_v1 array
-//       only go up to 14 (tech level 15); if the player has a technique above
-//       level 15, the corresponding extension_data1 field holds the remaining
-//       levels (so a level 20 tech would have 14 in technique_levels_v1 and 5
-//       in the corresponding item's extension_data1 field).
-//   items[0].extension_data2 through items[3].extension_data2:
-//       The flags field from the PSOGCCharacterFile::Character struct; see
-//       SaveFileFormats.hh for details.
-//   items[4].extension_data2 through items[7].extension_data2:
-//       The timestamp when the character was last saved, in seconds since
-//       January 1, 2000. Stored little-endian, so items[4] contains the LSB.
-//   items[8].extension_data2 through items[12].extension_data2:
-//       Number of power materials, mind materials, evade materials, def
-//       materials, and luck materials (respectively) used by the player.
-//   items[13].extension_data2 through items[15].extension_data2:
-//       Unknown. These are not an array, but do appear to be related.
 /* 28 字节 */
 typedef struct psocn_iitem {
     uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用
   // See note above about these fields
     uint8_t extension_data1;  //部分字节存储法术
-    uint8_t extension_data2;  //部分字节存储吃药数量
+    uint8_t extension_data2;  //部分字节存储吃药数量 从背包的第八位开始存储
     uint32_t flags;// 0x00000008 = 已装备
     item_t data;
 } PACKED iitem_t;
@@ -218,8 +209,8 @@ typedef struct psocn_iitem {
 /* 844 字节 */
 typedef struct psocn_inventory {
     uint8_t item_count;
-    uint8_t hpmats_used;
-    uint8_t tpmats_used;
+    uint8_t hpmats_used;//HP 吃药数量
+    uint8_t tpmats_used;//TP 吃药数量
     uint8_t language;
     iitem_t iitems[MAX_PLAYER_INV_ITEMS];
 } PACKED inventory_t;

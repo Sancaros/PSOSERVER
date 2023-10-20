@@ -6728,7 +6728,7 @@ static int sub60_D5_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     rv = subcmd_send_lobby_bb_create_inv_item(src, compare_item, 1, true);
-    rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->function_id);
+    rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->success_function_id);
     rv = subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
 
     return rv;
@@ -6817,7 +6817,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         rv = subcmd_send_lobby_bb_create_inv_item(src, add_item, 1, true);
 
         /* 更新玩家任务状态 */
-        rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->function_id);
+        rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->success_function_id);
 
         rv = send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "兑换成功"));
 
@@ -6895,7 +6895,6 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_upgrade_weapon_attribute_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int rv = 0;
 
     if (!in_game(src))
         return -1;
@@ -6907,22 +6906,11 @@ static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
 
     inventory_t* inv = get_client_inv(src);
 
-    iitem_t work_item2;
-    uint32_t del_item_pid = 0;
-    uint32_t ci, ai,
-        compare_itemid = 0, compare_item1 = 0, compare_item2 = 0, num_attribs = 0;
-    char attrib_add;
-
-    memcpy(&compare_item1, &pkt->upgrade_item.datal[0], 3);
-    compare_itemid = pkt->item_id;
-    for (ci = 0; ci < inv->item_count; ci++) {
-        memcpy(&compare_item2, &inv->iitems[ci].data.datab[0], 3);
-        if ((inv->iitems[ci].data.item_id == compare_itemid) &&
-            (compare_item1 == compare_item2) && (inv->iitems[ci].data.datab[0] == ITEM_TYPE_WEAPON)) {
-            if (pkt->is_ps)
-                del_item_pid = BBItem_Photon_Drop;
-            else
-                del_item_pid = BBItem_Photon_Sphere;
+    for (size_t x = 0; x < inv->item_count; x++) {
+        if ((inv->iitems[x].data.item_id == pkt->item_id) &&
+            (pkt->upgrade_item.datal[0] == inv->iitems[x].data.datal[0]) && 
+            (inv->iitems[x].data.datab[0] == ITEM_TYPE_WEAPON)) {
+            uint32_t del_item_pid = pkt->payment_type ? BBItem_Photon_Drop : BBItem_Photon_Sphere;
 
             size_t itemid = find_iitem_code_stack_item_id(inv, del_item_pid);
             if (!itemid) {
@@ -6930,87 +6918,59 @@ static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
                 return -3;
             }
 
-            item_t remove_item = remove_invitem(src, itemid, pkt->ex_amount, src->version != CLIENT_VERSION_BB);
+            item_t remove_item = remove_invitem(src, itemid, pkt->payment_count, src->version != CLIENT_VERSION_BB);
             if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
                 ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
                 print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
                 return -3;
             }
-            subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, pkt->ex_amount);
+            subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, pkt->payment_count);
 
-            // Copy before shift
-            memcpy(&work_item2, &inv->iitems[ci], sizeof(iitem_t));
+            item_t* item = &inv->iitems[x].data;
 
-            switch (pkt->ex_amount) {
-            case 0x01:
-                // 1 PS = 30%
-                if (pkt->is_ps)
-                    attrib_add = 30;
-                break;
-            case 0x04:
-                // 4 PDs = 1%
-                attrib_add = 1;
-                break;
-            case 0x14:
-                // 20 PDs = 5%
-                attrib_add = 5;
-                break;
-            default:
-                attrib_add = 0;
+            uint8_t attribute_amount = 0;
+            if (pkt->payment_type == 1 && pkt->payment_count == 1) {
+                attribute_amount = 30;
+            }
+            else if (pkt->payment_type == 0 && pkt->payment_count == 4) {
+                attribute_amount = 1;
+            }
+            else if (pkt->payment_type == 1 && pkt->payment_count == 20) {
+                attribute_amount = 5;
+            }
+            else {
+                ERR_LOG("%s 未知 PD/PS 费用", get_player_describe(src));
                 break;
             }
-            ai = 0;
 
-            /* 检查是否存在属性 */
-            if ((work_item2.data.datab[6] > 0x00) &&
-                (!(work_item2.data.datab[6] & 128))) {
-                num_attribs++;
-                if (work_item2.data.datab[6] == pkt->is_ps)
-                    ai = 7;
-            }
-
-            if ((work_item2.data.datab[8] > 0x00) &&
-                (!(work_item2.data.datab[8] & 128))) {
-                num_attribs++;
-                if (work_item2.data.datab[8] == pkt->is_ps)
-                    ai = 9;
-            }
-
-            if ((work_item2.data.datab[10] > 0x00) &&
-                (!(work_item2.data.datab[10] & 128))) {
-                num_attribs++;
-                if (work_item2.data.datab[10] == pkt->is_ps)
-                    ai = 11;
-            }
-
-            if (ai) {
-                /* 属性存在 则增加数值 */
-                (char)work_item2.data.datab[ai] += attrib_add;
-                if (work_item2.data.datab[ai] > 100)
-                    work_item2.data.datab[ai] = 100;
-            } else {
-                /* 如果是白板 则新增一档属性 直到满3属性 */
-                if (num_attribs < 3) {
-                    work_item2.data.datab[6 + (num_attribs * 2)] = pkt->is_ps;
-                    (char)work_item2.data.datab[7 + (num_attribs * 2)] = attrib_add;
+            size_t attribute_index = 0;
+            for (size_t z = 6; z <= 10; z += 2) {
+                if (!(item->datab[z] & 0x80) && (item->datab[z] == pkt->attribute)) {
+                    attribute_index = z;
+                }
+                else if (item->datab[z] == 0) {
+                    attribute_index = z;
                 }
             }
 
-            remove_item = remove_invitem(src, work_item2.data.item_id, 1, src->version != CLIENT_VERSION_BB);
+            item->datab[attribute_index] = pkt->attribute;
+            item->datab[attribute_index] += attribute_amount;
+
+            remove_item = remove_invitem(src, item->item_id, 1, src->version != CLIENT_VERSION_BB);
             if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
                 ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
                 print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
                 return -3;
             }
-
             subcmd_send_lobby_bb_destroy_item(src, remove_item.item_id, 1);
 
             if (!add_invitem(src, remove_item)) {
                 ERR_LOG("%s 获取强化物品失败!", get_player_describe(src));
                 return -5;
             }
+            subcmd_send_lobby_bb_create_inv_item(src, remove_item, stack_size(&remove_item), true);
 
-            rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->request_id);
+            send_bb_confirm_update_quest_statistics(src, 1, pkt->success_function_id);
             break;
         }
     }
@@ -7445,7 +7405,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_ITEM_EXCHANGE_PD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D7_bb },
     { SUBCMD60_ITEM_ADD_SRANK_ATTR        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D8_bb },
     { SUBCMD60_ITEM_EXCHANGE_MOMOKA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D9_bb },
-    { SUBCMD60_PD_COMPARE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DA_bb },
+    { SUBCMD60_ITEM_UPGRADE_WEAPON        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DA_bb },
     { SUBCMD60_BOSS_ACT_SAINT_MILLION     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DC_bb },
     { SUBCMD60_GOOD_LUCK                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DE_bb },
 

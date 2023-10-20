@@ -1366,7 +1366,7 @@ static int handle_clean(ship_client_t* c, const char* params) {
             int size = sizeof(c->bb_pl->character.inv.iitems) / PSOCN_STLENGTH_IITEM;
 
             for (int i = 0; i < size; i++) {
-                memset(&c->bb_pl->character.inv.iitems[i], 0, PSOCN_STLENGTH_IITEM);
+                clear_iitem(&c->bb_pl->character.inv.iitems[i]);
             }
 
             c->bb_pl->character.inv.item_count = 0;

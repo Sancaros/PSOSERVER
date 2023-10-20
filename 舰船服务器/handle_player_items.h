@@ -76,6 +76,9 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
 bool add_invitem(ship_client_t* src, const item_t item);
 bool add_titem(trade_inv_t* trade, const item_t iitem);
 bool add_bitem(ship_client_t* src, const bitem_t bitem);
+bool is_wrapped(const item_t* item);
+void wrap(item_t* item);
+void unwrap(item_t* item);
 int player_use_item(ship_client_t* src, uint32_t item_id);
 bool check_tekke_favored_weapon_by_section_id(uint8_t section, item_t* item);
 //int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);

@@ -3052,8 +3052,8 @@ typedef struct subcmd_bb_exchange_item_in_quest {
     client_id_hdr_t shdr;
     item_t exchange_item; // Only data1[0]-[2] are used
     item_t reward_item; // Only data1[0]-[2] are used
-    uint16_t function_id;
-    uint16_t unknown_a4;
+    uint16_t success_function_id;
+    uint16_t failure_function_id;
 } PACKED subcmd_bb_exchange_item_in_quest_t;
 
 // 0xD6: Wrap item (BB; handled by server)
@@ -3071,8 +3071,8 @@ typedef struct subcmd_bb_item_exchange_pd {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t add_item; // Only data1[0]-[2] are used
-    uint16_t function_id;
-    uint16_t unknown_a3;
+    uint16_t success_function_id;
+    uint16_t failure_function_id;
 } PACKED subcmd_bb_item_exchange_pd_t;
 
 // 0xD8: Add S-rank weapon special (BB; handled by server)
@@ -3083,8 +3083,8 @@ typedef struct subcmd_bb_item_add_srank_weapon_special {
     item_t compare_item; // Only data1[0]-[2] are used
     uint32_t unknown_a2;
     uint32_t unknown_a3;
-    uint16_t unknown_a4;
-    uint16_t unknown_a5;
+    uint16_t success_function_id;
+    uint16_t failure_function_id;
 } PACKED subcmd_bb_item_add_srank_weapon_special_t;
 
 // 0xD9: Momoka Item Exchange  MomokaŒÔ∆∑Ωªªª
@@ -3095,8 +3095,8 @@ typedef struct subcmd_bb_item_exchange_momoka {
     item_t add_item;
     uint32_t unknown_a3;
     uint32_t unknown_a4;
-    uint16_t unknown_a5;
-    uint16_t unknown_a6;
+    uint16_t success_function_id;
+    uint16_t failure_function_id;
 } PACKED subcmd_bb_item_exchange_momoka_t;
 
 // 0xDA: Upgrade weapon attribute (BB; handled by server)
@@ -3104,13 +3104,13 @@ typedef struct subcmd_bb_item_exchange_momoka {
 typedef struct subcmd_bb_upgrade_weapon_attribute {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    item_t upgrade_item; // Only data1[0]-[2] are used
-    uint32_t item_id;
-    uint32_t ex_amount;
-    uint32_t is_ps; // 0 or 1
-    uint32_t unknown_a5;
-    uint16_t request_id;
-    uint16_t unknown_a7;
+    item_t upgrade_item; // Only data1[0-2] are used (argsA[1-3])
+    uint32_t item_id; // argsA[0]
+    uint32_t attribute; // argsA[4]
+    uint32_t payment_count; // Number of PD or PS (argsA[5])
+    uint32_t payment_type; // 0 = Photon Drops, 1 = Photon Spheres
+    uint16_t success_function_id; // argsA[6]
+    uint16_t failure_function_id; // argsA[7]
 } PACKED subcmd_bb_upgrade_weapon_attribute_t;
 
 // 0xDB: Exchange item in quest (BB)

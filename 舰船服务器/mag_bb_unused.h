@@ -380,7 +380,7 @@ void mag_bb_add_pb(uint8_t* flags, uint8_t* blasts, uint8_t pb) {
 }
 
 /* MAG 增加变量参数*/
-int32_t mag_bb_alignment(magitem_t* m) {
+int32_t mag_bb_alignment(item_mag_t* m) {
 	int32_t v1, v2, v3, v4, v5, v6;
 
 	v4 = 0;
@@ -420,7 +420,7 @@ int32_t mag_bb_alignment(magitem_t* m) {
 }
 
 /* MAG 特殊进化函数 */
-int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
+int32_t mag_bb_special_evolution(item_mag_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	uint8_t oldType;
 	int16_t mDefense, mPower, mDex, mMind;
 
@@ -550,7 +550,7 @@ int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type,
 }
 
 /* MAG 50级进化函数 */
-void mag_bb_lv50_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
+void mag_bb_lv50_evolution(item_mag_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	int32_t v10, v11, v12, v13;
 
 	int32_t Alignment = mag_bb_alignment(m);
@@ -887,7 +887,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32
 }
 
 /* MAG 35级进化函数 */
-void mag_bb_lv35_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
+void mag_bb_lv35_evolution(item_mag_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	int32_t Alignment = mag_bb_alignment(m);
 
 	if (evolution_class > 3) // Don't bother to check if a special mag.
@@ -971,7 +971,7 @@ void mag_bb_lv35_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32
 }
 
 /* MAG 10级进化函数 */
-void mag_bb_lv10_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
+void mag_bb_lv10_evolution(item_mag_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	switch (type)
 	{
 	case CLASS_HUMAR:
@@ -999,7 +999,7 @@ void mag_bb_lv10_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32
 }
 
 /* MAG 进化检测函数 */
-void mag_bb_check_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
+void mag_bb_check_evolution(item_mag_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	if ((m->level < 10) || (m->level >= 35)) {
 		if ((m->level < 35) || (m->level >= 50)) {
 			if (m->level >= 50) {
@@ -1032,7 +1032,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 
 	uint32_t i, mt_index = 0;
 	int32_t evolution_class = 0;
-	magitem_t* mag = { 0 };
+	item_mag_t* mag = { 0 };
 	item_t* feed_item = { 0 };
 	uint16_t* ft;
 	int16_t mag_iq, mag_def, mag_pow, mag_dex, mag_mind;
@@ -1058,7 +1058,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			return -3;
 		}
 
-		mag = (magitem_t*)&character->inv.iitems[i].data;
+		mag = (item_mag_t*)&character->inv.iitems[i].data;
 
 		if ((feed_item->datab[0] == ITEM_TYPE_TOOL) &&
 			(feed_item->datab[1] < ITEM_SUBTYPE_TELEPIPE) &&
@@ -1095,7 +1095,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			return -4;
 		}
 
-		mag = (magitem_t*)&character->inv.iitems[i].data;
+		mag = (item_mag_t*)&character->inv.iitems[i].data;
 
 		// Feed that mag (Updates to code by Lee from schtserv.com)
 		switch (mag->mtype)
