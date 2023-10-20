@@ -275,13 +275,13 @@ int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int
 
 ///////////////////////////////////////////////////////
 /* 新增玩家QUEST_DATA2数据至数据库 */
-int db_insert_char_quest_data2(uint8_t* quest_data2, uint32_t gc, uint8_t slot);
+int db_insert_char_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc, uint8_t slot);
 
 /* 更新角色QUEST_DATA2 */
-int db_update_char_quest_data2(uint8_t* quest_data2, uint32_t gc, uint8_t slot, uint32_t flag);
+int db_update_char_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc, uint8_t slot, uint32_t flag);
 
 /* 获取玩家QUEST_DATA2数据数据项 */
-int db_get_char_quest_data2(uint32_t gc, uint8_t slot, uint8_t* quest_data2, int check);
+int db_get_char_quest_data2(uint32_t gc, uint8_t slot, psocn_bb_quest_data2_t* quest_data2, int check);
 
 ///////////////////////////////////////////////////////
 /* 新增玩家TECH_MENU数据至数据库 */

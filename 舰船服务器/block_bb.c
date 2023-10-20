@@ -2303,7 +2303,7 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     /////////////////////////////////////////////////////////////////////////////////////tech_menu
     memcpy(char_data->tech_menu, src->bb_pl->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
     /////////////////////////////////////////////////////////////////////////////////////quest_data2
-    memcpy(char_data->quest_data2, src->bb_pl->quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+    memcpy(char_data->quest_data2.all, src->bb_pl->quest_data2.all, PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
 
     //for (i = 0; i < 276; i++) {
     //    char_data->unk1[i] = 0x01;
@@ -3436,7 +3436,7 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
 typedef void (*process_command_t)(ship_t s, ship_client_t* c,
     uint16_t command, uint32_t flag, uint8_t* data);
 
-#define DEBUG_BB_BLOCK
+#define DEBUG_BB_BLOCK1
 
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     __try {
@@ -3454,16 +3454,16 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
 #ifdef DEBUG_BB_BLOCK
 
-        //if (type == GAME_SUBCMD60_TYPE ||
-        //    type == GAME_SUBCMD6C_TYPE ||
-        //    type == GAME_SUBCMD62_TYPE ||
-        //    type == GAME_SUBCMD6D_TYPE
-        //    ) {
-        //    subcmd_bb_pkt_t* subpkt = (subcmd_bb_pkt_t*)pkt;
-        //    DBG_LOG("舰仓:BB指令 0x%04X 副指令 0x%02X  %s",
-        //        subpkt->hdr.pkt_type, subpkt->type, get_player_describe(c));
-        //}
-        //else
+        if (type == GAME_SUBCMD60_TYPE ||
+            type == GAME_SUBCMD6C_TYPE ||
+            type == GAME_SUBCMD62_TYPE ||
+            type == GAME_SUBCMD6D_TYPE
+            ) {
+            subcmd_bb_pkt_t* subpkt = (subcmd_bb_pkt_t*)pkt;
+            DBG_LOG("舰仓:BB指令 0x%04X 副指令 0x%02X  %s",
+                subpkt->hdr.pkt_type, subpkt->type, get_player_describe(c));
+        }
+        else
             DBG_LOG("舰仓:BB指令 0x%04X  %s",
                 type, get_player_describe(c));
 

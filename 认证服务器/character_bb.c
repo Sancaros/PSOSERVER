@@ -777,7 +777,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         }
 
         /* 更新玩家角色quest_data2数据数据项 */
-        if (db_update_char_quest_data2(char_data->quest_data2, c->guildcard, pkt->slot, flags)) {
+        if (db_update_char_quest_data2(&char_data->quest_data2, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */

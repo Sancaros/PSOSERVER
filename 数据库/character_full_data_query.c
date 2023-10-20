@@ -105,7 +105,7 @@ int db_get_orignal_char_full_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t*
     memcpy(char_data->infoboard, org_char->data.infoboard, sizeof(char_data->infoboard));
     memcpy(&char_data->c_records, &org_char->data.c_records, sizeof(bb_challenge_records_t));
     memcpy(char_data->tech_menu, org_char->data.tech_menu, sizeof(char_data->tech_menu));
-    memcpy(char_data->quest_data2, org_char->data.quest_data2, sizeof(char_data->quest_data2));
+    memcpy(char_data->quest_data2.all, org_char->data.quest_data2.all, PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
     memcpy(&char_data->b_records, &org_char->data.b_records, sizeof(battle_records_t));
 
     psocn_db_result_free(result);
@@ -212,8 +212,8 @@ int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
 
     SAFE_STRCAT(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_data2,
-        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_data2.all,
+        PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
 
     SAFE_STRCAT(myquery, "', '");
 

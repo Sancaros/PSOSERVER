@@ -2606,7 +2606,7 @@ static int handle_dbgqdata(ship_client_t* c, const char* params) {
 
         if (!strcmp(params, "quest2")) {
 
-            print_ascii_hex(gml, c->bb_pl->quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+            print_ascii_hex(gml, c->bb_pl->quest_data2.all, PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
 
             return send_txt(c, "%s", __(c, "\tE\tC6任务2数据已转储至GM日志."));
         }

@@ -1407,6 +1407,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         psocn_bb_char_t* character = get_client_char_bb(src);
         section = get_lobby_leader_section(l);
         //drop_area = src->cur_area;
+        //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
 
         if (ignore_def) {
             item = on_box_item_drop(l, &src->sfmt_rng, drop_area, pt_area, section);

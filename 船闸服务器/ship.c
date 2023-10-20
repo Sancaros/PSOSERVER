@@ -3247,7 +3247,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_quest_data2(char_data->quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_quest_data2(&char_data->quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         SQLERR_LOG("无法保存角色quest_data2数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -3618,7 +3618,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
         }
 
         /* 从数据库中获取玩家角色的QUEST_DATA2数据 */
-        if ((err |= db_get_char_quest_data2(gc, slot, bb_data->quest_data2, 0))) {
+        if ((err |= db_get_char_quest_data2(gc, slot, &bb_data->quest_data2, 0))) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA2数据, 错误码:%d", gc, slot, err);
         }
 
@@ -3659,7 +3659,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             db_update_char_name(&backupdata.character.name, gc, slot);
             db_update_char_techniques(&backupdata.character, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_quest_data1(backupdata.quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR);
-            db_update_char_quest_data2(backupdata.quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_quest_data2(&backupdata.quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_tech_menu(backupdata.tech_menu, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_bank(&backupdata.bank, gc, slot);
             db_update_char_b_records(&backupdata.b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);
