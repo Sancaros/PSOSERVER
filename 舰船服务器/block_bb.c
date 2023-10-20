@@ -2225,8 +2225,8 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     //memcpy(&src->bb_pl->c_records, &char_data->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     ///////////////////////////////////////////////////////////////////////////////////////tech_menu
     //memcpy(src->bb_pl->tech_menu, char_data->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-    ///////////////////////////////////////////////////////////////////////////////////////quest_data2
-    //memcpy(src->bb_pl->quest_data2, char_data->quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+    ///////////////////////////////////////////////////////////////////////////////////////mode_quest_data
+    //memcpy(src->bb_pl->mode_quest_data, char_data->mode_quest_data, PSOCN_STLENGTH_BB_DB_mode_quest_data);
 
     ////for (i = 0; i < 276; i++) {
     ////    char_data->unk1[i] = 0x01;
@@ -2302,8 +2302,8 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     memcpy(&char_data->c_records, &src->bb_pl->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     /////////////////////////////////////////////////////////////////////////////////////tech_menu
     memcpy(char_data->tech_menu, src->bb_pl->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-    /////////////////////////////////////////////////////////////////////////////////////quest_data2
-    memcpy(char_data->quest_data2.all, src->bb_pl->quest_data2.all, PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
+    /////////////////////////////////////////////////////////////////////////////////////mode_quest_data
+    memcpy(char_data->mode_quest_data.all, src->bb_pl->mode_quest_data.all, PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
     //for (i = 0; i < 276; i++) {
     //    char_data->unk1[i] = 0x01;

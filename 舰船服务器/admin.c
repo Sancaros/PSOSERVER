@@ -199,9 +199,9 @@ int refresh_quests(ship_client_t *c, msgfunc f) {
     }
 
     if(!load_quests(ship, ship->cfg, 0))
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC6成功刷新任务文件."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC6成功刷新任务文件."));
     else
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4未设置任务文件2."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未设置任务文件2."));
 }
 
 int refresh_gms(ship_client_t *c, msgfunc f) {
@@ -215,13 +215,13 @@ int refresh_gms(ship_client_t *c, msgfunc f) {
         /* Try to read the GM file. This will clean out the old list as
          well, if needed. */
         if(gm_list_read(ship->cfg->gm_file, ship)) {
-            return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4无法读取 GM 列表."));
+            return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC4无法读取 GM 列表."));
         }
 
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC6成功刷新 GM 列表."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC6成功刷新 GM 列表."));
     }
     else {
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC8未设置 GM 列表."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC8未设置 GM 列表."));
     }
 }
 
@@ -240,7 +240,7 @@ int refresh_limits(ship_client_t *c, msgfunc f) {
 
     /* Make sure we had limits configured in the first place... */
     if(!s->limits_count)
-        return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7未设置 limits."));
+        return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7未设置 limits."));
 
     TAILQ_INIT(&lq);
 
@@ -295,11 +295,11 @@ int refresh_limits(ship_client_t *c, msgfunc f) {
     ship->def_limits = def;
     pthread_rwlock_unlock(&ship->llock);
 
-    return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7成功刷新 limits."));
+    return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7成功刷新 limits."));
 
 err:
     ship_free_limits_ex(&lq);
-    return f(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7刷新 limits 发生错误."));
+    return f(c, MSG1_TYPE, "%s", __(c, "\tE\tC7刷新 limits 发生错误."));
 }
 
 int broadcast_message(ship_client_t *c, const char *message, int prefix) {
@@ -505,6 +505,7 @@ int schedule_update(ship_client_t* c, uint32_t when, int restart, msgfunc f) {
 
     return 0;
 }
+
 int global_ban(ship_client_t *c, uint32_t gc, uint32_t l, const char *reason) {
     const char *len = NULL;
     block_t *b;

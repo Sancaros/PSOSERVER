@@ -2215,20 +2215,20 @@ typedef struct subcmd_bb_inter_level_map_warp {
     uint8_t unused[2];
 } PACKED subcmd_bb_inter_level_map_warp_t;
 
-// 0x95: Unknown (不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x95 {
+// 0x95: 挑战模式完成 (不支持 Episode 3)
+typedef struct subcmd_bb_ch_mode_finish {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t client_id;
-    uint32_t unknown_a1;
-    uint32_t unknown_a2;
-    uint32_t unknown_a3;
-} PACKED subcmd_bb_Unknown_6x95_t;
+    float x;
+    float y;
+    float z;
+} PACKED subcmd_bb_ch_mode_finish_t;
 
 // 0x96: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
 
-// 0x97: Unknown (不支持 Episode 3)
+// 0x97: 挑战模式 (不支持 Episode 3)
 typedef struct subcmd_bb_ch_game_cancel {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
@@ -3022,17 +3022,17 @@ typedef struct subcmd_bb_c_mode_grave_drop_req {
     uint8_t unk2;
     float x;
     float z;
-    uint32_t unused; /* 00 00 00 00 */
+    uint8_t item[4]; /* 00 00 00 00 */
 } PACKED subcmd_bb_c_mode_grave_drop_req_pkt_t;
 
 // 0xD2: Set quest data 2 (BB)
 // Writes 4 bytes to the 32-bit field specified by index.
-typedef struct subcmd_bb_gallon_area {
+typedef struct subcmd_bb_set_mode_quest_data {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint32_t quest_offset;
+    uint32_t index;
     uint32_t value;
-} PACKED subcmd_bb_gallon_area_pkt_t;
+} PACKED subcmd_bb_set_mode_quest_data_pkt_t;
 
 // 0xD3: Invalid subcommand
 

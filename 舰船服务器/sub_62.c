@@ -2572,8 +2572,11 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年07月31日 04:42 : 58 : 142] 调试(subcmd_handle_62.c 2515) : 未知 0x62 指令 : 0xD1
     //(00000000)   1C 00 62 00 00 00 00 00   D1 05 00 00 01 00 05 00  ..b..... ? ......
     //(00000010)   B0 FF 07 C4 99 E8 3E C2   00 00 00 00 ? .臋 ? ? ...
+//[2023年10月21日 02:10:59:946] 错误(f_logs.h 0587): 数据包如下:
+//(00000000) 1C 00 62 00 00 00 00 00  D1 05 00 00 01 00 05 00    ..b.............
+//(00000010) 77 B7 09 C4 D2 1E 66 C3  03 00 00 00    w.....f.....
     item_t drop_item = { 0 };
-    drop_item.datab[0] = ITEM_TYPE_TOOL;
+    drop_item.datab[0] = pkt->item[0];
     drop_item.datab[1] = pkt->item_subtype;
     drop_item.datab[5] = pkt->drop_amount;
 
@@ -2582,8 +2585,6 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     if (new_litem == NULL) {
         return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足或生成失败."));
     }
-
-    send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt);
 
     return subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 }

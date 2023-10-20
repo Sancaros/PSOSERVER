@@ -201,12 +201,13 @@ typedef struct psocn_bb_guild_card {
     uint8_t char_class;                 /* 1   人物职业 */
 } PACKED psocn_bb_guild_card_t;
 
-typedef struct psocn_bb_quest_data2 {
+typedef struct psocn_bb_mode_quest_data {
     union {
-        uint32_t part[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];
-        uint8_t all[PSOCN_DATALENGTH_BB_DB_QUEST_DATA2];
+        /* TODO 确认每一个任务对应的索引 0 或者 1 */
+        uint32_t part[PSOCN_STLENGTH_BB_DB_MODE_QUEST_DATA];
+        uint8_t all[PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA];
     }PACKED;
-} PACKED psocn_bb_quest_data2_t;
+} PACKED psocn_bb_mode_quest_data_t;
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节 大小 14744*/
 typedef struct psocn_bb_full_char {
@@ -224,7 +225,7 @@ typedef struct psocn_bb_full_char {
     psocn_bb_guild_card_t gc;                                                // 玩家GC数据表部分         OK
     uint32_t unk2;                                                           // 未完成保存
     uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];                 // 选项数据表
-    uint8_t shortcuts[PSOCN_STLENGTH_BB_DB_SHORTCUTS];                                               // 选项数据表
+    uint8_t shortcuts[PSOCN_STLENGTH_BB_DB_SHORTCUTS];                       // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
     uint16_t infoboard[0x00AC];
     battle_records_t b_records;                                              // 玩家对战数据表           TODO
@@ -232,7 +233,7 @@ typedef struct psocn_bb_full_char {
     bb_challenge_records_t c_records;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
     uint8_t unk4[0x002C];                                                    // 未完成保存
-    psocn_bb_quest_data2_t quest_data2;                                      // 玩家任务数据表2
+    psocn_bb_mode_quest_data_t mode_quest_data;                              // 玩家任务数据表2
     uint8_t unk1[276];                                                       // 276 - 264 = 12
     bb_key_config_t key_cfg;                                                 // 选项数据表               OK
     bb_guild_t guild_data;                                                   // GUILD数据表              OK
@@ -250,7 +251,7 @@ typedef struct psocn_bb_db_char {
     uint16_t infoboard[0x00AC];//172
     bb_challenge_records_t c_records;
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
-    psocn_bb_quest_data2_t quest_data2;
+    psocn_bb_mode_quest_data_t mode_quest_data;
     battle_records_t b_records;
 } PACKED psocn_bb_db_char_t;
 

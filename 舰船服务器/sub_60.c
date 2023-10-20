@@ -5568,6 +5568,36 @@ static int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_95_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_ch_mode_finish_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_ch_mode_finish_t), 0x05)) {
+        return -2;
+    }
+
+//[2023年10月21日 02:34:49:293] 调试(sub_60.c 7544): 未知 BB 0x60 指令: 0x95
+//[2023年10月21日 02:34:49:295] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 1C 00 60 00 00 00 00 00  95 05 4D 00 00 00 00 00    ..`.......M.....
+//(00000010) DF 0C 6B 0E 86 4F 00 00  F0 0A 04 0E    ..k..O......
+//[2023年10月21日 02:40:05:964] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x95 版本 bb(5) 的处理
+//[2023年10月21日 02:40:05:966] 调试(sub_60.c 7544): 未知 BB 0x60 指令: 0x95
+//[2023年10月21日 02:40:05:969] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 1C 00 60 00 00 00 00 00  95 05 4D 00 00 00 00 00    ..`.......M.....
+//(00000010) 40 3F 37 3F 63 0D 00 00  70 49 F3 0D    @?7?c...pI..
+//
+//[2023年10月21日 02:40:05:979] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x95 版本 bb(5) 的处理
+//[2023年10月21日 02:40:05:980] 调试(sub_60.c 7544): 未知 BB 0x60 指令: 0x95
+//[2023年10月21日 02:40:05:982] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 1C 00 60 00 00 00 00 00  95 05 4D 00 01 00 00 00    ..`.......M.....
+//(00000010) DA 1B AD 1B E6 0C 00 00  80 08 04 0E    ............
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_97_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_ch_game_cancel_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -6662,15 +6692,15 @@ static int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_gallon_area_pkt_t* pkt) {
+    subcmd_bb_set_mode_quest_data_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t quest_offset = pkt->quest_offset;
+    uint32_t quest_offset = pkt->index;
     uint32_t value = pkt->value;
 
     if (!in_game(src))
         return -1;
 
-    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_gallon_area_pkt_t), 0x03)) {
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_set_mode_quest_data_pkt_t), 0x03)) {
         return -2;
     }
 
@@ -6683,7 +6713,7 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000000 )   14 00 60 00 00 00 00 00  D2 03 FF FF 05 00 00 00    ..`.............
     //( 00000010 )   9A D7 00 00                                         ....
     if (quest_offset < 23) {
-        src->bb_pl->quest_data2.part[quest_offset] = value;
+        src->bb_pl->mode_quest_data.part[quest_offset] = value;
     }
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
@@ -7365,7 +7395,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_UNKNOW_91                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_91_bb },
     { SUBCMD60_UNKNOW_92                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_92_bb },
     { SUBCMD60_TIMED_SWITCH_ACTIVATED     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
-    { SUBCMD60_CH_GAME_CANCEL             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_97_bb },
+    { SUBCMD60_CH_MODE_FINISH             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_95_bb },
+    { SUBCMD60_CH_MODE_CANCEL             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_97_bb },
     { SUBCMD60_CHANGE_STAT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9A_bb },
     { SUBCMD60_BATTLE_MODE_PLAYER_DIE     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9B_bb },
     { SUBCMD60_UNKNOW_9C                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9C_bb },

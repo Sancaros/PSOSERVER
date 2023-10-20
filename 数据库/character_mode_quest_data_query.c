@@ -19,9 +19,9 @@
 #include "database_query.h"
 #include "f_checksum.h"
 
-#define TABLE1 CHARACTER_QUEST_DATA2
+#define TABLE1 CHARACTER_MODE_QUEST_DATA
 
-static int db_del_char_quest_data2(uint32_t gc, uint8_t slot) {
+static int db_del_char_mode_quest_data(uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "DELETE FROM %s"
@@ -42,7 +42,7 @@ static int db_del_char_quest_data2(uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-static int db_updata_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc, uint8_t slot) {
+static int db_updata_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "UPDATE %s SET "
@@ -54,16 +54,16 @@ static int db_updata_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t g
         "data20 = '%d', data21 = '%d', "
         "full_data = '"
         ,TABLE1
-        , quest_data2->part[0], quest_data2->part[1], quest_data2->part[2], quest_data2->part[3], quest_data2->part[4]
-        , quest_data2->part[5], quest_data2->part[6], quest_data2->part[7], quest_data2->part[8], quest_data2->part[9]
-        , quest_data2->part[10], quest_data2->part[11], quest_data2->part[12], quest_data2->part[13], quest_data2->part[14]
-        , quest_data2->part[15], quest_data2->part[16], quest_data2->part[17], quest_data2->part[18], quest_data2->part[19]
-        , quest_data2->part[20], quest_data2->part[21]
+        , mode_quest_data->part[0], mode_quest_data->part[1], mode_quest_data->part[2], mode_quest_data->part[3], mode_quest_data->part[4]
+        , mode_quest_data->part[5], mode_quest_data->part[6], mode_quest_data->part[7], mode_quest_data->part[8], mode_quest_data->part[9]
+        , mode_quest_data->part[10], mode_quest_data->part[11], mode_quest_data->part[12], mode_quest_data->part[13], mode_quest_data->part[14]
+        , mode_quest_data->part[15], mode_quest_data->part[16], mode_quest_data->part[17], mode_quest_data->part[18], mode_quest_data->part[19]
+        , mode_quest_data->part[20], mode_quest_data->part[21]
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
-        (char*)quest_data2->all,
-        PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
+        (char*)mode_quest_data->all,
+        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
     sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
         "slot = '%" PRIu8 "'", gc, slot);
@@ -79,10 +79,10 @@ static int db_updata_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t g
     return 0;
 }
 
-int db_insert_char_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc, uint8_t slot) {
+int db_insert_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
-    sprintf(myquery, "INSERT INTO %s ("
+    sprintf_s(myquery, sizeof(myquery), "INSERT INTO %s ("
         "guildcard, slot, change_time, "
         "data0, data1, data2, data3, data4, "
         "data5, data6, data7, data8, data9, "
@@ -91,23 +91,25 @@ int db_insert_char_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc,
         "data20, data21, "
         "full_data"
         ") VALUES ("
-        "'%" PRIu32 "', '%" PRIu8 "', NOW(), ",
-        TABLE1,
-        gc, slot);
-
-    for (int i = 0; i < PSOCN_STLENGTH_BB_DB_QUEST_DATA2; i++) {
-        // 用于暂存每个 `quest_data2->part[]` 的字符串表示
-        char temp[100] = { 0 };
-        snprintf(temp, sizeof(temp), "'%" PRIu32 "', ", quest_data2->part[i]);
-        SAFE_STRCAT(myquery, temp);
-    }
-
-    // 移除最后一个多余的逗号和空格
-    myquery[strlen(myquery) - 2] = '\0';
+        "'%d', '%d', NOW(), "
+        "'%d', '%d', '%d', '%d', '%d', "
+        "'%d', '%d', '%d', '%d', '%d', "
+        "'%d', '%d', '%d', '%d', '%d', "
+        "'%d', '%d', '%d', '%d', '%d', "
+        "'%d', '%d', "
+        "'"
+        , TABLE1
+        , gc, slot
+        , mode_quest_data->part[0], mode_quest_data->part[1], mode_quest_data->part[2], mode_quest_data->part[3], mode_quest_data->part[4]
+        , mode_quest_data->part[5], mode_quest_data->part[6], mode_quest_data->part[7], mode_quest_data->part[8], mode_quest_data->part[9]
+        , mode_quest_data->part[10], mode_quest_data->part[11], mode_quest_data->part[12], mode_quest_data->part[13], mode_quest_data->part[14]
+        , mode_quest_data->part[15], mode_quest_data->part[16], mode_quest_data->part[17], mode_quest_data->part[18], mode_quest_data->part[19]
+        , mode_quest_data->part[20], mode_quest_data->part[21]
+    );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
-        (char*)quest_data2->all,
-        PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
+        (char*)mode_quest_data->all,
+        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
     SAFE_STRCAT(myquery, "')");
 
@@ -121,21 +123,21 @@ int db_insert_char_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc,
     return 0;
 }
 
-int db_update_char_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc, uint8_t slot, uint32_t flag) {
+int db_update_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, uint32_t gc, uint8_t slot, uint32_t flag) {
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
-        if (db_insert_char_quest_data2(quest_data2, gc, slot)) {
+        if (db_insert_char_mode_quest_data(mode_quest_data, gc, slot)) {
             return -1;
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        if (db_updata_quest_data2(quest_data2, gc, slot)) {
+        if (db_updata_mode_quest_data(mode_quest_data, gc, slot)) {
 
-            if (db_del_char_quest_data2(gc, slot)) {
+            if (db_del_char_mode_quest_data(gc, slot)) {
                 return -1;
             }
 
-            if (db_insert_char_quest_data2(quest_data2, gc, slot)) {
+            if (db_insert_char_mode_quest_data(mode_quest_data, gc, slot)) {
                 return -1;
             }
         }
@@ -144,8 +146,8 @@ int db_update_char_quest_data2(psocn_bb_quest_data2_t* quest_data2, uint32_t gc,
     return 0;
 }
 
-/* 获取玩家QUEST_DATA2数据数据项 */
-int db_get_char_quest_data2(uint32_t gc, uint8_t slot, psocn_bb_quest_data2_t* quest_data2, int check) {
+/* 获取玩家mode_quest_data数据数据项 */
+int db_get_char_mode_quest_data(uint32_t gc, uint8_t slot, psocn_bb_mode_quest_data_t* mode_quest_data, int check) {
     void* result;
     char** row;
     char* endptr;
@@ -180,11 +182,11 @@ int db_get_char_quest_data2(uint32_t gc, uint8_t slot, psocn_bb_quest_data2_t* q
 
     /* 获取二进制数据 */
     int i = 3;
-    memcpy(quest_data2, row[i], PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
+    memcpy(mode_quest_data, row[i], PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
     i++;
 
-    for (size_t x = 0; x < PSOCN_STLENGTH_BB_DB_QUEST_DATA2; x++) {
-        quest_data2->part[x] = (uint32_t)strtoul(row[i], &endptr, 10);
+    for (size_t x = 0; x < PSOCN_STLENGTH_BB_DB_MODE_QUEST_DATA; x++) {
+        mode_quest_data->part[x] = (uint32_t)strtoul(row[i], &endptr, 10);
         i++;
     }
 
@@ -198,7 +200,7 @@ int db_get_char_quest_data2(uint32_t gc, uint8_t slot, psocn_bb_quest_data2_t* q
     return 0;
 
 build:
-    if (db_insert_char_quest_data2(quest_data2, gc, slot)) {
+    if (db_insert_char_mode_quest_data(mode_quest_data, gc, slot)) {
         return -1;
     }
 

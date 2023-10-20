@@ -262,9 +262,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	// 找到了魔法装备和喂养物品
 	// 可以使用mag_item_index和feed_item_index进行后续操作
-	item_t* mag_item = &inv->iitems[mag_item_index].data;
-
-	/* 搜索物品的结果索引 */
+	/* 搜索物品的结果索引 删除前 先获取索引值 */
 	size_t result_index = find_result_index(primary_identifier(&inv->iitems[feed_item_index].data));
 
 	if (should_delete_item) {
@@ -281,18 +279,19 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		ERR_LOG("%s 玛古不存在! 错误码 %d", get_player_describe(src), mag_item_index);
 		return mag_item_index;
 	}
-	mag_item = &inv->iitems[mag_item_index].data;
+	item_t* mag_item_data = &inv->iitems[mag_item_index].data;
+	item_mag_t* mag = (item_mag_t*)mag_item_data;
 
 	/* 查找该玛古的喂养表 */
 	pmt_mag_bb_t mag_table = { 0 };
-	if ((err = pmt_lookup_mag_bb(mag_item->datal[0], &mag_table))) {
+	if ((err = pmt_lookup_mag_bb(mag_item_data->datal[0], &mag_table))) {
 		ERR_LOG("%s 喂养了不存在的玛古数据!错误码 %d",
 			get_player_describe(src), err);
 		return err;
 	}
 
 	pmt_mag_feed_result_t feed_result = { 0 };
-	if ((err = pmt_lookup_mag_feed_table_bb(mag_item->datal[0], mag_table.feed_table, result_index, &feed_result))) {
+	if ((err = pmt_lookup_mag_feed_table_bb(mag_item_data->datal[0], mag_table.feed_table, result_index, &feed_result))) {
 		ERR_LOG("%s 喂养了不存在的玛古数据!错误码 %d",
 			get_player_describe(src), err);
 		return err;
@@ -308,20 +307,22 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 #endif // DEBUG
 
-	update_stat(mag_item, 2, feed_result.def);
-	update_stat(mag_item, 3, feed_result.pow);
-	update_stat(mag_item, 4, feed_result.dex);
-	update_stat(mag_item, 5, feed_result.mind);
-	mag_item->data2b[0] = (uint8_t)clamp((ssize_t)mag_item->data2b[0] + feed_result.synchro, 0, 120);
-	mag_item->data2b[1] = (uint8_t)clamp((ssize_t)mag_item->data2b[1] + feed_result.iq, 0, 200);
-
-	uint8_t mag_level = (uint8_t)compute_mag_level(mag_item);
-	mag_item->datab[2] = mag_level;
-	uint8_t evolution_number = magedit_lookup_mag_evolution_number(mag_item);
-	uint8_t mag_number = mag_item->datab[1];
+	/* 先给玛古赋值 */
+	update_stat(mag_item_data, 2, feed_result.def);
+	update_stat(mag_item_data, 3, feed_result.pow);
+	update_stat(mag_item_data, 4, feed_result.dex);
+	update_stat(mag_item_data, 5, feed_result.mind);
+	mag_item_data->data2b[0] = (uint8_t)clamp((ssize_t)mag_item_data->data2b[0] + feed_result.synchro, 0, 120);
+	mag_item_data->data2b[1] = (uint8_t)clamp((ssize_t)mag_item_data->data2b[1] + feed_result.iq, 0, 200);
+	uint8_t mag_level = (uint8_t)compute_mag_level(mag_item_data);
+	mag_item_data->datab[2] = mag_level;
 
 	// Note: Sega really did just hardcode all these rules into the client. There
 	// is no data file describing these evolutions, unfortunately.
+	/* 开始计算玛古是否药进化 并赋予相应的进化值 */
+	uint8_t evolution_number = magedit_lookup_mag_evolution_number(mag_item_data);
+	uint8_t mag_type = mag_item_data->datab[1];
+
 	if (mag_level < 10) {
 		// 啥也不做
 
@@ -333,19 +334,19 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			case CLASS_HUNEWEARL: // HUnewearl
 			case CLASS_HUCAST: // HUcast
 			case CLASS_HUCASEAL: // HUcaseal
-				mag_item->datab[1] = Mag_Varuna; // Varuna
+				mag_item_data->datab[1] = Mag_Varuna; // Varuna
 				break;
 			case CLASS_RAMAR: // RAmar
 			case CLASS_RAMARL: // RAmarl
 			case CLASS_RACAST: // RAcast
 			case CLASS_RACASEAL: // RAcaseal
-				mag_item->datab[1] = Mag_Kalki; // Kalki
+				mag_item_data->datab[1] = Mag_Kalki; // Kalki
 				break;
 			case CLASS_FOMAR: // FOmar
 			case CLASS_FOMARL: // FOmarl
 			case CLASS_FONEWM: // FOnewm
 			case CLASS_FONEWEARL: // FOnewearl
-				mag_item->datab[1] = Mag_Vritra; // Vritra
+				mag_item_data->datab[1] = Mag_Vritra; // Vritra
 				break;
 			default:
 				ERR_LOG("%s 无效角色职业 %d", get_player_describe(src), get_player_class(src));
@@ -356,32 +357,32 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	}
 	else if (mag_level < 50) { // Level 35 evolution
 		if (evolution_number < 2) {
-			uint16_t flags = compute_mag_strength_flags(mag_item);
-			if (mag_number == 0x0D) {
+			uint16_t flags = compute_mag_strength_flags(mag_item_data);
+			if (mag_type == Mag_Kalki) {
 				if ((flags & 0x110) == 0) {
-					mag_item->datab[1] = Mag_Mitra;
+					mag_item_data->datab[1] = Mag_Mitra;
 				} else if (flags & 8) {
-					mag_item->datab[1] = Mag_Surya;
+					mag_item_data->datab[1] = Mag_Surya;
 				} else if (flags & 0x20) {
-					mag_item->datab[1] = Mag_Tapas;
+					mag_item_data->datab[1] = Mag_Tapas;
 				}
 			}
-			else if (mag_number == 1) {
+			else if (mag_type == Mag_Varuna) {
 				if (flags & 0x108) {
-					mag_item->datab[1] = Mag_Rudra;
+					mag_item_data->datab[1] = Mag_Rudra;
 				} else if (flags & 0x10) {
-					mag_item->datab[1] = Mag_Marutah;
+					mag_item_data->datab[1] = Mag_Marutah;
 				} else if (flags & 0x20) {
-					mag_item->datab[1] = Mag_Vayu;
+					mag_item_data->datab[1] = Mag_Vayu;
 				}
 			}
-			else if (mag_number == 0x19) {
+			else if (mag_type == Mag_Vritra) {
 				if (flags & 0x120) {
-					mag_item->datab[1] = Mag_Namuci;
+					mag_item_data->datab[1] = Mag_Namuci;
 				} else if (flags & 8) {
-					mag_item->datab[1] = Mag_Sumba;
+					mag_item_data->datab[1] = Mag_Sumba;
 				} else if (flags & 0x10) {
-					mag_item->datab[1] = Mag_Ashvinau;
+					mag_item_data->datab[1] = Mag_Ashvinau;
 				}
 			}
 		}
@@ -390,10 +391,10 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		if (evolution_number < 4) {
 			if (mag_level >= 100) {
 				uint8_t section_id_group = get_player_section(src) % 3;
-				uint16_t def = mag_item->dataw[2] / 100;
-				uint16_t pow = mag_item->dataw[3] / 100;
-				uint16_t dex = mag_item->dataw[4] / 100;
-				uint16_t mind = mag_item->dataw[5] / 100;
+				uint16_t def = mag_item_data->dataw[2] / 100;
+				uint16_t pow = mag_item_data->dataw[3] / 100;
+				uint16_t dex = mag_item_data->dataw[4] / 100;
+				uint16_t mind = mag_item_data->dataw[5] / 100;
 				bool is_male = char_class_is_male(src->equip_flags);
 				size_t table_index = (is_male ? 0 : 1) + section_id_group * 2;
 
@@ -426,17 +427,17 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 						Mag_Nidra,	Mag_Sato,		Mag_Nidra,	Mag_Bhima,		Mag_Nidra,		Mag_Bhima, // Force
 					};
 					// clang-format on
-					mag_item->datab[1] = result_table[table_index];
+					mag_item_data->datab[1] = result_table[table_index];
 				}
 			}
 
 			// If a special evolution did not occur, do a normal level 50 evolution
-			if (mag_number == mag_item->datab[1]) {
-				uint16_t flags = compute_mag_strength_flags(mag_item);
-				uint16_t def = mag_item->dataw[2] / 100;
-				uint16_t pow = mag_item->dataw[3] / 100;
-				uint16_t dex = mag_item->dataw[4] / 100;
-				uint16_t mind = mag_item->dataw[5] / 100;
+			if (mag_type == mag_item_data->datab[1]) {
+				uint16_t flags = compute_mag_strength_flags(mag_item_data);
+				uint16_t def = mag_item_data->dataw[2] / 100;
+				uint16_t pow = mag_item_data->dataw[3] / 100;
+				uint16_t dex = mag_item_data->dataw[4] / 100;
+				uint16_t mind = mag_item_data->dataw[5] / 100;
 
 				bool is_hunter = char_class_is_hunter(src->equip_flags);
 				bool is_ranger = char_class_is_ranger(src->equip_flags);
@@ -449,34 +450,34 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 				if (is_hunter) {
 					if (flags & 0x108) {
-						mag_item->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->datab[1] = (get_player_section(src) & 1)
 							? ((dex < mind) ? Mag_Apsaras : Mag_Kama)
 							: ((dex < mind) ? Mag_Bhirava : Mag_Varaha);
 					}
 					else if (flags & 0x010) {
-						mag_item->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->datab[1] = (get_player_section(src) & 1)
 							? ((mind < pow) ? Mag_Garuda : Mag_Yaksa)
 							: ((mind < pow) ? Mag_Ila : Mag_Nandin);
 					}
 					else if (flags & 0x020) {
-						mag_item->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->datab[1] = (get_player_section(src) & 1)
 							? ((pow < dex) ? Mag_Soma : Mag_Bana)
 							: ((pow < dex) ? Mag_Ushasu : Mag_Kabanda);
 					}
 				}
 				else if (is_ranger) {
 					if (flags & 0x110) {
-						mag_item->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->datab[1] = (get_player_section(src) & 1)
 							? ((mind < pow) ? Mag_Kaitabha : Mag_Varaha)
 							: ((mind < pow) ? Mag_Bhirava : Mag_Kama);
 					}
 					else if (flags & 0x008) {
-						mag_item->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->datab[1] = (get_player_section(src) & 1)
 							? ((dex < mind) ? Mag_Kaitabha : Mag_Madhu)
 							: ((dex < mind) ? Mag_Bhirava : Mag_Kama);
 					}
 					else if (flags & 0x020) {
-						mag_item->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->datab[1] = (get_player_section(src) & 1)
 							? ((pow < dex) ? Mag_Durga : Mag_Kabanda)
 							: ((pow < dex) ? Mag_Apsaras : Mag_Varaha);
 					}
@@ -484,32 +485,32 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				else if (is_force) {
 					if (flags & 0x120) {
 						if (def < 45) {
-							mag_item->datab[1] = (get_player_section(src) & 1)
+							mag_item_data->datab[1] = (get_player_section(src) & 1)
 								? ((pow < dex) ? Mag_Ila : Mag_Kumara)
 								: ((pow < dex) ? Mag_Kabanda : Mag_Naga);
 						}
 						else {
-							mag_item->datab[1] = Mag_Bana;
+							mag_item_data->datab[1] = Mag_Bana;
 						}
 					}
 					else if (flags & 0x008) {
 						if (def < 45) {
-							mag_item->datab[1] = (get_player_section(src) & 1)
+							mag_item_data->datab[1] = (get_player_section(src) & 1)
 								? ((dex < mind) ? Mag_Naga : Mag_Marica)
 								: ((dex < mind) ? Mag_Ravana : Mag_Naraka);
 						}
 						else {
-							mag_item->datab[1] = Mag_Andhaka;
+							mag_item_data->datab[1] = Mag_Andhaka;
 						}
 					}
 					else if (flags & 0x010) {
 						if (def < 45) {
-							mag_item->datab[1] = (get_player_section(src) & 1)
+							mag_item_data->datab[1] = (get_player_section(src) & 1)
 								? ((mind < pow) ? Mag_Garuda : Mag_Bhirava)
 								: ((mind < pow) ? Mag_Ribhava : Mag_Sita);
 						}
 						else {
-							mag_item->datab[1] = Mag_Bana;
+							mag_item_data->datab[1] = Mag_Bana;
 						}
 					}
 				}
@@ -518,16 +519,16 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	}
 
 	 //如果玛古进化了,则增加光子爆发
-	if (mag_number != mag_item->datab[1]) {
+	if (mag_type != mag_item_data->datab[1]) {
 		pmt_mag_bb_t new_mag_def = { 0 };
 
-		if (err = pmt_lookup_mag_bb(mag_item->datal[0], &new_mag_def)) {
+		if (err = pmt_lookup_mag_bb(mag_item_data->datal[0], &new_mag_def)) {
 			ERR_LOG("%s 的背包中有不存在的MAG数据!错误码 %d",
 				get_player_describe(src), err);
 			return err;
 		}
 
-		if (add_mag_photon_blast(mag_item, new_mag_def.photon_blast)) {
+		if (add_mag_photon_blast(mag_item_data, new_mag_def.photon_blast)) {
 			ERR_LOG("%s 玛古新增PB %d 出错!", get_player_describe(src), new_mag_def.photon_blast);
 		}
 	}

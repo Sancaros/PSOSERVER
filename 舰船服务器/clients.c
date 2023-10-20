@@ -1607,9 +1607,9 @@ psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
         return NULL;
     }
 
-    if (src->mode) {
-        DBG_LOG("%s BB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
-    }
+    //if (src->mode) {
+    //    DBG_LOG("%s BB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
+    //}
 
     return src->mode == 0 ? &src->bb_pl->character : &src->mode_pl->bb;
 }
@@ -1619,9 +1619,9 @@ psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
         return NULL;
     }
 
-    if (src->mode) {
-        DBG_LOG("%s NOBB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
-    }
+    //if (src->mode) {
+    //    DBG_LOG("%s NOBB角色数据获取模式 %d 任务编号 %d", get_player_describe(src), src->mode, src->cur_lobby->qid);
+    //}
 
     return src->mode == 0 ? &src->pl->v1.character : &src->mode_pl->nobb;
 }

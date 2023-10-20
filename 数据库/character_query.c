@@ -468,10 +468,10 @@ static int db_update_character(psocn_bb_db_char_t* data, char* table, uint32_t g
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech_menu,
         PSOCN_STLENGTH_BB_DB_TECH_MENU);
 
-    SAFE_STRCAT(myquery, "', quest_data2 = '");
+    SAFE_STRCAT(myquery, "', mode_quest_data = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data2.all,
-        PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->mode_quest_data.all,
+        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
         "slot = '%" PRIu8 "'", gc, slot);
@@ -619,7 +619,7 @@ int db_insert_char_data(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot
     sprintf(myquery, "INSERT INTO %s ("
         "guildcard, slot, size, ip, create_time, "
         "`character2`, bank, quest_data1, guildcard_desc, "
-        "autoreply, infoboard, b_records, c_records, tech_menu, quest_data2, "
+        "autoreply, infoboard, b_records, c_records, tech_menu, mode_quest_data, "
         "data"
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', '0', '%s', '%s', '"
@@ -672,8 +672,8 @@ int db_insert_char_data(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot
 
     SAFE_STRCAT(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->quest_data2.all,
-        PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->mode_quest_data.all,
+        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
     SAFE_STRCAT(myquery, "', '");
 

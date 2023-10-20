@@ -238,6 +238,8 @@ static int read_mag_evolution_numbers(const uint8_t* pmt, uint32_t sz,
         return -1;
     }
 
+    mag_evolution_numbers_table_max_values = sizeof(mag_evolution_number_table_t);
+
     /* Read the data... */
     memcpy(&mag_evolution_numbers_table, pmt + ptrs->evolution_number_table, sizeof(mag_evolution_number_table_t));
 
@@ -334,7 +336,7 @@ uint8_t magedit_lookup_mag_evolution_number(item_t* item) {
     }
 
     /* 确保不超出索引 */
-    if (item->datab[1] >= 0x53) {
+    if (item->datab[1] >= mag_evolution_numbers_table_max_values) {
         return -3;
     }
 

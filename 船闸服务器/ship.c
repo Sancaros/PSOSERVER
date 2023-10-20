@@ -3247,8 +3247,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_quest_data2(&char_data->quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
-        SQLERR_LOG("无法保存角色quest_data2数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+    if (db_update_char_mode_quest_data(&char_data->mode_quest_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        SQLERR_LOG("无法保存角色mode_quest_data数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
@@ -3257,7 +3257,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_tech_menu(char_data->tech_menu, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
-        SQLERR_LOG("无法保存角色quest_data2数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("无法保存角色mode_quest_data数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
@@ -3617,14 +3617,14 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据, 错误码:%d", gc, slot, err);
         }
 
-        /* 从数据库中获取玩家角色的QUEST_DATA2数据 */
-        if ((err |= db_get_char_quest_data2(gc, slot, &bb_data->quest_data2, 0))) {
-            SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA2数据, 错误码:%d", gc, slot, err);
+        /* 从数据库中获取玩家角色的mode_quest_data数据 */
+        if ((err |= db_get_char_mode_quest_data(gc, slot, &bb_data->mode_quest_data, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色mode_quest_data数据, 错误码:%d", gc, slot, err);
         }
 
         /* 从数据库中获取玩家角色的TECH_MENU数据 */
         if ((err |= db_get_char_tech_menu(gc, slot, bb_data->tech_menu, 0))) {
-            SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA2数据, 错误码:%d", gc, slot, err);
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色mode_quest_data数据, 错误码:%d", gc, slot, err);
         }
 
         /* 从数据库中获取玩家角色的银行数据 */
@@ -3659,7 +3659,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             db_update_char_name(&backupdata.character.name, gc, slot);
             db_update_char_techniques(&backupdata.character, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_quest_data1(backupdata.quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR);
-            db_update_char_quest_data2(&backupdata.quest_data2, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_mode_quest_data(&backupdata.mode_quest_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_tech_menu(backupdata.tech_menu, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_bank(&backupdata.bank, gc, slot);
             db_update_char_b_records(&backupdata.b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);

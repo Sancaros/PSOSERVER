@@ -407,55 +407,30 @@ typedef struct pt_v3_entry {
 
 /* Clean (non-packed) version of the BB ItemPT entry structure. */
 typedef struct pt_bb_entry {
-    // This data structure uses index probability tables in multiple places. An
-    // index probability table is a table where each entry holds the probability
-    // that that entry's index is used. For example, if the armor slot count
-    // probability table contains [77, 17, 5, 1, 0], this means there is a 77%
-    // chance of no slots, 17% chance of 1 slot, 5% chance of 2 slots, 1% chance
-    // of 3 slots, and no chance of 4 slots. The values in index probability
-    // tables do not have to add up to 100; the game sums all of them and
-    // chooses a random number less than that maximum.
+    // 这个数据结构在多个地方使用了索引概率表。索引概率表是一个表格，每个条目包含该条目索引被使用的概率。
+    // 例如，如果武器槽位数概率表包含 [77, 17, 5, 1, 0]，这表示没有槽位的概率为77%，1个槽位的概率为17%，2个槽位的概率为5%，3个槽位的概率为1%，没有4个槽位的概率为0%。
+    // 索引概率表中的值不必加起来等于100；游戏会对它们求和，并选择一个小于该最大值的随机数。
 
-    // The area (floor) number is used in many places as well. Unlike the normal
-    // area numbers, which start with Pioneer 2, the area numbers in this
-    // structure start with Forest 1, and boss areas are treated as the first
-    // area of the next section (so De Rol Le has Mines 1 drops, for example).
-    // Final boss areas are treated as the last non-boss area (so Dark Falz
-    // boxes are like Ruins 3 boxes). We refer to these adjusted area numbers as
-    // (area - 1).
+    // 地区（楼层）编号也在许多地方使用。与普通的地区编号不同，普通地区编号从Pioneer 2开始，但是这个数据结构中的地区编号从Forest 1开始，而且首领区域被视为下一部分的第一个地区（所以De Rol Le有Mines 1的掉落，例如）。
+    // 最后的首领区域被视为最后一个非首领区域（所以Dark Falz的箱子就像Ruins 3的箱子）。我们将这些调整过的地区编号称为（area - 1）。
 
-    // This index probability table determines the types of non-rare weapons.
-    // The indexes in this table correspond to the non-rare weapon types 01
-    // through 0C (Saber through Wand).
-    uint8_t base_weapon_type_prob_table[12];               /* 0x0000 base_weapon_type_prob_table */
-    // This table specifies the base subtype for each weapon type. Negative
-    // values here mean that the weapon cannot be found in the first N areas (so
-    // -2, for example, means that the weapon never appears in Forest 1 or 2 at
-    // all). Nonnegative values here mean the subtype can be found in all areas,
-    // and specify the base subtype (usually in the range [0, 4]). The subtype
-    // of weapon that actually appears depends on this value and a value from
-    // the following table.
+    // 这个索引概率表确定非稀有武器的类型。这个表中的索引对应于非稀有武器类型01到0C（Saber到Wand）。
+    uint8_t base_weapon_type_prob_table[12];             /* 0x0000 base_weapon_type_prob_table */
+    // 这个表格指定了每个武器类型的基础子类型。这里的负值意味着该武器在前N个地区中找不到（所以-2，例如，意味着该武器根本不会出现在Forest 1或2中）。
+    // 这里的非负值意味着该子类型在所有地区都可以找到，并指定基础子类型（通常在[0, 4]范围内）。实际出现的武器子类型取决于该值和下表中的一个值。
     int8_t subtype_base_table[12];              /* 0x000C subtype_base_table */
-    // This table specifies how many areas each weapon subtype appears in. For
-    // example, if Sword (subtype 02, which is index 1 in this table and the
-    // table above) has a subtype base of -2 and a subtype area lneght of 4,
-    // then Sword items can be found when area - 1 is 2, 3, 4, or 5 (Cave 1
-    // through Mine 1), and Gigush (the next sword subtype) can be found in Mine
-    // 1 through Ruins 3.
-    uint8_t subtype_area_length_table[12];            /* 0x0018 subtype_area_length_table */
-    // This index probability table specifies how likely each possible grind
-    // value is. The table is indexed as [grind][subtype_area_index], where the
-    // subtype area index is how many areas the player is beyond the first area
-    // in which the subtype can first be found (clamped to [0, 3]). To continue
-    // the example above, in Cave 3, subtype_area_index would be 2, since Swords
-    // can first be found two areas earlier in Cave 1.
-    // For example, this table could look like this:
-    //   [64 1E 19 14] // Chance of getting a grind +0
-    //   [00 1E 17 0F] // Chance of getting a grind +1
-    //   [00 14 14 0E] // Chance of getting a grind +2
+    // 这个表格指定了每个武器子类型出现在多少个地区。例如，如果剑（子类型02，在该表格和上表中的索引1）的基础子类型为-2，子类型区域长度为4，
+    // 那么当地区-1为2，3，4或5（Cave 1到Mine 1）时可以找到剑物品，而Gigush（下一个剑子类型）可以在Mine 1到Ruins 3中找到。
+    uint8_t subtype_area_length_table[12];           /* 0x0018 subtype_area_length_table */
+    // 这个索引概率表指定了每个可能的强化值的概率。表格的索引为[强化值][子类型区域索引]，其中子类型区域索引是玩家超过可以找到该子类型的第一个区域的区域数（限制在[0, 3]范围内）。
+    // 继续上面的例子，Cave 3中的子类型区域索引将为2，因为剑可以在Cave 1中早两个区域找到。
+    // 例如，这个表格可以如下所示：
+    //   [64 1E 19 14] // 获取+0强化值的概率
+    //   [00 1E 17 0F] // 获取+1强化值的概率
+    //   [00 14 14 0E] // 获取+2强化值的概率
     //    ...
-    //    C1 C2 C3 M1  // (Episode 1 area values from the example for reference)
-    uint8_t grind_prob_tables[9][4];            /* 0x0024 grind_prob_tables */
+    //    C1 C2 C3 M1  // （上述示例中的Episode 1区域值作为参考）
+    uint8_t grind_prob_tables[9][4];               /* 0x0024 grind_prob_tables */
     // This array specifies the chance that a rare weapon will have each
     // possible bonus value. This is indexed as [(bonus_value - 10 / 5)][spec],
     // so the first row refers the probability of getting a -10% bonus, the next
@@ -522,8 +497,9 @@ typedef struct pt_bb_entry {
     // technique and area pair.
     rang_8bit_t technique_level_ranges[19][10];            /* 0x04CC technique_level_ranges */
     // Each byte in this table (indexed by enemy_type) represents the percent
-    // chance that the enemy drops anything at all. (This check is done after
-    // the rare drop check, so it only applies to non-rare items.)
+    // chance that the enemy drops anything at all. (This check is done before
+    // the rare drop check, so the chance of getting a rare item from an enemy
+    // is essentially this probability multiplied by the rare drop rate.)
     uint8_t enemy_type_drop_probs[100];                 /* 0x0648 enemy_type_drop_probs */
     // This array (indexed by enemy_id) specifies the range of meseta values
     // that each enemy can drop.

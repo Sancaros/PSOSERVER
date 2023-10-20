@@ -113,6 +113,7 @@ static mag_movement_config_table_t mag_movement_configs_table;
 static mag_mesh_to_color_table_t mag_mesh_to_colors_table;
 static mag_color_table_t mag_colors_table;
 static mag_evolution_number_table_t mag_evolution_numbers_table;
+static uint8_t mag_evolution_numbers_table_max_values;
 
 int have_bb_magedit;
 

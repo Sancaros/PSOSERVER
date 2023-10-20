@@ -721,11 +721,11 @@ static int handle_item(ship_client_t* src, const char* params) {
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        pthread_mutex_lock(&l->mutex);
+        pthread_mutex_lock(&src->mutex);
         litem = add_lobby_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z, true);
 
         if (!litem) {
-            pthread_mutex_unlock(&l->mutex);
+            pthread_mutex_unlock(&src->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
@@ -733,7 +733,7 @@ static int handle_item(ship_client_t* src, const char* params) {
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
-        pthread_mutex_unlock(&l->mutex);
+        pthread_mutex_unlock(&src->mutex);
 
         send_txt(src, "%s\n\tE\tC7%s\n%s",
             __(src, "\tE\tC8物品:"),
@@ -901,27 +901,23 @@ static int handle_mitem(ship_client_t* src, const char* params) {
         return get_gm_priv(src);
     }
 
-    pthread_mutex_lock(&l->mutex);
-
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
     /* Make sure there's something set with /item */
     if (!src->new_item.datal[0]) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."),
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
+        pthread_mutex_lock(&src->mutex);
         litem = add_lobby_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z, true);
-
         if (!litem) {
-            pthread_mutex_unlock(&l->mutex);
+            pthread_mutex_unlock(&src->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
@@ -929,7 +925,7 @@ static int handle_mitem(ship_client_t* src, const char* params) {
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
-        pthread_mutex_unlock(&l->mutex);
+        pthread_mutex_unlock(&src->mutex);
     }
     else {
         ++l->item_player_id[src->client_id];
@@ -938,7 +934,6 @@ static int handle_mitem(ship_client_t* src, const char* params) {
 
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
-        pthread_mutex_unlock(&l->mutex);
     }
 
     LOBBY_GM_MAKE_ITEM_LOG(src, idata.item_id, src->cur_area, &idata);
@@ -2606,7 +2601,7 @@ static int handle_dbgqdata(ship_client_t* c, const char* params) {
 
         if (!strcmp(params, "quest2")) {
 
-            print_ascii_hex(gml, c->bb_pl->quest_data2.all, PSOCN_DATALENGTH_BB_DB_QUEST_DATA2);
+            print_ascii_hex(gml, c->bb_pl->mode_quest_data.all, PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
             return send_txt(c, "%s", __(c, "\tE\tC6任务2数据已转储至GM日志."));
         }

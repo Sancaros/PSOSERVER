@@ -253,9 +253,9 @@
 #define SUBCMD60_UNKNOW_92                     0x92
 #define SUBCMD60_TIMED_SWITCH_ACTIVATED        0x93
 #define SUBCMD60_WARP_LOBBY                    0x94
-#define SUBCMD60_UNKNOW_95                     0x95
+#define SUBCMD60_CH_MODE_FINISH                0x95
 #define SUBCMD60_UNKNOW_96                     0x96
-#define SUBCMD60_CH_GAME_CANCEL                0x97
+#define SUBCMD60_CH_MODE_CANCEL                0x97
 #define SUBCMD60_UNKNOW_98                     0x98
 #define SUBCMD60_UNKNOW_99                     0x99
 /////////////////////////////////////////////////////////////////////////////////////

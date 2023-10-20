@@ -101,7 +101,7 @@ void player_class_tag_item_equip_flag(ship_client_t* c);
 void remove_titem_equip_flags(iitem_t* trade_item);
 
 //修复背包银行数据错误的物品代码
-void fix_inv_bank_item(item_t* i);
+void fix_inv_bank_item(ship_client_t* src);
 
 /* 整理背包物品 */
 void sort_client_bank(psocn_bank_t* bank);

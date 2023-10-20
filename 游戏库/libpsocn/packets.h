@@ -4078,7 +4078,7 @@ typedef struct bb_full_char {
 //    /* 2CB8 */ PlayerRecordsBB_Challenge challenge_records;
 //    /* 2DF8 */ parray<uint8_t, 0x0028> tech_menu_config; // player
 //    /* 2E20 */ parray<uint8_t, 0x002C> unknown_a6;
-//    /* 2E4C */ parray<uint8_t, 0x0058> quest_data2; // player
+//    /* 2E4C */ parray<uint8_t, 0x0058> mode_quest_data; // player
 //    /* 2EA4 */ KeyAndTeamConfigBB key_config; // account
 //    /* 3994 */
 //} PACKED;
