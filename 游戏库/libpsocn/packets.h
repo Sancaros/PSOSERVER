@@ -4502,9 +4502,10 @@ typedef struct bb_guild_privilege_list {
 } PACKED bb_guild_privilege_list_pkt;
 
 typedef struct bb_guild_special_item_list {
-    uint16_t item_name[0x0C];
-    uint16_t item_desc[0x60];
-    uint32_t price;
+    uint16_t item_name[64];
+    uint16_t item_desc[128];
+    uint32_t point_amount;
+    uint32_t padding;
 } PACKED bb_guild_special_item_list_t;
 
 // 1AEA: (S->C): ¹ºÂò¹«»áÌØµä
@@ -4526,10 +4527,8 @@ typedef struct bb_guild_unk_1BEA {
 typedef struct bb_guild_rank_list {
     bb_pkt_hdr_t hdr;
     struct {//4+4+2+4+34 48
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;         // Should be 0x0F04 this value, apparently
-        uint16_t name[0x11];
+        uint32_t index;
+        uint16_t guild_name[0x000E];
     } entries[0];
 } PACKED bb_guild_rank_list_pkt;
 
