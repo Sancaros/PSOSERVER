@@ -220,7 +220,7 @@ item_t create_common_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因
             break;
 
         case ITEM_SUBTYPE_UNIT://插件
-            item.datab[2] = common_unit_subtypes[(sfmt_genrand_uint32(随机因子) % 9)][(sfmt_genrand_uint32(随机因子) % 2)];
+            item.datab[2] = common_unit_subtypes[(sfmt_genrand_uint32(随机因子) % 7)][(sfmt_genrand_uint32(随机因子) % 2)];
             if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
                 break;

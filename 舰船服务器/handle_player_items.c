@@ -1062,67 +1062,42 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     // On PC (and presumably DC), the client sends a 6x29 after this to delete the
     // used item. On GC and later versions, this does not happen, so we should
     // delete the item here.
-    bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
+    bool should_add_item = false;
     errno_t err = 0;
-    
+
+
+    item_t item = remove_invitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
+    if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+        ERR_LOG("%s 物品 ID 0x%08X 已不存在", get_player_describe(src), item_id);
+    }
+
+    LOBBY_USE_ITEM_LOG(src, item_id, src->cur_area, &item);
+
     inventory_t* inv = get_client_inv(src);
 
-    int index = find_iitem_index(inv, item_id);
-    if (index < 0) {
-        err = index;
-        ERR_LOG("%s 使用物品发生错误 错误码 %d", get_player_describe(src), index);
-        return err;
-    }
-    item_t* item = &inv->iitems[index].data;
-
-    LOBBY_USE_ITEM_LOG(src, item_id, src->cur_area, item);
-
-    if (is_common_consumable(primary_identifier(item))) { // Monomate, etc.
+    if (is_common_consumable(primary_identifier(&item))) { // Monomate, etc.
         // Nothing to do (it should be deleted)
-        goto done;
     }
-    else if (is_wrapped(item)) {
+    else if (is_wrapped(&item)) {
         // Unwrap present
-        unwrap(item);
-        should_delete_item = false;
-        goto done;
+        unwrap(&item);
+        should_add_item = true;
     }
-
-    switch (item->datab[0])
-    {
-    case ITEM_TYPE_WEAPON:
-        switch (item->datab[1]) {
-        case 0x33:
-            // Unseal Sealed J-Sword => Tsumikiri J-Sword
-            item->datab[1] = 0x32;
-            should_delete_item = false;
-            break;
-
-        case 0xAB:
-            // Unseal Lame d'Argent => Excalibur
-            item->datab[1] = 0xAC;
-            should_delete_item = false;
-            break;
-
-        default:
-            goto combintion_other;
-        }
-        break;
-
-    case ITEM_TYPE_GUARD:
-        switch (item->datab[1]) {
-        case ITEM_SUBTYPE_UNIT:
-            switch (item->datab[2]) {
-            case 0x4D:
-                // Unseal Limiter => Adept
-                item->datab[2] = 0x4E;
-                should_delete_item = false;
+    else {
+        switch (item.datab[0])
+        {
+        case ITEM_TYPE_WEAPON:
+            switch (item.datab[1]) {
+            case 0x33:
+                // Unseal Sealed J-Sword => Tsumikiri J-Sword
+                item.datab[1] = 0x32;
+                should_add_item = true;
                 break;
 
-            case 0x4F:
-                // Unseal Swordsman Lore => Proof of Sword-Saint
-                item->datab[2] = 0x50;
-                should_delete_item = false;
+            case 0xAB:
+                // Unseal Lame d'Argent => Excalibur
+                item.datab[1] = 0xAC;
+                should_add_item = true;
                 break;
 
             default:
@@ -1130,419 +1105,24 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             }
             break;
 
-        default:
-            goto combintion_other;
-        }
-        break;
+        case ITEM_TYPE_GUARD:
+            switch (item.datab[1]) {
+            case ITEM_SUBTYPE_UNIT:
+                switch (item.datab[2]) {
+                case 0x4D:
+                    // Unseal Limiter => Adept
+                    item.datab[2] = 0x4E;
+                    should_add_item = true;
+                    break;
 
-    case ITEM_TYPE_MAG:
-        switch (item->datab[1]) {
-        case 0x2B:
-            weapon = &inv->iitems[find_equipped_weapon(inv)].data;
-            // Chao Mag used
-            if ((weapon->datab[1] == 0x68) &&
-                (weapon->datab[2] == 0x00)) {
-                weapon->datab[1] = 0x58; // Striker of Chao
-                weapon->datab[2] = 0x00;
-                weapon->datab[3] = 0x00;
-                weapon->datab[4] = 0x00;
-            }
-            break;
+                case 0x4F:
+                    // Unseal Swordsman Lore => Proof of Sword-Saint
+                    item.datab[2] = 0x50;
+                    should_add_item = true;
+                    break;
 
-        case 0x2C:
-            armor = &inv->iitems[find_equipped_armor(inv)].data;
-            // Chu Chu mag used
-            if ((armor->datab[2] == 0x1C)) {
-                armor->datab[2] = 0x2C; // Chuchu Fever
-            }
-            break;
-
-        default:
-            goto combintion_other;
-        }
-        break;
-
-    case ITEM_TYPE_TOOL:
-        switch (item->datab[1]) {
-        case ITEM_SUBTYPE_TELEPIPE:
-            if (src->cur_area == 0) {
-                ERR_LOG("%s 尝试在先驱者2号释放传送门", get_player_describe(src));
-                return -10;
-            }
-
-            break;
-
-        case ITEM_SUBTYPE_DISK: // Technique disk
-            if (item->datab[2] + 1 > get_bb_max_tech_level(src->bb_pl->character.dress_data.ch_class, item->datab[4])) {
-                ERR_LOG("%s 法术科技光碟等级高于职业可用等级", get_player_describe(src));
-                return -1;
-            }
-
-            //DBG_LOG("类型 %d 等级 %d", item->datab[4], item->datab[2]);
-
-            set_technique_level(get_player_v1_tech(src), inv, item->datab[4], item->datab[2]);
-            break;
-
-        case ITEM_SUBTYPE_GRINDER: // Grinder
-            if (item->datab[2] > 2) {
-                ERR_LOG("%s 无效打磨物品值", get_player_describe(src));
-                return -2;
-            }
-            weapon = &inv->iitems[find_equipped_weapon(inv)].data;
-            pmt_weapon_bb_t weapon_def = { 0 };
-            if (pmt_lookup_weapon_bb(weapon->datal[0], &weapon_def)) {
-                ERR_LOG("%s 装备了不存在的物品数据!", get_player_describe(src));
-                return -3;
-            }
-
-            weapon->datab[3] += (item->datab[2] + 1);
-
-            if (weapon->datab[3] > weapon_def.max_grind)
-                weapon->datab[3] = weapon_def.max_grind;
-            break;
-
-        case ITEM_SUBTYPE_MATERIAL:
-            switch (item->datab[2]) {
-            case ITEM_SUBTYPE_MATERIAL_POWER: // 攻击力药
-                set_material_usage(inv, MATERIAL_POWER, get_material_usage(inv, MATERIAL_POWER) + 1);
-                get_player_stats(src)->atp += 2;
-                break;
-
-            case ITEM_SUBTYPE_MATERIAL_MIND: // 精神力药
-                set_material_usage(inv, MATERIAL_MIND, get_material_usage(inv, MATERIAL_MIND) + 1);
-                get_player_stats(src)->mst += 2;
-                break;
-
-            case ITEM_SUBTYPE_MATERIAL_EVADE: // 闪避力药
-                set_material_usage(inv, MATERIAL_EVADE, get_material_usage(inv, MATERIAL_EVADE) + 1);
-                get_player_stats(src)->evp += 2;
-                break;
-
-            case ITEM_SUBTYPE_MATERIAL_HP: // HP药
-                set_material_usage(inv, MATERIAL_HP, get_material_usage(inv, MATERIAL_HP) + 1);
-                break;
-
-            case ITEM_SUBTYPE_MATERIAL_TP: // TP药
-                set_material_usage(inv, MATERIAL_TP, get_material_usage(inv, MATERIAL_TP) + 1);
-                break;
-
-            case ITEM_SUBTYPE_MATERIAL_DEF: // 防御力药
-                set_material_usage(inv, MATERIAL_DEF, get_material_usage(inv, MATERIAL_DEF) + 1);
-                get_player_stats(src)->dfp += 2;
-                break;
-
-            case ITEM_SUBTYPE_MATERIAL_LUCK: // 幸运值药
-                set_material_usage(inv, MATERIAL_LUCK, get_material_usage(inv, MATERIAL_LUCK) + 1);
-                get_player_stats(src)->lck += 2;
-                break;
-
-            default:
-                ERR_LOG("%s 未知药物 0x%08X", get_player_describe(src), item->datal[0]);
-                return -5;
-            }
-            break;
-
-        case ITEM_SUBTYPE_MAG_CELL1:
-            int mag_index = find_equipped_mag(inv);
-            if (mag_index == -1) {
-                ERR_LOG("%s 没有装备玛古,玛古细胞 0x%08X", get_player_describe(src), item->datal[0]);
-                break;
-            }
-            mag = &inv->iitems[mag_index].data;
-
-            switch (item->datab[2]) {
-            case 0x00:
-                // Cell of MAG 502
-                mag->datab[1] = (get_player_section(src) & SID_Greennill) ? 0x1D : 0x21;
-                break;
-
-            case 0x01:
-                // Cell of MAG 213
-                mag->datab[1] = (get_player_section(src) & SID_Greennill) ? 0x27 : 0x22;
-                break;
-
-            case 0x02:
-                // Parts of RoboChao
-                mag->datab[1] = 0x28;
-                break;
-
-            case 0x03:
-                // Heart of Opa Opa
-                mag->datab[1] = 0x29;
-                break;
-
-            case 0x04:
-                // Heart of Pian
-                mag->datab[1] = 0x2A;
-                break;
-
-            case 0x05:
-                // Heart of Chao
-                mag->datab[1] = 0x2B;
-                break;
-
-            default:
-                ERR_LOG("%s 未知玛古细胞 0x%08X", get_player_describe(src), item->datal[0]);
-                return -5;
-            }
-            break;
-
-        case ITEM_SUBTYPE_ADD_SLOT:
-            armor = &inv->iitems[find_equipped_armor(inv)].data;
-
-            if (armor->datab[5] >= 4) {
-                ERR_LOG("%s 物品已达最大插槽数量", get_player_describe(src));
-                return -6;
-            }
-            armor->datab[5]++;
-            break;
-
-        case ITEM_SUBTYPE_SERVER_ITEM1:
-            size_t eq_wep = find_equipped_weapon(inv);
-            weapon = &inv->iitems[eq_wep].data;
-
-            //アイテムIDの5, 6文字目が1, 2のアイテムの場合（0x0312 * *のとき）
-            switch (item->datab[2]) {//スイッチ文。「使用」するアイテムIDの7, 8文字目をスイッチに使う。
-            case 0x00: // weapons bronze
-                if (eq_wep != -1) {
-                    uint32_t ai, plustype, num_attribs = 0;
-                    plustype = 1;
-                    ai = 0;
-                    if ((weapon->datab[6] > 0x00) &&
-                        (!(weapon->datab[6] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[6] == plustype)
-                            ai = 7;
-                    }
-
-                    if ((weapon->datab[8] > 0x00) &&
-                        (!(weapon->datab[8] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[8] == plustype)
-                            ai = 9;
-                    }
-
-                    if ((weapon->datab[10] > 0x00) &&
-                        (!(weapon->datab[10] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[10] == plustype)
-                            ai = 11;
-                    }
-
-                    if (ai) {
-                        // Attribute already on weapon, increase it
-                        weapon->datab[ai] += 0x0A;
-                        if (weapon->datab[ai] > 100)
-                            weapon->datab[ai] = 100;
-                    }
-                    else {
-                        // Attribute not on weapon, add it if there isn't already 3 attributes
-                        if (num_attribs < 3) {
-                            weapon->datab[6 + (num_attribs * 2)] = 0x01;
-                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
-                        }
-                    }
-                }
-                break;
-
-            case 0x01: // weapons silver
-                if (eq_wep != -1) {
-                    uint32_t ai, plustype, num_attribs = 0;
-                    plustype = 2;
-                    ai = 0;
-                    if ((weapon->datab[6] > 0x00) &&
-                        (!(weapon->datab[6] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[6] == plustype)
-                            ai = 7;
-                    }
-
-                    if ((weapon->datab[8] > 0x00) &&
-                        (!(weapon->datab[8] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[8] == plustype)
-                            ai = 9;
-                    }
-
-                    if ((weapon->datab[10] > 0x00) &&
-                        (!(weapon->datab[10] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[10] == plustype)
-                            ai = 11;
-                    }
-
-                    if (ai) {
-                        // Attribute already on weapon, increase it
-                        weapon->datab[ai] += 0x0A;
-                        if (weapon->datab[ai] > 100)
-                            weapon->datab[ai] = 100;
-                    }
-                    else {
-                        // Attribute not on weapon, add it if there isn't already 3 attributes
-                        if (num_attribs < 3) {
-                            weapon->datab[6 + (num_attribs * 2)] = 0x02;
-                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
-                        }
-                    }
-                }
-                break;
-
-            case 0x02: // weapons gold
-                if (eq_wep != -1) {
-                    uint32_t ai, plustype, num_attribs = 0;
-                    plustype = 3;
-                    ai = 0;
-                    if ((weapon->datab[6] > 0x00) &&
-                        (!(weapon->datab[6] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[6] == plustype)
-                            ai = 7;
-                    }
-
-                    if ((weapon->datab[8] > 0x00) &&
-                        (!(weapon->datab[8] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[8] == plustype)
-                            ai = 9;
-                    }
-
-                    if ((weapon->datab[10] > 0x00) &&
-                        (!(weapon->datab[10] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[10] == plustype)
-                            ai = 11;
-                    }
-
-                    if (ai) {
-                        // Attribute already on weapon, increase it
-                        weapon->datab[ai] += 0x0A;
-                        if (weapon->datab[ai] > 100)
-                            weapon->datab[ai] = 100;
-                    }
-                    else {
-                        // Attribute not on weapon, add it if there isn't already 3 attributes
-                        if (num_attribs < 3) {
-                            weapon->datab[6 + (num_attribs * 2)] = 0x03;
-                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
-                        }
-                    }
-                }
-                break;
-
-            case 0x03: // weapons cristal
-                if (eq_wep != -1) {
-                    uint32_t ai, plustype, num_attribs = 0;
-                    char attrib_add = 10;
-                    plustype = 4;
-                    ai = 0;
-                    if ((weapon->datab[6] > 0x00) &&
-                        (!(weapon->datab[6] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[6] == plustype)
-                            ai = 7;
-                    }
-
-                    if ((weapon->datab[8] > 0x00) &&
-                        (!(weapon->datab[8] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[8] == plustype)
-                            ai = 9;
-                    }
-
-                    if ((weapon->datab[10] > 0x00) &&
-                        (!(weapon->datab[10] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[10] == plustype)
-                            ai = 11;
-                    }
-
-                    if (ai) {
-                        // Attribute already on weapon, increase it
-                        weapon->datab[ai] += 0x0A;
-                        if (weapon->datab[ai] > 100)
-                            weapon->datab[ai] = 100;
-                    }
-                    else {
-                        // Attribute not on weapon, add it if there isn't already 3 attributes
-                        if (num_attribs < 3) {
-                            weapon->datab[6 + (num_attribs * 2)] = 0x04;
-                            weapon->datab[7 + (num_attribs * 2)] = 0x0A;
-                        }
-                    }
-                }
-                break;
-
-            case 0x04: // weapons steal
-                if (eq_wep != -1) {
-                    uint32_t ai, plustype, num_attribs = 0;
-                    plustype = 5;
-                    ai = 0;
-                    if ((weapon->datab[6] > 0x00) &&
-                        (!(weapon->datab[6] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[6] == plustype)
-                            ai = 7;
-                    }
-
-                    if ((weapon->datab[8] > 0x00) &&
-                        (!(weapon->datab[8] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[8] == plustype)
-                            ai = 9;
-                    }
-
-                    if ((weapon->datab[10] > 0x00) &&
-                        (!(weapon->datab[10] & 128))) {
-                        num_attribs++;
-                        if (weapon->datab[10] == plustype)
-                            ai = 11;
-                    }
-
-                    if (ai) {
-                        // Attribute already on weapon, increase it
-                        weapon->datab[ai] += 0x05;
-                        if (weapon->datab[ai] > 100)
-                            weapon->datab[ai] = 100;
-                    }
-                    else {
-                        // Attribute not on weapon, add it if there isn't already 3 attributes
-                        if (num_attribs < 3) {
-                            weapon->datab[6 + (num_attribs * 2)] = 0x05;
-                            weapon->datab[7 + (num_attribs * 2)] = 0x05;
-                        }
-                    }
-                }
-                break;
-
-            case 0x05:
-                DBG_LOG("%s Aluminum Weapons Badge", get_player_describe(src));
-                break;
-
-            case 0x06:
-                DBG_LOG("%s Leather Weapons Badge", get_player_describe(src));
-                break;
-
-            case 0x07: // weapons bone
-                //アイテムIDの7,8文字目が0,7のとき。（0x031207のとき　つまりウェポンズバッジ骨のとき）
-                if (eq_wep != -1) {    //詳細不明、武器装備時？
-                    switch (weapon->datab[1]) { //スイッチにキャラクターの装備している武器のアイテムIDの3,4文字目をスイッチに使う
-
-                    case 0x22:
-                        //キャラクターの装備している武器のアイテムIDの3,4文字目が2,2のとき（0x002200のとき　つまりカジューシース）
-                        if (weapon->datab[3] == 0x09)
-                            //もしキャラクターの装備している武器のアイテムIDの7,8文字目が0,9だったら（つまり強化値が + 9だったら）
-                        {
-                            weapon->datab[2] = 0x01; // melcrius
-                            //キャラクターの装備している武器のアイテムIDの5,6文字目を0,1に変更する
-                            //（つまりカジューシース + 9（0x00220009）→メルクリウスロッド + 9（0x00220109）にする）
-                            weapon->datab[3] = 0x00; // Not grinded
-                            //強化値を０にする（つまりメルクリウスロッド + 9（0x00220109）→メルクリウスロッド（0x00220100）にする）
-                            weapon->datab[4] = 0x00;
-                            //Send_Item(inv->iitems[eq_wep].data.item_id, client);
-                            // 詳細不明。装備している武器をインベントリの最終行に送る？
-                        }
-                        break;
-                    }
+                default:
+                    goto combintion_other;
                 }
                 break;
 
@@ -1551,109 +1131,26 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             }
             break;
 
-        case ITEM_SUBTYPE_SERVER_ITEM2:
-            item_t new_item = { 0 };
-            litem_t* new_litem;
-
-            switch (item->datab[2]) {
-                /* 情人节巧克力 */
-                /* 暂未解析该生成什么物品 */
-            case ITEM_SUBTYPE_SERVER_ITEM2_CHOCOLATE:
-            case ITEM_SUBTYPE_SERVER_ITEM2_CANDY:
-            case ITEM_SUBTYPE_SERVER_ITEM2_CAKE:
-                break;
-
-                /* 银徽章 增加 100000 经验 */
-            case ITEM_SUBTYPE_SERVER_ITEM2_W_SILVER:
-                //Add Exp
-                if (get_player_level(src) + 1 < 200) {
-                    client_give_exp(src, 100000);
-                    send_txt(src, "%s", __(src, "\tE\tC6增加经验 100000 点"));
+        case ITEM_TYPE_MAG:
+            switch (item.datab[1]) {
+            case 0x2B:
+                weapon = &inv->iitems[find_equipped_weapon(inv)].data;
+                // Chao Mag used
+                if ((weapon->datab[1] == 0x68) &&
+                    (weapon->datab[2] == 0x00)) {
+                    weapon->datab[1] = 0x58; // Striker of Chao
+                    weapon->datab[2] = 0x00;
+                    weapon->datab[3] = 0x00;
+                    weapon->datab[4] = 0x00;
                 }
                 break;
 
-                /* 金徽章 获得一个精神玛古 露可敏  */
-            case ITEM_SUBTYPE_SERVER_ITEM2_W_GOLD:
-
-                new_item.datal[0] = 0xA3963C02;
-                new_item.datal[1] = 0;
-                new_item.datal[2] = 0x3A980000;
-                new_item.data2l = 0x0407C878;
-
-                new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
-                if (!new_litem) {
-                    /* *Gulp* The lobby is probably toast... At least make sure this user is
-                       still (mostly) safe... */
-                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
-                    return -1;
+            case 0x2C:
+                armor = &inv->iitems[find_equipped_armor(inv)].data;
+                // Chu Chu mag used
+                if ((armor->datab[2] == 0x1C)) {
+                    armor->datab[2] = 0x2C; // Chuchu Fever
                 }
-
-                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
-
-                send_txt(src, "%s", __(src, "\tE\tC6增加经验 100000 点"));
-
-                break;
-
-                /* 水晶徽章 DB套装 DB剑 铠 盾 */
-            case ITEM_SUBTYPE_SERVER_ITEM2_W_CRYSTAL:
-
-                //DB鎧 スロット4
-                new_item.datal[0] = 0x00280101;
-                new_item.datal[1] = 0x00000400;
-                new_item.datal[2] = 0x00000000;
-                new_item.data2l = 0x00000000;
-
-                new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
-                if (!new_litem) {
-                    /* *Gulp* The lobby is probably toast... At least make sure this user is
-                       still (mostly) safe... */
-                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
-                    return -1;
-                }
-
-                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
-
-                //DB剣 Machine 100% Ruin 100% Hit 50%
-                new_item.datal[0] = 0x2C050100;
-                new_item.datal[1] = 0x32050000;
-                new_item.datal[2] = 0x64046403;
-                new_item.data2l = 0x00000000;
-
-                new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
-                if (!new_litem) {
-                    /* *Gulp* The lobby is probably toast... At least make sure this user is
-                       still (mostly) safe... */
-                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
-                    return -1;
-                }
-
-                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
-
-                //DB盾
-                new_item.datal[0] = 0x00260201;
-                new_item.datal[1] = 0x00000000;
-                new_item.datal[2] = 0x00000000;
-                new_item.data2l = 0x00000000;
-
-                new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
-                if (!new_litem) {
-                    /* *Gulp* The lobby is probably toast... At least make sure this user is
-                       still (mostly) safe... */
-                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
-                    return -1;
-                }
-
-                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
-
-                break;
-
-                /* 暂未解析该生成什么物品 */
-            case ITEM_SUBTYPE_SERVER_ITEM2_W_STEEL:
-            case ITEM_SUBTYPE_SERVER_ITEM2_W_ALUMINUM:
-            case ITEM_SUBTYPE_SERVER_ITEM2_W_LEATHER:
-            case ITEM_SUBTYPE_SERVER_ITEM2_W_BONE:
-            case ITEM_SUBTYPE_SERVER_ITEM2_BOUQUET:
-            case ITEM_SUBTYPE_SERVER_ITEM2_DECOCTION:
                 break;
 
             default:
@@ -1661,232 +1158,684 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             }
             break;
 
-        case ITEM_SUBTYPE_PRESENT_EVENT:
-            // Present, etc. - use unwrap_table + probabilities therein
-            size_t sum = 0, z = 0;
-            pmt_eventitem_bb_t entry;
-
-            for (z = 0; z < get_num_eventitems_bb(item->datab[2]); z++) {
-                if (pmt_lookup_eventitem_bb(item->datal[0], z, &entry)) {
-                    DBG_LOG("%s 使用圣诞礼物 0x%08X 出错", get_player_describe(src), item->datal[0]);
-                    break;
+        case ITEM_TYPE_TOOL:
+            switch (item.datab[1]) {
+            case ITEM_SUBTYPE_TELEPIPE:
+                if (src->cur_area == 0) {
+                    ERR_LOG("%s 尝试在先驱者2号释放传送门", get_player_describe(src));
+                    return -10;
                 }
 
-                sum += entry.probability;
-            }
+                break;
 
-            if (sum == 0) {
-                ERR_LOG("%s 节日事件没有可用的礼包结果", get_player_describe(src));
-                return 0;
-            }
-
-            size_t det = sfmt_genrand_uint32(rng) % sum;
-
-            for (z = 0; z < get_num_eventitems_bb(item->datab[2]); z++) {
-                if (pmt_lookup_eventitem_bb(item->datal[0], z, &entry)) {
-                    DBG_LOG("%s 使用圣诞礼物 0x%08X 出错", get_player_describe(src), item->datal[0]);
-                    break;
-                }
-                if (det > entry.probability) {
-                    det -= entry.probability;
-                    continue;
+            case ITEM_SUBTYPE_DISK: // Technique disk
+                if (item.datab[2] + 1 > get_bb_max_tech_level(src->bb_pl->character.dress_data.ch_class, item.datab[4])) {
+                    ERR_LOG("%s 法术科技光碟等级高于职业可用等级", get_player_describe(src));
+                    return -1;
                 }
 
-                item_t event_item = { 0 };
-                clear_inv_item(&event_item);
-                event_item.datab[0] = entry.item[0];
-                event_item.datab[1] = entry.item[1];
-                event_item.datab[2] = entry.item[2];
-                event_item.datab[5] = get_item_amount(&event_item, 1);
-                event_item.item_id = generate_item_id(l, src->client_id);
-                should_delete_item = true;
+                //DBG_LOG("类型 %d 等级 %d", item.datab[4], item.datab[2]);
 
-                /* TODO 出现的武器 装甲 增加随机属性 */
-                switch (item->datab[2]) {
-                case ITEM_SUBTYPE_PRESENT_EVENT_CHRISTMAS:
-                    DBG_LOG("%s 使用圣诞礼物", get_player_describe(src));
-                    break;
+                set_technique_level(get_player_v1_tech(src), inv, item.datab[4], item.datab[2]);
+                break;
 
-                case ITEM_SUBTYPE_PRESENT_EVENT_EASTER:
-                    DBG_LOG("%s 使用复活节礼物", get_player_describe(src));
-                    break;
-
-                case ITEM_SUBTYPE_PRESENT_EVENT_LANTERN:
-                    DBG_LOG("%s 使用万圣节礼物", get_player_describe(src));
-                    break;
+            case ITEM_SUBTYPE_GRINDER: // Grinder
+                if (item.datab[2] > 2) {
+                    ERR_LOG("%s 无效打磨物品值", get_player_describe(src));
+                    return -2;
                 }
-
-                if (!add_invitem(src, event_item)) {
-                    ERR_LOG("%s 背包空间不足, 无法获得物品!", get_player_describe(src));
+                weapon = &inv->iitems[find_equipped_weapon(inv)].data;
+                pmt_weapon_bb_t weapon_def = { 0 };
+                if (pmt_lookup_weapon_bb(weapon->datal[0], &weapon_def)) {
+                    ERR_LOG("%s 装备了不存在的物品数据!", get_player_describe(src));
                     return -3;
                 }
 
-                subcmd_send_lobby_bb_create_inv_item(src, event_item, stack_size(&event_item), true);
+                weapon->datab[3] += (item.datab[2] + 1);
+
+                if (weapon->datab[3] > weapon_def.max_grind)
+                    weapon->datab[3] = weapon_def.max_grind;
                 break;
+
+            case ITEM_SUBTYPE_MATERIAL:
+                switch (item.datab[2]) {
+                case ITEM_SUBTYPE_MATERIAL_POWER: // 攻击力药
+                    set_material_usage(inv, MATERIAL_POWER, get_material_usage(inv, MATERIAL_POWER) + 1);
+                    get_player_stats(src)->atp += 2;
+                    break;
+
+                case ITEM_SUBTYPE_MATERIAL_MIND: // 精神力药
+                    set_material_usage(inv, MATERIAL_MIND, get_material_usage(inv, MATERIAL_MIND) + 1);
+                    get_player_stats(src)->mst += 2;
+                    break;
+
+                case ITEM_SUBTYPE_MATERIAL_EVADE: // 闪避力药
+                    set_material_usage(inv, MATERIAL_EVADE, get_material_usage(inv, MATERIAL_EVADE) + 1);
+                    get_player_stats(src)->evp += 2;
+                    break;
+
+                case ITEM_SUBTYPE_MATERIAL_HP: // HP药
+                    set_material_usage(inv, MATERIAL_HP, get_material_usage(inv, MATERIAL_HP) + 1);
+                    break;
+
+                case ITEM_SUBTYPE_MATERIAL_TP: // TP药
+                    set_material_usage(inv, MATERIAL_TP, get_material_usage(inv, MATERIAL_TP) + 1);
+                    break;
+
+                case ITEM_SUBTYPE_MATERIAL_DEF: // 防御力药
+                    set_material_usage(inv, MATERIAL_DEF, get_material_usage(inv, MATERIAL_DEF) + 1);
+                    get_player_stats(src)->dfp += 2;
+                    break;
+
+                case ITEM_SUBTYPE_MATERIAL_LUCK: // 幸运值药
+                    set_material_usage(inv, MATERIAL_LUCK, get_material_usage(inv, MATERIAL_LUCK) + 1);
+                    get_player_stats(src)->lck += 2;
+                    break;
+
+                default:
+                    ERR_LOG("%s 未知药物 0x%08X", get_player_describe(src), item.datal[0]);
+                    return -5;
+                }
+                break;
+
+            case ITEM_SUBTYPE_MAG_CELL1:
+                int mag_index = find_equipped_mag(inv);
+                if (mag_index == -1) {
+                    ERR_LOG("%s 没有装备玛古,玛古细胞 0x%08X", get_player_describe(src), item.datal[0]);
+                    break;
+                }
+                mag = &inv->iitems[mag_index].data;
+
+                switch (item.datab[2]) {
+                case ITEM_SUBTYPE_MAG_CELL1_502:
+                    // Cell of MAG 502
+                    mag->datab[1] = (get_player_section(src) & SID_Greennill) ? Mag_Pitri : Mag_Soniti;
+                    break;
+
+                case ITEM_SUBTYPE_MAG_CELL1_213:
+                    // Cell of MAG 213
+                    mag->datab[1] = (get_player_section(src) & SID_Greennill) ? Mag_Churel : Mag_Preta;
+                    break;
+
+                case ITEM_SUBTYPE_MAG_CELL1_ROBOCHAO:
+                    // Parts of RoboChao
+                    mag->datab[1] = Mag_RoboChao;
+                    break;
+
+                case ITEM_SUBTYPE_MAG_CELL1_OPA_OPA:
+                    // Heart of Opa Opa
+                    mag->datab[1] = Mag_OpaOpa;
+                    break;
+
+                case ITEM_SUBTYPE_MAG_CELL1_PIAN:
+                    // Heart of Pian
+                    mag->datab[1] = Mag_Pian;
+                    break;
+
+                case ITEM_SUBTYPE_MAG_CELL1_CHAO:
+                    // Heart of Chao
+                    mag->datab[1] = Mag_Chao;
+                    break;
+
+                default:
+                    ERR_LOG("%s 未知玛古细胞 0x%08X", get_player_describe(src), item.datal[0]);
+                    return -5;
+                }
+                break;
+
+            case ITEM_SUBTYPE_ADD_SLOT:
+                armor = &inv->iitems[find_equipped_armor(inv)].data;
+
+                if (armor->datab[5] >= 4) {
+                    ERR_LOG("%s 物品已达最大插槽数量", get_player_describe(src));
+                    return -6;
+                }
+                armor->datab[5]++;
+                break;
+
+            case ITEM_SUBTYPE_SERVER_ITEM1:
+                size_t eq_wep = find_equipped_weapon(inv);
+                weapon = &inv->iitems[eq_wep].data;
+
+                //アイテムIDの5, 6文字目が1, 2のアイテムの場合（0x0312 * *のとき）
+                switch (item.datab[2]) {//スイッチ文。「使用」するアイテムIDの7, 8文字目をスイッチに使う。
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_BRONZE: // weapons bronze
+                    if (eq_wep != -1) {
+                        uint32_t ai, plustype, num_attribs = 0;
+                        plustype = 1;
+                        ai = 0;
+                        if ((weapon->datab[6] > 0x00) &&
+                            (!(weapon->datab[6] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[6] == plustype)
+                                ai = 7;
+                        }
+
+                        if ((weapon->datab[8] > 0x00) &&
+                            (!(weapon->datab[8] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[8] == plustype)
+                                ai = 9;
+                        }
+
+                        if ((weapon->datab[10] > 0x00) &&
+                            (!(weapon->datab[10] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[10] == plustype)
+                                ai = 11;
+                        }
+
+                        if (ai) {
+                            // Attribute already on weapon, increase it
+                            weapon->datab[ai] += 0x0A;
+                            if (weapon->datab[ai] > 100)
+                                weapon->datab[ai] = 100;
+                        }
+                        else {
+                            // Attribute not on weapon, add it if there isn't already 3 attributes
+                            if (num_attribs < 3) {
+                                weapon->datab[6 + (num_attribs * 2)] = 0x01;
+                                weapon->datab[7 + (num_attribs * 2)] = 0x0A;
+                            }
+                        }
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_SILVER: // weapons silver
+                    if (eq_wep != -1) {
+                        uint32_t ai, plustype, num_attribs = 0;
+                        plustype = 2;
+                        ai = 0;
+                        if ((weapon->datab[6] > 0x00) &&
+                            (!(weapon->datab[6] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[6] == plustype)
+                                ai = 7;
+                        }
+
+                        if ((weapon->datab[8] > 0x00) &&
+                            (!(weapon->datab[8] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[8] == plustype)
+                                ai = 9;
+                        }
+
+                        if ((weapon->datab[10] > 0x00) &&
+                            (!(weapon->datab[10] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[10] == plustype)
+                                ai = 11;
+                        }
+
+                        if (ai) {
+                            // Attribute already on weapon, increase it
+                            weapon->datab[ai] += 0x0A;
+                            if (weapon->datab[ai] > 100)
+                                weapon->datab[ai] = 100;
+                        }
+                        else {
+                            // Attribute not on weapon, add it if there isn't already 3 attributes
+                            if (num_attribs < 3) {
+                                weapon->datab[6 + (num_attribs * 2)] = 0x02;
+                                weapon->datab[7 + (num_attribs * 2)] = 0x0A;
+                            }
+                        }
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_GOLD: // weapons gold
+                    if (eq_wep != -1) {
+                        uint32_t ai, plustype, num_attribs = 0;
+                        plustype = 3;
+                        ai = 0;
+                        if ((weapon->datab[6] > 0x00) &&
+                            (!(weapon->datab[6] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[6] == plustype)
+                                ai = 7;
+                        }
+
+                        if ((weapon->datab[8] > 0x00) &&
+                            (!(weapon->datab[8] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[8] == plustype)
+                                ai = 9;
+                        }
+
+                        if ((weapon->datab[10] > 0x00) &&
+                            (!(weapon->datab[10] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[10] == plustype)
+                                ai = 11;
+                        }
+
+                        if (ai) {
+                            // Attribute already on weapon, increase it
+                            weapon->datab[ai] += 0x0A;
+                            if (weapon->datab[ai] > 100)
+                                weapon->datab[ai] = 100;
+                        }
+                        else {
+                            // Attribute not on weapon, add it if there isn't already 3 attributes
+                            if (num_attribs < 3) {
+                                weapon->datab[6 + (num_attribs * 2)] = 0x03;
+                                weapon->datab[7 + (num_attribs * 2)] = 0x0A;
+                            }
+                        }
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_CRYSTAL: // weapons cristal
+                    if (eq_wep != -1) {
+                        uint32_t ai, plustype, num_attribs = 0;
+                        char attrib_add = 10;
+                        plustype = 4;
+                        ai = 0;
+                        if ((weapon->datab[6] > 0x00) &&
+                            (!(weapon->datab[6] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[6] == plustype)
+                                ai = 7;
+                        }
+
+                        if ((weapon->datab[8] > 0x00) &&
+                            (!(weapon->datab[8] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[8] == plustype)
+                                ai = 9;
+                        }
+
+                        if ((weapon->datab[10] > 0x00) &&
+                            (!(weapon->datab[10] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[10] == plustype)
+                                ai = 11;
+                        }
+
+                        if (ai) {
+                            // Attribute already on weapon, increase it
+                            weapon->datab[ai] += 0x0A;
+                            if (weapon->datab[ai] > 100)
+                                weapon->datab[ai] = 100;
+                        }
+                        else {
+                            // Attribute not on weapon, add it if there isn't already 3 attributes
+                            if (num_attribs < 3) {
+                                weapon->datab[6 + (num_attribs * 2)] = 0x04;
+                                weapon->datab[7 + (num_attribs * 2)] = 0x0A;
+                            }
+                        }
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_STEAL: // weapons steal
+                    if (eq_wep != -1) {
+                        uint32_t ai, plustype, num_attribs = 0;
+                        plustype = 5;
+                        ai = 0;
+                        if ((weapon->datab[6] > 0x00) &&
+                            (!(weapon->datab[6] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[6] == plustype)
+                                ai = 7;
+                        }
+
+                        if ((weapon->datab[8] > 0x00) &&
+                            (!(weapon->datab[8] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[8] == plustype)
+                                ai = 9;
+                        }
+
+                        if ((weapon->datab[10] > 0x00) &&
+                            (!(weapon->datab[10] & 128))) {
+                            num_attribs++;
+                            if (weapon->datab[10] == plustype)
+                                ai = 11;
+                        }
+
+                        if (ai) {
+                            // Attribute already on weapon, increase it
+                            weapon->datab[ai] += 0x05;
+                            if (weapon->datab[ai] > 100)
+                                weapon->datab[ai] = 100;
+                        }
+                        else {
+                            // Attribute not on weapon, add it if there isn't already 3 attributes
+                            if (num_attribs < 3) {
+                                weapon->datab[6 + (num_attribs * 2)] = 0x05;
+                                weapon->datab[7 + (num_attribs * 2)] = 0x05;
+                            }
+                        }
+                    }
+                    break;
+
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_ALUMINUM:
+                    DBG_LOG("%s Aluminum Weapons Badge", get_player_describe(src));
+                    send_txt(src, "%s\n%s", get_item_describe(&item, src->version), __(src, "\tE\tC4暂未完成该物品的解析."));
+                    break;
+
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_LEATHER:
+                    DBG_LOG("%s Leather Weapons Badge", get_player_describe(src));
+                    send_txt(src, "%s\n%s", get_item_describe(&item, src->version), __(src, "\tE\tC4暂未完成该物品的解析."));
+                    break;
+
+                case ITEM_SUBTYPE_SERVER_ITEM1_BADGE_W_BONE: // weapons bone
+                    //アイテムIDの7,8文字目が0,7のとき。（0x031207のとき　つまりウェポンズバッジ骨のとき）
+                    if (eq_wep != -1) {    //詳細不明、武器装備時？
+                        switch (weapon->datab[1]) { //スイッチにキャラクターの装備している武器のアイテムIDの3,4文字目をスイッチに使う
+
+                        case 0x22:
+                            //キャラクターの装備している武器のアイテムIDの3,4文字目が2,2のとき（0x002200のとき　つまりカジューシース）
+                            if (weapon->datab[3] == 0x09)
+                                //もしキャラクターの装備している武器のアイテムIDの7,8文字目が0,9だったら（つまり強化値が + 9だったら）
+                            {
+                                weapon->datab[2] = 0x01; // melcrius
+                                //キャラクターの装備している武器のアイテムIDの5,6文字目を0,1に変更する
+                                //（つまりカジューシース + 9（0x00220009）→メルクリウスロッド + 9（0x00220109）にする）
+                                weapon->datab[3] = 0x00; // Not grinded
+                                //強化値を０にする（つまりメルクリウスロッド + 9（0x00220109）→メルクリウスロッド（0x00220100）にする）
+                                weapon->datab[4] = 0x00;
+                                //Send_Item(inv->iitems[eq_wep].data.item_id, client);
+                                // 詳細不明。装備している武器をインベントリの最終行に送る？
+                            }
+                            break;
+                        }
+                    }
+                    break;
+
+                default:
+                    goto combintion_other;
+                }
+                break;
+
+            case ITEM_SUBTYPE_SERVER_ITEM2:
+                item_t new_item = { 0 };
+                litem_t* new_litem;
+
+                switch (item.datab[2]) {
+                    /* 情人节巧克力 */
+                    /* 暂未解析该生成什么物品 */
+                case ITEM_SUBTYPE_SERVER_ITEM2_CHOCOLATE:
+                case ITEM_SUBTYPE_SERVER_ITEM2_CANDY:
+                case ITEM_SUBTYPE_SERVER_ITEM2_CAKE:
+                    send_txt(src, "%s\n%s", get_item_describe(&item, src->version), __(src, "\tE\tC4暂未完成该物品的解析."));
+                    break;
+
+                    /* 银徽章 增加 100000 经验 */
+                case ITEM_SUBTYPE_SERVER_ITEM2_W_SILVER:
+                    //Add Exp
+                    if (get_player_level(src) + 1 < 200) {
+                        client_give_exp(src, 100000);
+                        send_txt(src, "%s", __(src, "\tE\tC6增加经验 100000 点"));
+                    }
+                    break;
+
+                    /* 金徽章 获得一个精神玛古 露可敏  */
+                case ITEM_SUBTYPE_SERVER_ITEM2_W_GOLD:
+
+                    new_item.datal[0] = 0xA3963C02;
+                    new_item.datal[1] = 0;
+                    new_item.datal[2] = 0x3A980000;
+                    new_item.data2l = 0x0407C878;
+
+                    new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
+                    if (!new_litem) {
+                        /* *Gulp* The lobby is probably toast... At least make sure this user is
+                           still (mostly) safe... */
+                        ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
+                        return -1;
+                    }
+
+                    subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
+
+                    send_txt(src, "%s", __(src, "\tE\tC6增加经验 100000 点"));
+
+                    break;
+
+                    /* 水晶徽章 DB套装 DB剑 铠 盾 */
+                case ITEM_SUBTYPE_SERVER_ITEM2_W_CRYSTAL:
+
+                    //DB鎧 スロット4
+                    new_item.datal[0] = 0x00280101;
+                    new_item.datal[1] = 0x00000400;
+                    new_item.datal[2] = 0x00000000;
+                    new_item.data2l = 0x00000000;
+
+                    new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
+                    if (!new_litem) {
+                        /* *Gulp* The lobby is probably toast... At least make sure this user is
+                           still (mostly) safe... */
+                        ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
+                        return -1;
+                    }
+
+                    subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
+
+                    //DB剣 Machine 100% Ruin 100% Hit 50%
+                    new_item.datal[0] = 0x2C050100;
+                    new_item.datal[1] = 0x32050000;
+                    new_item.datal[2] = 0x64046403;
+                    new_item.data2l = 0x00000000;
+
+                    new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
+                    if (!new_litem) {
+                        /* *Gulp* The lobby is probably toast... At least make sure this user is
+                           still (mostly) safe... */
+                        ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
+                        return -1;
+                    }
+
+                    subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
+
+                    //DB盾
+                    new_item.datal[0] = 0x00260201;
+                    new_item.datal[1] = 0x00000000;
+                    new_item.datal[2] = 0x00000000;
+                    new_item.data2l = 0x00000000;
+
+                    new_litem = add_lobby_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z, true);
+                    if (!new_litem) {
+                        /* *Gulp* The lobby is probably toast... At least make sure this user is
+                           still (mostly) safe... */
+                        ERR_LOG("%s 无法将物品新增游戏房间背包!", get_player_describe(src));
+                        return -1;
+                    }
+
+                    subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
+
+                    break;
+
+                    /* 暂未解析该生成什么物品 */
+                case ITEM_SUBTYPE_SERVER_ITEM2_W_STEEL:
+                case ITEM_SUBTYPE_SERVER_ITEM2_W_ALUMINUM:
+                case ITEM_SUBTYPE_SERVER_ITEM2_W_LEATHER:
+                case ITEM_SUBTYPE_SERVER_ITEM2_W_BONE:
+                case ITEM_SUBTYPE_SERVER_ITEM2_BOUQUET:
+                case ITEM_SUBTYPE_SERVER_ITEM2_DECOCTION:
+                    send_txt(src, "%s\n%s", get_item_describe(&item, src->version), __(src, "\tE\tC4暂未完成该物品的解析."));
+                    break;
+
+                default:
+                    goto combintion_other;
+                }
+                break;
+
+            case ITEM_SUBTYPE_PRESENT_EVENT:
+                // Present, etc. - use unwrap_table + probabilities therein
+                size_t sum = 0, z = 0;
+                pmt_eventitem_bb_t entry;
+
+                for (z = 0; z < get_num_eventitems_bb(item.datab[2]); z++) {
+                    if (pmt_lookup_eventitem_bb(item.datal[0], z, &entry)) {
+                        DBG_LOG("%s 使用圣诞礼物 0x%08X 出错", get_player_describe(src), item.datal[0]);
+                        break;
+                    }
+
+                    sum += entry.probability;
+                }
+
+                if (sum == 0) {
+                    ERR_LOG("%s 节日事件没有可用的礼包结果", get_player_describe(src));
+                    return 0;
+                }
+
+                size_t det = sfmt_genrand_uint32(rng) % sum;
+
+                for (z = 0; z < get_num_eventitems_bb(item.datab[2]); z++) {
+                    if (pmt_lookup_eventitem_bb(item.datal[0], z, &entry)) {
+                        DBG_LOG("%s 使用圣诞礼物 0x%08X 出错", get_player_describe(src), item.datal[0]);
+                        break;
+                    }
+                    if (det > entry.probability) {
+                        det -= entry.probability;
+                        continue;
+                    }
+
+                    item_t event_item = { 0 };
+                    clear_inv_item(&event_item);
+                    event_item.datab[0] = entry.item[0];
+                    event_item.datab[1] = entry.item[1];
+                    event_item.datab[2] = entry.item[2];
+                    event_item.datab[5] = get_item_amount(&event_item, 1);
+                    event_item.item_id = generate_item_id(l, src->client_id);
+
+                    /* TODO 出现的武器 装甲 增加随机属性 */
+                    switch (item.datab[2]) {
+                    case ITEM_SUBTYPE_PRESENT_EVENT_CHRISTMAS:
+                        DBG_LOG("%s 使用圣诞礼物", get_player_describe(src));
+                        break;
+
+                    case ITEM_SUBTYPE_PRESENT_EVENT_EASTER:
+                        DBG_LOG("%s 使用复活节礼物", get_player_describe(src));
+                        break;
+
+                    case ITEM_SUBTYPE_PRESENT_EVENT_LANTERN:
+                        DBG_LOG("%s 使用万圣节礼物", get_player_describe(src));
+                        break;
+                    }
+
+                    if (!add_invitem(src, event_item)) {
+                        ERR_LOG("%s 背包空间不足, 无法获得物品!", get_player_describe(src));
+                        return -3;
+                    }
+
+                    subcmd_send_lobby_bb_create_inv_item(src, event_item, stack_size(&event_item), true);
+                    break;
+                }
+
+                break;
+
+            case ITEM_SUBTYPE_DISK_MUSIC:
+                break;
+
+            default:
+                goto combintion_other;
             }
-
-            break;
-
-        case ITEM_SUBTYPE_DISK_MUSIC:
-            should_delete_item = true;
             break;
 
         default:
-            goto combintion_other;
-        }
-        break;
+        combintion_other:
+            // Use item combinations table from ItemPMT
+            bool combo_applied = false;
+            pmt_itemcombination_bb_t combo = { 0 };
 
-    default:
-combintion_other:
-        // Use item combinations table from ItemPMT
-        bool combo_applied = false;
-        pmt_itemcombination_bb_t combo = { 0 };
-
-        for (size_t z = 0; z < inv->item_count; z++) {
-            iitem_t* inv_item = &inv->iitems[z];
-            if (!(inv_item->flags & EQUIP_FLAGS)) {
-                continue;
-            }
-
-            __try {
-                if (err = pmt_lookup_itemcombination_bb(item->datal[0], inv_item->data.datal[0], &combo)) {
-#ifdef DEBUG
-                    ERR_LOG("%s pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", get_char_describe(src), err);
-#endif // DEBUG
+            for (size_t z = 0; z < inv->item_count; z++) {
+                iitem_t* inv_item = &inv->iitems[z];
+                if (!(inv_item->flags & EQUIP_FLAGS)) {
                     continue;
                 }
 
-                if (combo.char_class != 0xFF && combo.char_class != get_player_class(src)) {
-                    ERR_LOG("%s 物品合成需要特定的玩家职业", get_player_describe(src));
-                    ERR_LOG("combo.class %d player %d", combo.char_class, get_player_class(src));
-                }
-                if (combo.mag_level != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(inv) == -1) {
-                        ERR_LOG("%s 物品合成适用于mag级别要求,但装备的物品不是mag", get_player_describe(src));
-                        ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
-                        return -1;
-                    }
-                    if (compute_mag_level(&inv_item->data) < combo.mag_level) {
-                        ERR_LOG("%s 物品合成适用于mag等级要求,但装备的mag等级过低", get_player_describe(src));
-                        return -2;
-                    }
-                }
-                if (combo.grind != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(inv) == -1) {
-                        ERR_LOG("%s 物品合成适用于研磨要求,但装备的物品不是武器", get_player_describe(src));
-                        return -3;
-                    }
-                    if (inv_item->data.datab[3] < combo.grind) {
-                        ERR_LOG("%s 物品合成适用于研磨要求,但装备的武器研磨过低", get_player_describe(src));
-                        return -4;
-                    }
-                }
-                if (combo.level != 0xFF && get_player_level(src) + 1 < combo.level) {
+                __try {
+                    if (err = pmt_lookup_itemcombination_bb(item.datal[0], inv_item->data.datal[0], &combo)) {
 #ifdef DEBUG
-                    ERR_LOG("%s 物品合成适用于等级要求,但玩家等级过低", get_player_describe(src));
+                        ERR_LOG("%s pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", get_char_describe(src), err);
 #endif // DEBUG
-                    return -5;
-                }
-                // If we get here, then the combo applies
+                        continue;
+                    }
+
+                    if (combo.char_class != 0xFF && combo.char_class != get_player_class(src)) {
+                        ERR_LOG("%s 物品合成需要特定的玩家职业", get_player_describe(src));
+                        ERR_LOG("combo.class %d player %d", combo.char_class, get_player_class(src));
+                    }
+                    if (combo.mag_level != 0xFF) {
+                        if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(inv) == -1) {
+                            ERR_LOG("%s 物品合成适用于mag级别要求,但装备的物品不是mag", get_player_describe(src));
+                            ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
+                            return -1;
+                        }
+                        if (compute_mag_level(&inv_item->data) < combo.mag_level) {
+                            ERR_LOG("%s 物品合成适用于mag等级要求,但装备的mag等级过低", get_player_describe(src));
+                            return -2;
+                        }
+                    }
+                    if (combo.grind != 0xFF) {
+                        if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(inv) == -1) {
+                            ERR_LOG("%s 物品合成适用于研磨要求,但装备的物品不是武器", get_player_describe(src));
+                            return -3;
+                        }
+                        if (inv_item->data.datab[3] < combo.grind) {
+                            ERR_LOG("%s 物品合成适用于研磨要求,但装备的武器研磨过低", get_player_describe(src));
+                            return -4;
+                        }
+                    }
+                    if (combo.level != 0xFF && get_player_level(src) + 1 < combo.level) {
 #ifdef DEBUG
-                if (combo_applied) {
-                    DBG_LOG("%s multiple combinations apply", get_char_describe(src));
-                }
+                        ERR_LOG("%s 物品合成适用于等级要求,但玩家等级过低", get_player_describe(src));
 #endif // DEBUG
-                combo_applied = true;
+                        return -5;
+                    }
+                    // If we get here, then the combo applies
+#ifdef DEBUG
+                    if (combo_applied) {
+                        DBG_LOG("%s multiple combinations apply", get_char_describe(src));
+                    }
+#endif // DEBUG
+                    combo_applied = true;
 
 #ifdef DEBUG
 
-                print_item_data(&inv_item->data, src->version);
+                    print_item_data(&inv_item->data, src->version);
 
 #endif // DEBUG
-                inv_item->data.datab[0] = combo.result_item[0];
-                inv_item->data.datab[1] = combo.result_item[1];
-                inv_item->data.datab[2] = combo.result_item[2];
-                inv_item->data.datab[3] = 0; // Grind
-                inv_item->data.datab[4] = 0; // Flags + special
+                    inv_item->data.datab[0] = combo.result_item[0];
+                    inv_item->data.datab[1] = combo.result_item[1];
+                    inv_item->data.datab[2] = combo.result_item[2];
+                    inv_item->data.datab[3] = 0; // Grind
+                    inv_item->data.datab[4] = 0; // Flags + special
 
 #ifdef DEBUG
-                DBG_LOG("result_item 0x%02X 0x%02X 0x%02X", combo.result_item[0], combo.result_item[1], combo.result_item[2]);
-                print_item_data(&inv_item->data, src->version);
+                    DBG_LOG("result_item 0x%02X 0x%02X 0x%02X", combo.result_item[0], combo.result_item[1], combo.result_item[2]);
+                    print_item_data(&inv_item->data, src->version);
 #endif // DEBUG
+                    }
+
+                __except (crash_handler(GetExceptionInformation())) {
+                    // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+                    CRASH_LOG("%s 使用物品合成出现错误.", get_player_describe(src));
+                }
             }
 
-            __except (crash_handler(GetExceptionInformation())) {
-                // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-                CRASH_LOG("%s 使用物品合成出现错误.", get_player_describe(src));
+
+            if (!combo_applied) {
+                ERR_LOG("%s 不适用任何合成", get_player_describe(src));
+                print_item_data(&item, src->version);
             }
+            break;
         }
-
-
-        if (!combo_applied) {
-            ERR_LOG("%s 不适用任何合成", get_player_describe(src));
-            print_item_data(item, src->version);
-        }
-        break;
     }
 
-done:
-    if (should_delete_item) {
+    if (should_add_item) {
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
-        item_t delete_item = remove_invitem(src, item->item_id, 1, src->version != CLIENT_VERSION_BB);
-        if (item_not_identification_bb(delete_item.datal[0], delete_item.datal[1])) {
-            ERR_LOG("%s 物品 ID 0x%08X 已不存在", get_player_describe(src), item->item_id);
+        if (!add_invitem(src, item)) {
+            ERR_LOG("%s 背包空间不足, 无法获得物品!", get_player_describe(src));
+            err = -10;
         }
     }
 
     return err;
 }
-
-//int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
-//    char percent_mod = 0;
-//    uint8_t attrib = item->datab[4];
-//    int8_t tmp_value = 0;
-//
-//    if (item->datab[0] != ITEM_TYPE_WEAPON) {
-//        ERR_LOG("%s 尝试鉴定非武器物品 %s", get_player_describe(src), get_item_describe(item, src->version));
-//        return -1;
-//    }
-//
-//    // 技能属性提取和随机数处理
-//    if (attrib < ITEM_TYPE_WEAPON_SPECIAL_NUM) {
-//        item->datab[4] = tekker_attributes[(attrib * 3) + 1];
-//        if ((sfmt_genrand_uint32(rng) % 100) > 70)
-//            item->datab[4] += sfmt_genrand_uint32(rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
-//    }
-//    else if ((sfmt_genrand_uint32(rng) % 5 == 1)) {
-//        item->datab[4] = sfmt_genrand_uint32(rng) % 10;
-//    }else
-//        item->datab[4] = 0;
-//
-//    // 各属性值修正处理
-//    static const uint8_t delta_table[5] = { -10, -5, 0, 5, 10 };
-//    for (size_t x = 6; x < 0x0B; x += 2) {
-//        // 百分比修正处理
-//        uint32_t mt_index = sfmt_genrand_uint32(rng) % 5;
-//
-//        tmp_value = delta_table[mt_index];
-//
-//        if (tmp_value > 10)
-//            tmp_value = 10;
-//
-//        if (tmp_value < -10)
-//            tmp_value = -10;
-//
-//        //percent_mod += tmp_value;
-//
-//        //if (mt_index > 5)
-//        //    percent_mod += delta_table[mt_index];
-//        //else
-//        //    percent_mod -= delta_table[mt_index];
-//
-//        if (!(item->datab[x] & 128) && (item->datab[x + 1] > 0))
-//            (char)item->datab[x + 1] += tmp_value;
-//    }
-//
-//    return 0;
-//}
 
 bool check_tekke_favored_weapon_by_section_id(uint8_t section, item_t* item) {
     bool favored = false;

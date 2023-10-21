@@ -3644,5 +3644,8 @@ uint8_t get_common_random_unit_subtype_value(uint8_t 难度, sfmt_t* rng) {
     // 在选定的单位子类型中随机选择值
     const uint8_t* values = common_unit_subtypes[rand_int(rng, 10)];
 
-    return values[难度];
+    if (难度 == GAME_TYPE_DIFFICULTY_NORMAL)
+        return values[难度];
+    else 
+        return values[gen_random_uint32(rng, 难度 - 1,难度)];
 }

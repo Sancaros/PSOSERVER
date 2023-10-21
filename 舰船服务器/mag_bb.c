@@ -248,33 +248,21 @@ int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 
 int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id) {
 	errno_t err = 0;
-	bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
 
 	inventory_t* inv = get_client_inv(src);
-
-	int mag_item_index = -1;
-	int feed_item_index = -1;
-	if (!find_mag_and_feed_item(inv, mag_item_id, feed_item_id, &mag_item_index, &feed_item_index)) {
-		// 没有找到魔法装备和喂养物品
-		ERR_LOG("%s 玛古或物品不存在!", get_player_describe(src));
-		return -1;
-	}
 
 	// 找到了魔法装备和喂养物品
 	// 可以使用mag_item_index和feed_item_index进行后续操作
 	/* 搜索物品的结果索引 删除前 先获取索引值 */
-	size_t result_index = find_result_index(primary_identifier(&inv->iitems[feed_item_index].data));
-
-	if (should_delete_item) {
-		item_t delete_item = remove_invitem(src, feed_item_id, 1, src->version != CLIENT_VERSION_BB);
-		if (item_not_identification_bb(delete_item.datal[0], delete_item.datal[1])) {
-			ERR_LOG("%s 删除 ID 0x%08X 失败", get_player_describe(src), feed_item_id);
-			err = -5;
-		}
+	item_t delete_feed_item = remove_invitem(src, feed_item_id, 1, src->version != CLIENT_VERSION_BB);
+	if (item_not_identification_bb(delete_feed_item.datal[0], delete_feed_item.datal[1])) {
+		ERR_LOG("%s 删除 ID 0x%08X 失败", get_player_describe(src), feed_item_id);
+		err = -5;
+		return err;
 	}
 
 	/* 玛古再次进行检索 */
-	mag_item_index = find_iitem_index(inv, mag_item_id);
+	int mag_item_index = find_iitem_index(inv, mag_item_id);
 	if (mag_item_index < 0) {
 		ERR_LOG("%s 玛古不存在! 错误码 %d", get_player_describe(src), mag_item_index);
 		return mag_item_index;
@@ -290,6 +278,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		return err;
 	}
 
+	size_t result_index = find_result_index(primary_identifier(&delete_feed_item));
 	pmt_mag_feed_result_t feed_result = { 0 };
 	if ((err = pmt_lookup_mag_feed_table_bb(mag_item_data->datal[0], mag_table.feed_table, result_index, &feed_result))) {
 		ERR_LOG("%s 喂养了不存在的玛古数据!错误码 %d",
