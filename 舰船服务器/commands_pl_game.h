@@ -1080,7 +1080,7 @@ static int handle_showmaps(ship_client_t* c, const char* params) {
     string[32] = 0;
 
     pthread_mutex_unlock(&l->mutex);
-    return send_txt(c, "%s\n%s", __(c, "\tE\tC7当前地图:"), string);
+    return send_txt(c, "%s\n%s", __(c, "\tE\tC7当前地图序列:"), string);
 }
 
 /* 用法: /gcprotect [off] */
@@ -1179,7 +1179,7 @@ static int handle_tlogin(ship_client_t* c, const char* params) {
 
 /* 用法: /showpos */
 static int handle_showpos(ship_client_t* c, const char* params) {
-    return send_txt(c, "\tE\tC7(%f, %f, %f)", c->x, c->y, c->z);
+    return send_txt(c, "房间ID:%d\n区域:%d\n\tE\tC7(x:%f, y:%f, z:%f)\nw:%f", c->lobby_id, c->cur_area, c->x, c->y, c->z, c->w);
 }
 
 /* 用法: /info */

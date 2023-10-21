@@ -232,13 +232,70 @@ int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
 }
 
 int db_update_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name) {
+    bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)data;
+    psocn_bb_full_char_t* full_char = &full_data_pkt->data;
+
     memset(myquery, 0, sizeof(myquery));
 
     snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "update_time = NOW(), ch_class = '%d', class_name = '%s', `full_data` = '", CHARACTER_DATA_FULL, char_class, class_name);
+        "ch_class = '%d', class_name = '%s', update_time = NOW(), "
+        "`full_data` = '"
+        , CHARACTER_DATA_FULL
+        , char_class, class_name
+    );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)data,
         PSOCN_STLENGTH_BB_FULL_CHAR);
+
+    SAFE_STRCAT(myquery, "', `character2` = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->character,
+        PSOCN_STLENGTH_BB_CHAR2);
+
+    SAFE_STRCAT(myquery, "', bank = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->bank,
+        PSOCN_STLENGTH_BANK);
+
+    SAFE_STRCAT(myquery, "', quest_data1 = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_data1,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+
+    SAFE_STRCAT(myquery, "', guildcard_desc = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->gc.guildcard_desc,
+        88);
+
+    SAFE_STRCAT(myquery, "', autoreply = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->autoreply,
+        172);
+
+    SAFE_STRCAT(myquery, "', infoboard = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->infoboard,
+        172);
+
+    SAFE_STRCAT(myquery, "', b_records = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->b_records,
+        PSOCN_STLENGTH_BATTLE_RECORDS);
+
+    SAFE_STRCAT(myquery, "', c_records = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->c_records,
+        PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+
+    SAFE_STRCAT(myquery, "', tech_menu = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->tech_menu,
+        PSOCN_STLENGTH_BB_DB_TECH_MENU);
+
+    SAFE_STRCAT(myquery, "', mode_quest_data = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->mode_quest_data.all,
+        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `guildcard` = '%u' AND `slot` = '%u'", gc, slot);
 
