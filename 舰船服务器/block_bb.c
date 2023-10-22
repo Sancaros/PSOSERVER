@@ -2175,77 +2175,8 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
         //memcpy(&src->bb_pl->character, &char_data->character, 1220);
     }
 
-    //printf("原数据\n");
-
-    ///* 将保存的全部数据恢复到BB玩家退出游戏后的状态... */
-    ///////////////////////////////////////////////////////////////////////////////////////psocn_bb_char_t
-    //memcpy(&src->bb_pl->character.inv, &char_data->character.inv, PSOCN_STLENGTH_INV);
-    //memcpy(&src->bb_pl->character.disp, &char_data->character.disp, PSOCN_STLENGTH_DISP);
-    //memcpy(&src->bb_pl->character.dress_data, &char_data->character.dress_data, PSOCN_STLENGTH_DRESS);
-    //memcpy(&src->bb_pl->character.name, &char_data->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    //src->bb_pl->character.unknown_a3 = char_data->character.unknown_a3;
-    //src->bb_pl->character.play_time = char_data->character.play_time;
-    //memcpy(src->bb_pl->character.config, char_data->character.config, PSOCN_STLENGTH_BB_CHAR_CONFIG);
-    //for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-    //    src->bb_pl->character.tech.all[i] = char_data->character.tech.all[i];
-    //}
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //src->bb_opts->option_flags = char_data->option_flags;
-    //memcpy(src->bb_pl->quest_data1, char_data->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
-    ///////////////////////////////////////////////////////////////////////////////////////psocn_bank_t
-    //src->bb_pl->bank.item_count = char_data->bank.item_count;
-    //src->bb_pl->bank.meseta = char_data->bank.meseta;
-    ///* TODO 审查这段数据 是否有非法数据 */
-    //for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
-    //    src->bb_pl->bank.bitems[i] = char_data->bank.bitems[i];
-    //}
-    ///////////////////////////////////////////////////////////////////////////////////////psocn_bb_guild_card
-    //src->guildcard = char_data->gc.guildcard;
-    //for (i = 0; i < BB_CHARACTER_CHAR_TAG_NAME_WLENGTH; i++) {
-    //    src->bb_pl->character.name.all[i] = char_data->gc.name[i];
-    //}
-    ////memcpy(src->bb_pl->character.name.all, char_data->gc.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    //for (i = 0; i < 14; i++) {
-    //    src->bb_guild->data.guild_name[i] = char_data->gc.guild_name[i];
-    //}
-    ////memcpy(src->bb_guild->data.guild_name, char_data->gc.guild_name, PSOCN_STLENGTH_BB_GUILD_NAME);
-    //memcpy(&src->bb_pl->guildcard_desc[0], &char_data->gc.guildcard_desc[0], sizeof(char_data->gc.guildcard_desc));
-    //src->language_code = char_data->gc.language;
-    //src->bb_pl->character.dress_data.section = char_data->gc.section;
-    //src->bb_pl->character.dress_data.ch_class = char_data->gc.char_class;
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //memcpy(src->bb_opts->symbol_chats, char_data->symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
-    //memcpy(src->bb_opts->shortcuts, char_data->shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
-    //memcpy(src->bb_pl->autoreply, char_data->autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
-    //memcpy(src->bb_pl->infoboard, char_data->infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
-    ///////////////////////////////////////////////////////////////////////////////////////battle_records_t
-    //memcpy(&src->bb_pl->b_records, &char_data->b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
-    ///////////////////////////////////////////////////////////////////////////////////////bb_challenge_records_t
-    //memcpy(&src->bb_pl->c_records, &char_data->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-    ///////////////////////////////////////////////////////////////////////////////////////tech_menu
-    //memcpy(src->bb_pl->tech_menu, char_data->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-    ///////////////////////////////////////////////////////////////////////////////////////mode_quest_data
-    //memcpy(src->bb_pl->mode_quest_data, char_data->mode_quest_data, PSOCN_STLENGTH_BB_DB_mode_quest_data);
-
-    ////for (i = 0; i < 276; i++) {
-    ////    char_data->unk1[i] = 0x01;
-    ////}
-    ///////////////////////////////////////////////////////////////////////////////////bb_key_config_t
-    //memcpy(&src->bb_opts->key_cfg.keyboard_config, &char_data->key_cfg.keyboard_config, PSOCN_STLENGTH_BB_KEY_CONFIG_KB);
-    //memcpy(&src->bb_opts->key_cfg.joystick_config, &char_data->key_cfg.joystick_config, PSOCN_STLENGTH_BB_KEY_CONFIG_JOY);
-    ///////////////////////////////////////////////////////////////////////////////////bb_guild_t
-    //memcpy(&src->bb_guild->data, &char_data->guild_data, PSOCN_STLENGTH_BB_GUILD);
-    //src->bb_guild->data.guild_owner_gc = char_data->guild_data.guild_owner_gc;
-    //src->bb_guild->data.guild_id = char_data->guild_data.guild_id;
-    //src->bb_guild->data.guild_points_rank = char_data->guild_data.guild_points_rank;
-    //src->bb_guild->data.guild_points_rest = char_data->guild_data.guild_points_rest;
-    //src->bb_guild->data.guild_priv_level = char_data->guild_data.guild_priv_level;
-    //memcpy(src->bb_guild->data.guild_name, char_data->guild_data.guild_name, sizeof(src->bb_guild->data.guild_name));
-    //src->bb_guild->data.guild_rank = char_data->guild_data.guild_rank;
-    //memcpy(src->bb_guild->data.guild_flag, char_data->guild_data.guild_flag, sizeof(src->bb_guild->data.guild_flag));
-    //memcpy(src->bb_guild->data.guild_reward, char_data->guild_data.guild_reward, sizeof(src->bb_guild->data.guild_reward));
-
-    ///////////////////////////////////////////////////////////////////////////////////
+    /* 检测玩家的魔法是否合规 */
+    fix_player_max_tech_level(&src->bb_pl->character);
 
     /* BB玩家退出游戏后保存的全部数据... */
     /////////////////////////////////////////////////////////////////////////////////////psocn_bb_char_t
@@ -2335,9 +2266,6 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     //    }
     //    char_data->character.inv.iitems[i].data.item_id = EMPTY_STRING;
     //}
-
-    /* 检测玩家的魔法是否合规 */
-    fix_player_max_tech_level(&src->bb_pl->character);
 
     if (!src->mode) {
 #ifdef DEBUG

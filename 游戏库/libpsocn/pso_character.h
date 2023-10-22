@@ -498,6 +498,13 @@ static full_class_t pso_class[] = {
     {CLASS_FULL_CHAR, "完整角色",      "Full_char", "默认_完整角色.bin"      },
 };
 
+inline full_class_t* get_pso_class_describe(uint8_t ch_class) {
+    if (ch_class < MAX_PLAYER_CLASS_BB)
+        return &pso_class[ch_class];
+    else
+        return NULL;
+}
+
 // 药物定义
 const enum Character_Mats {
     ATP_MAT, //攻击力药

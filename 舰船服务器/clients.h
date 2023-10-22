@@ -529,7 +529,7 @@ uint8_t get_player_class(ship_client_t* src);
 char* get_section_describe(ship_client_t* src, uint8_t section, bool overwrite);
 uint8_t get_lobby_leader_section(lobby_t* l);
 techniques_t* get_player_v1_tech(ship_client_t* src);
-uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech);
+uint8_t get_bb_max_tech_level(uint8_t ch_class, uint32_t tech);
 void update_bb_mat_use(ship_client_t* src);
 void show_bb_player_info(ship_client_t* src);
 void fix_player_max_tech_level(psocn_bb_char_t* character);

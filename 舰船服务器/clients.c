@@ -1865,37 +1865,38 @@ techniques_t* get_player_v1_tech(ship_client_t* src) {
     return NULL;
 }
 
-uint8_t get_bb_max_tech_level(uint8_t ch_class, int tech) {
+uint8_t get_bb_max_tech_level(uint8_t ch_class, uint32_t tech) {
     if(ch_class < MAX_PLAYER_CLASS_BB)
         return max_tech_level[tech].max_lvl[ch_class];
-
-    return 0;
+    else {
+        ERR_LOG("%s %s 获取最大法术等级错误, 返回 0", get_pso_class_describe(ch_class)->cn_name);
+        return 0;
+    }
 }
 
 void update_bb_mat_use(ship_client_t* src) {
-    uint16_t atp_base = 0, mst_base = 0, evp_base = 0, hp_base = 0, dfp_base = 0, ata_base = 0;
     psocn_bb_char_t* character = get_client_char_bb(src);
-    inventory_t* inv = &character->inv;
-    uint8_t ch_class = character->dress_data.ch_class;
+    inventory_t* inv = get_client_inv(src);
+    uint8_t ch_class = get_player_class(src);
     psocn_pl_stats_t* startingData = &bb_char_stats.start_stats[ch_class];
-    uint32_t level = character->disp.level + 1;
+    uint32_t level = get_player_level(src) + 1;
 
-    atp_base = startingData->atp;
-    mst_base = startingData->mst;
-    evp_base = startingData->evp;
-    hp_base = startingData->hp;
-    dfp_base = startingData->dfp;
+    uint16_t atp_base = startingData->atp,
+    mst_base = startingData->mst,
+    evp_base = startingData->evp,
+    hp_base = startingData->hp,
+    dfp_base = startingData->dfp,
     ata_base = startingData->ata;
 
     //DBG_LOG("startingData atp_base %u mst_base %u evp_base %u hp_base %u dfp_base %u ata_base %u", atp_base, mst_base, evp_base, hp_base, dfp_base, ata_base);
 
     for (size_t x = 0; x < level; x++) {
-        atp_base += (uint16_t)bb_char_stats.levels[ch_class][x].atp;
-        mst_base += (uint16_t)bb_char_stats.levels[ch_class][x].mst;
-        evp_base += (uint16_t)bb_char_stats.levels[ch_class][x].evp;
-        hp_base += (uint16_t)bb_char_stats.levels[ch_class][x].hp;
-        dfp_base += (uint16_t)bb_char_stats.levels[ch_class][x].dfp;
-        ata_base += (uint16_t)bb_char_stats.levels[ch_class][x].ata;
+        atp_base += bb_char_stats.levels[ch_class][x].atp;
+        mst_base += bb_char_stats.levels[ch_class][x].mst;
+        evp_base += bb_char_stats.levels[ch_class][x].evp;
+        hp_base += bb_char_stats.levels[ch_class][x].hp;
+        dfp_base += bb_char_stats.levels[ch_class][x].dfp;
+        ata_base += bb_char_stats.levels[ch_class][x].ata;
         //DBG_LOG("atp_base %u mst_base %u evp_base %u hp_base %u dfp_base %u ata_base %u", atp_base, mst_base, evp_base, hp_base, dfp_base, ata_base);
     }
 
@@ -1945,11 +1946,10 @@ void show_bb_player_info(ship_client_t* src) {
 }
 
 void fix_player_max_tech_level(psocn_bb_char_t* character) {
-    for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
-
+    for (uint8_t i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
         uint8_t player_tech_level = get_technique_level(&character->technique_levels_v1, &character->inv, i);
         if (player_tech_level == TECHNIQUE_UNLEARN) {
-            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, TECHNIQUE_UNLEARN);
             continue;
         }
 
@@ -1966,7 +1966,7 @@ void fix_player_max_tech_level(psocn_bb_char_t* character) {
             );
 
 #endif // DEBUG
-            set_technique_level(&character->technique_levels_v1, &character->inv, i, 0xFF);
+            set_technique_level(&character->technique_levels_v1, &character->inv, i, TECHNIQUE_UNLEARN);
         }
     }
 }

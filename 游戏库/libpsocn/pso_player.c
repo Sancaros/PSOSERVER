@@ -147,7 +147,7 @@ uint8_t get_material_usage(inventory_t* inv, MaterialType which) {
 		case MATERIAL_EVADE:
 		case MATERIAL_DEF:
 		case MATERIAL_LUCK:
-			return inv->iitems[8 + which].extension_data2;
+			return inv->iitems[8 + (uint8_t)which].extension_data2;
 
 		default:
 			ERR_LOG("玩家吃药类型不支持 %d", which);
@@ -178,7 +178,7 @@ void set_material_usage(inventory_t* inv, MaterialType which, uint8_t usage) {
 		case MATERIAL_EVADE:
 		case MATERIAL_DEF:
 		case MATERIAL_LUCK:
-			inv->iitems[8 + which].extension_data2 = usage;
+			inv->iitems[8 + (uint8_t)which].extension_data2 = usage;
 			break;
 
 		default:
