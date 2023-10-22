@@ -6632,6 +6632,8 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    /* 客户端识别PMT中 存在公会点数的物品 只要有价值 就可以捐赠 */
+
     inventory_t* inv = get_client_inv(src);
 
     int i = find_iitem_index(inv, ex_item_id);
@@ -6647,7 +6649,7 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     item_t item = remove_invitem(src, pkt->ex_item_id, ex_amount, src->version != CLIENT_VERSION_BB);
-    if (item.datal[0] == 0 && item.data2l == 0) {
+    if (item_not_identification_bb(item.datal[0], item.datal[1])) {
         ERR_LOG("无法从玩家背包中移除 ID 0x%08X 物品!", pkt->ex_item_id);
         return -1;
     }
