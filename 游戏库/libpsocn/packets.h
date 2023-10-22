@@ -4505,7 +4505,7 @@ typedef struct bb_guild_special_item_list {
     uint16_t item_name[64];
     uint16_t item_desc[128];
     uint32_t point_amount;
-    uint32_t padding;
+    uint32_t item_id;
 } PACKED bb_guild_special_item_list_t;
 
 // 1AEA: (S->C): ╧╨бР╧╚╩Аль╣Д

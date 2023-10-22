@@ -12893,6 +12893,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
             istrncpy(ic_gb18030_to_utf16, (char*)spec_item_list->entries[i].item_name, guild_special_items[i].item_name, sizeof(guild_special_items[i].item_name));
             istrncpy(ic_gb18030_to_utf16, (char*)spec_item_list->entries[i].item_desc, guild_special_items[i].item_desc, sizeof(guild_special_items[i].item_desc));
             spec_item_list->entries[i].point_amount = guild_special_items[i].point_amount;
+            spec_item_list->entries[i].item_id = i + 1;
             num++;
         }
 
