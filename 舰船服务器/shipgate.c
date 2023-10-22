@@ -980,12 +980,12 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_INVITE:
                         if (dest->guildcard == sender_gc) {
 
-                            send_bb_guild_cmd(dest, BB_GUILD_UNK_0EEA);
+                            send_bb_guild_cmd(dest, BB_GUILD_GET_TARGET_GUILD_DATA);
                         }
                         break;
 
                         /* OK */
-                    case BB_GUILD_UNK_0EEA:
+                    case BB_GUILD_GET_TARGET_GUILD_DATA:
                         if (dest->guildcard == sender_gc) {
 
 #ifdef DEBUG
@@ -1117,10 +1117,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_RANKING_LIST:
                         if (dest->guildcard == sender_gc) {
 
-                            /* 返回一个列表数据包 TODO */
-                            send_bb_guild_cmd(dest, BB_GUILD_RANKING_LIST);
-                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex(dbgl, (uint8_t*)g, len);
+                            //print_ascii_hex(dbgl, (uint8_t*)g, len);
+
+                            send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
                         }
                         break;
 
@@ -3616,8 +3615,10 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
         /* 确保8字节的倍数传输 */
         int recv_size = 8;
 
+        memset(&sg->pkt, 0, recv_size);
         /* 如果无法分配空间，则退出。 */
         if (recvbuf == NULL) {
+            pthread_rwlock_unlock(&sg->rwlock);
             ERR_LOG("内存分配失败");
             return -1;
         }

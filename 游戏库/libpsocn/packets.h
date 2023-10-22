@@ -4511,7 +4511,7 @@ typedef struct bb_guild_special_item_list {
 // 1AEA: (S->C): ¹ºÂò¹«»áÌØµä
 typedef struct bb_guild_buy_special_item {
     bb_pkt_hdr_t hdr;
-    uint32_t item_num;
+    uint32_t entries_num;
     bb_guild_special_item_list_t entries[0];
 } PACKED bb_guild_buy_special_item_pkt;
 
@@ -4522,11 +4522,18 @@ typedef struct bb_guild_unk_1BEA {
     uint8_t data[];
 } PACKED bb_guild_unk_1BEA_pkt;
 
+typedef struct bb_guild_rank_item_list {
+    uint16_t guild_name[16];
+    uint32_t point_amount;
+    uint32_t padding;
+} PACKED bb_guild_rank_item_list_t;
+
 // 1CEA (C->S): Ranking information
 // No arguments
 typedef struct bb_guild_rank_list {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint32_t entries_num;
+    bb_guild_rank_item_list_t entries[0];
 } PACKED bb_guild_rank_list_pkt;
 
 // 1DEA (S->C): UNKNOW

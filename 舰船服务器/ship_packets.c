@@ -12748,7 +12748,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
         /* 0EEA */
-    case BB_GUILD_UNK_0EEA:
+    case BB_GUILD_GET_TARGET_GUILD_DATA:
         len = 0x0830 + sizeof(bb_pkt_hdr_t);
 
         memset(&pkt->data[0x00], 0, len);
@@ -12901,7 +12901,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         spec_item_list->hdr.pkt_type = cmd_code;
         spec_item_list->hdr.flags = 0x00000000;
 
-        spec_item_list->item_num = num;
+        spec_item_list->entries_num = num;
 
         print_ascii_hex(dbgl, spec_item_list, spec_item_list->hdr.pkt_len);
 
@@ -12910,14 +12910,21 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 1CEA */
     case BB_GUILD_RANKING_LIST:
         bb_guild_rank_list_pkt* menu = (bb_guild_rank_list_pkt*)sendbuf;
-        len = 0;
+        len = sizeof(bb_guild_rank_item_list_t);
 
-
+        num = 0;
+        for (i = 0; i < _countof(guild_special_items); ++i) {
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].guild_name, guild_special_items[i].item_name, sizeof(guild_special_items[i].item_name));
+            menu->entries[i].point_amount = guild_special_items[i].point_amount;
+            num++;
+        }
 
         /* Ìî³äÊý¾ÝÍ· */
-        menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+        menu->hdr.pkt_len = LE16(len * num + sizeof(bb_pkt_hdr_t));
         menu->hdr.pkt_type = cmd_code;
         menu->hdr.flags = 0;
+
+        menu->entries_num = num;
 
         print_ascii_hex(dbgl, menu, menu->hdr.pkt_len);
 

@@ -237,7 +237,7 @@
 #define BB_GUILD_UNK_0BEA                            0x0BEA
 #define BB_GUILD_UNK_0CEA                            0x0CEA
 #define BB_GUILD_INVITE                              0x0DEA
-#define BB_GUILD_UNK_0EEA                            0x0EEA
+#define BB_GUILD_GET_TARGET_GUILD_DATA               0x0EEA
 #define BB_GUILD_MEMBER_FLAG_SETTING                 0x0FEA
 #define BB_GUILD_DISSOLVE                            0x10EA
 #define BB_GUILD_MEMBER_PROMOTE                      0x11EA

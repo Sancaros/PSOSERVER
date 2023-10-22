@@ -2773,6 +2773,9 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint16_t num = 0;
+    void* result;
+    char** row;
 
     /* 更新BB公会排行榜 */
     if (db_update_bb_guild_ranks(&conn)) {
@@ -2783,24 +2786,52 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    if (len != sizeof(bb_guild_rank_list_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, (uint8_t*)g_data, len);
+    memset(myquery, 0, sizeof(myquery));
 
-        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
+    /* Figure out where the user requested is */
+    sprintf_s(myquery, sizeof(myquery), "SELECT * FROM %s"
+        , CLIENTS_GUILD
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("公会排行榜数据查询错误: %s", psocn_db_error(&conn));
         return 0;
     }
 
-    TEST_LOG("handle_bb_guild_rank_list guild_id = %u", pkt->fw_flags);
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        istrncpy(ic_utf8_to_utf16, (char*)g_data->entries[num].guild_name, "当前没有公会", sizeof(g_data->entries[num].guild_name));
+        g_data->entries[num].point_amount = 0;
+        num++;
+    }
+    else {
+        while ((row = psocn_db_result_fetch(result)) != NULL) {
+            // 假设我们要忽略 point_amount 小于等于 0 的行
+            int point_amount = atoi(row[2]);
+            if (point_amount < 0) {
+                continue; // 跳过该行不进行处理
+            }
+            char tmp_text[32] = { 0 };
+            sprintf_s(tmp_text, sizeof(tmp_text), "%02d.%s", num + 1, row[5]);
+            istrncpy(ic_utf8_to_utf16, (char*)g_data->entries[num].guild_name, tmp_text, sizeof(g_data->entries[num].guild_name));
+            g_data->entries[num].point_amount = point_amount;
+            num++;
+        }
+    }
+
+    /* 填充数据头 */
+    g_data->hdr.pkt_len = LE16(sizeof(bb_guild_rank_item_list_t) * num + sizeof(bb_pkt_hdr_t));
+    g_data->hdr.flags = 0;
+
+    g_data->entries_num = num;
+
+    //print_ascii_hex(dbgl, g_data, g_data->hdr.pkt_len);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
-
-    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2876,7 +2907,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_INVITE:
         return handle_bb_guild_invite_0DEA(c, pkt);
 
-    case BB_GUILD_UNK_0EEA:
+    case BB_GUILD_GET_TARGET_GUILD_DATA:
         return handle_bb_guild_unk_0EEA(c, pkt);
 
     case BB_GUILD_MEMBER_FLAG_SETTING:
