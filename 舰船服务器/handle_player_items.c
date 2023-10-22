@@ -1104,6 +1104,7 @@ void unwrap(item_t* item) {
     }
 }
 
+/* 使用背包物品操作 */
 int player_use_item(ship_client_t* src, uint32_t item_id) {
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &src->cur_block->sfmt_rng;
@@ -1913,6 +1914,7 @@ bool check_tekke_favored_weapon_by_section_id(uint8_t section, item_t* item) {
     return favored;
 }
 
+/* 鉴定背包物品操作 */
 ssize_t player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
     errno_t err = 0;
 

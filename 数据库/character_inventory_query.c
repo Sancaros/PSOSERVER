@@ -243,23 +243,58 @@ static int db_update_inv_ext_param(inventory_t* inv, uint32_t gc, uint8_t slot, 
 		filed = "ext2";
 		tbl_nm = CHARACTER_INVENTORY_ITEMS_EXT2;
 	}
+	else {
+		filed = "ext1";
+		tbl_nm = CHARACTER_INVENTORY_ITEMS_EXT1;
+	}
 
-	int i;
-	for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
-		uint8_t ext_val = inv->iitems[i].extension_data1;
-		if (isext2) {
-			ext_val = inv->iitems[i].extension_data2;
-		}
-		snprintf(myquery, sizeof(myquery), "UPDATE %s SET %s_%d = '%02X' WHERE guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'"
+	//_snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+	//	"guildcard, slot, change_time, "
+	//	"%s_0, %s_1, %s_2, %s_3, %s_4, "
+	//	"%s_5, %s_6, %s_7, %s_8, %s_9, "
+	//	"%s_10, %s_11, %s_12, %s_13, %s_14, "
+	//	"%s_15, %s_16, %s_17, %s_18, %s_19, "
+	//	"%s_20, %s_21, %s_22, %s_23, %s_24, "
+	//	"%s_25, %s_26, %s_27, %s_28, %s_29"
+	//	") VALUES ("
+	//	"'%" PRIu32 "', '%" PRIu8 "', NOW(), "
+	//	"'%02X', '%02X', '%02X', '%02X', '%02X', "
+	//	"'%02X', '%02X', '%02X', '%02X', '%02X', "
+	//	"'%02X', '%02X', '%02X', '%02X', '%02X', "
+	//	"'%02X', '%02X', '%02X', '%02X', '%02X', "
+	//	"'%02X', '%02X', '%02X', '%02X', '%02X', "
+	//	"'%02X', '%02X', '%02X', '%02X', '%02X'"
+	//	")"
+	//	, tbl_nm
+	//	, filed, filed, filed, filed, filed
+	//	, filed, filed, filed, filed, filed
+	//	, filed, filed, filed, filed, filed
+	//	, filed, filed, filed, filed, filed
+	//	, filed, filed, filed, filed, filed
+	//	, filed, filed, filed, filed, filed
+	//	, gc, slot
+	//	, inv->iitems[0].extension_data1, inv->iitems[1].extension_data1, inv->iitems[2].extension_data1, inv->iitems[3].extension_data1, inv->iitems[4].extension_data1
+	//	, inv->iitems[5].extension_data1, inv->iitems[6].extension_data1, inv->iitems[7].extension_data1, inv->iitems[8].extension_data1, inv->iitems[9].extension_data1
+	//	, inv->iitems[10].extension_data1, inv->iitems[11].extension_data1, inv->iitems[12].extension_data1, inv->iitems[13].extension_data1, inv->iitems[14].extension_data1
+	//	, inv->iitems[15].extension_data1, inv->iitems[16].extension_data1, inv->iitems[17].extension_data1, inv->iitems[18].extension_data1, inv->iitems[19].extension_data1
+	//	, inv->iitems[20].extension_data1, inv->iitems[21].extension_data1, inv->iitems[22].extension_data1, inv->iitems[23].extension_data1, inv->iitems[24].extension_data1
+	//	, inv->iitems[25].extension_data1, inv->iitems[26].extension_data1, inv->iitems[27].extension_data1, inv->iitems[28].extension_data1, inv->iitems[29].extension_data1
+	//);
+
+	//if (psocn_db_real_query(&conn, myquery)) {
+	//	SQLERR_LOG("无法更新角色背包额外 %d 数据 (GC%" PRIu32 ":%" PRIu8 "槽)", isext2 + 1, gc, slot);
+	//	return -1;
+	//}
+
+	for (size_t i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+		_snprintf(myquery, sizeof(myquery), "UPDATE %s SET %s_%d = '%02X' WHERE guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'"
 			, tbl_nm
 			, filed
 			, i
-			, ext_val
+			, isext2 ? inv->iitems[i].extension_data2 : inv->iitems[i].extension_data1
 			, gc
 			, slot
 		);
-
-		//DBG_LOG("extval 0x%02X", ext_val);
 
 		if (psocn_db_real_query(&conn, myquery)) {
 			SQLERR_LOG("无法更新角色背包额外%d 第%d数据 (GC%" PRIu32 ":%" PRIu8 "槽)", isext2 + 1, i, gc, slot);
@@ -506,7 +541,8 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 			int i = 4;
 			inv->iitems[k].present = (uint16_t)strtoul(row[i], &endptr, 16);
 			i++;
-			//DBG_LOG("0x%04X", inv->iitems[k].present);
+			//DBG_LOG("extension_data1 %d 0x%02X", k, inv->iitems[k].extension_data1);
+			//DBG_LOG("extension_data2 %d 0x%02X", k, inv->iitems[k].extension_data2);
 			inv->iitems[k].flags = (uint32_t)strtoul(row[i], &endptr, 16);
 			i++;
 			//DBG_LOG("0x%08X", inv->iitems[k].flags);
@@ -667,11 +703,11 @@ static int db_get_char_ext_data(uint32_t gc, uint8_t slot, inventory_t* inv, int
 	for (int i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
 		if (!isext2) {
 			inv->iitems[i].extension_data1 = (uint8_t)strtoul(row[i2], NULL, 16);
-			//DBG_LOG("EXT1 0x%02X", inv->iitems[i].extension_data1);
+			//DBG_LOG("extension_data1 %d 0x%02X 数据 i2 %d", i, inv->iitems[i].extension_data1, i2);
 		}
 		else {
 			inv->iitems[i].extension_data2 = (uint8_t)strtoul(row[i2], NULL, 16);
-			//DBG_LOG("EXT2 0x%02X", inv->iitems[i].extension_data2);
+			//DBG_LOG("extension_data2 %d 0x%02X 数据 i2 %d", i, inv->iitems[i].extension_data2, i2);
 		}
 
 		i2++;

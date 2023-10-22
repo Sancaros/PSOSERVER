@@ -156,6 +156,27 @@ typedef union {
     bb_player_t bb;
 } player_t;
 
+/*在这个枚举类型中，它定义了以下8个可枚举的常量值:
+
+MATERIAL_HP 的值为 - 2
+MATERIAL_TP 的值为 - 1
+MATERIAL_POWER 的值为 0
+MATERIAL_MIND 的值为 1
+MATERIAL_EVADE 的值为 2
+MATERIAL_DEF 的值为 3
+MATERIAL_LUCK 的值为 4
+
+因此，表达式 8 + which 可以得到以下情况的值 :
+
+如果 which 的值为 - 2，则结果为 6
+如果 which 的值为 - 1，则结果为 7
+如果 which 的值为 0，则结果为 8
+如果 which 的值为 1，则结果为 9
+如果 which 的值为 2，则结果为 10
+如果 which 的值为 3，则结果为 11
+如果 which 的值为 4，则结果为 12
+
+所以，在每个情况下，表达式的值增加了8。*/
 typedef enum {
     MATERIAL_HP = -2,
     MATERIAL_TP = -1,

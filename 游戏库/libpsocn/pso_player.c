@@ -121,22 +121,15 @@ void set_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, ui
 		inv->iitems[which].extension_data1 = 0x00;
 	}
 	else {
-		technique_levels_v1->all[which] = (level <= TECHNIQUE_V1_MAX_LEVEL) ? level : TECHNIQUE_V1_MAX_LEVEL;
+		technique_levels_v1->all[which] = (level > TECHNIQUE_V1_MAX_LEVEL) ? TECHNIQUE_V1_MAX_LEVEL : level;
 		inv->iitems[which].extension_data1 = (level > TECHNIQUE_V1_MAX_LEVEL) ? (level - TECHNIQUE_V1_MAX_LEVEL) : 0x00;
 	}
 }
 
 uint8_t get_technique_level(techniques_t* technique_levels_v1, inventory_t* inv, uint8_t which) {
-	uint8_t tech_level = TECHNIQUE_UNLEARN;
-	if (technique_levels_v1->all[which] == TECHNIQUE_UNLEARN) {
-		inv->iitems[which].extension_data1 = 0x00;
-		tech_level = TECHNIQUE_UNLEARN;
-	}
-	else if (technique_levels_v1->all[which] <= TECHNIQUE_V1_MAX_LEVEL) {
-		tech_level = technique_levels_v1->all[which] + inv->iitems[which].extension_data1;
-	}
-
-	return tech_level;
+	return (technique_levels_v1->all[which] == TECHNIQUE_UNLEARN)
+		? TECHNIQUE_UNLEARN :
+		technique_levels_v1->all[which] + inv->iitems[which].extension_data1;
 }
 
 uint8_t get_material_usage(inventory_t* inv, MaterialType which) {
@@ -154,7 +147,7 @@ uint8_t get_material_usage(inventory_t* inv, MaterialType which) {
 		case MATERIAL_EVADE:
 		case MATERIAL_DEF:
 		case MATERIAL_LUCK:
-			return inv->iitems[8 + (uint8_t)which].extension_data2;
+			return inv->iitems[8 + which].extension_data2;
 
 		default:
 			ERR_LOG("玩家吃药类型不支持 %d", which);
@@ -185,7 +178,7 @@ void set_material_usage(inventory_t* inv, MaterialType which, uint8_t usage) {
 		case MATERIAL_EVADE:
 		case MATERIAL_DEF:
 		case MATERIAL_LUCK:
-			inv->iitems[8 + (uint8_t)which].extension_data2 = usage;
+			inv->iitems[8 + which].extension_data2 = usage;
 			break;
 
 		default:
@@ -201,6 +194,6 @@ void clear_all_material_usage(inventory_t* inv) {
 	inv->hpmats_used = 0;
 	inv->tpmats_used = 0;
 	for (size_t z = 0; z < 5; z++) {
-		inv->iitems[z + 8].extension_data2 = 0;
+		inv->iitems[8 + z].extension_data2 = 0;
 	}
 }
