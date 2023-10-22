@@ -2747,13 +2747,14 @@ static int handle_bb_guild_buy_special_item(ship_t* c, shipgate_fw_9_pkt* pkt) {
 }
 
 /* 处理 Blue Burst 公会  */
-static int handle_bb_guild_unk_1BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    bb_guild_unk_1BEA_pkt* g_data = (bb_guild_unk_1BEA_pkt*)pkt->pkt;
+static int handle_bb_guild_unlock_special_item(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unlock_special_item_pkt* g_data = (bb_guild_unlock_special_item_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t item_id = g_data->hdr.flags;
 
-    if (len != sizeof(bb_guild_unk_1BEA_pkt)) {
+    if (len != sizeof(bb_guild_unlock_special_item_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_ascii_hex(errl, (uint8_t*)g_data, len);
 
@@ -2762,7 +2763,33 @@ static int handle_bb_guild_unk_1BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    int guild_id = db_get_bb_char_guild_id(sender);
+
+    DBG_LOG("%d", guild_id);
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf_s(myquery, sizeof(myquery), "UPDATE %s SET "
+        "guild_reward0 = '%u'"
+        " WHERE "
+        "guild_id = '%" PRIu32 "'"
+        , CLIENTS_GUILD
+        , item_id
+        , guild_id
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("公会特典数据更新错误: %s", psocn_db_error(&conn));
+        return 0;
+    }
+
     print_ascii_hex(dbgl, (uint8_t*)g_data, len);
+
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
+        return 0;
+    }
 
     return 0;
 }
@@ -2788,7 +2815,6 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     memset(myquery, 0, sizeof(myquery));
 
-    /* Figure out where the user requested is */
     sprintf_s(myquery, sizeof(myquery), "SELECT * FROM %s"
         , CLIENTS_GUILD
     );
@@ -2946,8 +2972,8 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_BUY_SPECIAL_ITEM:
         return handle_bb_guild_buy_special_item(c, pkt);
 
-    case BB_GUILD_UNLOCK_GUILD_SPECIAL_ITEM:
-        return handle_bb_guild_unk_1BEA(c, pkt);
+    case BB_GUILD_UNLOCK_SPECIAL_ITEM:
+        return handle_bb_guild_unlock_special_item(c, pkt);
 
     case BB_GUILD_RANKING_LIST:
         return handle_bb_guild_rank_list(c, pkt);

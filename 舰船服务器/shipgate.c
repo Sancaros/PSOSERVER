@@ -1105,7 +1105,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         }
                         break;
 
-                    case BB_GUILD_UNLOCK_GUILD_SPECIAL_ITEM:
+                    case BB_GUILD_UNLOCK_SPECIAL_ITEM:
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);

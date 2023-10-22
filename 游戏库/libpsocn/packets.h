@@ -4517,10 +4517,10 @@ typedef struct bb_guild_buy_special_item {
 
 // 1BEA (C->S): 购买公会特典完成 扣除点数
 // header.flag is used, but no other arguments
-typedef struct bb_guild_unk_1BEA {
+typedef struct bb_guild_unlock_special_item {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
-} PACKED bb_guild_unk_1BEA_pkt;
+} PACKED bb_guild_unlock_special_item_pkt;
 
 typedef struct bb_guild_rank_item_list {
     uint16_t guild_name[16];
