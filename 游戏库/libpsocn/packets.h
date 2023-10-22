@@ -4526,10 +4526,7 @@ typedef struct bb_guild_unk_1BEA {
 // No arguments
 typedef struct bb_guild_rank_list {
     bb_pkt_hdr_t hdr;
-    struct {//4+4+2+4+34 48
-        uint32_t index;
-        uint16_t guild_name[0x000E];
-    } entries[0];
+    uint8_t data[];
 } PACKED bb_guild_rank_list_pkt;
 
 // 1DEA (S->C): UNKNOW

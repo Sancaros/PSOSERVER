@@ -666,6 +666,57 @@ void bswap_data2_if_mag(item_t* item) {
     }
 }
 
+void decode_if_mag(item_t* item, int from_version) {
+    if (item->datab[0] == ITEM_TYPE_MAG) {
+        if (from_version == CLIENT_VERSION_GC) {
+            // PSO GC erroneously byteswaps the data2d field, even though it's actually
+            // just four individual bytes, so we correct for that here.
+            item->data2l = bswap32(item->data2l);
+        }
+        else if (from_version == CLIENT_VERSION_DCV1 || from_version == CLIENT_VERSION_DCV2 || from_version == CLIENT_VERSION_PC) {
+            // PSO PC encodes mags in a tediously annoying manner. The first four bytes are the same, but then...
+            // V2: pHHHHHHHHHHHHHHc pIIIIIIIIIIIIIIc JJJJJJJJJJJJJJJc KKKKKKKKKKKKKKKc QQQQQQQQ QQQQQQQQ YYYYYYYY pYYYYYYY
+            // V3: HHHHHHHHHHHHHHHH IIIIIIIIIIIIIIII JJJJJJJJJJJJJJJJ KKKKKKKKKKKKKKKK YYYYYYYY QQQQQQQQ PPPPPPPP CCCCCCCC
+            // c = color in V2 (4 bits; low bit first)
+            // C = color in V3
+            // p = PB flag bits in V2 (3 bits; ordered 1, 2, 0)
+            // P = PB flag bits in V3
+            // H, I, J, K = DEF, POW, DEX, MIND
+            // Q = IQ (little-endian in V2)
+            // Y = synchro (little-endian in V2)
+
+            // Order is important; data2[0] must not be written before data2w[0] is read
+            item->data2b[1] = (uint8_t)item->data2w[0]; // IQ
+            item->data2b[0] = item->data2w[1] & 0x7FFF; // Synchro
+            item->data2b[2] = ((item->data2b[3] >> 7) & 1) | ((item->dataw[2] >> 14) & 2) | ((item->dataw[3] >> 13) & 4); // PB flags
+            item->data2b[3] = (item->dataw[2] & 1) | ((item->dataw[3] & 1) << 1) | ((item->dataw[4] & 1) << 2) | ((item->dataw[5] & 1) << 3); // Color
+            item->dataw[2] &= 0x7FFE;
+            item->dataw[3] &= 0x7FFE;
+            item->dataw[4] &= 0xFFFE;
+            item->dataw[5] &= 0xFFFE;
+        }
+    }
+}
+
+void encode_if_mag(item_t* item, int to_version) {
+    if (item->datab[0] == ITEM_TYPE_MAG) {
+        // This function is the inverse of decode_v2_mag; see that function for a
+        // description of what's going on here.
+        if (to_version == CLIENT_VERSION_GC) {
+            item->data2l = bswap32(item->data2l);
+        }
+        else if (to_version == CLIENT_VERSION_DCV1 || to_version == CLIENT_VERSION_DCV2 || to_version == CLIENT_VERSION_PC) {
+            item->dataw[2] = (item->dataw[2] & 0x7FFE) | ((item->data2b[2] << 14) & 0x8000) | (item->data2b[3] & 1);
+            item->dataw[3] = (item->dataw[3] & 0x7FFE) | ((item->data2b[2] << 13) & 0x8000) | ((item->data2b[3] >> 1) & 1);
+            item->dataw[4] = (item->dataw[4] & 0xFFFE) | ((item->data2b[3] >> 2) & 1);
+            item->dataw[5] = (item->dataw[5] & 0xFFFE) | ((item->data2b[3] >> 3) & 1);
+            // Order is important; data2w[0] must not be written before data2[0] is read
+            item->data2w[1] = item->data2b[0] | ((item->data2b[2] << 15) & 0x8000);
+            item->data2w[0] = item->data2b[1];
+        }
+    }
+}
+
 int add_character_meseta(psocn_bb_char_t* character, uint32_t amount) {
     uint32_t max_meseta = MAX_PLAYER_MESETA;
 #ifdef DEBUG

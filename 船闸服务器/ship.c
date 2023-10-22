@@ -2915,7 +2915,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_BUY_SPECIAL_ITEM:
         return handle_bb_guild_buy_special_item(c, pkt);
 
-    case BB_GUILD_UNK_1BEA:
+    case BB_GUILD_UNLOCK_GUILD_SPECIAL_ITEM:
         return handle_bb_guild_unk_1BEA(c, pkt);
 
     case BB_GUILD_RANKING_LIST:

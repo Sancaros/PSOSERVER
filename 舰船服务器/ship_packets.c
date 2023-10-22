@@ -12500,9 +12500,7 @@ int send_bb_execute_item_trade(ship_client_t* c, trade_inv_t* tinv) {
     pkt->item_count = tinv->trade_item_count;
     for (size_t x = 0; x < tinv->trade_item_count; x++) {
         pkt->items[x] = tinv->items[x];
-        if (c->version == CLIENT_VERSION_GC) {
-            bswap_data2_if_mag(&pkt->items[x]);
-        }
+        encode_if_mag(&pkt->items[x], c->version);
     }
     pkt->hdr.pkt_type = TRADE_3_TYPE;
     pkt->hdr.flags = 0x00;
@@ -12912,22 +12910,16 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 1CEA */
     case BB_GUILD_RANKING_LIST:
         bb_guild_rank_list_pkt* menu = (bb_guild_rank_list_pkt*)sendbuf;
-
-        /* 初始化数据包 */
-        memset(menu, 0, len);
-
         len = 0;
 
-        /* 填充菜单实例 */
-        for (i = 0; i < 1; ++i) {
-            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].guild_name, "1111111", 28);
-            len += 28;
-        }
+
 
         /* 填充数据头 */
         menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
         menu->hdr.pkt_type = cmd_code;
-        menu->hdr.flags = 0x00000000;
+        menu->hdr.flags = 0;
+
+        print_ascii_hex(dbgl, menu, menu->hdr.pkt_len);
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)menu);

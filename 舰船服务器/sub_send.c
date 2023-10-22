@@ -97,9 +97,6 @@ int subcmd_send_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, litem_t*
 
     bb.two = dc.two = LE32(0x00000002);
 
-    if (src->version == CLIENT_VERSION_GC)
-        bswap_data2_if_mag(&dc.data);
-
     LOBBY_DROPITEM_LOG(src, litem->item.item_id, src->cur_area, &litem->item);
 
     switch (src->version) {
@@ -109,9 +106,11 @@ int subcmd_send_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, litem_t*
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
+        encode_if_mag(&dc.data, src->version);
         return send_pkt_dc(src, (dc_pkt_hdr_t*)&dc);
 
     case CLIENT_VERSION_BB:
+        decode_if_mag(&bb.data, src->version);
         return send_pkt_bb(src, (bb_pkt_hdr_t*)&bb);
 
     default:
@@ -157,9 +156,6 @@ int subcmd_send_drop_stack_dc(ship_client_t* src,
 
     bb.two = dc.two = LE32(0x00000002);
 
-    if (src->version == CLIENT_VERSION_GC)
-        bswap_data2_if_mag(&dc.data);
-
     LOBBY_DROPITEM_LOG(src, item.item_id, src->cur_area, &item);
 
     switch (src->version) {
@@ -169,9 +165,11 @@ int subcmd_send_drop_stack_dc(ship_client_t* src,
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
+        encode_if_mag(&dc.data, src->version);
         return send_pkt_dc(src, (dc_pkt_hdr_t*)&dc);
 
     case CLIENT_VERSION_BB:
+        decode_if_mag(&bb.data, src->version);
         return send_pkt_bb(src, (bb_pkt_hdr_t*)&bb);
 
     default:
@@ -224,9 +222,6 @@ int subcmd_send_lobby_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, sh
 
     bb.two = dc.two = LE32(0x00000002);
 
-    if (src->version == CLIENT_VERSION_GC)
-        bswap_data2_if_mag(&dc.data);
-
     LOBBY_DROPITEM_LOG(src, litem->item.item_id, src->cur_area, &litem->item);
 
     switch (src->version) {
@@ -236,9 +231,11 @@ int subcmd_send_lobby_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, sh
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
+        encode_if_mag(&dc.data, src->version);
         return lobby_send_pkt_dc(l, nosend, (dc_pkt_hdr_t*)&dc, 0);
 
     case CLIENT_VERSION_BB:
+        decode_if_mag(&bb.data, src->version);
         return lobby_send_pkt_bb(l, nosend, (bb_pkt_hdr_t*)&bb, 0);
 
     default:
@@ -292,9 +289,6 @@ int subcmd_send_lobby_drop_stack_dc(ship_client_t* src,
 
     bb.two = dc.two = LE32(0x00000002);
 
-    if (src->version == CLIENT_VERSION_GC)
-        bswap_data2_if_mag(&dc.data);
-
     LOBBY_DROPITEM_LOG(src, item.item_id, src->cur_area, &item);
 
     switch (src->version) {
@@ -304,9 +298,11 @@ int subcmd_send_lobby_drop_stack_dc(ship_client_t* src,
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
+        encode_if_mag(&dc.data, src->version);
         return lobby_send_pkt_dc(l, nosend, (dc_pkt_hdr_t*)&dc, 0);
 
     case CLIENT_VERSION_BB:
+        decode_if_mag(&bb.data, src->version);
         return lobby_send_pkt_bb(l, nosend, (bb_pkt_hdr_t*)&bb, 0);
 
     default:

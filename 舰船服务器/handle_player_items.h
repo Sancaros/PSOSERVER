@@ -62,7 +62,8 @@ int find_equipped_weapon(const inventory_t* inv);
 int find_equipped_armor(const inventory_t* inv);
 int find_equipped_mag(const inventory_t* inv);
 
-void bswap_data2_if_mag(item_t* item);
+void decode_if_mag(item_t* item, int from_version);
+void encode_if_mag(item_t* item, int to_version);
 
 /* 玩家美赛塔操作 内存操作 */
 int add_character_meseta(psocn_bb_char_t* character, uint32_t amount);

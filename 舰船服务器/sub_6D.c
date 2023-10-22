@@ -175,7 +175,7 @@ int sub6D_70_dc(ship_client_t* src, ship_client_t* dest,
 
             /* If the item is a mag, then we have to swap the last dword of the
                 data. Otherwise colors and stats get messed up. */
-            bswap_data2_if_mag(&item->data);
+            encode_if_mag(&item->data, src->version);
         }
     }
 
@@ -276,7 +276,7 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
             item = &pkt->inv.iitems[i];
 
             /* 如果项目是mag,那么我们必须交换数据的最后一个dword.否则,颜色和统计数据会变得一团糟 */
-            bswap_data2_if_mag(&item->data);
+            encode_if_mag(&item->data, src->version);
         }
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pkt);

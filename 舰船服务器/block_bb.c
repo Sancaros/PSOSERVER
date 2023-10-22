@@ -1955,8 +1955,7 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         for (size_t x = 0; x < src_trade->trade_item_count; x++) {
             src_trade->items[x] = pkt->items[x];
             item_t* ti = &src_trade->items[x];
-            if (src->version == CLIENT_VERSION_GC)
-                bswap_data2_if_mag(ti);
+            encode_if_mag(ti, src->version);
 
             if (ti->datab[0] == 0x04) {
                 ti->item_id = 0xFFFFFFFF;
@@ -3072,7 +3071,7 @@ static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unk_1BEA_pkt* pk
         return -1;
     }
 
-    print_ascii_hex(errl, pkt, len);
+    print_ascii_hex(dbgl, pkt, len);
 
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
@@ -3200,7 +3199,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_BUY_SPECIAL_ITEM:
         return process_bb_guild_buy_special_item(c, (bb_guild_buy_special_item_pkt*)pkt);
 
-    case BB_GUILD_UNK_1BEA:
+    case BB_GUILD_UNLOCK_GUILD_SPECIAL_ITEM:
         return process_bb_guild_unk_1BEA(c, (bb_guild_unk_1BEA_pkt*)pkt);
 
     case BB_GUILD_RANKING_LIST:
