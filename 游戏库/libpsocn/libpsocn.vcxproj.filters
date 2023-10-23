@@ -115,7 +115,7 @@
     <ClInclude Include="pso_items_hopkins_exchange_lish.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="pso_guild_special_item_list.h">
+    <ClInclude Include="pso_guild_privilege_item_list.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

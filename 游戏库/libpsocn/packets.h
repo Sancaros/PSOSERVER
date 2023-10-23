@@ -4366,34 +4366,28 @@ struct S_Unknown_BB_0CEA {
 // No arguments
 typedef struct bb_guild_invite_0DEA {
     bb_pkt_hdr_t hdr;
-    uint32_t guild_id;
-    uint32_t guildcard;
+    uint32_t guild_owner_gc;/* 0x08 */
+    uint32_t guild_id;/* 0x0C */
+    uint32_t guild_points_rank;
+    uint32_t guild_points_rest;
+    uint32_t guild_priv_level;
+    uint16_t guild_name[0x000E];
+    uint32_t guild_rank;
+    uint8_t guild_flag[0x0800];            // 公会图标
     uint8_t data[];
 } PACKED bb_guild_invite_0DEA_pkt;
 
-// 0EEA (S->C): Unknown
-typedef struct bb_guild_unk_0EEA {
+// 0EEA (S->C): 获取目标公会数据
+typedef struct bb_guild_get_data {
     bb_pkt_hdr_t hdr;                      // 0x00 - 0x07
     uint32_t guildcard;                    // 0x08 - 0x0B
     uint32_t guild_id;                     // 0x0C - 0x0F
-    uint8_t guild_info[8];                 // 0x10 - 0x17
+    uint32_t guild_points_rank;
+    uint32_t guild_points_rest;
     uint16_t guild_name[0x000E];           // 0x18 - 0x1C
-    uint16_t unk_flag;
+    uint32_t guild_rank;
     uint8_t guild_flag[0x0800];            // 公会图标
-    uint8_t unk2;
-    uint8_t unk3;
-} PACKED bb_guild_unk_0EEA_pkt;
-
-//不带函数头的数据包结构
-typedef struct bb_guild_0EEA {
-    uint32_t guildcard;                    // 02B8         4
-    uint32_t guild_id;                     // 02BC
-    uint8_t guild_info[8];                 // 公会信息     8
-    uint16_t guild_name[0x000E];           // 02CC
-    uint16_t unk_flag;
-    uint8_t guild_flag[0x0800];            // 公会图标
-    uint8_t panding;
-} PACKED bb_guild_0EEA_pkt;
+} PACKED bb_guild_get_data_pkt;
 
 // 0FEA (C->S): 设置公会旗帜
 typedef struct bb_guild_member_flag_setting {
@@ -4416,17 +4410,18 @@ typedef struct bb_guild_member_promote {
     uint32_t target_guildcard;
 } PACKED bb_guild_member_promote_pkt;
 
-// 12EA (S->C): Unknown
-typedef struct bb_guild_unk_12EA {
+// 12EA (S->C): 公会初始数据
+typedef struct bb_guild_init_data {
     bb_pkt_hdr_t hdr;
-    uint32_t unk; // Command is ignored unless this is 0
-    uint32_t guildcard;
+    uint32_t is_aready_in_guild; // Command is ignored unless this is 0
+    uint32_t guild_owner_gc;
     uint32_t guild_id;
-    uint8_t guild_info[8];
+    uint32_t guild_points_rank;
+    uint32_t guild_points_rest;
     uint32_t guild_priv_level;
     uint16_t guild_name[0x000E];
     uint32_t guild_rank;
-} PACKED bb_guild_unk_12EA_pkt;
+} PACKED bb_guild_init_data_pkt;
 
 typedef struct bb_guild_lobby_client {
     uint32_t guild_owner_gc;
@@ -4439,7 +4434,6 @@ typedef struct bb_guild_lobby_client {
     uint32_t client_guildcard;
     uint32_t client_id;
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
-    //uint8_t guild_reward[8];
     uint8_t guild_flag[0x0800];
 } PACKED bb_guild_lobby_client_t;
 
@@ -4447,14 +4441,13 @@ typedef struct bb_guild_lobby_client {
 // header.flag specifies the number of entries.
 typedef struct bb_guild_lobby_setting {
     bb_pkt_hdr_t hdr;
-    bb_guild_lobby_client_t entries[0];
+    bb_guild_lobby_client_t entires[0];
 } PACKED bb_guild_lobby_setting_pkt;
 
 // 14EA (C->S): 玩家头衔反馈
 // No arguments. Client always sends 1 in the header.flag field.
 typedef struct bb_guild_member_tittle {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
 } PACKED bb_guild_member_tittle_pkt;
 
 // 15EA (S->C): BB 玩家整体公会数据 用于发送给其他玩家
@@ -4501,39 +4494,38 @@ typedef struct bb_guild_privilege_list {
     uint8_t data[];
 } PACKED bb_guild_privilege_list_pkt;
 
-typedef struct bb_guild_special_item_list {
+typedef struct bb_guild_privilege_item_entry {
     uint16_t item_name[64];
     uint16_t item_desc[128];
     uint32_t point_amount;
     uint32_t item_id;
-} PACKED bb_guild_special_item_list_t;
+} PACKED bb_guild_privilege_item_entry_t;
 
-// 1AEA: (S->C): 购买公会特典
-typedef struct bb_guild_buy_special_item {
+// 1AEA: (S->C): 可购买公会特典列表
+typedef struct bb_guild_req_privilege_items {
     bb_pkt_hdr_t hdr;
     uint32_t entries_num;
-    bb_guild_special_item_list_t entries[0];
-} PACKED bb_guild_buy_special_item_pkt;
+    bb_guild_privilege_item_entry_t entries[0];
+} PACKED bb_guild_req_privilege_items_list_pkt;
 
-// 1BEA (C->S): 购买公会特典完成 扣除点数
-// header.flag is used, but no other arguments
-typedef struct bb_guild_unlock_special_item {
+// 1BEA (C->S->C): 购买公会特典完成 扣除点数
+// header.flag 是购买的特典item_id
+typedef struct bb_guild_unlock_privilege_item {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
-} PACKED bb_guild_unlock_special_item_pkt;
+} PACKED bb_guild_unlock_privilege_item_pkt;
 
-typedef struct bb_guild_rank_item_list {
-    uint16_t guild_name[16];
+typedef struct bb_guild_rank_entry {
+    uint16_t guild_name[0x10];
     uint32_t point_amount;
     uint32_t padding;
-} PACKED bb_guild_rank_item_list_t;
+} PACKED bb_guild_rank_entry_t;
 
-// 1CEA (C->S): Ranking information
-// No arguments
+// 1CEA (C->S->C): Ranking information
+// 客户端发回请求只有hdr,服务端要返回对应的数据
 typedef struct bb_guild_rank_list {
     bb_pkt_hdr_t hdr;
     uint32_t entries_num;
-    bb_guild_rank_item_list_t entries[0];
+    bb_guild_rank_entry_t entries[0];
 } PACKED bb_guild_rank_list_pkt;
 
 // 1DEA (S->C): UNKNOW
@@ -4548,6 +4540,13 @@ typedef struct bb_guild_unk_1EEA {
     bb_pkt_hdr_t hdr;
     uint16_t unknown_a1[0x10];
 } PACKED bb_guild_unk_1EEA_pkt;
+
+// 1FEA (S->C): Unknown
+// header.flag must be in the range [0, 6]. If it isn't, the command is ignored.
+// No other arguments.
+typedef struct bb_guild_unk_1FEA {
+    bb_pkt_hdr_t hdr;
+} PACKED bb_guild_unk_1FEA_pkt;
 
 // 20EA (C->S): Unknown
 // header.flag is used, but no other arguments

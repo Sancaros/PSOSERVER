@@ -177,8 +177,8 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                     guild.data.guild_points_rest = (uint32_t)strtoul(row[3], NULL, 10);
                     guild.data.guild_priv_level = guild_priv_level;
                     /* 赋予名称颜色代码 */
-                    guild.data.guild_name[0] = 0x0009;
-                    guild.data.guild_name[1] = 0x0045;
+                    guild.data.guild_name[0] = 0x0050;
+                    guild.data.guild_name[1] = 0x0073;
                     memcpy(&guild.data.guild_name, row[4], sizeof(guild.data.guild_name) - 4);
 
                     /* TODO 公会等级未实现 */
@@ -206,8 +206,8 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 guild.data.guild_points_rest = 0;
                 guild.data.guild_priv_level = guild_priv_level;
                 /* 赋予名称颜色代码 */
-                guild.data.guild_name[0] = 0x0009;
-                guild.data.guild_name[1] = 0x0045;
+                guild.data.guild_name[0] = 0x0050;
+                guild.data.guild_name[1] = 0x0073;
                 memcpy(&guild.data.guild_name, L"公会数据错误", 14);
 
                 //guild.data.guild_rank = 0; // ?? 应该是排行榜未完成的参数了

@@ -20,13 +20,13 @@
 
 #include <stdint.h>
 
-typedef struct bb_guild_special_items {
+typedef struct bb_guild_privilege_items {
     char item_name[64];
     char item_desc[128];
     uint32_t point_amount;
-} bb_guild_special_items_t;
+} bb_guild_privilege_items_t;
 
-static const bb_guild_special_items_t guild_special_items[] = {
+static const bb_guild_privilege_items_t guild_privilege_items[] = {
     {"测试专用", "\tE\tC6解锁公会的功能.", 0},
     {"公会标志", "\tE\tC6解锁公会的标志功能,只有会长可以更改公会标志.", 1000},
     {"更衣室", "\tE\tC6解锁公会的更衣室功能.", 1000},

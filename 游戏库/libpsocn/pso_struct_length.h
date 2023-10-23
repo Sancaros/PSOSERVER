@@ -40,7 +40,7 @@
 #define PSOCN_STLENGTH_DRESS                    80
 
 #define PSOCN_STLENGTH_BB_MINI_CHAR             124
-#define PSOCN_STLENGTH_BB_FULL_CHAR             14748
+#define PSOCN_STLENGTH_BB_FULL_CHAR             14752
 //#define PSOCN_STLENGTH_BB_DB_CHAR             7912
 #define PSOCN_STLENGTH_BB_DB_CHAR               7908
 

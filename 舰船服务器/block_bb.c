@@ -2459,6 +2459,9 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
     DBG_LOG("目标 GC %u 邀请人:GUILD ID %u 权限 0x%02X", target_gc, c->bb_guild->data.guild_id, c->bb_guild->data.guild_priv_level);
 #endif // DEBUG
 
+    print_ascii_hex(dbgl, pkt, len);
+    DBG_LOG("目标 GC %u 邀请人:GUILD ID %u 权限 0x%02X", target_gc, c->bb_guild->data.guild_id, c->bb_guild->data.guild_priv_level);
+
     if (c->bb_guild->data.guild_id <= 0)
         return 0;
 
@@ -2616,12 +2619,6 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_06EA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
-
     print_ascii_hex(errl, pkt, len);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
@@ -2656,12 +2653,6 @@ static int process_bb_guild_unk_09EA(ship_client_t* c, bb_guild_unk_09EA_pkt* pk
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_09EA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
-
     print_ascii_hex(errl, pkt, len);
 
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
@@ -2671,12 +2662,6 @@ static int process_bb_guild_unk_0AEA(ship_client_t* c, bb_guild_unk_0AEA_pkt* pk
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_0AEA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
-
     print_ascii_hex(errl, pkt, len);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
@@ -2684,12 +2669,6 @@ static int process_bb_guild_unk_0AEA(ship_client_t* c, bb_guild_unk_0AEA_pkt* pk
 static int process_bb_guild_unk_0BEA(ship_client_t* c, bb_guild_unk_0BEA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_guild_unk_0BEA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
 
     print_ascii_hex(errl, pkt, len);
 
@@ -2700,12 +2679,6 @@ static int process_bb_guild_unk_0CEA(ship_client_t* c, bb_guild_unk_0CEA_pkt* pk
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_0CEA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
-
     print_ascii_hex(errl, pkt, len);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
@@ -2714,12 +2687,10 @@ static int process_bb_guild_invite_0DEA(ship_client_t* c, bb_guild_invite_0DEA_p
     //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    print_ascii_hex(errl, pkt, len);
-
-    return send_bb_guild_cmd(c, BB_GUILD_GET_TARGET_GUILD_DATA);
+    return send_bb_guild_cmd(c, BB_GUILD_GET_TARGET_DATA);
 }
 
-static int process_bb_guild_unk_0EEA(ship_client_t* c, bb_guild_unk_0EEA_pkt* pkt) {
+static int process_bb_guild_unk_0EEA(ship_client_t* c, bb_guild_get_data_pkt* pkt) {
     //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -2861,15 +2832,9 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
     return 0;
 }
 
-static int handle_bb_guild_initialization_data(ship_client_t* c, bb_guild_unk_12EA_pkt* pkt) {
+static int handle_bb_guild_initialization_data(ship_client_t* c, bb_guild_init_data_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_guild_unk_12EA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
 
     print_ascii_hex(errl, pkt, len);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
@@ -2879,12 +2844,6 @@ static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setti
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_lobby_setting_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
-
     return send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
 }
 
@@ -2892,11 +2851,7 @@ static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_titt
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_member_tittle_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
+    return send_bb_guild_cmd(c, BB_GUILD_MEMBER_TITLE);
 
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
@@ -2922,12 +2877,6 @@ static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pk
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_16EA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
-
     print_ascii_hex(errl, pkt, len);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
@@ -2935,12 +2884,6 @@ static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pk
 static int process_bb_guild_unk_17EA(ship_client_t* c, bb_guild_unk_17EA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_guild_unk_17EA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
 
     print_ascii_hex(errl, pkt, len);
 
@@ -2963,41 +2906,23 @@ static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_privilege_list_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
-
-    print_ascii_hex(errl, pkt, len);
+    print_ascii_hex(dbgl, pkt, len);
 
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_buy_special_item(ship_client_t* c, bb_guild_buy_special_item_pkt* pkt) {
+static int process_bb_guild_buy_special_item(ship_client_t* c, bb_guild_req_privilege_items_list_pkt* pkt) {
     //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    //if (len != sizeof(bb_guild_buy_special_item_pkt)) {
-    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-    //    print_ascii_hex(errl, pkt, len);
-    //    return -1;
-    //}
-
     print_ascii_hex(errl, pkt, len);
-    return send_bb_guild_cmd(c, BB_GUILD_BUY_SPECIAL_ITEM);
+    return send_bb_guild_cmd(c, BB_GUILD_REQ_PRIVILEG_ITEMS_LIST);
     //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unlock_special_item_pkt* pkt) {
+static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unlock_privilege_item_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_guild_unlock_special_item_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
 
     print_ascii_hex(dbgl, pkt, len);
 
@@ -3017,12 +2942,6 @@ static int process_bb_guild_rank_list(ship_client_t* c, bb_guild_rank_list_pkt* 
 static int process_bb_guild_unk_1DEA(ship_client_t* c, bb_guild_unk_1DEA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_guild_unk_1DEA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_ascii_hex(errl, pkt, len);
-        return -1;
-    }
 
     print_ascii_hex(errl, pkt, len);
 
@@ -3080,8 +2999,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_INVITE:
         return process_bb_guild_invite_0DEA(c, (bb_guild_invite_0DEA_pkt*)pkt);
 
-    case BB_GUILD_GET_TARGET_GUILD_DATA:
-        return process_bb_guild_unk_0EEA(c, (bb_guild_unk_0EEA_pkt*)pkt);
+    case BB_GUILD_GET_TARGET_DATA:
+        return process_bb_guild_unk_0EEA(c, (bb_guild_get_data_pkt*)pkt);
 
     case BB_GUILD_MEMBER_FLAG_SETTING:
         return process_bb_guild_member_flag_setting(c, (bb_guild_member_flag_setting_pkt*)pkt);
@@ -3093,7 +3012,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_member_promote(c, (bb_guild_member_promote_pkt*)pkt);
 
     case BB_GUILD_INITIALIZATION_DATA:
-        return handle_bb_guild_initialization_data(c, (bb_guild_unk_12EA_pkt*)pkt);
+        return handle_bb_guild_initialization_data(c, (bb_guild_init_data_pkt*)pkt);
 
     case BB_GUILD_LOBBY_SETTING:
         return process_bb_guild_lobby_setting(c, (bb_guild_lobby_setting_pkt*)pkt);
@@ -3116,11 +3035,11 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_PRIVILEGE_LIST:
         return process_bb_guild_privilege_list(c, (bb_guild_privilege_list_pkt*)pkt);
 
-    case BB_GUILD_BUY_SPECIAL_ITEM:
-        return process_bb_guild_buy_special_item(c, (bb_guild_buy_special_item_pkt*)pkt);
+    case BB_GUILD_REQ_PRIVILEG_ITEMS_LIST:
+        return process_bb_guild_buy_special_item(c, (bb_guild_req_privilege_items_list_pkt*)pkt);
 
-    case BB_GUILD_UNLOCK_SPECIAL_ITEM:
-        return process_bb_guild_unk_1BEA(c, (bb_guild_unlock_special_item_pkt*)pkt);
+    case BB_GUILD_UNLOCK_PRIVILEG_ITEM:
+        return process_bb_guild_unk_1BEA(c, (bb_guild_unlock_privilege_item_pkt*)pkt);
 
     case BB_GUILD_RANKING_LIST:
         return process_bb_guild_rank_list(c, (bb_guild_rank_list_pkt*)pkt);

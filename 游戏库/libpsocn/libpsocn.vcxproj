@@ -54,7 +54,7 @@
     <ClInclude Include="pso_item_list_bb.h" />
     <ClInclude Include="pso_items_good_luck_reward_lish.h" />
     <ClInclude Include="pso_items_hopkins_exchange_lish.h" />
-    <ClInclude Include="pso_guild_special_item_list.h" />
+    <ClInclude Include="pso_guild_privilege_item_list.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_crash_handle.c" />

@@ -980,12 +980,12 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_INVITE:
                         if (dest->guildcard == sender_gc) {
 
-                            send_bb_guild_cmd(dest, BB_GUILD_GET_TARGET_GUILD_DATA);
+                            send_bb_guild_cmd(dest, BB_GUILD_GET_TARGET_DATA);
                         }
                         break;
 
                         /* OK */
-                    case BB_GUILD_GET_TARGET_GUILD_DATA:
+                    case BB_GUILD_GET_TARGET_DATA:
                         if (dest->guildcard == sender_gc) {
 
 #ifdef DEBUG
@@ -1087,8 +1087,11 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-                        if (dest->guildcard == sender_gc)
+                        if (dest->guildcard == sender_gc) {
+
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
+                        }
                         break;
 
                     case BB_GUILD_PRIVILEGE_LIST:
@@ -1098,14 +1101,14 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         }
                         break;
 
-                    case BB_GUILD_BUY_SPECIAL_ITEM:
+                    case BB_GUILD_REQ_PRIVILEG_ITEMS_LIST:
                         if (dest->guildcard == sender_gc) {
 
-                            send_bb_guild_cmd(dest, BB_GUILD_BUY_SPECIAL_ITEM);
+                            send_bb_guild_cmd(dest, BB_GUILD_REQ_PRIVILEG_ITEMS_LIST);
                         }
                         break;
 
-                    case BB_GUILD_UNLOCK_SPECIAL_ITEM:
+                    case BB_GUILD_UNLOCK_PRIVILEG_ITEM:
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
