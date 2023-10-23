@@ -2851,8 +2851,6 @@ static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_titt
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    return send_bb_guild_cmd(c, BB_GUILD_MEMBER_TITLE);
-
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
@@ -2911,7 +2909,7 @@ static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_buy_special_item(ship_client_t* c, bb_guild_req_privilege_items_list_pkt* pkt) {
+static int process_bb_guild_req_privilege_items_list(ship_client_t* c, bb_guild_req_privilege_items_list_pkt* pkt) {
     //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -3036,7 +3034,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_privilege_list(c, (bb_guild_privilege_list_pkt*)pkt);
 
     case BB_GUILD_REQ_PRIVILEG_ITEMS_LIST:
-        return process_bb_guild_buy_special_item(c, (bb_guild_req_privilege_items_list_pkt*)pkt);
+        return process_bb_guild_req_privilege_items_list(c, (bb_guild_req_privilege_items_list_pkt*)pkt);
 
     case BB_GUILD_UNLOCK_PRIVILEG_ITEM:
         return process_bb_guild_unk_1BEA(c, (bb_guild_unlock_privilege_item_pkt*)pkt);
