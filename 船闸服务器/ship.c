@@ -2797,7 +2797,9 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     memset(myquery, 0, sizeof(myquery));
 
-    sprintf_s(myquery, sizeof(myquery), "SELECT * FROM %s"
+    sprintf_s(myquery, sizeof(myquery), "SELECT guild_name_text,guild_points_rank FROM "
+        "%s"
+        " ORDER BY guild_points_rank DESC"
         , CLIENTS_GUILD
     );
 
@@ -2815,12 +2817,12 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     else {
         while ((row = psocn_db_result_fetch(result)) != NULL) {
             // 假设我们要忽略 point_amount 小于等于 0 的行
-            int point_amount = atoi(row[2]);
+            int point_amount = atoi(row[1]);
             if (point_amount < 0) {
                 continue; // 跳过该行不进行处理
             }
             char tmp_text[64] = { 0 };
-            sprintf_s(tmp_text, sizeof(tmp_text), "%02d.%s", num + 1, row[5]);
+            sprintf_s(tmp_text, sizeof(tmp_text), "%02d.%s", num + 1, row[0]);
             istrncpy(ic_utf8_to_utf16, (char*)g_data->entries[num].guild_name, tmp_text, sizeof(g_data->entries[num].guild_name));
             g_data->entries[num].point_amount = point_amount;
             num++;
