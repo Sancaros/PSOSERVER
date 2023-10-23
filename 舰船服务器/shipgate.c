@@ -4485,8 +4485,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* src) {
     pkt->guild_points_personal_donation = src->guild_points_personal_donation;
 
     /* 填充公共银行数据 */
-    if (src->common_bank->item_count > 0)
-        memcpy(&pkt->common_bank, src->common_bank, PSOCN_STLENGTH_BANK);
+    memcpy(&pkt->common_bank, src->common_bank, PSOCN_STLENGTH_BANK);
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);
