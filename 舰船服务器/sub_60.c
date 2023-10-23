@@ -1432,6 +1432,38 @@ static int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_25_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_equip_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id, equip_slot = pkt->equip_slot, equip_resault = 0;
+    int i = 0;
+
+    //[2023年10月23日 12:53:59:544] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x25 版本 gc(3) 的处理
+    //[2023年10月23日 12:53:59:546] 调试(sub_60.c 7567): 未知 GC 0x60 指令: 0x25
+    //[2023年10月23日 12:53:59:549] 调试(f_logs.h 0591): 数据包如下:
+    //(00000000) 60 00 10 00 25 03 00 00  7E 01 01 06 06 00 00 00    `...%...~.......
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_equip_t), 0x03))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    ///* 是否存在物品背包中? */
+    //if ((equip_resault = player_equip_item(src, item_id))) {
+    //    ERR_LOG("%s 装备了未存在的物品数据! 错误码:%d",
+    //        get_player_describe(src), equip_resault);
+    //    return -3;
+    //}
+
+    /* Done, let everyone else know. */
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_equip_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1457,6 +1489,37 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Done, let everyone else know. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_26_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_unequip_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id;
+    int /*item_count,*/ unequip_resault = 0/*, isframe = 0*/;
+
+    //[2023年10月23日 12:53:59:534] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x26 版本 gc(3) 的处理
+    //[2023年10月23日 12:53:59:537] 调试(sub_60.c 7567): 未知 GC 0x60 指令: 0x26
+    //[2023年10月23日 12:53:59:538] 调试(f_logs.h 0591): 数据包如下:
+    //(00000000) 60 00 10 00 26 03 00 00  02 00 01 00 00 00 00 00    `...&...........
+    //
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_unequip_t), 0x03))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    //if ((unequip_resault = player_unequip_item(src, pkt->item_id))) {
+    //    ERR_LOG("%s 卸除无效ID 0x%08X 装备物品! 错误码 %d", get_player_describe(src), pkt->item_id, unequip_resault);
+    //    return -3;
+    //}
+
+    /* Done, let everyone else know. */
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
@@ -2937,6 +3000,25 @@ static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_4A_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_defense_damage_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+//[2023年10月23日 13:22:10:162] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x4A 版本 gc(3) 的处理
+//[2023年10月23日 13:22:10:166] 调试(sub_60.c 7630): 未知 GC 0x60 指令: 0x4A
+//[2023年10月23日 13:22:10:167] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 08 00 4A 01 00 00     `...J...
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_defense_damage_t), 0x01))
+        return -2;
+
+    /* This aught to do it... */
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_defense_damage_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -4143,6 +4225,54 @@ static int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_76_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_killed_monster_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_killed_monster_t), 0x02)) {
+        return -2;
+    }
+
+//[2023年10月23日 12:41:24:885] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x76 版本 gc(3) 的处理
+//[2023年10月23日 12:41:24:898] 调试(sub_60.c 7519): 未知 GC 0x60 指令: 0x76
+//[2023年10月23日 12:41:24:910] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 0C 00 76 02 4A 10  05 00 08 00    `...v.J.....
+//
+//[2023年10月23日 12:41:35:196] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x76 版本 gc(3) 的处理
+//[2023年10月23日 12:41:35:209] 调试(sub_60.c 7519): 未知 GC 0x60 指令: 0x76
+//[2023年10月23日 12:41:35:217] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 0C 00 76 02 47 10  05 00 08 00    `...v.G.....
+
+//[2023年10月23日 12:41:35:196] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x76 版本 gc(3) 的处理
+//[2023年10月23日 12:41:35:209] 调试(sub_60.c 7519): 未知 GC 0x60 指令: 0x76
+//[2023年10月23日 12:41:35:217] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 0C 00 76 02 47 10  05 00 08 00    `...v.G.....
+//
+//[2023年10月23日 12:41:54:082] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x76 版本 gc(3) 的处理
+//[2023年10月23日 12:41:54:092] 调试(sub_60.c 7519): 未知 GC 0x60 指令: 0x76
+//[2023年10月23日 12:41:54:099] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 0C 00 76 02 4B 10  05 00 08 00    `...v.K.....
+//
+//[2023年10月23日 12:42:17:810] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x76 版本 gc(3) 的处理
+//[2023年10月23日 12:42:17:821] 调试(sub_60.c 7519): 未知 GC 0x60 指令: 0x76
+//[2023年10月23日 12:42:17:829] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 0C 00 76 02 4C 10  05 00 08 00    `...v.L.....
+//
+//[2023年10月23日 12:42:23:245] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x76 版本 gc(3) 的处理
+//[2023年10月23日 12:42:23:258] 调试(sub_60.c 7519): 未知 GC 0x60 指令: 0x76
+//[2023年10月23日 12:42:23:266] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 0C 00 76 02 49 10  05 00 08 00    `...v.I.....
+//
+//[2023年10月23日 12:42:36:460] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x76 版本 gc(3) 的处理
+//[2023年10月23日 12:42:36:473] 调试(sub_60.c 7519): 未知 GC 0x60 指令: 0x76
+//[2023年10月23日 12:42:36:483] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 60 00 0C 00 76 02 48 10  05 00 08 00    `...v.H.....
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_76_bb(ship_client_t* src, ship_client_t* dest,
@@ -7315,8 +7445,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_LOAD_22                    , sub60_22_dc, sub60_22_dc, NULL,        sub60_22_dc, sub60_22_dc, sub60_22_bb },
     { SUBCMD60_FINISH_LOAD                , sub60_23_dc, sub60_23_dc, NULL,        sub60_23_dc, sub60_23_dc, sub60_23_bb },
     { SUBCMD60_SET_POS_24                 , sub60_24_dc, sub60_24_dc, NULL,        NULL,        NULL,        sub60_24_bb },
-    { SUBCMD60_EQUIP                      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_25_bb },
-    { SUBCMD60_REMOVE_EQUIP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_26_bb },
+    { SUBCMD60_EQUIP                      , sub60_25_dc, sub60_25_dc, NULL,        sub60_25_dc, sub60_25_dc, sub60_25_bb },
+    { SUBCMD60_REMOVE_EQUIP               , sub60_26_dc, sub60_26_dc, NULL,        sub60_26_dc, sub60_26_dc, sub60_26_bb },
     { SUBCMD60_ITEM_USE                   , sub60_27_dc, sub60_27_dc, NULL,        sub60_27_dc, sub60_27_dc, sub60_27_bb },
     { SUBCMD60_FEED_MAG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_28_bb },
     { SUBCMD60_ITEM_DELETE                , sub60_29_dc, sub60_29_dc, NULL,        sub60_29_dc, sub60_29_dc, sub60_29_bb },
@@ -7380,7 +7510,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_BURST_DONE                 , sub60_72_dc, sub60_72_dc, NULL,        sub60_72_dc, sub60_72_dc, sub60_72_bb },
     { SUBCMD60_WORD_SELECT                , sub60_74_dc, sub60_74_dc, NULL,        sub60_74_dc, sub60_74_dc, sub60_74_bb },
     { SUBCMD60_FLAG_SET                   , sub60_75_dc, sub60_75_dc, NULL,        sub60_75_dc, sub60_75_dc, sub60_75_bb },
-    { SUBCMD60_KILL_MONSTER               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
+    { SUBCMD60_KILL_MONSTER               , sub60_76_dc, sub60_76_dc, NULL,        sub60_76_dc, sub60_76_dc, sub60_76_bb },
     { SUBCMD60_SYNC_REG                   , sub60_77_dc, sub60_77_dc, NULL,        sub60_77_dc, sub60_77_dc, sub60_77_bb },
     { SUBCMD60_GOGO_BALL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
     { SUBCMD60_UNKNOW_7A                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7A_bb },

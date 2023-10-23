@@ -236,5 +236,4 @@ typedef struct psocn_bank {
 
 #undef PACKED
 
-
 #endif // !PSOCN_STRUCT_ITEM_H

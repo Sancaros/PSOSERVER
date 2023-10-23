@@ -661,12 +661,30 @@ typedef struct subcmd_bb_set_pos_0x24 {
 
 // 0x25: Equip item
 // Packet sent by clients to equip/unequip an item.
+typedef struct subcmd_equip {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t item_id;
+    uint32_t equip_slot;
+} PACKED subcmd_equip_t;
+
+// 0x25: Equip item
+// Packet sent by clients to equip/unequip an item.
 typedef struct subcmd_bb_equip {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t item_id;
     uint32_t equip_slot;
 } PACKED subcmd_bb_equip_t;
+
+// 0x26: Unequip item
+// Same format as 0x25
+typedef struct subcmd_unequip {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t item_id;
+    uint32_t equip_slot; // Unused for 0x26 (unequip item)
+} PACKED subcmd_unequip_t;
 
 // 0x26: Unequip item
 // Same format as 0x25
@@ -1136,6 +1154,12 @@ typedef struct subcmd_bb_subtract_PB_energy_6x49 {
         uint16_t unknown_a2;
     } entries[0];
 } PACKED subcmd_bb_subtract_PB_energy_6x49_t;
+
+// 0x4A: Fully shield attack
+typedef struct subcmd_defense_damage {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+} PACKED subcmd_defense_damage_t;
 
 // 0x4A: Fully shield attack
 typedef struct subcmd_bb_defense_damage {
@@ -1863,6 +1887,14 @@ typedef struct subcmd_bb_set_flag {
     uint16_t difficulty;
     uint16_t unused;
 } PACKED subcmd_bb_set_flag_t;
+
+// 0x76: Enemy killed
+typedef struct subcmd_killed_monster {
+    dc_pkt_hdr_t hdr;
+    enemy_id_hdr_t shdr;
+    uint16_t flag;
+    uint16_t unk1; // Flags of some sort
+} PACKED subcmd_killed_monster_t;
 
 // 0x76: Enemy killed
 typedef struct subcmd_bb_killed_monster {

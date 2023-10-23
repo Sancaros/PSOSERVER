@@ -2913,7 +2913,6 @@ static int process_bb_guild_req_privilege_items_list(ship_client_t* c, bb_guild_
     //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    print_ascii_hex(errl, pkt, len);
     return send_bb_guild_cmd(c, BB_GUILD_REQ_PRIVILEG_ITEMS_LIST);
     //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }

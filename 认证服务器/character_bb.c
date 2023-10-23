@@ -50,6 +50,7 @@
 #include "packets.h"
 #include "packets_bb.h"
 #include "auth_packets.h"
+#include <pso_items.h>
 
 extern volatile sig_atomic_t shutting_down;
 
@@ -681,6 +682,13 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         create_code = char_data->character.dress_data.create_code;
 
         char_data->character.play_time = 0;
+
+        for (size_t x = 0; x < char_data->character.inv.item_count; x++) {
+            item_t* item = &char_data->character.inv.iitems[x].data;
+            if (item->datab[0] == ITEM_TYPE_MAG) {
+                item->data2b[3] = costume_mag_color_type[char_data->character.dress_data.ch_class][char_data->character.dress_data.costume];
+            }
+        }
 
         if (db_backup_bb_char_data(c->guildcard, pkt->slot)) {
             ERR_LOG("无法备份已删除的玩家数据 (GC %"

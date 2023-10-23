@@ -12912,7 +12912,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         privilege_list->entries_num = num;
 
-        print_ascii_hex(dbgl, privilege_list, privilege_list->hdr.pkt_len);
+        //print_ascii_hex(dbgl, privilege_list, privilege_list->hdr.pkt_len);
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)privilege_list);
 
@@ -12935,7 +12935,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         menu->entries_num = num;
 
-        print_ascii_hex(dbgl, menu, menu->hdr.pkt_len);
+        //print_ascii_hex(dbgl, menu, menu->hdr.pkt_len);
 
         /* ¼ÓÃÜ²¢·¢ËÍ */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)menu);
