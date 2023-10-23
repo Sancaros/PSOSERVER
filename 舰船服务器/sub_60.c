@@ -4020,8 +4020,13 @@ static int sub60_75_dc(ship_client_t* src, ship_client_t* dest,
 //[2023年09月27日 19:49:32:342] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
 //
 //(00000000) 60 00 0C 00 75 02 09 8C  14 00 00 00    `...u.......
-    if (!check_pkt_size(src, pkt, sizeof(subcmd_set_flag_t), 0x02))
-        return -2;
+//[2023年10月23日 11:05:36:709] 错误(sub_hnd.c 0158): SIN0(42004215:0:GC) 发送损坏的数据指令1 0x0060 0x75!
+//[2023年10月23日 11:05:36:720] 错误(sub_hnd.c 0170): 当前房间信息:
+//[2023年10月23日 11:05:36:728] 错误(sub_hnd.c 0171): 章节: 0x01 难度: 2 区域: 1
+//[2023年10月23日 11:05:36:737] 错误(f_logs.h 0587): 数据包如下:
+//(00000000) 60 00 10 00 75 03 20 28  14 00 00 00 02 00 00 00    `...u. (........
+    //if (!check_pkt_size(src, pkt, sizeof(subcmd_set_flag_t), 0x02))
+    //    return -2;
 
     if (flag_index >= 0x400) {
         return 0;
@@ -4029,6 +4034,8 @@ static int sub60_75_dc(ship_client_t* src, ship_client_t* dest,
 
     DBG_LOG("%s 触发SET_FLAG指令! flag = 0x%02X action = 0x%02X episode = 0x%02X difficulty = 0x%02X",
         get_player_describe(src), flag_index, action, l->episode, difficulty);
+
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
 
     //// The client explicitly checks for both 0 and 1 - any other value means no
     //// operation is performed.

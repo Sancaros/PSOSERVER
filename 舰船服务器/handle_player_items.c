@@ -1121,6 +1121,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     item_t item = remove_invitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
     if (item_not_identification_bb(item.datal[0], item.datal[1])) {
         ERR_LOG("%s 物品 ID 0x%08X 已不存在", get_player_describe(src), item_id);
+        return 0;
     }
 
     LOBBY_USE_ITEM_LOG(src, item_id, src->cur_area, &item);
