@@ -190,12 +190,14 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_PART_OF_MAG_CELL:
 		case ITEM_SUBTYPE_GUILD_REWARD:
 			return 99;
+
+		case ITEM_SUBTYPE_UNKNOW_ITEM:
+			return 0;
 		}
 
-		break;
+	default:
+		return 1;
 	}
-
-	return 1;
 }
 
 /* 仅用于房间物品数量 */

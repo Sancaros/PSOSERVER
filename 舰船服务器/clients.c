@@ -339,7 +339,7 @@ ship_client_t* client_create_connection(int sock, int version, int type,
         rv->cur_block = block;
         rv->arrow_color = 1;
         rv->last_message = rv->login_time = time(NULL);
-        rv->hdr_size = 4;
+        rv->hdr_size = (version == CLIENT_VERSION_BB) ? 8 : 4;
 
         rv->isvip = false;
         rv->can_chat = true;
@@ -439,7 +439,6 @@ ship_client_t* client_create_connection(int sock, int version, int type,
 
             CRYPT_CreateKeys(&rv->skey, server_seed_bb, CRYPT_BLUEBURST);
             CRYPT_CreateKeys(&rv->ckey, client_seed_bb, CRYPT_BLUEBURST);
-            rv->hdr_size = 8;
 
             /* Send the client the welcome packet, or die trying. */
             if (send_bb_welcome(rv, server_seed_bb, client_seed_bb)) {

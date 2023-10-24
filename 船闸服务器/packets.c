@@ -1311,8 +1311,9 @@ int send_default_mode_char_data_bb(ship_t* c) {
 
     i = send_def_mode_char_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
 
-    free(cmp_buf);
+    free_safe(cmp_buf);
     free_safe(mode_chars);
+    mode_chars = NULL;
 
     return i;
 }
