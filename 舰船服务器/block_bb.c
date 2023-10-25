@@ -1816,8 +1816,14 @@ static int bb_process_update_quest_stats(ship_client_t* c,
     if (c->flags & 0x00002000)
         ERR_LOG("trial edition client sent update quest stats command.");
 
-    DBG_LOG("bb_process_update_quest_stats qid %d  quest_internal_id %d", l->qid, pkt->quest_internal_id);
+    DBG_LOG("bb_process_update_quest_stats %s qid %d  quest_internal_id %d", get_lobby_describe(l), l->qid, pkt->quest_internal_id);
     print_ascii_hex(dbgl, pkt, len);
+
+//[2023年10月25日 12:56:59:712] 调试(block_bb.c 1819): bb_process_update_quest_stats qid 144  quest_internal_id 144
+//[2023年10月25日 12:56:59:721] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 30 00 AA 00 00 00 00 00  90 00 00 00 2D 00 D5 00    0...........-...
+//(00000010) 01 00 00 00 F0 01 00 00  2D 04 00 00 3F 7C 00 00    ........-...?|..
+//(00000020) 00 00 00 00 01 00 00 00  02 00 00 00 00 00 00 00    ................
 
     if (l->qid != pkt->quest_internal_id) {
         ERR_LOG("l->qid %d != pkt->quest_internal_id %d.", l->qid, pkt->quest_internal_id);

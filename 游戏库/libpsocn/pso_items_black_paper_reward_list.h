@@ -19,6 +19,11 @@
 #define BB_ITEMS_BP_REWARD_LIST
 #include <stdint.h>
 
+#define BP_REWARD_BP1_DORPHON				0x00
+#define BP_REWARD_BP1_RAPPY					0x01
+#define BP_REWARD_BP1_ZU					0x02
+#define BP_REWARD_BP2						0x04
+
 typedef struct bp_reward_list {
 	uint32_t reward;
 }bp_reward_list_t;

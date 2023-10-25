@@ -2715,22 +2715,22 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         uint32_t reward_item = 0;
 
         switch (bp_type) {
-        case 0x00:
+        case BP_REWARD_BP1_DORPHON:
             bp_reward_list = bp1_dorphon[l->difficulty];
             reward_list_count = count_element_int((void**)bp1_dorphon[l->difficulty]);
             break;
 
-        case 0x01:
+        case BP_REWARD_BP1_RAPPY:
             bp_reward_list = bp1_rappy[l->difficulty];
             reward_list_count = count_element_int((void**)bp1_rappy[l->difficulty]);
             break;
 
-        case 0x02:
+        case BP_REWARD_BP1_ZU:
             bp_reward_list = bp1_zu[l->difficulty];
             reward_list_count = count_element_int((void**)bp1_zu[l->difficulty]);
             break;
 
-        case 0x04:
+        case BP_REWARD_BP2:
             bp_reward_list = bp2[l->difficulty];
             reward_list_count = count_element_int((void**)bp2[l->difficulty]);
             break;
@@ -2741,7 +2741,6 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         if (reward_item == 0)
             reward_item = BBItem_Meseta;
 
-        l->drops_disabled = false;
         l->questE0_done = true;
 
         item_t item = { 0 };

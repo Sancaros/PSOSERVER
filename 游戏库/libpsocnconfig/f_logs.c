@@ -39,15 +39,6 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp)
 }
 #endif
 
-bool is_all_zero(const char* data, size_t length) {
-	for (size_t i = 0; i < length; i++) {
-		if (data[i] != 0) {
-			return false;
-		}
-	}
-	return true;
-}
-
 void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length) {
 	pthread_mutex_lock(&pkt_mutex);
 	size_t i;
@@ -60,7 +51,7 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 
 	uint8_t* buff = (uint8_t*)data;
 
-	if (is_all_zero(buff, length)) {
+	if (isPacketEmpty(buff, length)) {
 		sprintf(dp, "空数据包 长度 %d.", length);
 		goto done;
 	}

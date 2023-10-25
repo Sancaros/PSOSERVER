@@ -125,11 +125,11 @@ void safe_strcat(const char* func, uint32_t line, char* dest, const char* src, s
 void SecureErase(void* buffer, size_t size);
 
 /* 判断数据为空 */
-int isPacketEmpty(const char* dataPacket, int packetLength);
+bool isPacketEmpty(const char* dataPacket, int packetLength);
 /* 判断文本为空 */
-int isEmptyString(const char* str);
-int isEmptyInt(int num);
-int isEmptyFloat(float val);
+bool isEmptyString(const char* str);
+bool isEmptyInt(int num);
+bool isEmptyFloat(float val);
 
 void write_data(write_data_func func, const void* data, size_t len);
 
