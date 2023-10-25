@@ -370,6 +370,10 @@ int subcmd_handle_6D(ship_client_t* src, subcmd_pkt_t* pkt) {
         uint8_t type = pkt->type;
         int rv = -1;
 
+        /* The DC NTE must be treated specially, so deal with that elsewhere... */
+        if (src->version == CLIENT_VERSION_DCV1 && (src->flags & CLIENT_FLAG_IS_NTE))
+            return subcmd_dcnte_handle_one(src, pkt);
+
         /* 如果客户端不在大厅或者队伍中则忽略数据包. */
         if (!l)
             return 0;

@@ -1979,6 +1979,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->hdr.pkt_len = LE16(0x0444);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
+    pkt->one = 1;
 
     /* Copy the player's data into the packet. */
     pkt->entries[0].hdr.player_tag = LE32(0x00010000);
@@ -4486,6 +4487,13 @@ static int send_dc_game_list(ship_client_t *c, block_t *b) {
             (l->battle ? 0x10 : 0x00) | (l->passwd[0] ? 2 : 0) |
             (l->v2 ? 0x40 : 0x00);
 
+        /* Copy the name. These are in UTF-8, and need converting... */
+        if ((l->flags & LOBBY_FLAG_NTE)) {
+            /* Chop off the language marker from the team name for NTE. It only
+               supports Japanese/SJIS */
+            istrncpy(ic_utf8_to_sjis, pkt->entries[entries].name, l->name + 2,
+                16);
+        }
         /* Copy the name. These are in UTF-8, and need converting... */
         if(l->name[1] == 'J') {
             istrncpy(ic_gbk_to_sjis, pkt->entries[entries].name, l->name, 16);

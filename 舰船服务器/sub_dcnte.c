@@ -104,7 +104,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt) {
 
         default:
 #ifdef LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x60 指令: 0x%02X %s", type, c_cmd_name(type, 0));
+            DBG_LOG("未知 DCNTE 0x60 指令: 0x%02X %s", type, c_cmd_name(type, 0));
             PRINT_HEX_LOG(ERR_LOG, (unsigned char*)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             sent = 0;
@@ -119,6 +119,11 @@ int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt) {
                         break;
                     }
                 }
+            }
+            else {
+                /* XXXX: Hacky... Very hacky. FIXME sometime. */
+                c->cur_lobby->flags &= ~LOBBY_FLAG_BURSTING;
+                c->flags &= ~CLIENT_FLAG_BURSTING;
             }
             sent = 0;
             break;
@@ -139,6 +144,41 @@ int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt) {
         (void)getchar();
         return -4;
     }
+}
+
+int subcmd_dcnte_handle_one(ship_client_t* c, subcmd_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    ship_client_t* dest;
+    uint8_t type = pkt->type;
+    int rv = -1;
+
+    /* Ignore these if the client isn't in a lobby or team. */
+    if (!l)
+        return 0;
+
+    pthread_mutex_lock(&l->mutex);
+
+    /* Find the destination. */
+    dest = l->clients[pkt->hdr.dc.flags];
+
+    /* The destination is now offline, don't bother sending it. */
+    if (!dest) {
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
+    }
+
+    switch (type) {
+    default:
+#ifdef LOG_UNKNOWN_SUBS
+        DBG_LOG("未知 DCNTE 0x62/0x6D 指令: 0x%02X", type);
+        PRINT_HEX_LOG(ERR_LOG, pkt, LE16(pkt->hdr.dc.pkt_len));
+#endif /* LOG_UNKNOWN_SUBS */
+        /* Forward the packet unchanged to the destination. */
+        rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+    }
+
+    pthread_mutex_unlock(&l->mutex);
+    return rv;
 }
 
 int subcmd_translate_dc_to_nte(ship_client_t* c, subcmd_pkt_t* pkt) {

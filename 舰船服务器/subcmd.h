@@ -19,10 +19,10 @@
 #define SUBCMD60_H
 
 #include <pso_character.h>
+#include <pso_opcodes_shipgate.h>
 
 #include "clients.h"
 
-#include <pso_opcodes_shipgate.h>
 
 #ifdef PACKED
 #undef PACKED
@@ -3288,6 +3288,8 @@ int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt);
 
 int subcmd_send_lobby_dcnte(lobby_t* l, ship_client_t* c, subcmd_pkt_t* pkt,
     int ignore_check);
+
+int subcmd_dcnte_handle_one(ship_client_t* c, subcmd_pkt_t* pkt);
 
 /* Stuff dealing with the Dreamcast Network Trial edition */
 int subcmd_translate_dc_to_nte(ship_client_t* c, subcmd_pkt_t* pkt);

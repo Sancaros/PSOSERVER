@@ -320,6 +320,14 @@
 #define SUBCMD60_GOOD_LUCK                     0xDE
 #define SUBCMD60_GALLON_PLAN                   0xE1
 
+/* These ones are the above set, but for Dreamcast NTE. Note that there is not a
+   one-to-one correspondance between the packet names above and these, as NTE
+   definitely sends less data here. */
+#define SUBCMD_DCNTE_BURST1         0x5C
+#define SUBCMD_DCNTE_BURST2         0x5D
+#define SUBCMD_DCNTE_BURST3         0x5E
+#define SUBCMD_DCNTE_BURST4         0x5F
+#define SUBCMD_DCNTE_BURST_PLDATA   0x60
 
 /* Subcommands that we might care about in the Dreamcast NTE (0x60) */
 #define SUBCMD60_DCNTE_SET_AREA       0x1D    /* 0x21 */
