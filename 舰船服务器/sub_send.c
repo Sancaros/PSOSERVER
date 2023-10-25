@@ -1005,7 +1005,7 @@ int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         if (dont_send_60[(type * 2) + 1] == 1)
         {
             sent = 1;
-            print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+            PRINT_HEX_LOG(DBG_LOG, pkt, pkt->hdr.pkt_len);
         }
     }
 
@@ -1033,7 +1033,7 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     //DBG_LOG("BB´¦Àí GC %" PRIu32 " 62/6DÖ¸Áî: 0x%02X", c->guildcard, type);
 
-    //print_ascii_hex(pkt, LE16(pkt->hdr.pkt_len));
+    //PRINT_HEX_LOG(pkt, LE16(pkt->hdr.pkt_len));
 
     sizecheck *= 4;
     sizecheck += 8;

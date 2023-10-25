@@ -2930,7 +2930,7 @@ static int process_dc_update_quest_stats(ship_client_t* c,
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
 
-    print_ascii_hex(dbgl, pkt, len);
+    PRINT_HEX_LOG(DBG_LOG, pkt, len);
 
     if (!l || !(l->flags & LOBBY_FLAG_QUESTING))
         return -1;
@@ -2974,7 +2974,7 @@ static int process_ep3_command(ship_client_t* c, uint8_t* pkt) {
     default:
         if (!script_execute_pkt(ScriptActionUnknownEp3Packet, c, pkt, len)) {
             DBG_LOG("GC %u 未知 Episode 3 指令: 0x%04X", c->guildcard, hdr->flags);
-            print_ascii_hex(dbgl, pkt, len);
+            PRINT_HEX_LOG(DBG_LOG, pkt, len);
             return -1;
         }
         return 0;
@@ -2990,7 +2990,7 @@ static int on_CA_Ep3(ship_client_t* c, uint8_t* pkt) {
 
     DBG_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.gc_string,
         c->guildcard);
-    print_ascii_hex(dbgl, pkt, len);
+    PRINT_HEX_LOG(DBG_LOG, pkt, len);
 //[2023年09月24日 16:04:38:035] 调试(block.c 2823): Ep3 服务器数据来自 Sancaros (10000000)
 //[2023年09月24日 16:04:38:037] 调试(f_logs.c 0088): 数据包如下:
 //(00000000) CA 00 14 00 B3 04 42 01  40 00 00 10 FF FF FF FF    ......B.@.......
@@ -3544,7 +3544,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
                 len)) {
                 ERR_LOG("GC %u 未知数 0x%X 据包!", c->guildcard, type);
-                print_ascii_hex(errl, pkt, len);
+                PRINT_HEX_LOG(ERR_LOG, pkt, len);
                 return -3;
             }
             return 0;

@@ -44,7 +44,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s GM权限制造无效物品\n", get_player_describe(c)); \
-                print_ascii_hex(pickl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(GM_LOG, item, PSOCN_STLENGTH_ITEM); \
             }\
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -79,7 +79,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s 使用无效物品\n", get_player_describe(c)); \
-                print_ascii_hex(pickl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(ITEM_USE_LOG, item, PSOCN_STLENGTH_ITEM); \
             }\
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -114,7 +114,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s 存入无效物品\n", get_player_describe(c)); \
-                print_ascii_hex(pickl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(BANK_DEPOSIT_LOG, item, PSOCN_STLENGTH_ITEM); \
             }\
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -149,7 +149,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s 取出无效物品\n", get_player_describe(c)); \
-                print_ascii_hex(pickl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(BANK_TAKE_LOG, item, PSOCN_STLENGTH_ITEM); \
             }\
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -184,7 +184,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s 鉴定无效物品\n", get_player_describe(c)); \
-                print_ascii_hex(pickl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(TEKKS_LOG, item, PSOCN_STLENGTH_ITEM); \
             }\
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -219,7 +219,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s 拾取无效物品\n", get_player_describe(c)); \
-                print_ascii_hex(pickl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(PICKS_LOG, item, PSOCN_STLENGTH_ITEM); \
             }\
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -254,7 +254,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s 掉落无效物品\n", get_player_describe(c)); \
-                print_ascii_hex(dropl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(DROPS_LOG, item, PSOCN_STLENGTH_ITEM); \
             } \
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -291,7 +291,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "%s 掉落无效物品\n", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid)); \
-                print_ascii_hex(mdropl, item, PSOCN_STLENGTH_ITEM);\
+                PRINT_HEX_LOG(MDROPS_LOG, item, PSOCN_STLENGTH_ITEM);\
             } \
         } \
         buff[sizeof(buff) - 1] = '\0'; \
@@ -327,7 +327,7 @@ do { \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
                 len += snprintf(buff + len, sizeof(buff) - len, "忽略预设 %d 箱子掉落无效物品\n", ignore_def); \
-                print_ascii_hex(bdropl, item, PSOCN_STLENGTH_ITEM); \
+                PRINT_HEX_LOG(BDROPS_LOG, item, PSOCN_STLENGTH_ITEM); \
             } \
         } \
         buff[sizeof(buff) - 1] = '\0'; \

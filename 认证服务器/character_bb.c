@@ -75,7 +75,7 @@ static int handle_ignored_pkt(login_client_t* c, const char* cmd, void* pkt, int
 
     //DBG_LOG("忽略的BB数据包指令 0x%04X", type);
     //UDONE_CPD(type, c->version, pkt);
-    print_ascii_hex(dbgl, pkt, LE16(bb->pkt_len));
+    PRINT_HEX_LOG(DBG_LOG, pkt, LE16(bb->pkt_len));
 
     return 0;
 }
@@ -259,7 +259,7 @@ static int handle_ship_select(login_client_t* c, bb_select_pkt* pkt) {
 
     default:
         ERR_LOG("未知数据包!");
-        print_ascii_hex(errl, pkt, len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, len);
         return send_disconnect(c, c->auth);
     }
 }
@@ -512,7 +512,7 @@ static int handle_option(login_client_t* c, bb_opt_config_pkt* pkt) {
 
     int config_size = sizeof(bb_opt_config_pkt);
 
-    print_ascii_hex(dbgl,(uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    PRINT_HEX_LOG(DBG_LOG,(uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     DBG_LOG("测试是否经过");
 
@@ -915,7 +915,7 @@ static int handle_full_char(login_client_t* c, bb_full_char_pkt* pkt) {
     //char query[256];
     //char mysqlerr[1024];
     
-    //print_ascii_hex(dbgl,(uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    //PRINT_HEX_LOG(DBG_LOG,(uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     //printf("刷新玩家在线数据... ");
 
@@ -964,7 +964,7 @@ static int handle_setflag(login_client_t* c, bb_setflag_pkt* pkt) {
 
     default:
         DBG_LOG("GC %u handle_setflag %d", c->guildcard, c->dress_flag);
-        print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(DBG_LOG, pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -1131,7 +1131,7 @@ int process_character_packet_bb(login_client_t *c, void *pkt) {
 
 #ifdef DEBUG
     DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
-    print_ascii_hex(dbgl,pkt, LE16(bb->pkt_len));
+    PRINT_HEX_LOG(DBG_LOG,pkt, LE16(bb->pkt_len));
 #endif // DEBUG
 
     switch(type) {
@@ -1210,7 +1210,7 @@ int process_character_packet_bb(login_client_t *c, void *pkt) {
         default:
             DBG_LOG("BB角色指令: 0x%04X %s %u", type, c_cmd_name(type, 0), c->guildcard);
             //UNK_CPD(type, c->version, pkt);
-            //print_ascii_hex(dbgl,pkt, LE16(bb->pkt_len));
+            //PRINT_HEX_LOG(DBG_LOG,pkt, LE16(bb->pkt_len));
             return -1;
     }
 }
@@ -1396,7 +1396,7 @@ int load_bb_char_data(void) {
 
 #ifdef DEBUG
 
-        print_ascii_hex(dbgl,&default_chars.char_class[i].character.inv, PSOCN_STLENGTH_INV);
+        PRINT_HEX_LOG(DBG_LOG,&default_chars.char_class[i].character.inv, PSOCN_STLENGTH_INV);
 
         DBG_LOG("获取 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_chars.ch_class[i].character.dress_data.ch_class].cn_name, i);
 

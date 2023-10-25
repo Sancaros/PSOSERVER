@@ -106,13 +106,14 @@ static inline ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
 }
 
 /* Send a raw packet away. */
-static int send_raw(ship_t* ship, int len, uint8_t* sendbuf) {
+static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
     __try {
-        ssize_t rv, total = 0;
+        ssize_t rv = 0;
+        size_t total = 0;
 
         if (sendbuf == NULL || isPacketEmpty(sendbuf, len) || len == 0 || len > MAX_PACKET_BUFF) {
             //ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
-            print_ascii_hex(errl, sendbuf, len);
+            PRINT_HEX_LOG(ERR_LOG, sendbuf, len);
             return 0;
         }
 

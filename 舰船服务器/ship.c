@@ -1936,7 +1936,7 @@ static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return send_block_list(c, ship);
 
         case GAME_SUBCMD60_TYPE:
-            print_ascii_hex(dbgl, pkt, len);
+            PRINT_HEX_LOG(DBG_LOG, pkt, len);
             /* Ignore these, since taking screenshots on PSOPC generates them
                for some reason. */
             return 0;
@@ -1945,7 +1945,7 @@ static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
                 len)) {
                 ERR_LOG("未知数据包!");
-                print_ascii_hex(errl, pkt, len);
+                PRINT_HEX_LOG(ERR_LOG, pkt, len);
                 return -3;
             }
             return 0;
@@ -1969,8 +1969,6 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         //DBG_LOG("舰船：处理BB数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, c->guildcard);
 
-        //print_ascii_hex(pkt, len);
-
         switch (type) {
             /* 0x0005 5*/
         case BURSTING_TYPE:
@@ -1993,7 +1991,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_SUBCMD60_TYPE:
             /* Ignore these, since taking screenshots on PSOPC generates them
                for some reason. */
-            print_ascii_hex(dbgl, pkt, len);
+            PRINT_HEX_LOG(DBG_LOG, pkt, len);
             return 0;
 
             /* 0x0093 147*/
@@ -2003,14 +2001,14 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             /* 0x00E7 231*/
         case BB_FULL_CHARACTER_TYPE:
             // Client sending character data... 客户端离线发送角色数据
-            print_ascii_hex(dbgl, pkt, len);
+            PRINT_HEX_LOG(DBG_LOG, pkt, len);
             return 0;
 
         default:
             if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
                 len)) {
                 ERR_LOG("未知数据包!");
-                print_ascii_hex(errl, pkt, len);
+                PRINT_HEX_LOG(ERR_LOG, pkt, len);
                 return -3;
             }
             return 0;

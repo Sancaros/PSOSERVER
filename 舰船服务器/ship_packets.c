@@ -302,7 +302,7 @@ int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf) {
 #ifdef DEBUG
     DBG_LOG("舰船：发送数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u",
         sendbuf[0x02], c_cmd_name(sendbuf[0x02], 0), len, c->guildcard);
-    print_ascii_hex(dbgl, sendbuf, len);
+    PRINT_HEX_LOG(DBG_LOG, sendbuf, len);
 #endif // DEBUG
 
     /* Encrypt the packet */
@@ -7300,7 +7300,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
     pkt->hdr.flags = LE32(entries);
     pkt->hdr.pkt_len = LE16(len);
 
-    //print_ascii_hex(dbgl, sendbuf, len);
+    //PRINT_HEX_LOG(DBG_LOG, sendbuf, len);
 
     /* 加密并发送 */
     return crypt_send(c, len, sendbuf);
@@ -12875,7 +12875,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         pkt->hdr.flags = 0x00000000;
 
 
-        print_ascii_hex(dbgl, (uint8_t*)pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(DBG_LOG, (uint8_t*)pkt, pkt->hdr.pkt_len);
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
@@ -12912,7 +12912,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         privilege_list->entries_num = num;
 
-        //print_ascii_hex(dbgl, privilege_list, privilege_list->hdr.pkt_len);
+        //PRINT_HEX_LOG(DBG_LOG, privilege_list, privilege_list->hdr.pkt_len);
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)privilege_list);
 
@@ -12935,7 +12935,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         menu->entries_num = num;
 
-        //print_ascii_hex(dbgl, menu, menu->hdr.pkt_len);
+        //PRINT_HEX_LOG(DBG_LOG, menu, menu->hdr.pkt_len);
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)menu);
@@ -13313,14 +13313,14 @@ int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
     if (l->flags & LOBBY_FLAG_QUESTING || l->type == LOBBY_TYPE_GAME) {
 
         ERR_LOG("%s 玩家发生错误1 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_type, err_subtype);
-        print_ascii_hex(errl, data, err_len);
+        PRINT_HEX_LOG(ERR_LOG, data, err_len);
         return send_warp(c, 0, false);
 
     }
 
 err_null:
     ERR_LOG("%s 玩家发生错误2", get_player_describe(c));
-    print_ascii_hex(errl, data, err_len);
+    PRINT_HEX_LOG(ERR_LOG, data, err_len);
     return -1;
 }
 
@@ -13338,7 +13338,7 @@ int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1) {
     pkt->pkt_type = LE16(opcode1);
     pkt->flags = 0;
 
-    print_ascii_hex(dbgl, pkt, 8);
+    PRINT_HEX_LOG(DBG_LOG, pkt, 8);
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 }
@@ -13359,7 +13359,7 @@ int send_bb_cmd_test2(ship_client_t* c, uint16_t opcode1, uint8_t* data) {
 
     memcpy(pkt->data, data, 512);
 
-    print_ascii_hex(dbgl, pkt, 520);
+    PRINT_HEX_LOG(DBG_LOG, pkt, 520);
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 }
@@ -13384,7 +13384,7 @@ int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2)
     pkt->size = (pkt_size - 8) / 4;
     pkt->param = 0;
 
-    print_ascii_hex(dbgl, pkt, 12);
+    PRINT_HEX_LOG(DBG_LOG, pkt, 12);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }

@@ -169,7 +169,7 @@ bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
 err_all:
     ERR_LOG("当前房间信息:");
     ERR_LOG("章节: 0x%02X 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
-    print_ascii_hex(errl, pkt, pkt_len);
+    PRINT_HEX_LOG(ERR_LOG, pkt, pkt_len);
     return false;
 }
 

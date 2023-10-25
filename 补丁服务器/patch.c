@@ -552,7 +552,7 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
 
     default:
         ERR_LOG("未知数据包!");
-        print_ascii_hex(errl, pkt, len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, len);
         return -3;
     }
 

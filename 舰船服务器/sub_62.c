@@ -1122,7 +1122,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送错误的拾取数据!", get_player_describe(src));
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1133,7 +1133,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
     else if (pick_count > 0) {
         PICKS_LOG("%s 尝试拾取不存在的地面物品", get_player_describe(src));
-        print_ascii_hex(pickl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(PICKS_LOG, pkt, pkt->hdr.pkt_len);
         /* 假设别人已经捡到了, 就忽略它... */
         return 0;
     }
@@ -1405,7 +1405,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         psocn_bb_char_t* character = get_client_char_bb(src);
         section = get_lobby_leader_section(l);
         //drop_area = src->cur_area;
-        //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+        //PRINT_HEX_LOG(DBG_LOG, pkt, pkt->hdr.pkt_len);
 
         if (ignore_def) {
             item = on_box_item_drop(l, &src->sfmt_rng, drop_area, pt_area, section);
@@ -1454,7 +1454,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
         return rv;
     }
 
@@ -1467,7 +1467,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
     //DBG_LOG("GC %u sclient_id 0x%02X -> %u dclient_id 0x%02X ", src->guildcard, src->client_id, dest->guildcard, dest->client_id);
 
-    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    //PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
 
     switch (trade_type) {
     case 0x00:
@@ -1664,7 +1664,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         ERR_LOG("交易数据未处理 trade_type 0x%02X trade_stage 0x%02X", trade_type, trade_stage);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -1681,7 +1681,7 @@ int sub62_AE_dc(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
         return rv;
     }
 
@@ -1698,7 +1698,7 @@ int sub62_AE_dc(ship_client_t* src, ship_client_t* dest,
 //
 //    if (pkt->shdr.client_id != src->client_id) {
 //        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
-//        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+//        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
 //        return rv;
 //    }
 //
@@ -1715,7 +1715,7 @@ int sub62_AE_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
         return rv;
     }
 
@@ -1898,7 +1898,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         else {
             ERR_LOG("%s 发送损坏的物品购买数据!",
                 get_player_describe(src));
-            print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+            PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
             print_item_data(&item, src->version);
             return -3;
         }
@@ -1912,7 +1912,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     if (character->disp.meseta < price) {
         ERR_LOG("%s 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
             get_player_describe(src), pkt->shdr.type, character->disp.meseta, price);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
         print_item_data(&item, src->version);
         return -4;
     }
@@ -2250,7 +2250,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         ERR_LOG("%s 发送未知银行操作: %d!", get_player_describe(src), action);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -2275,7 +2275,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-    print_ascii_hex(errl, pkt, len);
+    PRINT_HEX_LOG(ERR_LOG, pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -2298,7 +2298,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x01:
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        print_ascii_hex(errl, pkt, len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, len);
         break;
     }
 
@@ -2324,7 +2324,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
         type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
-    print_ascii_hex(errl, pkt, len);
+    PRINT_HEX_LOG(ERR_LOG, pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -2358,7 +2358,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
             type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        print_ascii_hex(errl, pkt, len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, len);
         break;
     }
 
@@ -2459,7 +2459,7 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //print_ascii_hex(errl, pkt, len);
+    //PRINT_HEX_LOG(ERR_LOG, pkt, len);
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         ERR_LOG("GC %u 公会权限不足", get_player_describe(src));
@@ -2491,7 +2491,7 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //print_ascii_hex(errl, pkt, len);
+    //PRINT_HEX_LOG(ERR_LOG, pkt, len);
 
     switch (trans_cmd)
     {
@@ -2558,7 +2558,7 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
 
     /* Make sure there's something set with /item */
     if (!pkt->drop_amount) {
@@ -2913,7 +2913,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+    //PRINT_HEX_LOG(DBG_LOG, pkt, pkt->hdr.pkt_len);
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -2968,7 +2968,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
             DBG_LOG("美赛塔奖励 menu_choice 0x%08X rng_value %d", menu_choice, rng_value);
 
-            print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+            PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
 #endif // DEBUG
 
             uint32_t amount = (sfmt_genrand_uint32(rng) % menu_choice_price[menu_choice] + 1) / 2;
@@ -3233,7 +3233,7 @@ int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
 
 #ifdef BB_LOG_UNKNOWN_SUBS
             DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            print_ascii_hex(errl, pkt, LE16(pkt->hdr.dc.pkt_len));
+            PRINT_HEX_LOG(ERR_LOG, pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* BB_LOG_UNKNOWN_SUBS */
 
             rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
@@ -3294,7 +3294,7 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 
 #ifdef BB_LOG_UNKNOWN_SUBS
             DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            print_ascii_hex(errl, pkt, len);
+            PRINT_HEX_LOG(ERR_LOG, pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
 
             rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);

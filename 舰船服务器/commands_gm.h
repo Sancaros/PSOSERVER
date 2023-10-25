@@ -2594,14 +2594,14 @@ static int handle_dbgqdata(ship_client_t* c, const char* params) {
     if (*params) {
         if (!strcmp(params, "quest1")) {
 
-            print_ascii_hex(gml, c->bb_pl->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+            PRINT_HEX_LOG(GM_LOG, c->bb_pl->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
 
             return send_txt(c, "%s", __(c, "\tE\tC6任务1数据已转储至GM日志."));
         }
 
         if (!strcmp(params, "quest2")) {
 
-            print_ascii_hex(gml, c->bb_pl->mode_quest_data.all, PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+            PRINT_HEX_LOG(GM_LOG, c->bb_pl->mode_quest_data.all, PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
 
             return send_txt(c, "%s", __(c, "\tE\tC6任务2数据已转储至GM日志."));
         }
