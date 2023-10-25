@@ -274,7 +274,7 @@ void lobby_print_info2(ship_client_t* src) {
         (int)l->challenge == 1 ? __(src, "\tE\tC8挑战模式") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人模式") :
         __(src, "\tE\tC7普通模式"));
     send_msg(src, TEXT_MSG_TYPE, "稀有: %d倍"
-        , l->exp_mult > 0 ? l->exp_mult : 1
+        , l->monster_rare_mult > 0 ? l->monster_rare_mult : 1
     );
     send_msg(src, TEXT_MSG_TYPE, "难度: %s", get_difficulty_describe(l->difficulty));
     send_msg(src, TEXT_MSG_TYPE, "经验: %d倍 怪物: %d倍 箱子: %d倍"
@@ -478,7 +478,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->create_time = time(NULL);
     l->flags = LOBBY_FLAG_ONLY_ONE;
     l->oneperson = single_player;
-    /* 保证房间红盒模式 TODO 是否不要开启全局红盒模式 开发个人红盒模式 */
+    l->monster_rare_mult = ship->cfg->monster_rare_mult > 0 ? ship->cfg->monster_rare_mult : 1;
     l->drop_rare = c->game_data->gm_drop_rare;
     l->monster_rare_drop_mult = ship->cfg->monster_rare_drop_mult > 0 ? ship->cfg->monster_rare_drop_mult : 1;
     l->box_rare_drop_mult = ship->cfg->box_rare_drop_mult > 0 ? ship->cfg->box_rare_drop_mult : 1;

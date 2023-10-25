@@ -237,16 +237,16 @@ typedef struct psocn_event {
 typedef struct psocn_rare_enemy_rates {
     union {
         struct {
-            uint32_t hildeblue;
-            uint32_t rappy;
-            uint32_t nar_lily;
-            uint32_t pouilly_slime;
-            uint32_t merissa_aa;
-            uint32_t pazuzu;
-            uint32_t dorphon_eclair;
-            uint32_t kondrieu;
+            double hildeblue;
+            double rappy;
+            double nar_lily;
+            double pouilly_slime;
+            double merissa_aa;
+            double pazuzu;
+            double dorphon_eclair;
+            double kondrieu;
         };
-        uint32_t rate[8];
+        double rate[8];
     };
 } psocn_rare_enemy_rates_t;
 
@@ -262,6 +262,7 @@ typedef struct psocn_shipcfg {
     char* gm_file;
     psocn_limit_config_t* limits;
     uint32_t globla_exp_mult;
+    uint32_t monster_rare_mult;
     uint32_t monster_rare_drop_mult;
     uint32_t box_rare_drop_mult;
     psocn_info_file_t* info_files;
@@ -309,14 +310,14 @@ typedef struct psocn_shipcfg {
 
 static psocn_rare_enemy_rates_t default_rare_monster_rates = {
     // All 1/512 except Kondrieu, which is 1/10
-    .hildeblue = 0x00800000,
-    .rappy = 0x00800000,
-    .nar_lily = 0x00800000,
-    .pouilly_slime = 0x00800000,
-    .merissa_aa = 0x00800000,
-    .pazuzu = 0x00800000,
-    .dorphon_eclair = 0x00800000,
-    .kondrieu = 0x1999999A
+    .hildeblue = 0.008,
+    .rappy = 0.008,
+    .nar_lily = 0.008,
+    .pouilly_slime = 0.008,
+    .merissa_aa = 0.008,
+    .pazuzu = 0.008,
+    .dorphon_eclair = 0.008,
+    .kondrieu = 0.199
 };
 
 /* Patch server configuration structure. */

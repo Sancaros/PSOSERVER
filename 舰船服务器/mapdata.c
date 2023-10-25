@@ -227,556 +227,6 @@ static int read_v2_level_data(const char *fn) {
     return 0;
 }
 
-bool check_rare(bool default_is_rare, uint32_t rare_rate, int* rare_enemy_indexes, size_t enemy_size, sfmt_t* sfmt) {
-    if (default_is_rare) {
-        return true;
-    }
-    if ((*rare_enemy_indexes < 0x10) && ((uint32_t)rand_float_0_1_from_crypt(sfmt) < rare_rate)) {
-        rare_enemy_indexes[(*rare_enemy_indexes)++] = enemy_size;
-        return true;
-    }
-    return false;
-}
-
-bool updateEnemyRareness(psocn_rare_enemy_rates_t* rare_rates, int* rare_enemy_indexes, size_t enemy_size, sfmt_t* sfmt) {
-    if (!rare_rates) {
-        rare_rates = &default_rare_monster_rates;
-    }
-
-    bool is_rare = false;
-    is_rare = 
-        check_rare(false, rare_rates->hildeblue, rare_enemy_indexes, enemy_size, sfmt) ||
-        check_rare(false, rare_rates->rappy, rare_enemy_indexes, enemy_size, sfmt) ||
-        check_rare(false, rare_rates->nar_lily, rare_enemy_indexes, enemy_size, sfmt) ||
-        check_rare(false, rare_rates->pouilly_slime, rare_enemy_indexes, enemy_size, sfmt) ||
-        check_rare(false, rare_rates->merissa_aa, rare_enemy_indexes, enemy_size, sfmt) ||
-        check_rare(false, rare_rates->pazuzu, rare_enemy_indexes, enemy_size, sfmt) ||
-        check_rare(false, rare_rates->dorphon_eclair, rare_enemy_indexes, enemy_size, sfmt) ||
-        check_rare(false, rare_rates->kondrieu, rare_enemy_indexes, enemy_size, sfmt);
-
-    return is_rare;
-}
-
-//static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
-//                     int ep, int alt, int area) {
-//    int i, j;
-//    game_enemy_t *gen;
-//    void *tmp;
-//    uint32_t count = 0;
-//    uint16_t n_clones;
-//    int acc;
-//
-//    /* Allocate the space first */
-//    if(!(gen = (game_enemy_t *)malloc(sizeof(game_enemy_t) * 0xB50))) {
-//        ERR_LOG("无法分配敌人结构的内存: %s", strerror(errno));
-//        return -1;
-//    }
-//
-//    /* Clear it */
-//    memset(gen, 0, sizeof(game_enemy_t) * 0xB50);
-//
-//    /* Parse each enemy. */
-//    for(i = 0; i < en_ct; ++i) {
-//        map_enemy_t me = en[i];
-//        n_clones = me.num_children;
-//        gen[count].area = area;
-//
-//        switch(me.base_type) {
-//            case 0x0040:    /* Hildebear & Hildetorr */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x49 + acc;
-//                gen[count].rt_index = 0x01 + acc;
-//                break;
-//
-//            case 0x0041:    /* Rappies */
-//                acc = me.skin & 0x01;
-//                if(ep == LOBBY_EPISODE_4) {   /* Del Rappy & Sand Rappy */
-//                    if(alt) {
-//                        gen[count].bp_entry = 0x17 + acc;
-//                        gen[count].rt_index = 0x11 + acc;
-//                    }
-//                    else {
-//                        gen[count].bp_entry = 0x05 + acc;
-//                        gen[count].rt_index = 0x11 + acc;
-//                    }
-//                }
-//                else {
-//                    if(acc) { // Rag Rappy and Al Rappy (Love for Episode II)
-//                        gen[count].bp_entry = 0x19;
-//
-//                        if(ep == LOBBY_EPISODE_1) {
-//                            gen[count].rt_index = 0x06;
-//                        }
-//                        else {
-//                            /* We need to fill this in when we make the lobby,
-//                               since it's dependent on the event. */
-//                            gen[count].rt_index = (uint8_t)-1;
-//                        }
-//                    }
-//                    else {
-//                        gen[count].bp_entry = 0x18;
-//                        gen[count].rt_index = 0x05;
-//                    }
-//                }
-//                break;
-//
-//            case 0x0042:    /* Monest + 30 Mothmants */
-//                gen[count].bp_entry = 0x01;
-//                gen[count].rt_index = 0x04;
-//
-//                for(j = 0; j < 30; ++j) {
-//                    ++count;
-//                    gen[count].bp_entry = 0x00;
-//                    gen[count].rt_index = 0x03;
-//                    gen[count].area = area;
-//                }
-//                break;
-//
-//            case 0x0043:    /* Savage Wolf & Barbarous Wolf */
-//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
-//                gen[count].bp_entry = 0x02 + acc;
-//                gen[count].rt_index = 0x07 + acc;
-//                break;
-//
-//            case 0x0044:    /* Booma family */
-//                acc = me.skin % 3;
-//                gen[count].bp_entry = 0x4B + acc;
-//                gen[count].rt_index = 0x09 + acc;
-//                break;
-//
-//            case 0x0060:    /* Grass Assassin */
-//                gen[count].bp_entry = 0x4E;
-//                gen[count].rt_index = 0x0C;
-//                break;
-//
-//            case 0x0061:    /* Del Lily, Poison Lily, Nar Lily */
-//                if(ep == 2 && alt) {
-//                    gen[count].bp_entry = 0x25;
-//                    gen[count].rt_index = 0x53;
-//                }
-//                else {
-//                    acc = (me.rare_rate & 0x800000) ? 1 : 0;
-//                    gen[count].bp_entry = 0x04 + acc;
-//                    gen[count].rt_index = 0x0D + acc;
-//                }
-//                break;
-//
-//            case 0x0062:    /* Nano Dragon */
-//                gen[count].bp_entry = 0x1A;
-//                gen[count].rt_index = 0x0F;
-//                break;
-//
-//            case 0x0063:    /* Shark Family */
-//                acc = me.skin % 3;
-//                gen[count].bp_entry = 0x4F + acc;
-//                gen[count].rt_index = 0x10 + acc;
-//                break;
-//
-//            case 0x0064:    /* Slime + 4 clones */
-//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
-//                gen[count].bp_entry = 0x30 - acc;
-//                gen[count].rt_index = 0x13 + acc;
-//
-//                for(j = 0; j < 4; ++j) {
-//                    ++count;
-//                    gen[count].bp_entry = 0x30;
-//                    gen[count].rt_index = 0x13;
-//                    gen[count].area = area;
-//                }
-//                break;
-//
-//            case 0x0065:    /* Pan Arms, Migium, Hidoom */
-//                for(j = 0; j < 3; ++j) {
-//                    gen[count + j].bp_entry = 0x31 + j;
-//                    gen[count + j].rt_index = 0x15 + j;
-//                    gen[count + j].area = area;
-//                }
-//
-//                count += 2;
-//                break;
-//
-//            case 0x0080:    /* Dubchic & Gilchic */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x1B + acc;
-//                gen[count].rt_index = (0x18 + acc) << acc;
-//                break;
-//
-//            case 0x0081:    /* Garanz */
-//                gen[count].bp_entry = 0x1D;
-//                gen[count].rt_index = 0x19;
-//                break;
-//
-//            case 0x0082:    /* Sinow Beat & Sinow Gold */
-//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
-//                if(acc) {
-//                    gen[count].bp_entry = 0x13;
-//                    gen[count].rt_index = 0x1B;
-//                }
-//                else {
-//                    gen[count].bp_entry = 0x06;
-//                    gen[count].rt_index = 0x1A;
-//                }
-//
-//                if(!n_clones)
-//                    n_clones = 4;
-//                break;
-//
-//            case 0x0083:    /* Canadine */
-//                gen[count].bp_entry = 0x07;
-//                gen[count].rt_index = 0x1C;
-//                break;
-//
-//            case 0x0084:    /* Canadine Group */
-//                gen[count].bp_entry = 0x09;
-//                gen[count].rt_index = 0x1D;
-//
-//                for(j = 0; j < 8; ++j) {
-//                    ++count;
-//                    gen[count].bp_entry = 0x08;
-//                    gen[count].rt_index = 0x1C;
-//                    gen[count].area = area;
-//                }
-//                break;
-//
-//            case 0x0085:    /* Dubwitch */
-//                break;
-//
-//            case 0x00A0:    /* Delsaber */
-//                gen[count].bp_entry = 0x52;
-//                gen[count].rt_index = 0x1E;
-//                break;
-//
-//            case 0x00A1:    /* Chaos Sorcerer */
-//                gen[count].bp_entry = 0x0A;
-//                gen[count].rt_index = 0x1F;
-//
-//                /* Bee L */
-//                gen[count + 1].bp_entry = 0x0B;
-//                gen[count + 1].rt_index = 0x00;
-//                gen[count + 1].area = area;
-//
-//                /* Bee R */
-//                gen[count + 2].bp_entry = 0x0C;
-//                gen[count + 2].rt_index = 0x00;
-//                gen[count + 2].area = area;
-//                count += 2;
-//                break;
-//
-//            case 0x00A2:    /* Dark Gunner */
-//                gen[count].bp_entry = 0x1E;
-//                gen[count].rt_index = 0x22;
-//                break;
-//
-//            case 0x00A3:    /* Death Gunner? */
-//                break;
-//
-//            case 0x00A4:    /* Chaos Bringer */
-//                gen[count].bp_entry = 0x0D;
-//                gen[count].rt_index = 0x24;
-//                break;
-//
-//            case 0x00A5:    /* Dark Belra */
-//                gen[count].bp_entry = 0x0E;
-//                gen[count].rt_index = 0x25;
-//                break;
-//
-//            case 0x00A6:    /* Dimenian Family */
-//                acc = me.skin % 3;
-//                gen[count].bp_entry = 0x53 + acc;
-//                gen[count].rt_index = 0x29 + acc;
-//                break;
-//
-//            case 0x00A7:    /* Bulclaw + 4 Claws */
-//                gen[count].bp_entry = 0x1F;
-//                gen[count].rt_index = 0x28;
-//
-//                for(j = 0; j < 4; ++j) {
-//                    ++count;
-//                    gen[count].bp_entry = 0x20;
-//                    gen[count].rt_index = 0x26;
-//                    gen[count].area = area;
-//                }
-//                break;
-//
-//            case 0x00A8:    /* Claw */
-//                gen[count].bp_entry = 0x20;
-//                gen[count].rt_index = 0x26;
-//                break;
-//
-//            case 0x00C0:    /* Dragon or Gal Gryphon */
-//                if(ep == 1) {
-//                    gen[count].bp_entry = 0x12;
-//                    gen[count].rt_index = 0x2C;
-//                }
-//                else {
-//                    gen[count].bp_entry = 0x1E;
-//                    gen[count].rt_index = 0x4D;
-//                }
-//                break;
-//
-//            case 0x00C1:    /* De Rol Le */
-//                gen[count].bp_entry = 0x0F;
-//                gen[count].rt_index = 0x2D;
-//                break;
-//
-//            case 0x00C2:    /* Vol Opt (form 1) */
-//                break;
-//
-//            case 0x00C5:    /* Vol Opt (form 2) */
-//                gen[count].bp_entry = 0x25;
-//                gen[count].rt_index = 0x2E;
-//                break;
-//
-//            case 0x00C8:    /* Dark Falz (3 forms) + 510 Darvants */
-//                /* Deal with the Darvants first. */
-//                for(j = 0; j < 510; ++j) {
-//                    gen[count].bp_entry = 0x35;
-//                    gen[count].area = area;
-//                    gen[count++].rt_index = 0;
-//                }
-//
-//                /* The forms are backwards in their ordering... */
-//                gen[count].bp_entry = 0x38;
-//                gen[count].area = area;
-//                gen[count++].rt_index = 0x2F;
-//
-//                gen[count].bp_entry = 0x37;
-//                gen[count].area = area;
-//                gen[count++].rt_index = 0x2F;
-//
-//                gen[count].bp_entry = 0x36;
-//                gen[count].area = area;
-//                gen[count].rt_index = 0x2F;
-//                break;
-//
-//            case 0x00CA:    /* Olga Flow */
-//                gen[count].bp_entry = 0x2C;
-//                gen[count].rt_index = 0x4E;
-//                count += 512;
-//                break;
-//
-//            case 0x00CB:    /* Barba Ray */
-//                gen[count].bp_entry = 0x0F;
-//                gen[count].rt_index = 0x49;
-//                count += 47;
-//                break;
-//
-//            case 0x00CC:    /* Gol Dragon */
-//                gen[count].bp_entry = 0x12;
-//                gen[count].rt_index = 0x4C;
-//                count += 5;
-//                break;
-//
-//            case 0x00D4:    /* Sinow Berill & Spigell */
-//                /* XXXX: How to do rare? Tethealla looks at skin, Newserv at the
-//                   rare_rate value... */
-//                acc = me.skin >= 0x01 ? 1 : 0;
-//                if(acc) {
-//                    gen[count].bp_entry = 0x13;
-//                    gen[count].rt_index = 0x3F;
-//                }
-//                else {
-//                    gen[count].bp_entry = 0x06;
-//                    gen[count].rt_index = 0x3E;
-//                }
-//
-//                count += 4; /* Add 4 clones which are never used... */
-//                break;
-//
-//            case 0x00D5:    /* Merillia & Meriltas */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x4B + acc;
-//                gen[count].rt_index = 0x34 + acc;
-//                break;
-//
-//            case 0x00D6:    /* Mericus, Merikle, or Mericarol */
-//                acc = me.skin % 3;
-//                if(acc)
-//                    gen[count].bp_entry = 0x44 + acc;
-//                else
-//                    gen[count].bp_entry = 0x3A;
-//
-//                gen[count].rt_index = 0x38 + acc;
-//                break;
-//
-//            case 0x00D7:    /* Ul Gibbon & Zol Gibbon */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x3B + acc;
-//                gen[count].rt_index = 0x3B + acc;
-//                break;
-//
-//            case 0x00D8:    /* Gibbles */
-//                gen[count].bp_entry = 0x3D;
-//                gen[count].rt_index = 0x3D;
-//                break;
-//
-//            case 0x00D9:    /* Gee */
-//                gen[count].bp_entry = 0x07;
-//                gen[count].rt_index = 0x36;
-//                break;
-//
-//            case 0x00DA:    /* Gi Gue */
-//                gen[count].bp_entry = 0x1A;
-//                gen[count].rt_index = 0x37;
-//                break;
-//
-//            case 0x00DB:    /* Deldepth */
-//                gen[count].bp_entry = 0x30;
-//                gen[count].rt_index = 0x47;
-//                break;
-//
-//            case 0x00DC:    /* Delbiter */
-//                gen[count].bp_entry = 0x0D;
-//                gen[count].rt_index = 0x48;
-//                break;
-//
-//            case 0x00DD:    /* Dolmolm & Dolmdarl */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x4F + acc;
-//                gen[count].rt_index = 0x40 + acc;
-//                break;
-//
-//            case 0x00DE:    /* Morfos */
-//                gen[count].bp_entry = 0x41;
-//                gen[count].rt_index = 0x42;
-//                break;
-//
-//            case 0x00DF:    /* Recobox & Recons */
-//                gen[count].bp_entry = 0x41;
-//                gen[count].rt_index = 0x43;
-//
-//                for(j = 1; j <= n_clones; ++j) {
-//                    ++count;
-//                    gen[count].bp_entry = 0x42;
-//                    gen[count].rt_index = 0x44;
-//                    gen[count].area = area;
-//                }
-//
-//                /* Don't double count them. */
-//                n_clones = 0;
-//                break;
-//
-//            case 0x00E0:    /* Epsilon, Sinow Zoa & Zele */
-//                if(ep == 2 && alt) {
-//                    gen[count].bp_entry = 0x23;
-//                    gen[count].rt_index = 0x54;
-//                    count += 4;
-//                }
-//                else {
-//                    acc = me.skin & 0x01;
-//                    gen[count].bp_entry = 0x43 + acc;
-//                    gen[count].rt_index = 0x45 + acc;
-//                }
-//                break;
-//
-//            case 0x00E1:    /* Ill Gill */
-//                gen[count].bp_entry = 0x26;
-//                gen[count].rt_index = 0x52;
-//                break;
-//
-//            case 0x0110:    /* Astark */
-//                gen[count].bp_entry = 0x09;
-//                gen[count].rt_index = 0x01;
-//                break;
-//
-//            case 0x0111:    /* Satellite Lizard & Yowie */
-//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
-//                if(alt)
-//                    gen[count].bp_entry = 0x0D + acc + 0x10;
-//                else
-//                    gen[count].bp_entry = 0x0D + acc;
-//
-//                gen[count].rt_index = 0x02 + acc;
-//                break;
-//
-//            case 0x0112:    /* Merissa A/AA */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x19 + acc;
-//                gen[count].rt_index = 0x04 + acc;
-//                break;
-//
-//            case 0x0113:    /* Girtablulu */
-//                gen[count].bp_entry = 0x1F;
-//                gen[count].rt_index = 0x06;
-//                break;
-//
-//            case 0x0114:    /* Zu & Pazuzu */
-//                acc = me.skin & 0x01;
-//                if(alt)
-//                    gen[count].bp_entry = 0x07 + acc + 0x14;
-//                else
-//                    gen[count].bp_entry = 0x07 + acc;
-//
-//                gen[count].rt_index = 7 + acc;
-//                break;
-//
-//            case 0x0115:    /* Boota Family */
-//                acc = me.skin % 3;
-//                gen[count].rt_index = 0x09 + acc;
-//                if(me.skin & 0x02)
-//                    gen[count].bp_entry = 0x03;
-//                else
-//                    gen[count].bp_entry = 0x00 + acc;
-//                break;
-//
-//            case 0x0116:    /* Dorphon & Eclair */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x0F + acc;
-//                gen[count].rt_index = 0x0C + acc;
-//                break;
-//
-//            case 0x0117:    /* Goran Family */
-//                acc = me.skin % 3;
-//                gen[count].bp_entry = 0x11 + acc;
-//                if(me.skin & 0x02)
-//                    gen[count].rt_index = 0x0F;
-//                else if(me.skin & 0x01)
-//                    gen[count].rt_index = 0x10;
-//                else
-//                    gen[count].rt_index = 0x0E;
-//                break;
-//
-//            case 0x119: /* Saint Million, Shambertin, & Kondrieu */
-//                acc = me.skin & 0x01;
-//                gen[count].bp_entry = 0x22;
-//                if(me.rare_rate & 0x800000)
-//                    gen[count].rt_index = 0x15;
-//                else
-//                    gen[count].rt_index = 0x13 + acc;
-//                break;
-//
-//            default:
-//                //gen[count].rt_index = me.base_type;
-//                //gen[count].bp_entry = 0x22;
-//#ifdef VERBOSE_DEBUGGING1
-//                ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", me.base_type, me.rt_index, me.skin, me.num_children);
-//#endif
-//                break;
-//        }
-//
-//        /* Increment the counter, as needed */
-//        if(n_clones) {
-//            for(j = 0; j < n_clones; ++j, ++count) {
-//                gen[count + 1].rt_index = gen[count].rt_index;
-//                gen[count + 1].bp_entry = gen[count].bp_entry;
-//                gen[count + 1].area = area;
-//            }
-//        }
-//        ++count;
-//    }
-//
-//    /* Resize, so as not to waste space */
-//    if(!(tmp = realloc(gen, sizeof(game_enemy_t) * count))) {
-//        ERR_LOG("无法重置 %d 个敌人结构的内存大小: %s", count, strerror(errno));
-//        tmp = gen;
-//    }
-//
-//    game->enemies = (game_enemy_t *)tmp;
-//    game->count = count;
-//
-//    return 0;
-//}
-
 /* 地图解析函数 */
 static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     int ep, int alt, int area, sfmt_t* sfmt, psocn_rare_enemy_rates_t rare_rate) {
@@ -819,7 +269,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;// Set rare from a quest由任务来设置出现概率?
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->hildeblue)) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->hildeblue)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -837,7 +287,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->rappy)) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->rappy)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -938,7 +388,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if ((rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->nar_lily)) {
+            else if ((rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->nar_lily)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -949,7 +399,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 gen[count].rt_index = 0x53;
             }
             else {
-                acc = (me.rare_rate & rare_monster_rate->nar_lily) ? 1 : 0;
+                acc = (expand_rate(me.rare_rate) < rare_monster_rate->nar_lily) ? 1 : 0;
                 if (rare_monster)
                     acc = 1;
                 gen[count].bp_entry = 0x04 + acc;
@@ -970,11 +420,11 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x0064:    /* Slime + 4 clones */
             rare_monster = false;
-            acc = (me.rare_rate & rare_monster_rate->pouilly_slime) ? 1 : 0;
+            acc = (expand_rate(me.rare_rate) < rare_monster_rate->pouilly_slime) ? 1 : 0;
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->pouilly_slime)) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->pouilly_slime)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -989,7 +439,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 ++count;
                 gen[count].area = area;
                 rare_monster = false;
-                if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->pouilly_slime)) {
+                if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->pouilly_slime)) {
                     rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                     //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                     rare_enemy_count++;
@@ -1320,7 +770,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0112:    /* Merissa A/AA */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->merissa_aa)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->merissa_aa)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1340,7 +790,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0114:    /* Zu & Pazuzu */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->pazuzu)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->pazuzu)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1368,7 +818,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0116:    /* Dorphon & Eclair */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->dorphon_eclair)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->dorphon_eclair)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1396,14 +846,14 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             gen[count].bp_entry = 0x22;
 
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->kondrieu)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->kondrieu)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
                 rare_monster = true;
             }
 
-            if (me.rare_rate & rare_monster_rate->kondrieu || rare_monster)
+            if (expand_rate(me.rare_rate) < rare_monster_rate->kondrieu || rare_monster)
                 gen[count].rt_index = 0x15;
             else
                 gen[count].rt_index = 0x13 + acc;

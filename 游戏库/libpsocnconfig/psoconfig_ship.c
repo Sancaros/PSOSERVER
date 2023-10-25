@@ -452,17 +452,18 @@ err:
 }
 
 static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
-    xmlChar* globla_exp_mult,* monster_rare_drop_mult,* box_rare_drop_mult;
+    xmlChar* globla_exp_mult, * monster_rare_mult,* monster_rare_drop_mult,* box_rare_drop_mult;
     int rv = 0;
     long rv2;
 
     /* Grab the attributes of the tag. */
     globla_exp_mult = xmlGetProp(n, XC"globla_exp_mult");
+    monster_rare_mult = xmlGetProp(n, XC"monster_rare_mult");
     monster_rare_drop_mult = xmlGetProp(n, XC"monster_rare_drop_mult");
     box_rare_drop_mult = xmlGetProp(n, XC"box_rare_drop_mult");
 
     /* Make sure we have all of them... */
-    if (!globla_exp_mult || !monster_rare_drop_mult || !box_rare_drop_mult) {
+    if (!globla_exp_mult || !monster_rare_mult || !monster_rare_drop_mult || !box_rare_drop_mult) {
         ERR_LOG("倍率设置不完整");
         rv = -1;
         goto err;
@@ -483,12 +484,25 @@ static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
 
     /* Parse the game event out */
     errno = 0;
+    rv2 = strtol((char*)monster_rare_mult, NULL, 0);
+
+    if (errno || rv2 > 100 || rv2 < 0) {
+        ERR_LOG("稀有怪物出现倍率无效: %s",
+            (char*)monster_rare_mult);
+        rv = -3;
+        goto err;
+    }
+
+    cur->monster_rare_mult = rv2;
+
+    /* Parse the game event out */
+    errno = 0;
     rv2 = strtol((char*)monster_rare_drop_mult, NULL, 0);
 
     if (errno || rv2 > 1000 || rv2 < 0) {
         ERR_LOG("怪物掉落倍率无效或超出限制: %s 最大:1000",
             (char*)monster_rare_drop_mult);
-        rv = -2;
+        rv = -4;
         goto err;
     }
 
@@ -501,7 +515,7 @@ static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
     if (errno || rv2 > 1000 || rv2 < 0) {
         ERR_LOG("箱子掉落倍率无效或超出限制: %s 最大:1000",
             (char*)box_rare_drop_mult);
-        rv = -2;
+        rv = -5;
         goto err;
     }
 
@@ -509,6 +523,7 @@ static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
 
 err:
     xmlFree(globla_exp_mult);
+    xmlFree(monster_rare_mult);
     xmlFree(monster_rare_drop_mult);
     xmlFree(box_rare_drop_mult);
     return rv;
@@ -969,6 +984,7 @@ static int handle_rare_monster_mult_rate(xmlNode* n, psocn_ship_t* cur) {
         , * dorphon_eclair, * kondrieu
         ;
     int rv = 0;
+    uint32_t rare_mult = 1;
     char* endptr;
 
     /* Grab the attributes of the tag. */
@@ -988,14 +1004,29 @@ static int handle_rare_monster_mult_rate(xmlNode* n, psocn_ship_t* cur) {
     }
 
     /* 分析设置概率参数 */
-    cur->rare_monster_mult_rates.hildeblue = (uint32_t)strtoul((char*)hildeblue, &endptr, 0);
-    cur->rare_monster_mult_rates.rappy = (uint32_t)strtoul((char*)rappy, &endptr, 0);
-    cur->rare_monster_mult_rates.nar_lily = (uint32_t)strtoul((char*)nar_lily, &endptr, 0);
-    cur->rare_monster_mult_rates.pouilly_slime = (uint32_t)strtoul((char*)pouilly_slime, &endptr, 0);
-    cur->rare_monster_mult_rates.merissa_aa = (uint32_t)strtoul((char*)merissa_aa, &endptr, 0);
-    cur->rare_monster_mult_rates.pazuzu = (uint32_t)strtoul((char*)pazuzu, &endptr, 0);
-    cur->rare_monster_mult_rates.dorphon_eclair = (uint32_t)strtoul((char*)dorphon_eclair, &endptr, 0);
-    cur->rare_monster_mult_rates.kondrieu = (uint32_t)strtoul((char*)kondrieu, &endptr, 0);
+    if (cur->monster_rare_mult)
+        rare_mult = cur->monster_rare_mult;
+
+#ifdef DEBUG
+
+    DBG_LOG("%d", rare_mult);
+
+#endif // DEBUG
+
+
+    cur->rare_monster_mult_rates.hildeblue = (strtod((char*)hildeblue, &endptr) * rare_mult);
+    cur->rare_monster_mult_rates.rappy = (strtod((char*)rappy, &endptr) * rare_mult);
+    cur->rare_monster_mult_rates.nar_lily = (strtod((char*)nar_lily, &endptr) * rare_mult);
+    cur->rare_monster_mult_rates.pouilly_slime = (strtod((char*)pouilly_slime, &endptr) * rare_mult);
+    cur->rare_monster_mult_rates.merissa_aa = (strtod((char*)merissa_aa, &endptr) * rare_mult);
+    cur->rare_monster_mult_rates.pazuzu = (strtod((char*)pazuzu, &endptr) * rare_mult);
+    cur->rare_monster_mult_rates.dorphon_eclair = (strtod((char*)dorphon_eclair, &endptr) * rare_mult);
+    cur->rare_monster_mult_rates.kondrieu = (strtod((char*)kondrieu, &endptr) * rare_mult);
+
+#ifdef DEBUG
+    DBG_LOG("%lf", cur->rare_monster_mult_rates.hildeblue);
+    getchar();
+#endif // DEBUG
 
     if (*endptr != '\0') {
         ERR_LOG("获取的稀有怪物出现概率错误, 改为获取默认值");
@@ -1007,21 +1038,21 @@ static int handle_rare_monster_mult_rate(xmlNode* n, psocn_ship_t* cur) {
         xmlFree(pazuzu);
         xmlFree(dorphon_eclair);
         xmlFree(kondrieu);
-        cur->rare_monster_mult_rates.hildeblue = default_rare_monster_rates.hildeblue;
-        cur->rare_monster_mult_rates.rappy = default_rare_monster_rates.rappy;
-        cur->rare_monster_mult_rates.nar_lily = default_rare_monster_rates.nar_lily;
-        cur->rare_monster_mult_rates.pouilly_slime = default_rare_monster_rates.pouilly_slime;
-        cur->rare_monster_mult_rates.merissa_aa = default_rare_monster_rates.merissa_aa;
-        cur->rare_monster_mult_rates.pazuzu = default_rare_monster_rates.pazuzu;
-        cur->rare_monster_mult_rates.dorphon_eclair = default_rare_monster_rates.dorphon_eclair;
-        cur->rare_monster_mult_rates.kondrieu = default_rare_monster_rates.kondrieu;
+        cur->rare_monster_mult_rates.hildeblue = (default_rare_monster_rates.hildeblue * rare_mult);
+        cur->rare_monster_mult_rates.rappy = (default_rare_monster_rates.rappy * rare_mult);
+        cur->rare_monster_mult_rates.nar_lily = (default_rare_monster_rates.nar_lily * rare_mult);
+        cur->rare_monster_mult_rates.pouilly_slime = (default_rare_monster_rates.pouilly_slime * rare_mult);
+        cur->rare_monster_mult_rates.merissa_aa = (default_rare_monster_rates.merissa_aa * rare_mult);
+        cur->rare_monster_mult_rates.pazuzu = (default_rare_monster_rates.pazuzu * rare_mult);
+        cur->rare_monster_mult_rates.dorphon_eclair = (default_rare_monster_rates.dorphon_eclair * rare_mult);
+        cur->rare_monster_mult_rates.kondrieu = (default_rare_monster_rates.kondrieu * rare_mult);
         goto err;
     }
 
 #ifdef DEBUG
 
     for (size_t x = 0; x < _countof(default_rare_monster_rates.rate); x++) {
-        DBG_LOG("%d 0x%08X", x, cur->rare_monster_mult_rates.rate[x]);
+        DBG_LOG("%d %lf", x, cur->rare_monster_mult_rates.rate[x]);
     }
 
 #endif // DEBUG
