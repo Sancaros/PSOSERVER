@@ -511,16 +511,23 @@ static void print_config(psocn_ship_t* cfg) {
     if (cfg->bb_rtdata_file)
         CONFIG_LOG("Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
 
+    CONFIG_LOG("写入 服务器倍率/////////////////////////");
+
+    CONFIG_LOG("舰船经验倍率:             %d", cfg->globla_exp_mult);
+    CONFIG_LOG("稀有怪物出现概率倍率:     %d", cfg->monster_rare_mult);
+    CONFIG_LOG("怪物稀有掉落倍率:         %d", cfg->monster_rare_drop_mult);
+    CONFIG_LOG("箱子稀有掉落倍率:         %d", cfg->box_rare_drop_mult);
+
     CONFIG_LOG("写入 稀有怪物出现概率/////////////////////////");
 
-    CONFIG_LOG("稀有雷暴巨猿出现概率:     0x%08X", cfg->rare_monster_mult_rates.hildeblue);
-    CONFIG_LOG("稀有拉比出现概率:         0x%08X", cfg->rare_monster_mult_rates.rappy);
-    CONFIG_LOG("稀有异种铃兰出现概率:     0x%08X", cfg->rare_monster_mult_rates.nar_lily);
-    CONFIG_LOG("稀有炎史莱姆出现概率:     0x%08X", cfg->rare_monster_mult_rates.pouilly_slime);
-    CONFIG_LOG("稀有媚影沙魔AA出现概率:   0x%08X", cfg->rare_monster_mult_rates.merissa_aa);
-    CONFIG_LOG("稀有变异羚角鸟出现概率:   0x%08X", cfg->rare_monster_mult_rates.pazuzu);
-    CONFIG_LOG("稀有铁甲巨象出现概率:     0x%08X", cfg->rare_monster_mult_rates.dorphon_eclair);
-    CONFIG_LOG("稀有空间龙出现概率:       0x%08X", cfg->rare_monster_mult_rates.kondrieu);
+    CONFIG_LOG("稀有雷暴巨猿出现概率:     %lf", cfg->rare_monster_mult_rates.hildeblue);
+    CONFIG_LOG("稀有拉比出现概率:         %lf", cfg->rare_monster_mult_rates.rappy);
+    CONFIG_LOG("稀有异种铃兰出现概率:     %lf", cfg->rare_monster_mult_rates.nar_lily);
+    CONFIG_LOG("稀有炎史莱姆出现概率:     %lf", cfg->rare_monster_mult_rates.pouilly_slime);
+    CONFIG_LOG("稀有媚影沙魔AA出现概率:   %lf", cfg->rare_monster_mult_rates.merissa_aa);
+    CONFIG_LOG("稀有变异羚角鸟出现概率:   %lf", cfg->rare_monster_mult_rates.pazuzu);
+    CONFIG_LOG("稀有铁甲巨象出现概率:     %lf", cfg->rare_monster_mult_rates.dorphon_eclair);
+    CONFIG_LOG("稀有空间龙出现概率:       %lf", cfg->rare_monster_mult_rates.kondrieu);
 
     CONFIG_LOG("写入 掉落限制参数/////////////////////////");
     CONFIG_LOG("装置 +/- 限制: v2: %s, GC: %s, BB: %s",
