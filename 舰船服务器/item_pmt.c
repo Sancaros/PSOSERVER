@@ -2762,7 +2762,8 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
 #ifdef DEBUG
                 DBG_LOG("ITEM_TYPE_WEAPON");
 #endif // DEBUG
-                if(eparts[2] == itemcombination_bb[i].equipped_item[2])
+                if(eparts[1] == itemcombination_bb[i].equipped_item[1] && 
+                    eparts[2] == itemcombination_bb[i].equipped_item[2])
                     /* 获取数据并将其复制出来 */
                     memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
                 else
@@ -2772,7 +2773,8 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
 
             case ITEM_TYPE_GUARD:
 
-                if (eparts[2] == itemcombination_bb[i].equipped_item[2]) {
+                if (eparts[1] == itemcombination_bb[i].equipped_item[1] && 
+                    eparts[2] == itemcombination_bb[i].equipped_item[2]) {
 
 #ifdef DEBUG
                     DBG_LOG("ITEM_TYPE_WEAPON");
@@ -3021,7 +3023,11 @@ pmt_special_bb_t* get_special_type_bb(uint8_t datab4) {
     uint8_t special = datab4 & 0x3F;
 
     if (special >= ITEM_TYPE_WEAPON_SPECIAL_NUM) {
+#ifdef DEBUG
+
         ERR_LOG("无效特殊攻击索引");
+
+#endif // DEBUG
         return NULL;
     }
 

@@ -437,7 +437,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     tmp = gnutls_credentials_set(rv->session, GNUTLS_CRD_CERTIFICATE, tls_cred);
     if (tmp < 0) {
         ERR_LOG("GNUTLS *** 注意: TLS 匿名凭据错误: %s", gnutls_strerror(tmp));
-        goto err_tls;
+        goto err_cert;
     }
 
     gnutls_certificate_server_set_request(rv->session, GNUTLS_CERT_REQUIRE);
@@ -455,7 +455,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
 
     if (tmp < 0) {
         ERR_LOG("GNUTLS *** 注意: 地址 %s:%d TLS 握手失败 %s", ipstr, sock, gnutls_strerror(tmp));
-        goto err_hs;
+        goto err_cert;
     }
     else {
         SGATE_LOG("GNUTLS *** TLS 握手成功");
@@ -585,9 +585,7 @@ research_cert:
 
 err_cert:
     pthread_mutex_destroy(&rv->pkt_mutex);
-err_tls:
     gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
-err_hs:
     closesocket(sock);
     gnutls_deinit(rv->session);
     free_safe(rv);

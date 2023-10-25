@@ -1481,6 +1481,15 @@ typedef struct subcmd_bb_itemreq {
 } PACKED subcmd_bb_itemreq_t;
 
 // 0x61: levelup_req
+typedef struct subcmd_levelup_req {
+    dc_pkt_hdr_t hdr;
+    unused_hdr_t shdr; /* 0x00 0x85 0x03 0x61*/
+    uint16_t unk1; /* 0x0002*/
+    uint16_t unk2; /* ·¿Ö÷ 0x0021? ·¿2 0x0001*/
+    uint32_t unk3;
+} PACKED subcmd_levelup_req_t;
+
+// 0x61: levelup_req
 typedef struct subcmd_bb_levelup_req {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr; /* 0x00 0x85 0x03 0x61*/

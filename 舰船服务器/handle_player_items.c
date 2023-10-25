@@ -1138,8 +1138,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         should_add_item = true;
     }
     else {
-        switch (item.datab[0])
-        {
+        switch (item.datab[0]) {
         case ITEM_TYPE_WEAPON:
             switch (item.datab[1]) {
             case 0x33:
@@ -1789,7 +1788,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         default:
-        combintion_other:
+combintion_other:
             // Use item combinations table from ItemPMT
             bool combo_applied = false;
             pmt_itemcombination_bb_t combo = { 0 };
@@ -1862,7 +1861,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     DBG_LOG("result_item 0x%02X 0x%02X 0x%02X", combo.result_item[0], combo.result_item[1], combo.result_item[2]);
                     print_item_data(&inv_item->data, src->version);
 #endif // DEBUG
-                    }
+                }
 
                 __except (crash_handler(GetExceptionInformation())) {
                     // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。

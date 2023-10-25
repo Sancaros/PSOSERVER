@@ -338,15 +338,14 @@ void generate_common_mag_variances(item_t* item, uint8_t color) {
 
 void generate_common_tool_type(uint8_t tool_class, item_t* item) {
 	uint8_t data[2] = { 0 };
-	if (find_tool_by_class(tool_class, data)) {
+	if (!find_tool_by_class(tool_class, data)) {
 #ifdef DEBUG
 		ERR_LOG("无效物品类别 %d", tool_class);
 #endif // DEBUG
-		return;
+		item->datab[0] = ITEM_TYPE_TOOL;
+		item->datab[1] = data[0];
+		item->datab[2] = data[1];
 	}
-	item->datab[0] = ITEM_TYPE_TOOL;
-	item->datab[1] = data[0];
-	item->datab[2] = data[1];
 }
 
 uint8_t generate_tech_disk_level(sfmt_t* rng, uint32_t tech_num, uint32_t area_norm, pt_bb_entry_t* ent) {
@@ -376,14 +375,17 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 	}
 
 	generate_common_tool_type(tool_class, item);
-	// 法术光盘
-	if (item->datab[1] == ITEM_SUBTYPE_DISK) {
-		item->datab[4] = get_rand_from_weighted_tables_2d_vertical(rng,
-			ent->technique_index_prob_table, area_norm, 19, 10);
-		item->datab[2] = generate_tech_disk_level(rng, item->datab[4], area_norm, ent);
-		clear_tool_item_if_invalid(item);
+
+	if (!item_not_identification_bb(item->datal[0], item->datal[1])) {
+		// 法术光盘
+		if (item->datab[1] == ITEM_SUBTYPE_DISK) {
+			item->datab[4] = get_rand_from_weighted_tables_2d_vertical(rng,
+				ent->technique_index_prob_table, area_norm, 19, 10);
+			item->datab[2] = generate_tech_disk_level(rng, item->datab[4], area_norm, ent);
+			clear_tool_item_if_invalid(item);
+		}
+		get_item_amount(item, 1);
 	}
-	get_item_amount(item, 1);
 }
 
 /* drop_sub TODO */
@@ -408,7 +410,11 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 				break;
 			default:
 				if (area > 14) {
-					ERR_LOG("%s 章节 %d 区域数字大于10 %d", get_lobby_leader_describe(l), l->episode, area);
+#ifdef DEBUG
+
+					ERR_LOG("%s 章节 %d 区域数字大于10 %d", get_lobby_leader_describe(l), l->episode, area)
+
+#endif // DEBUG;
 					pt_area = 10;
 				}else
 					pt_area = area;
@@ -452,7 +458,11 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 			// TODO: Figure out remaps for Episode 4 (if there are any)
 			pt_area = area + 1;
 			if (pt_area > 10) {
+#ifdef DEBUG
+
 				ERR_LOG("%s 章节 %d 区域数字大于10 %d", get_lobby_leader_describe(l), l->episode, area);
+
+#endif // DEBUG
 				pt_area = 10;
 			}
 

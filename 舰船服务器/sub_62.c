@@ -1242,7 +1242,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             LOBBY_MOB_DROPITEM_LOG(p2, mid, pt_index, drop_area, pt_area, &item);
             if (is_item_empty(&item)) {
                 pthread_mutex_unlock(&p2->mutex);
-                ITEM_LOG("未产生掉落");
                 continue;
             }
 
@@ -1275,7 +1274,6 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         LOBBY_MOB_DROPITEM_LOG(src, mid, pt_index, drop_area, pt_area, &item);
         if (is_item_empty(&item)) {
             pthread_mutex_unlock(&src->mutex);
-            ITEM_LOG("未产生掉落");
             return 0;
         }
 

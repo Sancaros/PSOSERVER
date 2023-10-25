@@ -3811,14 +3811,71 @@ static int sub60_5F_dc(ship_client_t* src, ship_client_t* dest,
     }
 }
 
-static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_levelup_req_t* pkt) {
+static int sub60_61_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_levelup_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
+
+    //[2023年10月24日 11:19:03:660] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x61 版本 gc(3) 的处理
+    //[2023年10月24日 11:19:03:666] 调试(sub_60.c 7649): 未知 GC 0x60 指令: 0x61
+    //[2023年10月24日 11:19:03:672] 调试(f_logs.h 0591): 数据包如下:
+    //(00000000) 60 00 10 00 61 03 00 00  00 00 01 00 02 00 00 00    `...a...........
 
     if (!in_game(src))
         return -1;
 
-    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_levelup_req_t), 0xFF))
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_levelup_req_t), 0x03))
+        return -2;
+
+    //ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
+static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_levelup_req_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+//[2023年10月24日 15:56:56:031] 物品(sub_62.c 1278): 未产生掉落
+//[2023年10月24日 15:56:56:064] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
+//(00000010) 02 00 00 00    ....
+//
+//[2023年10月24日 15:57:06:064] 物品(sub_62.c 1278): 未产生掉落
+//[2023年10月24日 15:57:06:097] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
+//(00000010) 02 00 00 00    ....
+//
+//[2023年10月24日 15:57:09:930] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
+//(00000010) 02 00 00 00    ....
+//
+//[2023年10月24日 15:57:12:731] 物品(sub_62.c 1278): 未产生掉落
+//[2023年10月24日 15:57:12:764] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
+//(00000010) 02 00 00 00    ....
+//
+//[2023年10月24日 15:57:36:264] 物品(sub_62.c 1278): 未产生掉落
+//[2023年10月24日 15:57:36:296] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
+//(00000010) 02 00 00 00    ....
+//
+//[2023年10月24日 15:57:39:431] 物品(sub_62.c 1278): 未产生掉落
+//[2023年10月24日 15:57:39:463] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
+//(00000010) 02 00 00 00    ....
+//
+//[2023年10月24日 15:57:40:864] 物品(sub_62.c 1278): 未产生掉落
+//[2023年10月24日 15:57:42:965] 物品(sub_62.c 1278): 未产生掉落
+//[2023年10月24日 15:57:42:997] 调试(f_logs.h 0591): 数据包如下:
+//(00000000) 14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
+//(00000010) 02 00 00 00    ....
+
+    //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_levelup_req_t), 0x03))
         return -2;
 
     //ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
@@ -7498,7 +7555,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_ITEM_DROP_BOX_ENEMY        , sub60_5F_dc, sub60_5F_dc, NULL,        sub60_5F_dc, sub60_5F_dc, NULL        },
 
     //cmd_type 60 - 6F                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_LEVEL_UP_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
+    { SUBCMD60_LEVEL_UP_REQ               , sub60_61_dc, sub60_61_dc, NULL,        sub60_61_dc, sub60_61_dc, sub60_61_bb },
     { SUBCMD60_ITEM_GROUND_DESTROY        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
     { SUBCMD60_USE_STAR_ATOMIZER          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
     { SUBCMD60_CREATE_ENEMY_SET           , sub60_67_dc, sub60_67_dc, NULL,        sub60_67_dc, sub60_67_dc, sub60_67_bb },
