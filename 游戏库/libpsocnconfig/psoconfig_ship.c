@@ -452,15 +452,17 @@ err:
 }
 
 static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
-    xmlChar* globla_exp_mult;
-    int rv;
+    xmlChar* globla_exp_mult,* monster_rare_drop_mult,* box_rare_drop_mult;
+    int rv = 0;
     long rv2;
 
     /* Grab the attributes of the tag. */
     globla_exp_mult = xmlGetProp(n, XC"globla_exp_mult");
+    monster_rare_drop_mult = xmlGetProp(n, XC"monster_rare_drop_mult");
+    box_rare_drop_mult = xmlGetProp(n, XC"box_rare_drop_mult");
 
     /* Make sure we have all of them... */
-    if (!globla_exp_mult) {
+    if (!globla_exp_mult || !monster_rare_drop_mult || !box_rare_drop_mult) {
         ERR_LOG("倍率设置不完整");
         rv = -1;
         goto err;
@@ -479,17 +481,36 @@ static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
 
     cur->globla_exp_mult = rv2;
 
-#ifdef DEBUG
+    /* Parse the game event out */
+    errno = 0;
+    rv2 = strtol((char*)monster_rare_drop_mult, NULL, 0);
 
-    DBG_LOG("cur->globla_exp_mult %d", cur->globla_exp_mult);
+    if (errno || rv2 > 1000 || rv2 < 0) {
+        ERR_LOG("怪物掉落倍率无效或超出限制: %s 最大:1000",
+            (char*)monster_rare_drop_mult);
+        rv = -2;
+        goto err;
+    }
 
-#endif // DEBUG
+    cur->monster_rare_drop_mult = rv2;
 
-    xmlFree(globla_exp_mult);
-    return 0;
+    /* Parse the game event out */
+    errno = 0;
+    rv2 = strtol((char*)box_rare_drop_mult, NULL, 0);
+
+    if (errno || rv2 > 1000 || rv2 < 0) {
+        ERR_LOG("箱子掉落倍率无效或超出限制: %s 最大:1000",
+            (char*)box_rare_drop_mult);
+        rv = -2;
+        goto err;
+    }
+
+    cur->box_rare_drop_mult = rv2;
 
 err:
     xmlFree(globla_exp_mult);
+    xmlFree(monster_rare_drop_mult);
+    xmlFree(box_rare_drop_mult);
     return rv;
 }
 

@@ -262,6 +262,8 @@ typedef struct psocn_shipcfg {
     char* gm_file;
     psocn_limit_config_t* limits;
     uint32_t globla_exp_mult;
+    uint32_t monster_rare_drop_mult;
+    uint32_t box_rare_drop_mult;
     psocn_info_file_t* info_files;
     char* quests_file;
     char* quests_dir;

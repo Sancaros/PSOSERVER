@@ -444,8 +444,6 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->lobby_create = true;
     l->lobby_choice_version = false;
     l->lobby_choice_drop = false;
-    l->monster_rare_drop_mult = 1;
-    l->box_rare_drop_mult = 1;
 
     if(!single_player)
         l->max_clients = 4;
@@ -482,6 +480,8 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->oneperson = single_player;
     /* 保证房间红盒模式 TODO 是否不要开启全局红盒模式 开发个人红盒模式 */
     l->drop_rare = c->game_data->gm_drop_rare;
+    l->monster_rare_drop_mult = ship->cfg->monster_rare_drop_mult > 0 ? ship->cfg->monster_rare_drop_mult : 1;
+    l->box_rare_drop_mult = ship->cfg->box_rare_drop_mult > 0 ? ship->cfg->box_rare_drop_mult : 1;
 
     if(l->oneperson)
         l->flags |= LOBBY_FLAG_SINGLEPLAYER;
