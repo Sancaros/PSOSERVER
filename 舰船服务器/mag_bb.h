@@ -16,6 +16,7 @@
 */
 
 #include <pso_character.h>
+#include <SFMT.h>
 #include "clients.h"
 
 #define MAG_MAX_FEED_TABLE 8
@@ -67,6 +68,25 @@ typedef struct magfeedresultslistoffsets {
 #endif
 
 #undef PACKED
+
+typedef struct special_mag_random_pb {
+	uint8_t datab3;
+	uint8_t data2b2;
+	char* desc;
+}special_mag_random_pb_t;
+
+static const special_mag_random_pb_t smrpb[] = {
+	{0xCD, 0x07, "Leilla/Mylla & Youlla/Estlla"},/* 左 Leilla 中 Mylla & Youlla 右 Estlla */
+	{0x9D, 0x07, "Golla/Mylla & Youlla/Pilla"},/* 左 Golla 中 Mylla & Youlla 右 Pilla */
+	{0x45, 0x07, "Golla/Mylla & Youlla/Farlla"},/* 左 Golla 中 Mylla & Youlla 右 Farlla */
+	{0x01, 0x07, "Golla/Estlla/Farlla"},/* 左 Golla 中 Estlla 右 Farlla */
+	{0xE5, 0x07, "Pilla/Mylla & Youlla/Leilla"},/* 左 Pilla 中 Mylla & Youlla 右 Leilla */
+};
+
+/* 检测是否是特殊玛古 */
+bool is_special_mag(item_t* mag, uint8_t section, uint8_t ch_class);
+bool check_mag_slot_has_pb(const item_t* item);
+int add_reward_special_mag_pb(ship_client_t* src, sfmt_t* sfmt);
 
 /* 计算玛古等级 */
 uint16_t compute_mag_level(const item_t* item);

@@ -504,4 +504,6 @@ uint8_t get_common_frame_subtype_range_for_difficult(uint8_t ÄÑ¶È, uint8_t Çø¼äÖ
 uint8_t get_common_barrier_subtype_range_for_difficult(uint8_t ÄÑ¶È, uint8_t Çø¼äÖµ, sfmt_t* rng);
 uint8_t get_common_random_unit_subtype_value(uint8_t ÄÑ¶È, sfmt_t* rng);
 
+bool check_mag_has_pb(const item_t* mag);
+
 #endif /* !PMTDATA_H */

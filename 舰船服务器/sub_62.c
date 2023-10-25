@@ -3117,6 +3117,12 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             magitemstat_t stats;
             ItemMagStats_init(&stats, get_player_msg_color_set(src));
             assign_mag_stats(&item, &stats);
+            if (!check_mag_has_pb(&item)) {
+                uint32_t rng = rand_int(&src->sfmt_rng, _countof(smrpb));
+                item.datab[3] = smrpb[rng].datab3;
+                item.data2b[2] = smrpb[rng].data2b2;
+                item.data2b[3] = get_player_msg_color_set(src);
+            }
             break;
 
         case ITEM_TYPE_TOOL: // Ò©Æ·¹¤¾ß

@@ -2255,6 +2255,7 @@ void show_lobby_cmd_help_msg(ship_client_t* src) {
             send_msg(src, MSG_BOX_TYPE,
                 "-----------------------大厅指令菜单-----------------------\n"
                 "/pl 玩家专属菜单,功能性菜单\n"
+                "/fixsmag 修正无技能玛古,请先装备该玛古且玛古达10级以上\n"
                 "/clean [inv/bank/quest1/quest2] 用于清理数据 急救 慎用！！！！\n"
                 //"/npcskin 切换为其他NPC皮肤 (范围0 - 5, 0为角色皮肤)\n"
                 //"/save slot 保存某一个槽位角色的数据, slot范围 0 - 3\n"

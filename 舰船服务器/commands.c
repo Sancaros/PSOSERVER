@@ -99,6 +99,8 @@ static command_t cmds[] = {
     { "enablebk" , handle_enablebk      },
     { "disablebk", handle_disablebk     },
     { "noevent"  , handle_noevent       },
+    { "npcskin"  , handle_npcskin       },
+    { "fixsmag"  , handle_fixsmag       },
     /////////////////////////////////////////// 以下是玩家房间指令
     { "minlvl"   , handle_min_level     },
     { "maxlvl"   , handle_max_level     },
@@ -145,7 +147,6 @@ static command_t cmds[] = {
     { "qr"       , handle_quick_return  },
     { "lb"       , handle_lobby         },
     { "matuse"   , handle_matuse        },
-    { "npcskin"  , handle_npcskin       },
     { "susi"     , handle_susi          },
     { ""         , NULL                 }     /* End marker -- DO NOT DELETE */
 };

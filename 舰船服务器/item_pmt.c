@@ -3178,7 +3178,7 @@ pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32
         case ITEM_SUBTYPE_BARRIER:
             pmt_guard_bb_t guard = { 0 };
             if (err = pmt_lookup_guard_bb(datal1, &guard)) {
-                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+                ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d", err);
                 item_base_check.err = err;
                 break;
             }
@@ -3205,7 +3205,7 @@ pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32
     case ITEM_TYPE_MAG:
         pmt_mag_bb_t mag = { 0 };
         if (err = pmt_lookup_mag_bb(datal1, &mag)) {
-            ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+            ERR_LOG("pmt_lookup_mag_bb 不存在数据! 错误码 %d", err);
             item_base_check.err = err;
             break;
         }
@@ -3215,7 +3215,7 @@ pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32
     case ITEM_TYPE_TOOL:
         pmt_tool_bb_t tool = { 0 };
         if (err = pmt_lookup_tools_bb(datal1, datal2, &tool)) {
-            ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+            ERR_LOG("pmt_lookup_tools_bb 不存在数据! 错误码 %d", err);
             item_base_check.err = err;
             break;
         }
@@ -3654,4 +3654,19 @@ uint8_t get_common_random_unit_subtype_value(uint8_t 难度, sfmt_t* rng) {
         return values[难度];
     else 
         return values[gen_random_uint32(rng, 难度 - 1,难度)];
+}
+
+bool check_mag_has_pb(const item_t* mag) {
+    errno_t err = 0;
+
+    pmt_mag_bb_t pmtmag = { 0 };
+    if (err = pmt_lookup_mag_bb(mag->datal[0], &pmtmag)) {
+        ERR_LOG("pmt_lookup_mag_bb 不存在数据! 错误码 %d", err);
+        return true;
+    }
+
+    if (pmtmag.photon_blast == 0xFF)
+        return false;
+    else
+        return true;
 }

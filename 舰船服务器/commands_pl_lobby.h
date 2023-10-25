@@ -44,6 +44,7 @@
 #include "rtdata.h"
 #include "scripts.h"
 #include "subcmd_send.h"
+#include "mag_bb.h"
 
 /* 用法: /pl */
 static int handle_player_menu(ship_client_t* c, const char* params) {
@@ -360,4 +361,60 @@ static int handle_noevent(ship_client_t* c, const char* params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
 
     return send_simple(c, LOBBY_EVENT_TYPE, LOBBY_EVENT_NONE);
+}
+
+/* 用法: /npcskin 0 - 5*/
+static int handle_npcskin(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+    uint32_t skinid = 0;
+
+    if (l->type == LOBBY_TYPE_GAME) {
+        return send_txt(c, "%s", __(c, "\tE\tC4无法在游戏房间中使用."));
+    }
+
+    /* Figure out the user requested */
+    errno = 0;
+    skinid = (uint32_t)strtoul(params, NULL, 10);
+
+    if (errno != 0 || skinid > 5) {
+        /* Send a message saying invalid page number */
+        return send_txt(c, "%s", __(c, "\tE\tC4无效皮肤参数.(范围0 - 5, 0为角色皮肤)"));
+    }
+
+    if (skinid > 5) {
+        skinid = 5;
+    }
+
+    if (skinid == 0) {
+        c->bb_pl->character.dress_data.model = 0x00;
+        c->bb_pl->character.dress_data.v2flags = 0x00;
+    }
+    else {
+        c->bb_pl->character.dress_data.model = skinid - 1;
+        c->bb_pl->character.dress_data.v2flags = 0x02;
+    }
+
+    send_block_list(c, ship);
+    return send_txt(c, "皮肤切换为 \tE\tC%d%s\n%s", skinid, npcskin_desc[skinid], __(c, "\tE\tC4请切换大厅立即生效."));
+}
+
+/* 用法: /fixsmag */
+static int handle_fixsmag(ship_client_t* c, const char* params) {
+    int id = 0;
+
+    if (c->version < CLIENT_VERSION_GC)
+        return send_txt(c, "%s", __(c, "\tE\tC4游戏版本不支持."));
+
+    /* Make sure that the requester is in a lobby, not a game */
+    if (c->cur_lobby->type != LOBBY_TYPE_LOBBY)
+        return send_txt(c, "%s", __(c, "\tE\tC4无法在游戏房间中使用."));
+
+    inventory_t* inv = get_client_inv(c);
+    item_t* mag = &inv->iitems[find_equipped_mag(inv)].data;
+    if (!(id = add_reward_special_mag_pb(c, &c->sfmt_rng))) {
+        return send_txt(c, "\tE\tC4%s 修复失败\n%s", item_get_name(mag, c->version, 0), __(c, "\tE\tC4未达10级以上或未装备该玛古或已有PB技能."));
+    }
+
+    send_block_list(c, ship);
+    return send_txt(c, "%s \n\tE\tC6%s \nPB修正为 %s", __(c, "\tE\tC7您的"), item_get_name(mag, c->version, 0), smrpb[id].desc);
 }

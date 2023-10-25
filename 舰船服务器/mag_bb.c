@@ -27,6 +27,7 @@
 #include "handle_player_items.h"
 #include "pmtdata.h"
 #include "mageditdata.h"
+#include "item_random.h"
 
 typedef struct {
 	uint32_t item_pid;
@@ -74,6 +75,154 @@ uint16_t mind_level(magitemstat_t* this) {
 }
 uint16_t level(magitemstat_t* this) {
 	return def_level(this) + pow_level(this) + dex_level(this) + mind_level(this);
+}
+
+bool is_special_mag(item_t* mag, uint8_t section, uint8_t ch_class) {
+	uint8_t old_type;
+	int16_t mDefense, mPower, mDex, mMind;
+
+	old_type = mag->datab[1];
+
+	if (mag->datab[2] >= 100) {
+		mDefense = mag->dataw[2] / 100;//defense
+		mPower = mag->dataw[3] / 100;//Power
+		mDex = mag->dataw[4] / 100;//Dex
+		mMind = mag->dataw[5] / 100;//Mind
+
+		switch (section) {
+		case SID_Viridia:
+		case SID_Bluefull:
+		case SID_Redria:
+		case SID_Whitill:
+			if ((mDefense + mDex) == (mPower + mMind))
+			{
+				switch (ch_class)
+				{
+				case CLASS_HUMAR:
+				case CLASS_HUCAST:
+					mag->datab[1] = Mag_Deva;
+					break;
+				case CLASS_HUNEWEARL:
+				case CLASS_HUCASEAL:
+					mag->datab[1] = Mag_Savitri;
+					break;
+				case CLASS_RAMAR:
+				case CLASS_RACAST:
+					mag->datab[1] = Mag_Pushan;
+					break;
+				case CLASS_RACASEAL:
+				case CLASS_RAMARL:
+					mag->datab[1] = Mag_Rukmin;
+					break;
+				case CLASS_FONEWM:
+				case CLASS_FOMAR:
+					mag->datab[1] = Mag_Nidra;
+					break;
+				case CLASS_FONEWEARL:
+				case CLASS_FOMARL:
+					mag->datab[1] = Mag_Sato;
+					break;
+				default:
+					break;
+				}
+			}
+			break;
+		case SID_Skyly:
+		case SID_Pinkal:
+		case SID_Yellowboze:
+			if ((mDefense + mPower) == (mDex + mMind))
+			{
+				switch (ch_class)
+				{
+				case CLASS_HUMAR:
+				case CLASS_HUCAST:
+					mag->datab[1] = Mag_Rati;
+					break;
+				case CLASS_HUNEWEARL:
+				case CLASS_HUCASEAL:
+					mag->datab[1] = Mag_Savitri;
+					break;
+				case CLASS_RAMAR:
+				case CLASS_RACAST:
+					mag->datab[1] = Mag_Pushan;
+					break;
+				case CLASS_RACASEAL:
+				case CLASS_RAMARL:
+					mag->datab[1] = Mag_Dewari;
+					break;
+				case CLASS_FONEWM:
+				case CLASS_FOMAR:
+					mag->datab[1] = Mag_Nidra;
+					break;
+				case CLASS_FONEWEARL:
+				case CLASS_FOMARL:
+					mag->datab[1] = Mag_Bhima;
+					break;
+				default:
+					break;
+				}
+			}
+			break;
+		case SID_Greennill:
+		case SID_Oran:
+		case SID_Purplenum:
+			if ((mDefense + mMind) == (mPower + mDex))
+			{
+				switch (ch_class)
+				{
+				case CLASS_HUMAR:
+				case CLASS_HUCAST:
+					mag->datab[1] = Mag_Rati;
+					break;
+				case CLASS_HUNEWEARL:
+				case CLASS_HUCASEAL:
+					mag->datab[1] = Mag_Savitri;
+					break;
+				case CLASS_RAMAR:
+				case CLASS_RACAST:
+					mag->datab[1] = Mag_Pushan;
+					break;
+				case CLASS_RACASEAL:
+				case CLASS_RAMARL:
+					mag->datab[1] = Mag_Rukmin;
+					break;
+				case CLASS_FONEWM:
+				case CLASS_FOMAR:
+					mag->datab[1] = Mag_Nidra;
+					break;
+				case CLASS_FONEWEARL:
+				case CLASS_FOMARL:
+					mag->datab[1] = Mag_Bhima;
+					break;
+				default:
+					break;
+				}
+			}
+			break;
+		}
+	}
+	return (old_type != mag->datab[1]);
+}
+
+int add_reward_special_mag_pb(ship_client_t* src, sfmt_t* sfmt) {
+	inventory_t* inv = get_client_inv(src);
+
+	if (inv) {
+		item_t* mag = &inv->iitems[find_equipped_mag(inv)].data;
+		if (mag) {
+			if (mag->datab[2] >= 10) {
+				if (!check_mag_has_pb(mag)) {
+					uint32_t rng = rand_int(sfmt, _countof(smrpb));
+					mag->datab[3] = smrpb[rng].datab3;
+					mag->data2b[2] = smrpb[rng].data2b2;
+					mag->data2b[3] = get_player_msg_color_set(src);
+					return rng;
+				}
+			}
+		}
+	}
+
+	return 0;
 }
 
 uint16_t compute_mag_level(const item_t* item) {
@@ -190,6 +339,15 @@ uint8_t mag_photon_blast_for_slot(const item_t* item, uint8_t slot) {
 		ERR_LOG("无效光子爆发槽索引.");
 		return -2;
 	}
+}
+
+bool check_mag_slot_has_pb(const item_t* item) {
+	for (uint8_t slot = 0; slot < 3; slot++) {
+		if (mag_photon_blast_for_slot(item, slot)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 int mag_has_photon_blast_in_any_slot(const item_t* item, uint8_t pb_num) {
@@ -655,134 +813,6 @@ int Mag_Alignment(item_t* mag) {
 //		*blasts |= pb;
 //	}
 //}
-
-int32_t Mag_Special_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
-	uint8_t oldType;
-	int16_t mDefense, mPower, mDex, mMind;
-
-	oldType = mag->datab[1];
-
-	if (mag->datab[2] >= 100) {
-		mDefense = mag->dataw[2] / 100;//defense
-		mPower = mag->dataw[3] / 100;//Power
-		mDex = mag->dataw[4] / 100;//Dex
-		mMind = mag->dataw[5] / 100;//Mind
-
-		switch (sectionID)
-		{
-		case SID_Viridia:
-		case SID_Bluefull:
-		case SID_Redria:
-		case SID_Whitill:
-			if ((mDefense + mDex) == (mPower + mMind))
-			{
-				switch (type)
-				{
-				case CLASS_HUMAR:
-				case CLASS_HUCAST:
-					mag->datab[1] = Mag_Deva;
-					break;
-				case CLASS_HUNEWEARL:
-				case CLASS_HUCASEAL:
-					mag->datab[1] = Mag_Savitri;
-					break;
-				case CLASS_RAMAR:
-				case CLASS_RACAST:
-					mag->datab[1] = Mag_Pushan;
-					break;
-				case CLASS_RACASEAL:
-				case CLASS_RAMARL:
-					mag->datab[1] = Mag_Rukmin;
-					break;
-				case CLASS_FONEWM:
-				case CLASS_FOMAR:
-					mag->datab[1] = Mag_Nidra;
-					break;
-				case CLASS_FONEWEARL:
-				case CLASS_FOMARL:
-					mag->datab[1] = Mag_Sato;
-					break;
-				default:
-					break;
-				}
-			}
-			break;
-		case SID_Skyly:
-		case SID_Pinkal:
-		case SID_Yellowboze:
-			if ((mDefense + mPower) == (mDex + mMind))
-			{
-				switch (type)
-				{
-				case CLASS_HUMAR:
-				case CLASS_HUCAST:
-					mag->datab[1] = Mag_Rati;
-					break;
-				case CLASS_HUNEWEARL:
-				case CLASS_HUCASEAL:
-					mag->datab[1] = Mag_Savitri;
-					break;
-				case CLASS_RAMAR:
-				case CLASS_RACAST:
-					mag->datab[1] = Mag_Pushan;
-					break;
-				case CLASS_RACASEAL:
-				case CLASS_RAMARL:
-					mag->datab[1] = Mag_Dewari;
-					break;
-				case CLASS_FONEWM:
-				case CLASS_FOMAR:
-					mag->datab[1] = Mag_Nidra;
-					break;
-				case CLASS_FONEWEARL:
-				case CLASS_FOMARL:
-					mag->datab[1] = Mag_Bhima;
-					break;
-				default:
-					break;
-				}
-			}
-			break;
-		case SID_Greennill:
-		case SID_Oran:
-		case SID_Purplenum:
-			if ((mDefense + mMind) == (mPower + mDex))
-			{
-				switch (type)
-				{
-				case CLASS_HUMAR:
-				case CLASS_HUCAST:
-					mag->datab[1] = Mag_Rati;
-					break;
-				case CLASS_HUNEWEARL:
-				case CLASS_HUCASEAL:
-					mag->datab[1] = Mag_Savitri;
-					break;
-				case CLASS_RAMAR:
-				case CLASS_RACAST:
-					mag->datab[1] = Mag_Pushan;
-					break;
-				case CLASS_RACASEAL:
-				case CLASS_RAMARL:
-					mag->datab[1] = Mag_Rukmin;
-					break;
-				case CLASS_FONEWM:
-				case CLASS_FOMAR:
-					mag->datab[1] = Mag_Nidra;
-					break;
-				case CLASS_FONEWEARL:
-				case CLASS_FOMARL:
-					mag->datab[1] = Mag_Bhima;
-					break;
-				default:
-					break;
-				}
-			}
-			break;
-		}
-	}
-	return (int32_t)(oldType != mag->datab[1]);
-}
 
 void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
 	int32_t v10, v11, v12, v13;
@@ -1256,7 +1286,7 @@ void mag_check_evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t E
 			if (datab2 >= 50) {
 				if (!(datab2 % 5)) { // Divisible by 5 with no remainder.
 					if (EvolutionClass <= 3) {
-						if (!Mag_Special_Evolution(mag, sectionID, type, EvolutionClass))
+						if (!is_special_mag(mag, sectionID, type))
 							Mag_LV50_Evolution(mag, sectionID, type, EvolutionClass);
 					}
 				}
