@@ -2611,3 +2611,61 @@ static int handle_dbgqdata(ship_client_t* c, const char* params) {
 
     return send_txt(c, "%s", __(c, "\tE\tC6清空指令不正确\n参数为[quest1/quest2]."));
 }
+
+/* 用法: /mdrate rate */
+static int handle_mdrate(ship_client_t* c, const char* params) {
+    uint32_t rate;
+    lobby_t* l = c->cur_lobby;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        return get_gm_priv(c);
+    }
+
+    /* Figure out when we're supposed to shut down. */
+    errno = 0;
+    rate = (uint32_t)strtoul(params, NULL, 10);
+
+    if (errno != 0) {
+        /* Send a message saying invalid time */
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4无效倍率参数."));
+    }
+
+    /* Give everyone at least a minute */
+    if (rate < 1) {
+        rate = 1;
+    }
+
+    l->monster_rare_drop_mult = rate;
+    
+    return send_msg(c, TEXT_MSG_TYPE, "%s\n \tE\tC4%d \tE\tC6倍", __(c, "\tE\tC6怪物稀有掉率设置:"), rate);
+}
+
+/* 用法: /bdrate rate */
+static int handle_bdrate(ship_client_t* c, const char* params) {
+    uint32_t rate;
+    lobby_t* l = c->cur_lobby;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        return get_gm_priv(c);
+    }
+
+    /* Figure out when we're supposed to shut down. */
+    errno = 0;
+    rate = (uint32_t)strtoul(params, NULL, 10);
+
+    if (errno != 0) {
+        /* Send a message saying invalid time */
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC4无效倍率参数."));
+    }
+
+    /* Give everyone at least a minute */
+    if (rate < 1) {
+        rate = 1;
+    }
+
+    l->box_rare_drop_mult = rate;
+
+    return send_msg(c, TEXT_MSG_TYPE, "%s\n \tE\tC4%d \tE\tC6倍", __(c, "\tE\tC6箱子稀有掉率设置:"), rate);
+}

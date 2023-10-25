@@ -87,6 +87,8 @@ static command_t cmds[] = {
     { "shutdown" , handle_shutdown      },
     { "update"   , handle_update        },
     { "dbgqd"    , handle_dbgqdata      },
+    { "mdrate"   , handle_mdrate        },
+    { "bdrate"   , handle_bdrate        },
     /////////////////////////////////////////// 以下是玩家大厅指令
     { "pl"       , handle_player_menu   },
     { "save"     , handle_save          },

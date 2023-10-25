@@ -664,9 +664,9 @@ void generate_rare_weapon_bonuses(sfmt_t* rng, pt_bb_entry_t* ent, item_t* item,
 	deduplicate_weapon_bonuses(item);
 }
 
-item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* rng, PackedDrop_t drop) {
+item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* rng, PackedDrop_t drop, bool is_box) {
 	item_t item = { 0 };
-	double drop_rare = 0;
+	double drop_rare = 0, orignal_rare_rate = 0;
 	if (!drop.probability) {
 		return item;
 	}
@@ -674,14 +674,25 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 	// Note: The original code uses 0xFFFFFFFF as the maximum here. We use
 	// 0x100000000 instead, which makes all rare items SLIGHTLY more rare.
 	if (!l->drop_rare) {
-		if ((drop_rare = sfmt_genrand_real1(rng)) >= expand_rate(drop.probability)) {
+		drop_rare = sfmt_genrand_real1(rng);
+
+		if(is_box)
+			orignal_rare_rate = expand_rate(drop.probability) * l->box_rare_drop_mult;
+		else
+			orignal_rare_rate = expand_rate(drop.probability) * l->monster_rare_drop_mult;
+
+		if (drop_rare >= orignal_rare_rate) {
 #ifdef DEBUG
 
 			DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
 
 #endif // DEBUG
+			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, expand_rate(drop.probability), orignal_rare_rate);
+
 			return item;
 		}
+		else
+			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, expand_rate(drop.probability), orignal_rare_rate);
 #ifdef DEBUG
 		else
 			DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
@@ -712,7 +723,7 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 	default:
 		ERR_LOG("无效物品类型");
 	}
-
+	
 	clear_item_if_restricted(l, &item);
 	set_item_kill_count_if_unsealable(&item);
 	return item;
@@ -726,28 +737,30 @@ item_t check_rare_specs_and_create_rare_box_item(lobby_t* l, pt_bb_entry_t* ent,
 
 	rt_table_t* rare_specs = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section_id);
 
-	for (size_t x = 0; x < rare_specs->box_count; x++) {
-		if (rare_specs->box_areas[x] == area_norm) {
-			PackedDrop_t spec = rare_specs->box_rares[x];
+	if (rare_specs) {
+		for (size_t x = 0; x < rare_specs->box_count; x++) {
+			if (rare_specs->box_areas[x] == area_norm) {
+				PackedDrop_t spec = rare_specs->box_rares[x];
 
-			if (!spec.probability) {
+				if (!spec.probability) {
 #ifdef DEBUG
-				DBG_LOG("Area %d Box spec.probability %lf did not produce item %02hhX%02hhX%02hhX",
-					area_norm, spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
+					DBG_LOG("Area %d Box spec.probability %lf did not produce item %02hhX%02hhX%02hhX",
+						area_norm, spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
 #endif // DEBUG
-				return item;
-			}
+					return item;
+				}
 
-			item = check_rate_and_create_rare_item(l, ent, rng, spec);
-			if (!is_item_empty(&item)) {
+				item = check_rate_and_create_rare_item(l, ent, rng, spec, true);
+				if (!is_item_empty(&item)) {
 #ifdef DEBUG
-				DBG_LOG("Area %d Box spec.probability %lf produced item %02hhX%02hhX%02hhX",
-					area_norm, spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
+					DBG_LOG("Area %d Box spec.probability %lf produced item %02hhX%02hhX%02hhX",
+						area_norm, spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
 
 #endif // DEBUG
-				return item;
-			}
+					return item;
+				}
 		}
+	}
 	}
 	return item;
 }
@@ -831,7 +844,7 @@ item_t check_rare_spec_and_create_rare_enemy_item(lobby_t* l, pt_bb_entry_t* ent
 		if (spec.probability == 0)
 			return item;
 
-		item = check_rate_and_create_rare_item(l, ent, rng, spec);
+		item = check_rate_and_create_rare_item(l, ent, rng, spec, false);
 		if (!is_item_empty(&item)) {
 #ifdef DEBUG
 			DBG_LOG("Enemy %d spec.probability %lf produced item %02hhX%02hhX%02hhX",

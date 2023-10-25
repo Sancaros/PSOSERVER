@@ -942,6 +942,84 @@ static int handle_gcmaps(xmlNode* n, psocn_ship_t* cur) {
     return -1;
 }
 
+static int handle_rare_monster_mult_rate(xmlNode* n, psocn_ship_t* cur) {
+    xmlChar* hildeblue, * rappy, * nar_lily
+        , * pouilly_slime, * merissa_aa,* pazuzu
+        , * dorphon_eclair, * kondrieu
+        ;
+    int rv = 0;
+    char* endptr;
+
+    /* Grab the attributes of the tag. */
+    hildeblue = xmlGetProp(n, XC"hildeblue");
+    rappy = xmlGetProp(n, XC"rappy");
+    nar_lily = xmlGetProp(n, XC"nar_lily");
+    pouilly_slime = xmlGetProp(n, XC"pouilly_slime");
+    merissa_aa = xmlGetProp(n, XC"merissa_aa");
+    pazuzu = xmlGetProp(n, XC"pazuzu");
+    dorphon_eclair = xmlGetProp(n, XC"dorphon_eclair");
+    kondrieu = xmlGetProp(n, XC"kondrieu");
+
+    if (!hildeblue || !rappy || !nar_lily || !pouilly_slime || !merissa_aa || !pazuzu || !dorphon_eclair || !kondrieu) {
+        ERR_LOG("必须为舰船设置所有的怪物稀有出现概率");
+        rv = -1;
+        goto err;
+    }
+
+    /* 分析设置概率参数 */
+    cur->rare_monster_mult_rates.hildeblue = (uint32_t)strtoul((char*)hildeblue, &endptr, 0);
+    cur->rare_monster_mult_rates.rappy = (uint32_t)strtoul((char*)rappy, &endptr, 0);
+    cur->rare_monster_mult_rates.nar_lily = (uint32_t)strtoul((char*)nar_lily, &endptr, 0);
+    cur->rare_monster_mult_rates.pouilly_slime = (uint32_t)strtoul((char*)pouilly_slime, &endptr, 0);
+    cur->rare_monster_mult_rates.merissa_aa = (uint32_t)strtoul((char*)merissa_aa, &endptr, 0);
+    cur->rare_monster_mult_rates.pazuzu = (uint32_t)strtoul((char*)pazuzu, &endptr, 0);
+    cur->rare_monster_mult_rates.dorphon_eclair = (uint32_t)strtoul((char*)dorphon_eclair, &endptr, 0);
+    cur->rare_monster_mult_rates.kondrieu = (uint32_t)strtoul((char*)kondrieu, &endptr, 0);
+
+    if (*endptr != '\0') {
+        ERR_LOG("获取的稀有怪物出现概率错误, 改为获取默认值");
+        xmlFree(hildeblue);
+        xmlFree(rappy);
+        xmlFree(nar_lily);
+        xmlFree(pouilly_slime);
+        xmlFree(merissa_aa);
+        xmlFree(pazuzu);
+        xmlFree(dorphon_eclair);
+        xmlFree(kondrieu);
+        cur->rare_monster_mult_rates.hildeblue = default_rare_monster_rates.hildeblue;
+        cur->rare_monster_mult_rates.rappy = default_rare_monster_rates.rappy;
+        cur->rare_monster_mult_rates.nar_lily = default_rare_monster_rates.nar_lily;
+        cur->rare_monster_mult_rates.pouilly_slime = default_rare_monster_rates.pouilly_slime;
+        cur->rare_monster_mult_rates.merissa_aa = default_rare_monster_rates.merissa_aa;
+        cur->rare_monster_mult_rates.pazuzu = default_rare_monster_rates.pazuzu;
+        cur->rare_monster_mult_rates.dorphon_eclair = default_rare_monster_rates.dorphon_eclair;
+        cur->rare_monster_mult_rates.kondrieu = default_rare_monster_rates.kondrieu;
+        goto err;
+    }
+
+#ifdef DEBUG
+
+    for (size_t x = 0; x < _countof(default_rare_monster_rates.rate); x++) {
+        DBG_LOG("%d 0x%08X", x, cur->rare_monster_mult_rates.rate[x]);
+    }
+
+#endif // DEBUG
+
+err:
+    if (rv) {
+        xmlFree(hildeblue);
+        xmlFree(rappy);
+        xmlFree(nar_lily);
+        xmlFree(pouilly_slime);
+        xmlFree(merissa_aa);
+        xmlFree(pazuzu);
+        xmlFree(dorphon_eclair);
+        xmlFree(kondrieu);
+    }
+
+    return rv;
+}
+
 static int handle_itempmt(xmlNode* n, psocn_ship_t* cur) {
     xmlChar* limit;
 
@@ -1224,21 +1302,27 @@ static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
                 goto err;
             }
         }
+        else if (!xmlStrcmp(n2->name, XC"rare_monster_mult_rate")) {
+            if (handle_rare_monster_mult_rate(n2, cur)) {
+                rv = -21;
+                goto err;
+            }
+        }
         else if (!xmlStrcmp(n2->name, XC"v2param")) {
             if (handle_v2param(n2, cur)) {
-                rv = -21;
+                rv = -22;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"smutdata")) {
             if (handle_smutdata(n2, cur)) {
-                rv = -22;
+                rv = -23;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"mageditdata")) {
             if (handle_mageditdata(n2, cur)) {
-                rv = -23;
+                rv = -24;
                 goto err;
             }
         }

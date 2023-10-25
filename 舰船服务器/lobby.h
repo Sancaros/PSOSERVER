@@ -163,6 +163,8 @@ struct lobby {
     uint32_t item_lobby_id; //大厅背包物品id容器
     uint32_t item_count; //大厅背包物品数量
     bool drop_rare;
+    uint32_t monster_rare_drop_mult;/* 房间怪物掉率倍率 */
+    uint32_t box_rare_drop_mult;/* 房间箱子掉率倍率 */
     /* 游戏房间物品链表 用于存储物品丢出 鉴定 */
     struct lobby_item_queue item_queue;
 
@@ -177,6 +179,7 @@ struct lobby {
     game_objs_t *map_objs;
     uint32_t rare_enemy_count;
     uint16_t rare_enemy_data[0x10];
+    uint32_t monster_rare_mult;
     bb_battle_param_t *bb_params;
 
     int num_mtypes;

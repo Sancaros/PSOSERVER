@@ -273,8 +273,15 @@ void lobby_print_info2(ship_client_t* src) {
     send_msg(src, TEXT_MSG_TYPE, "模式: %s", (int)l->battle == 1 ? __(src, "\tE\tC6对战模式") :
         (int)l->challenge == 1 ? __(src, "\tE\tC8挑战模式") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人模式") :
         __(src, "\tE\tC7普通模式"));
+    send_msg(src, TEXT_MSG_TYPE, "稀有: %d倍"
+        , l->exp_mult > 0 ? l->exp_mult : 1
+    );
     send_msg(src, TEXT_MSG_TYPE, "难度: %s", get_difficulty_describe(l->difficulty));
-    send_msg(src, TEXT_MSG_TYPE, "经验: %d 倍", l->exp_mult > 0 ? l->exp_mult : 1);
+    send_msg(src, TEXT_MSG_TYPE, "经验: %d倍 怪物: %d倍 箱子: %d倍"
+        , l->exp_mult > 0 ? l->exp_mult : 1
+        , l->monster_rare_drop_mult > 0 ? l->monster_rare_drop_mult : 1
+        , l->box_rare_drop_mult > 0 ? l->box_rare_drop_mult : 1
+    );
     //send_msg(src, TEXT_MSG_TYPE, "敌人: %p", l->map_enemies);
     //send_msg(src, TEXT_MSG_TYPE, "实例: %p", l->map_objs);
 
@@ -437,6 +444,8 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->lobby_create = true;
     l->lobby_choice_version = false;
     l->lobby_choice_drop = false;
+    l->monster_rare_drop_mult = 1;
+    l->box_rare_drop_mult = 1;
 
     if(!single_player)
         l->max_clients = 4;

@@ -511,6 +511,18 @@ static void print_config(psocn_ship_t* cfg) {
     if (cfg->bb_rtdata_file)
         CONFIG_LOG("Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
 
+    CONFIG_LOG("写入 稀有怪物出现概率/////////////////////////");
+
+    CONFIG_LOG("稀有雷暴巨猿出现概率:     0x%08X", cfg->rare_monster_mult_rates.hildeblue);
+    CONFIG_LOG("稀有拉比出现概率:         0x%08X", cfg->rare_monster_mult_rates.rappy);
+    CONFIG_LOG("稀有异种铃兰出现概率:     0x%08X", cfg->rare_monster_mult_rates.nar_lily);
+    CONFIG_LOG("稀有炎史莱姆出现概率:     0x%08X", cfg->rare_monster_mult_rates.pouilly_slime);
+    CONFIG_LOG("稀有媚影沙魔AA出现概率:   0x%08X", cfg->rare_monster_mult_rates.merissa_aa);
+    CONFIG_LOG("稀有变异羚角鸟出现概率:   0x%08X", cfg->rare_monster_mult_rates.pazuzu);
+    CONFIG_LOG("稀有铁甲巨象出现概率:     0x%08X", cfg->rare_monster_mult_rates.dorphon_eclair);
+    CONFIG_LOG("稀有空间龙出现概率:       0x%08X", cfg->rare_monster_mult_rates.kondrieu);
+
+    CONFIG_LOG("写入 掉落限制参数/////////////////////////");
     CONFIG_LOG("装置 +/- 限制: v2: %s, GC: %s, BB: %s",
         (cfg->local_flags & PSOCN_SHIP_PMT_LIMITV2) ? "true" : "false",
         (cfg->local_flags & PSOCN_SHIP_PMT_LIMITGC) ? "true" : "false",
@@ -525,9 +537,11 @@ static void print_config(psocn_ship_t* cfg) {
             "false");
     }
 
+    CONFIG_LOG("写入 Smutdata 文件路径/////////////////////////");
     if (cfg->smutdata_file)
         CONFIG_LOG("Smutdata 文件: %s", cfg->smutdata_file);
 
+    CONFIG_LOG("写入 MagEditdata 文件路径/////////////////////////");
     if (cfg->mageditdata_file)
         CONFIG_LOG("MagEditdata 文件: %s", cfg->mageditdata_file);
 

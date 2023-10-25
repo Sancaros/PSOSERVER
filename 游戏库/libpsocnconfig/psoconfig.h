@@ -234,6 +234,22 @@ typedef struct psocn_event {
     uint8_t game_event;
 } psocn_event_t;
 
+typedef struct psocn_rare_enemy_rates {
+    union {
+        struct {
+            uint32_t hildeblue;
+            uint32_t rappy;
+            uint32_t nar_lily;
+            uint32_t pouilly_slime;
+            uint32_t merissa_aa;
+            uint32_t pazuzu;
+            uint32_t dorphon_eclair;
+            uint32_t kondrieu;
+        };
+        uint32_t rate[8];
+    };
+} psocn_rare_enemy_rates_t;
+
 typedef struct psocn_shipcfg {
     char* shipgate_host;
     uint16_t shipgate_port;
@@ -256,6 +272,7 @@ typedef struct psocn_shipcfg {
     char* bb_map_dir;
     char* v2_map_dir;
     char* gc_map_dir;
+    psocn_rare_enemy_rates_t rare_monster_mult_rates;
     char* v2_ptdata_file;
     char* gc_ptdata_file;
     char* bb_ptdata_file;
@@ -287,6 +304,18 @@ typedef struct psocn_shipcfg {
     int limits_default;
     uint32_t privileges;
 } psocn_ship_t;
+
+static psocn_rare_enemy_rates_t default_rare_monster_rates = {
+    // All 1/512 except Kondrieu, which is 1/10
+    .hildeblue = 0x00800000,
+    .rappy = 0x00800000,
+    .nar_lily = 0x00800000,
+    .pouilly_slime = 0x00800000,
+    .merissa_aa = 0x00800000,
+    .pazuzu = 0x00800000,
+    .dorphon_eclair = 0x00800000,
+    .kondrieu = 0x1999999A
+};
 
 /* Patch server configuration structure. */
 typedef struct patch_file_entry {

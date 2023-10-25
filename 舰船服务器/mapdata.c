@@ -227,29 +227,6 @@ static int read_v2_level_data(const char *fn) {
     return 0;
 }
 
-typedef struct {
-    uint32_t hildeblue;
-    uint32_t rappy;
-    uint32_t nar_lily;
-    uint32_t pouilly_slime;
-    uint32_t merissa_aa;
-    uint32_t pazuzu;
-    uint32_t dorphon_eclair;
-    uint32_t kondrieu;
-} RareEnemyRates;
-
-RareEnemyRates default_rare_rates = {
-    // All 1/512 except Kondrieu, which is 1/10
-    .hildeblue = 0x00800000,
-    .rappy = 0x00800000,
-    .nar_lily = 0x00800000,
-    .pouilly_slime = 0x00800000,
-    .merissa_aa = 0x00800000,
-    .pazuzu = 0x00800000,
-    .dorphon_eclair = 0x00800000,
-    .kondrieu = 0x1999999A
-};
-
 bool check_rare(bool default_is_rare, uint32_t rare_rate, int* rare_enemy_indexes, size_t enemy_size, sfmt_t* sfmt) {
     if (default_is_rare) {
         return true;
@@ -261,9 +238,9 @@ bool check_rare(bool default_is_rare, uint32_t rare_rate, int* rare_enemy_indexe
     return false;
 }
 
-bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, size_t enemy_size, sfmt_t* sfmt) {
+bool updateEnemyRareness(psocn_rare_enemy_rates_t* rare_rates, int* rare_enemy_indexes, size_t enemy_size, sfmt_t* sfmt) {
     if (!rare_rates) {
-        rare_rates = &default_rare_rates;
+        rare_rates = &default_rare_monster_rates;
     }
 
     bool is_rare = false;
@@ -802,7 +779,7 @@ bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, si
 
 /* 地图解析函数 */
 static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
-    int ep, int alt, int area, sfmt_t* sfmt) {
+    int ep, int alt, int area, sfmt_t* sfmt, psocn_rare_enemy_rates_t rare_rate) {
     int i = 0, j = 0;
     game_enemy_t* gen = NULL;
     uint32_t rare_enemy_count = 0;
@@ -826,6 +803,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     for (i = 0; i < 0x10; i++)
         rare_enemy_data[i] = LE16(0xFFFF);
 
+    psocn_rare_enemy_rates_t* rare_monster_rate = &rare_rate;
+    if (!rare_monster_rate)
+        rare_monster_rate = &default_rare_monster_rates;
+
     /* Parse each enemy. */
     for (i = 0; i < en_ct; ++i) {
         map_enemy_t me = en[i];
@@ -838,7 +819,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;// Set rare from a quest由任务来设置出现概率?
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.hildeblue)) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->hildeblue)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -856,7 +837,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.rappy)) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->rappy)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -957,7 +938,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if ((rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
+            else if ((rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->nar_lily)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -968,7 +949,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 gen[count].rt_index = 0x53;
             }
             else {
-                acc = (me.rare_rate & default_rare_rates.nar_lily) ? 1 : 0;
+                acc = (me.rare_rate & rare_monster_rate->nar_lily) ? 1 : 0;
                 if (rare_monster)
                     acc = 1;
                 gen[count].bp_entry = 0x04 + acc;
@@ -989,11 +970,11 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x0064:    /* Slime + 4 clones */
             rare_monster = false;
-            acc = (me.rare_rate & default_rare_rates.pouilly_slime) ? 1 : 0;
+            acc = (me.rare_rate & rare_monster_rate->pouilly_slime) ? 1 : 0;
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)) {
+            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->pouilly_slime)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1008,7 +989,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 ++count;
                 gen[count].area = area;
                 rare_monster = false;
-                if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)) {
+                if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->pouilly_slime)) {
                     rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                     //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                     rare_enemy_count++;
@@ -1339,7 +1320,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0112:    /* Merissa A/AA */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.merissa_aa)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->merissa_aa)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1359,7 +1340,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0114:    /* Zu & Pazuzu */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pazuzu)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->pazuzu)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1387,7 +1368,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0116:    /* Dorphon & Eclair */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.dorphon_eclair)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->dorphon_eclair)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
@@ -1415,14 +1396,14 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             gen[count].bp_entry = 0x22;
 
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.kondrieu)) {
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < rare_monster_rate->kondrieu)) {
                 rare_enemy_data[rare_enemy_count] = (uint16_t)count;
                 //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
                 rare_enemy_count++;
                 rare_monster = true;
             }
 
-            if (me.rare_rate & default_rare_rates.kondrieu || rare_monster)
+            if (me.rare_rate & rare_monster_rate->kondrieu || rare_monster)
                 gen[count].rt_index = 0x15;
             else
                 gen[count].rt_index = 0x13 + acc;
@@ -1465,7 +1446,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     return 0;
 }
 
-static int read_v2_map_set(int gcep, int area, char* dir) {
+static int read_v2_map_set(int gcep, int area, char* dir, psocn_rare_enemy_rates_t rare_rate) {
     int srv, ep;
     char fn[256] = { 0 };
     char fn2[256] = { 0 };
@@ -1663,7 +1644,7 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
             fclose(fp);
 
             /* Parse */
-            if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, area, &sfmt)) {
+            if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, area, &sfmt, rare_rate)) {
                 free_safe(en);
                 return 9;
             }
@@ -1781,7 +1762,7 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
     return 0;
 }
 
-static int read_bb_map_set(int solo, int episode, int area, char* dir) {
+static int read_bb_map_set(int solo, int episode, int area, char* dir, psocn_rare_enemy_rates_t rare_rate) {
     char fn[256] = { 0 };
     char fn2[256] = { 0 };
     char fn3[3][256] = { 0 };
@@ -1960,7 +1941,7 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
 
             /* Parse */
             if (parse_map(en, sz / 0x48, &tmp[k * nvars + l], episode + 1,
-                alt, area, &sfmt)) {
+                alt, area, &sfmt, rare_rate)) {
                 free_safe(en);
                 return 9;
             }
@@ -2071,23 +2052,23 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
     return 0;
 }
 
-static int read_v2_map_files(char* fn) {
+static int read_v2_map_files(char* fn, psocn_rare_enemy_rates_t rare_rate) {
     int srv, area;
 
     for(area = 0; area < 16 && area <= max_area[0]; ++area) {   /* 区域 */
-        if((srv = read_v2_map_set(0, area, fn)))
+        if((srv = read_v2_map_set(0, area, fn, rare_rate)))
             return srv;
     }
 
     return 0;
 }
 
-static int read_gc_map_files(char* fn) {
+static int read_gc_map_files(char* fn, psocn_rare_enemy_rates_t rare_rate) {
     int srv, episode, area;
 
     for (episode = 0; episode < 2; ++episode) {                            /* 章节 */
         for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
-            if ((srv = read_v2_map_set(episode + 1, area, fn)))
+            if ((srv = read_v2_map_set(episode + 1, area, fn, rare_rate)))
                 return srv;
         }
     }
@@ -2095,14 +2076,14 @@ static int read_gc_map_files(char* fn) {
     return 0;
 }
 
-static int read_bb_map_files(char* fn) {
+static int read_bb_map_files(char* fn, psocn_rare_enemy_rates_t rare_rate) {
     int srv, solo, episode, area;
     for (solo = 0; solo < 2; ++solo) {
         for (episode = 0; episode < 3; ++episode) {                            /* 章节 */
 
             for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
                 /* 读取多人和单人模式地图. */
-                if ((srv = read_bb_map_set(solo, episode, area, fn)))
+                if ((srv = read_bb_map_set(solo, episode, area, fn, rare_rate)))
                     return srv;
             }
         }
@@ -2165,7 +2146,7 @@ int v2_read_params(psocn_ship_t *cfg) {
     //}
 
     CONFIG_LOG("读取 v2 地图敌人数据...");
-    rv = read_v2_map_files(cfg->v2_map_dir);
+    rv = read_v2_map_files(cfg->v2_map_dir, cfg->rare_monster_mult_rates);
 
     ///* Change back to the original directory */
     //if(_chdir(path)) {
@@ -2221,7 +2202,7 @@ int gc_read_params(psocn_ship_t *cfg) {
     //}
 
     CONFIG_LOG("读取 GameCube 地图敌人数据...");
-    rv = read_gc_map_files(cfg->gc_map_dir);
+    rv = read_gc_map_files(cfg->gc_map_dir, cfg->rare_monster_mult_rates);
 
     ///* Change back to the original directory */
     //if(_chdir(path)) {
@@ -2281,7 +2262,7 @@ int bb_read_params(psocn_ship_t* cfg) {
     }
 
     CONFIG_LOG("读取 Blue Burst 地图敌人数据...");
-    rv = read_bb_map_files(cfg->bb_map_dir);
+    rv = read_bb_map_files(cfg->bb_map_dir, cfg->rare_monster_mult_rates);
 
 bail:
     if (rv) {
@@ -2395,7 +2376,7 @@ int v2_load_game_enemies(lobby_t *l) {
 
     /* Figure out the total number of enemies that the game will have... */
     for(i = 0; i < 0x20; i += 2) {
-        if (read_v2_map_set(0, i >> 1, cfg->v2_map_dir)) {
+        if (read_v2_map_set(0, i >> 1, cfg->v2_map_dir, cfg->rare_monster_mult_rates)) {
 #ifdef DEBUG
 
             DBG_LOG("area %d 不存在", i >> 1);
@@ -2502,7 +2483,7 @@ int gc_load_game_enemies(lobby_t *l) {
 
     /* Figure out the total number of enemies that the game will have... */
     for(i = 0; i < 0x20; i += 2) {
-        if (read_v2_map_set(l->episode - 1, i >> 1, cfg->gc_map_dir)) {
+        if (read_v2_map_set(l->episode - 1, i >> 1, cfg->gc_map_dir, cfg->rare_monster_mult_rates)) {
 #ifdef DEBUG
 
             DBG_LOG("area %d 不存在", i >> 1);
@@ -2629,7 +2610,7 @@ int bb_load_game_enemies(lobby_t* l) {
 
     /* Figure out the total number of enemies that the game will have... */
     for (i = 0; i < 0x20; i += 2) {
-        if (read_bb_map_set(solo, l->episode - 1, i >> 1, cfg->bb_map_dir)) {
+        if (read_bb_map_set(solo, l->episode - 1, i >> 1, cfg->bb_map_dir, cfg->rare_monster_mult_rates)) {
 #ifdef DEBUG
 
             DBG_LOG("area %d 不存在", i >> 1);
@@ -2915,7 +2896,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
                 alt = 1;
 
             if(parse_map((map_enemy_t *)(hdr->data), sz / sizeof(map_enemy_t),
-                         &tmp_en, episode, alt, area, &sfmt)) {
+                         &tmp_en, episode, alt, area, &sfmt, cfg->rare_monster_mult_rates)) {
                 ERR_LOG("Canot parse map for cache!");
                 fclose(fp);
                 return -4;
