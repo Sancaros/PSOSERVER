@@ -1178,7 +1178,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                     }
                     else if (i->auth) {
                         ++client_count;
-                        set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+                        //set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
 
                         get_ip_address(&i->ip_addr, ipstr);
                         DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, i->sock);
@@ -1197,7 +1197,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                     if (i->auth) {
                         DC_LOG("断开 %s:%u DNS连接", ipstr, i->sock);
                         --client_count;
-                        set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+                        //set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
                     }
                     else {
                         DC_LOG("断开 %s:%u DNS无效连接", ipstr, i->sock);
