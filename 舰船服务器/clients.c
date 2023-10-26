@@ -1069,7 +1069,7 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
 int client_give_level(ship_client_t* dest, uint32_t level_req) {
     uint32_t exp_total;
     psocn_lvl_stats_t* ent;
-    int cl;
+    int cl, i;
     uint32_t exp_gained;
 
     if (dest->version != CLIENT_VERSION_BB || (!dest->bb_pl) && (!dest->mode_pl) || level_req > 199)
@@ -1093,6 +1093,11 @@ int client_give_level(ship_client_t* dest, uint32_t level_req) {
     /* Send the packet telling them they've gotten experience. */
     if (subcmd_send_lobby_bb_exp(dest, exp_gained))
         return -1;
+
+    for (i = character->disp.level + 1; i <= (int)level_req; ++i) {
+        ent = &bb_char_stats.levels[cl][i];
+        give_stats(&character->disp.stats, ent);
+    }
 
     /* Send the level-up packet. */
     character->disp.level = LE32(level_req);

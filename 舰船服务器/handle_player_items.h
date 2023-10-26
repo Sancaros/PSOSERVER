@@ -29,6 +29,7 @@ bool check_structs_equal(const void* s1, const void* s2, size_t sz);
 
 /* 生成物品ID */
 size_t generate_item_id(lobby_t* l, size_t client_id);
+void on_item_id_generated_externally(lobby_t* l, uint8_t client_id, uint32_t item_id);
 size_t destroy_item_id(lobby_t* l, size_t client_id);
 
 /* 修复玩家背包数据 */

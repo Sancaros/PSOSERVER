@@ -1389,7 +1389,8 @@ typedef struct subcmd_drop_stack {
 typedef struct subcmd_bb_drop_stack {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t area;
+    uint16_t area;
+    uint16_t unk;
     float x;
     float z;
     item_t data;

@@ -664,6 +664,8 @@ void generate_rare_weapon_bonuses(sfmt_t* rng, pt_bb_entry_t* ent, item_t* item,
 	deduplicate_weapon_bonuses(item);
 }
 
+#define DBG_RARE_ITEM_PROC1
+
 item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* rng, PackedDrop_t drop, bool is_box) {
 	item_t item = { 0 };
 	double drop_rare = 0, orignal_rare_rate = 0;
@@ -682,22 +684,18 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 			orignal_rare_rate = expand_rate(drop.probability) * l->monster_rare_drop_mult;
 
 		if (drop_rare >= orignal_rare_rate) {
-#ifdef DEBUG
+#ifdef DBG_RARE_ITEM_PROC
 
-			DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
-
-#endif // DEBUG
 			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, expand_rate(drop.probability), orignal_rare_rate);
 
+#endif // DBG_RARE_ITEM_PROC
 			return item;
 		}
+#ifdef DBG_RARE_ITEM_PROC
 		else
 			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, expand_rate(drop.probability), orignal_rare_rate);
-#ifdef DEBUG
-		else
-			DBG_LOG("drop_rare %lf probability %lf ", drop_rare, expand_rate(drop.probability));
 
-#endif // DEBUG
+#endif // DBG_RARE_ITEM_PROC
 	}
 
 	item.datab[0] = drop.item_code[0];

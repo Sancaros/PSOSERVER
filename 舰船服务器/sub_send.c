@@ -843,20 +843,21 @@ int subcmd_send_lobby_bb_level(ship_client_t* dest) {
     for (i = 0; i < character->inv.item_count; ++i) {
         if ((character->inv.iitems[i].flags & EQUIP_FLAGS) &&
             character->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
+            item_t* item = &character->inv.iitems[i].data;
             base = LE16(pkt.dfp);
-            mag = LE16(character->inv.iitems[i].data.dataw[2]) / 100;
+            mag = LE16(item->dataw[2]) / 100;
             pkt.dfp = LE16((base + mag));
 
             base = LE16(pkt.atp);
-            mag = LE16(character->inv.iitems[i].data.dataw[3]) / 50;
+            mag = LE16(item->dataw[3]) / 50;
             pkt.atp = LE16((base + mag));
 
             base = LE16(pkt.ata);
-            mag = LE16(character->inv.iitems[i].data.dataw[4]) / 200;
+            mag = LE16(item->dataw[4]) / 200;
             pkt.ata = LE16((base + mag));
 
             base = LE16(pkt.mst);
-            mag = LE16(character->inv.iitems[i].data.dataw[5]) / 50;
+            mag = LE16(item->dataw[5]) / 50;
             pkt.mst = LE16((base + mag));
 
             break;

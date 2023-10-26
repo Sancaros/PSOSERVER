@@ -73,6 +73,18 @@ size_t generate_item_id(lobby_t* l, size_t client_id) {
     return ++l->item_lobby_id;
 }
 
+void on_item_id_generated_externally(lobby_t* l, uint8_t client_id, uint32_t item_id) {
+    if (l->version != CLIENT_VERSION_BB) {
+        if ((item_id > 0x00010000) && (item_id < 0x02010000)) {
+            uint16_t item_client_id = (item_id >> 21) & 0x7FF;
+            if (item_client_id == client_id) {
+                uint32_t* next_item_id = &(l->item_player_id[client_id]);
+                *next_item_id = (*next_item_id > item_id + 1) ? *next_item_id : item_id + 1;
+            }
+        }
+    }
+}
+
 size_t destroy_item_id(lobby_t* l, size_t client_id) {
     size_t c_id = client_id, l_max_c_id = l->max_clients;
 
