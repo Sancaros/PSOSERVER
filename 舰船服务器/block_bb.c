@@ -3274,9 +3274,6 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
     return 0;
 }
 
-typedef void (*process_command_t)(ship_t s, ship_client_t* c,
-    uint16_t command, uint32_t flag, uint8_t* data);
-
 #define DEBUG_BB_BLOCK1
 
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {

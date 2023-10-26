@@ -3290,27 +3290,68 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
 #endif // DEBUG
 
         switch (type) {
+            /* 0x0005 5*/
+        case BURSTING_TYPE:
+            /* If we've already gotten one of these, disconnect the client. */
+            if (c->flags & CLIENT_FLAG_GOT_05) {
+                c->flags |= CLIENT_FLAG_DISCONNECTED;
+            }
+
+            c->flags |= CLIENT_FLAG_GOT_05;
+            return 0;
+
+            /* 0x0006 6*/
+        case CHAT_TYPE:
+            if (c->version != CLIENT_VERSION_PC) {
+                return dc_process_chat(c, (dc_chat_pkt*)pkt);
+            }
+            else {
+                return pc_process_chat(c, (dc_chat_pkt*)pkt);
+            }
+
+            return -1;
+
+            /* 0x0008 8*/
+        case GAME_LIST_TYPE:
+            return send_game_list(c, c->cur_block);
+
+            /* 0x0009 9*/
+        case INFO_REQUEST_TYPE:
+            return dc_process_info_req(c, (dc_select_pkt*)pkt);
+
+            /* 0x0010 16*/
+        case MENU_SELECT_TYPE:
+            return dc_process_menu(c, (dc_select_pkt*)pkt);
+
+            /* 0x008B 139*/
         case LOGIN_8B_TYPE:
             return dcnte_process_login(c, (dcnte_login_8b_pkt*)pkt);
 
+            /* 0x0093 147*/
         case LOGIN_93_TYPE:
             return dc_process_login(c, (dc_login_93_pkt*)pkt);
 
+            /* 0x0061 97*/
         case CHAR_DATA_TYPE:
             return dc_process_char(c, (dc_char_data_pkt*)pkt);
 
+            /* 0x0060 96*/
         case GAME_SUBCMD60_TYPE:
             return subcmd_handle_60(c, (subcmd_pkt_t*)pkt);
 
+            /* 0x0062 98*/
         case GAME_SUBCMD62_TYPE:
             return subcmd_handle_62(c, (subcmd_pkt_t*)pkt);
 
+            /* 0x006D 109*/
         case GAME_SUBCMD6D_TYPE:
             return subcmd_handle_6D(c, (subcmd_pkt_t*)pkt);
 
+            /* 0x0084 132*/
         case LOBBY_CHANGE_TYPE:
             return dc_process_change_lobby(c, (dc_select_pkt*)pkt);
 
+            /* 0x001D 29*/
         case PING_TYPE:
             if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
                 send_motd(c);
@@ -3370,28 +3411,11 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
             return 0;
 
-        case BURSTING_TYPE:
-            /* If we've already gotten one of these, disconnect the client. */
-            if (c->flags & CLIENT_FLAG_GOT_05) {
-                c->flags |= CLIENT_FLAG_DISCONNECTED;
-            }
-
-            c->flags |= CLIENT_FLAG_GOT_05;
-            return 0;
-
-        case CHAT_TYPE:
-            if (c->version != CLIENT_VERSION_PC) {
-                return dc_process_chat(c, (dc_chat_pkt*)pkt);
-            }
-            else {
-                return pc_process_chat(c, (dc_chat_pkt*)pkt);
-            }
-
-            return -1;
-
+            /* 0x0040 64*/
         case GUILD_SEARCH_TYPE:
             return dc_process_guild_search(c, (dc_guild_search_pkt*)pkt);
 
+            /* 0x0081 129*/
         case SIMPLE_MAIL_TYPE:
             if (c->version != CLIENT_VERSION_PC) {
                 return dc_process_mail(c, (simple_mail_pkt*)pkt);
@@ -3403,6 +3427,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return -1;
 
         case DC_GAME_CREATE_TYPE:
+            /* 0x00C1 193*/
         case GAME_CREATE_TYPE:
             if (c->version == CLIENT_VERSION_DCV1 &&
                 (c->flags & CLIENT_FLAG_IS_NTE)) {
@@ -3423,31 +3448,29 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
             return -1;
 
+            /* 0x006F 111*/
         case DONE_BURSTING_TYPE:
             return dc_process_done_burst(c);
 
-        case GAME_LIST_TYPE:
-            return send_game_list(c, c->cur_block);
-
-        case MENU_SELECT_TYPE:
-            return dc_process_menu(c, (dc_select_pkt*)pkt);
-
+            /* 0x0098 152*/
         case LEAVE_GAME_PL_DATA_TYPE:
             return dc_process_char(c, (dc_char_data_pkt*)pkt);
 
+            /* 0x001F 31*/
         case LOBBY_INFO_TYPE:
             return send_info_list(c, ship);
 
+            /* 0x00A1 161*/
         case BLOCK_LIST_REQ_TYPE:
+            /* 0x008F 143*/
         case DCNTE_BLOCK_LIST_REQ_TYPE:
             return send_block_list(c, ship);
 
-        case INFO_REQUEST_TYPE:
-            return dc_process_info_req(c, (dc_select_pkt*)pkt);
-
+            /* 0x00A2 162*/
         case QUEST_LIST_TYPE:
             return process_qlist(c);
 
+            /* 0x00A9 169*/
         case QUEST_END_LIST_TYPE:
             return process_qlist_end(c);
 
@@ -3460,7 +3483,9 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case LOBBY_ARROW_CHANGE_TYPE:
             return dc_process_arrow(c, flags);
 
+            /* 0x00A0 160*/
         case SHIP_LIST_TYPE:
+            /* 0x008E 142*/
         case DCNTE_SHIP_LIST_TYPE:
             return send_ship_list(c, ship, ship->cfg->menu_code);
 
@@ -3474,6 +3499,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case CHOICE_SEARCH_TYPE:
             return send_choice_reply(c, (dc_choice_set_pkt*)pkt);
 
+            /* 0x009E 158*/
         case LOGIN_9E_TYPE:
             if (c->version != CLIENT_VERSION_XBOX)
                 return gc_process_login(c, (gc_login_9e_pkt*)pkt);
@@ -3482,18 +3508,23 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
             return -1;
 
+            /* 0x0013 19*/
         case QUEST_CHUNK_TYPE:
+            /* 0x0044 68*/
         case QUEST_FILE_TYPE:
             /* Uhh... Ignore these for now, we've already sent it by the time we
                get this packet from the client. */
             return 0;
 
+            /* 0x00AC 172*/
         case QUEST_LOAD_DONE_TYPE:
             return process_qload_done(c);
 
+            /* 0x00D9 217*/
         case INFOBOARD_WRITE_TYPE:
             return process_infoboard(c, (gc_write_info_pkt*)pkt);
 
+            /* 0x00D8 216*/
         case INFOBOARD_TYPE:
             return send_infoboard(c, c->cur_lobby);
 

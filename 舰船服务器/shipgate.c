@@ -1549,20 +1549,43 @@ static int handle_char_data_req(shipgate_conn_t* conn, shipgate_char_data_pkt* p
                     if (!c->bb_pl && c->pl) {
                         /* We've found them, overwrite their data, and send the
                            refresh packet. */
-                        memcpy(c->pl, pkt->data, clen);
+                        player_t* pl = (player_t*)pkt->data;
 
-                        ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < c->pl->v1.character.inv.item_count; i++) {
-                            print_iitem_data(&c->pl->v1.character.inv.iitems[i], i, c->version);
+                        if (!isPacketEmpty(pl->v1.character.dress_data.gc_string, sizeof(pl->v1.character.dress_data.gc_string))) {
+
+                            memcpy(c->pl, pl, clen);
+
+                            ITEM_LOG("////////////////////////////////////////////////////////////");
+                            for (i = 0; i < c->pl->v1.character.inv.item_count; i++) {
+                                print_iitem_data(&c->pl->v1.character.inv.iitems[i], i, c->version);
+                            }
+
+                            send_lobby_join(c, c->cur_lobby);
                         }
-
-                        send_lobby_join(c, c->cur_lobby);
-
+                        else {
+                            ERR_LOG("GC %u 数据回传有误.", dest);
+                        }
                     }
                     else if (c->bb_pl) {
-                        memcpy(c->bb_pl, pkt->data, clen);
+                        psocn_bb_db_char_t* bb_pl = (psocn_bb_db_char_t*)pkt->data;
 
-                        fix_player_max_tech_level(&c->bb_pl->character);
+
+                        if (!isPacketEmpty(bb_pl->character.dress_data.gc_string, sizeof(bb_pl->character.dress_data.gc_string))) {
+                            memcpy(c->bb_pl, bb_pl, clen);
+                            fix_player_max_tech_level(&c->bb_pl->character);
+                        }
+                        else {
+                            ERR_LOG("GC %u 数据回传有误.", dest);
+                        }
+
+
+
+
+
+
+
+
+
 
                         //fix_equip_item(&c->bb_pl->character.inv);
 
