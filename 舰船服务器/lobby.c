@@ -270,14 +270,24 @@ void lobby_print_info2(ship_client_t* src) {
         send_msg(src, TEXT_MSG_TYPE, "版本:%d (v2: %d)", l->version,
             (int)l->v2);
     }
-    send_msg(src, TEXT_MSG_TYPE, "模式:%s", (int)l->battle == 1 ? __(src, "\tE\tC6对战模式") :
-        (int)l->challenge == 1 ? __(src, "\tE\tC8挑战模式") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人模式") :
-        __(src, "\tE\tC7普通模式"));
-    send_msg(src, TEXT_MSG_TYPE, "经验:%d倍"
+    //send_msg(src, TEXT_MSG_TYPE, "模式:%s"
+    //    , (int)l->battle == 1 ? __(src, "\tE\tC6对战") :
+    //    (int)l->challenge == 1 ? __(src, "\tE\tC8挑战") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人") :
+    //    __(src, "\tE\tC7普通")
+    //);
+
+    send_msg(src, TEXT_MSG_TYPE, "详情:%s/%s/%s"
+        , (int)l->battle == 1 ? __(src, "\tE\tC6对战") :
+        (int)l->challenge == 1 ? __(src, "\tE\tC8挑战") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人") :
+        __(src, "\tE\tC7团队")
+        , get_difficulty_describe(l->difficulty)
+        , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC8随机") : __(src, "\tE\tC6独立") :
+        __(src, "\tE\tC7默认")
+    );
+
+    send_msg(src, TEXT_MSG_TYPE, "经验:\tE\tC8%d\tE\tC7倍"
         , l->exp_mult > 0 ? l->exp_mult : 1
     );
-    send_msg(src, TEXT_MSG_TYPE, "难度:%s", get_difficulty_describe(l->difficulty));
-
     if (l->monster_rare_mult || l->monster_rare_drop_mult || l->box_rare_drop_mult)
         send_msg(src, TEXT_MSG_TYPE, "\tE\tC6稀有:%.0f%% 怪掉:%.0f%% 箱掉:%.0f%%"
             , l->monster_rare_mult * 100
@@ -296,11 +306,11 @@ void lobby_print_info2(ship_client_t* src) {
         send_msg(src, TEXT_MSG_TYPE, "Lua 表:%d", l->script_ref);
 #endif /* ENABLE_LUA */
 
-    if(l->lobby_choice_drop)
-        send_msg(src, TEXT_MSG_TYPE, "掉落:%s"
-            , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC8随机") : __(src, "\tE\tC6独立") : 
-            __(src, "\tE\tC7默认")
-        );
+    //if(l->lobby_choice_drop)
+    //    send_msg(src, TEXT_MSG_TYPE, "掉落:%s"
+    //        , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC8随机") : __(src, "\tE\tC6独立") : 
+    //        __(src, "\tE\tC7默认")
+    //    );
     //send_msg(src, TEXT_MSG_TYPE, "当前地图:");
     //for (i = 0; i < 0x10; ++i) {
     //    send_msg(src, TEXT_MSG_TYPE, "  %d: %d %d", i, (int)l->maps[i << 1],

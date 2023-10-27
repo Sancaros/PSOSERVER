@@ -1768,9 +1768,11 @@ static int handle_char_data_db_save(shipgate_conn_t* conn, shipgate_cdata_err_pk
                 if (c->guildcard == dest && c->pl) {
                     /* We've found them, figure out what to tell them. */
                     if (flags & SHDR_FAILURE) {
+                        ERR_LOG("无法保存 %s 角色数据", get_player_describe(c));
                         send_txt(c, "%s", __(c, "\tE\tC7无法保存角色数据."));
                     }
                     else {
+                        ERR_LOG("无法保存 %s 角色数据", get_player_describe(c));
                         send_txt(c, "%s", __(c, "\tE\tC7角色数据已保存."));
                     }
 

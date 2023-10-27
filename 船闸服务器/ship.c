@@ -6132,12 +6132,6 @@ int handle_pkt(ship_t* ship) {
         DATA_LOG("ship_t 接收 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
-        if (ntohs(pkt->pkt_type) == 0 || ntohs(pkt->pkt_len) == 0) {
-            pthread_rwlock_unlock(&ship->rwlock);
-            ERR_LOG("ship_t 接收到长度为0的数据包,忽略他.");
-            return 0;
-        }
-
         if (sz <= 0) {
             pthread_rwlock_unlock(&ship->rwlock);
             if (sz == SOCKET_ERROR) {
