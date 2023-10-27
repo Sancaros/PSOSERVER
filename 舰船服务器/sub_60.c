@@ -7673,6 +7673,17 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
 #endif // DEBUG
 
         l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+        if (!l->subcmd_handle) {
+
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("Î´Öª %s 0x%02X Ö¸Áî: 0x%02X", client_type[src->version].ver_name, hdr_type, type);
+            PRINT_HEX_LOG(DBG_LOG, pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
+            rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
 
         /* If there's a burst going on in the lobby, delay most packets */
         if (l->flags & LOBBY_FLAG_BURSTING) {

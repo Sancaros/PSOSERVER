@@ -3214,7 +3214,7 @@ int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
     __try {
         lobby_t* l = src->cur_lobby;
         ship_client_t* dest;
-        uint16_t hdr_type = pkt->hdr.dc.pkt_type;
+        uint16_t len = pkt->hdr.dc.pkt_len, hdr_type = pkt->hdr.dc.pkt_type;
         uint8_t type = pkt->type;
         int rv = -1;
 
@@ -3238,6 +3238,17 @@ int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
         }
 
         l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+        if (!l->subcmd_handle) {
+
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("Î´Öª 0x%02X Ö¸Áî: 0x%02X", hdr_type, type);
+            PRINT_HEX_LOG(ERR_LOG, pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
+            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
 
         /* If there's a burst going on in the lobby, delay most packets */
         if (l->flags & LOBBY_FLAG_BURSTING) {
