@@ -455,6 +455,7 @@ static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
     xmlChar* globla_exp_mult, * monster_rare_mult,* monster_rare_drop_mult,* box_rare_drop_mult;
     int rv = 0;
     long rv2;
+    double rv3;
 
     /* Grab the attributes of the tag. */
     globla_exp_mult = xmlGetProp(n, XC"globla_exp_mult");
@@ -484,42 +485,42 @@ static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
 
     /* Parse the game event out */
     errno = 0;
-    rv2 = strtol((char*)monster_rare_mult, NULL, 0);
+    rv3 = strtod((char*)monster_rare_mult, NULL);
 
-    if (errno || rv2 > 100 || rv2 < 0) {
+    if (errno || rv3 > 100 || rv3 < 0) {
         ERR_LOG("稀有怪物出现倍率无效: %s",
             (char*)monster_rare_mult);
         rv = -3;
         goto err;
     }
 
-    cur->monster_rare_mult = rv2;
+    cur->monster_rare_mult = rv3;
 
     /* Parse the game event out */
     errno = 0;
-    rv2 = strtol((char*)monster_rare_drop_mult, NULL, 0);
+    rv3 = strtod((char*)monster_rare_drop_mult, NULL);
 
-    if (errno || rv2 > 1000 || rv2 < 0) {
-        ERR_LOG("怪物掉落倍率无效或超出限制: %s 最大:1000",
+    if (errno || rv3 > 100 || rv3 < 0) {
+        ERR_LOG("怪物掉落倍率无效或超出限制: %s 最大:100",
             (char*)monster_rare_drop_mult);
         rv = -4;
         goto err;
     }
 
-    cur->monster_rare_drop_mult = rv2;
+    cur->monster_rare_drop_mult = rv3;
 
     /* Parse the game event out */
     errno = 0;
-    rv2 = strtol((char*)box_rare_drop_mult, NULL, 0);
+    rv3 = strtod((char*)box_rare_drop_mult, NULL);
 
-    if (errno || rv2 > 1000 || rv2 < 0) {
-        ERR_LOG("箱子掉落倍率无效或超出限制: %s 最大:1000",
+    if (errno || rv3 > 100 || rv3 < 0) {
+        ERR_LOG("箱子掉落倍率无效或超出限制: %s 最大:100",
             (char*)box_rare_drop_mult);
         rv = -5;
         goto err;
     }
 
-    cur->box_rare_drop_mult = rv2;
+    cur->box_rare_drop_mult = rv3;
 
 err:
     xmlFree(globla_exp_mult);
@@ -984,7 +985,7 @@ static int handle_rare_monster_mult_rate(xmlNode* n, psocn_ship_t* cur) {
         , * dorphon_eclair, * kondrieu
         ;
     int rv = 0;
-    uint32_t rare_mult = 1;
+    double rare_mult = 0;
     char* endptr;
 
     /* Grab the attributes of the tag. */
@@ -1004,15 +1005,16 @@ static int handle_rare_monster_mult_rate(xmlNode* n, psocn_ship_t* cur) {
     }
 
     /* 分析设置概率参数 */
-    if (cur->monster_rare_mult)
-        rare_mult = cur->monster_rare_mult;
+    if (cur->monster_rare_mult > 0)
+        rare_mult = cur->monster_rare_mult + 1;
+    else
+        rare_mult = 1;
 
 #ifdef DEBUG
 
     DBG_LOG("%d", rare_mult);
 
 #endif // DEBUG
-
 
     cur->rare_monster_mult_rates.hildeblue = (strtod((char*)hildeblue, &endptr) * rare_mult);
     cur->rare_monster_mult_rates.rappy = (strtod((char*)rappy, &endptr) * rare_mult);
@@ -1067,6 +1069,7 @@ err:
         xmlFree(pazuzu);
         xmlFree(dorphon_eclair);
         xmlFree(kondrieu);
+        rare_mult = 0;
     }
 
     return rv;

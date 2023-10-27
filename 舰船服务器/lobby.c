@@ -264,37 +264,40 @@ void lobby_print_info2(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;
     //int i;
 
-    send_msg(src, TEXT_MSG_TYPE, "房间: %s", l->name);
+    send_msg(src, TEXT_MSG_TYPE, "房间:%s", l->name);
     if (src->game_data->gm_debug) {
-        send_msg(src, TEXT_MSG_TYPE, "标志: %08" PRIx32 "", l->flags);
-        send_msg(src, TEXT_MSG_TYPE, "版本: %d (v2: %d)", l->version,
+        send_msg(src, TEXT_MSG_TYPE, "标志:%08" PRIx32 "", l->flags);
+        send_msg(src, TEXT_MSG_TYPE, "版本:%d (v2: %d)", l->version,
             (int)l->v2);
     }
-    send_msg(src, TEXT_MSG_TYPE, "模式: %s", (int)l->battle == 1 ? __(src, "\tE\tC6对战模式") :
+    send_msg(src, TEXT_MSG_TYPE, "模式:%s", (int)l->battle == 1 ? __(src, "\tE\tC6对战模式") :
         (int)l->challenge == 1 ? __(src, "\tE\tC8挑战模式") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人模式") :
         __(src, "\tE\tC7普通模式"));
-    send_msg(src, TEXT_MSG_TYPE, "经验: %d倍"
+    send_msg(src, TEXT_MSG_TYPE, "经验:%d倍"
         , l->exp_mult > 0 ? l->exp_mult : 1
     );
-    send_msg(src, TEXT_MSG_TYPE, "难度: %s", get_difficulty_describe(l->difficulty));
-    send_msg(src, TEXT_MSG_TYPE, "稀有: %d倍 怪掉: %d倍 箱掉: %d倍"
-        , l->monster_rare_mult > 0 ? l->monster_rare_mult : 1
-        , l->monster_rare_drop_mult > 0 ? l->monster_rare_drop_mult : 1
-        , l->box_rare_drop_mult > 0 ? l->box_rare_drop_mult : 1
-    );
+    send_msg(src, TEXT_MSG_TYPE, "难度:%s", get_difficulty_describe(l->difficulty));
+
+    if (l->monster_rare_mult || l->monster_rare_drop_mult || l->box_rare_drop_mult)
+        send_msg(src, TEXT_MSG_TYPE, "\tE\tC6稀有:%.0f%% 怪掉:%.0f%% 箱掉:%.0f%%"
+            , l->monster_rare_mult * 100
+            , l->monster_rare_drop_mult * 100
+            , l->box_rare_drop_mult * 100
+        );
+
     //send_msg(src, TEXT_MSG_TYPE, "敌人: %p", l->map_enemies);
     //send_msg(src, TEXT_MSG_TYPE, "实例: %p", l->map_objs);
 
     if (l->qid)
-        send_msg(src, TEXT_MSG_TYPE, "任务 ID: %" PRIu32 "", l->qid);
+        send_msg(src, TEXT_MSG_TYPE, "任务 ID:%" PRIu32 "", l->qid);
 
 #ifdef ENABLE_LUA
     if(src->game_data->gm_debug)
-        send_msg(src, TEXT_MSG_TYPE, "Lua 表: %d", l->script_ref);
+        send_msg(src, TEXT_MSG_TYPE, "Lua 表:%d", l->script_ref);
 #endif /* ENABLE_LUA */
 
     if(l->lobby_choice_drop)
-        send_msg(src, TEXT_MSG_TYPE, "掉落: %s"
+        send_msg(src, TEXT_MSG_TYPE, "掉落:%s"
             , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC8随机") : __(src, "\tE\tC6独立") : 
             __(src, "\tE\tC7默认")
         );
@@ -480,8 +483,8 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->oneperson = single_player;
     l->monster_rare_mult = ship->cfg->monster_rare_mult > 0 ? ship->cfg->monster_rare_mult : 1;
     l->drop_rare = c->game_data->gm_drop_rare;
-    l->monster_rare_drop_mult = ship->cfg->monster_rare_drop_mult > 0 ? ship->cfg->monster_rare_drop_mult : 1;
-    l->box_rare_drop_mult = ship->cfg->box_rare_drop_mult > 0 ? ship->cfg->box_rare_drop_mult : 1;
+    l->monster_rare_drop_mult = ship->cfg->monster_rare_drop_mult > 0 ? ship->cfg->monster_rare_drop_mult : 0;
+    l->box_rare_drop_mult = ship->cfg->box_rare_drop_mult > 0 ? ship->cfg->box_rare_drop_mult : 0;
 
     if(l->oneperson)
         l->flags |= LOBBY_FLAG_SINGLEPLAYER;

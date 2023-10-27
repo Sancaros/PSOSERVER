@@ -668,7 +668,7 @@ void generate_rare_weapon_bonuses(sfmt_t* rng, pt_bb_entry_t* ent, item_t* item,
 
 item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* rng, PackedDrop_t drop, bool is_box) {
 	item_t item = { 0 };
-	double drop_rare = 0, orignal_rare_rate = 0;
+	double drop_rare = 0, orignal_rare_rate = 0, new_rare_rate = 0;
 	if (!drop.probability) {
 		return item;
 	}
@@ -677,23 +677,24 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 	// 0x100000000 instead, which makes all rare items SLIGHTLY more rare.
 	if (!l->drop_rare) {
 		drop_rare = sfmt_genrand_real1(rng);
+		orignal_rare_rate = expand_rate(drop.probability);
 
 		if(is_box)
-			orignal_rare_rate = expand_rate(drop.probability) * l->box_rare_drop_mult;
+			new_rare_rate = orignal_rare_rate * (1 + l->box_rare_drop_mult);
 		else
-			orignal_rare_rate = expand_rate(drop.probability) * l->monster_rare_drop_mult;
+			new_rare_rate = orignal_rare_rate * (1 + l->monster_rare_drop_mult);
 
-		if (drop_rare >= orignal_rare_rate) {
+		if (drop_rare >= new_rare_rate) {
 #ifdef DBG_RARE_ITEM_PROC
 
-			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, expand_rate(drop.probability), orignal_rare_rate);
+			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, orignal_rare_rate, new_rare_rate);
 
 #endif // DBG_RARE_ITEM_PROC
 			return item;
 		}
 #ifdef DBG_RARE_ITEM_PROC
 		else
-			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, expand_rate(drop.probability), orignal_rare_rate);
+			DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, orignal_rare_rate, new_rare_rate);
 
 #endif // DBG_RARE_ITEM_PROC
 	}
