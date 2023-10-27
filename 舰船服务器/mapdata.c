@@ -233,7 +233,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     int i = 0, j = 0;
     game_enemy_t* gen = NULL;
     uint32_t rare_enemy_count = 0;
-    uint16_t rare_enemy_data[0x10] = { 0 };
+    uint16_t rare_enemy_data[MAX_RARE_MONSTER_IDS] = { 0 };
     void* tmp = NULL;
     uint32_t count = 0;
     uint16_t n_clones = 0;
@@ -250,7 +250,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     memset(gen, 0, sizeof(game_enemy_t) * 0xB50);
 
     /* 初始化稀有怪物的数据 */
-    for (i = 0; i < 0x10; i++)
+    for (i = 0; i < MAX_RARE_MONSTER_IDS; i++)
         rare_enemy_data[i] = LE16(0xFFFF);
 
     psocn_rare_enemy_rates_t* rare_monster_rate = &rare_rate;
@@ -262,6 +262,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         map_enemy_t me = en[i];
         n_clones = me.num_children;
         gen[count].area = area;
+        double roll_rare_rate = sfmt_genrand_real1(sfmt);
+        double file_rare_rate = expand_rate(me.rare_rate);
+
+        //DBG_LOG("EP%d base_type %d", ep, me.base_type);
 
         switch (me.base_type) {
         case 0x0040:    /* Hildebear & Hildetorr */
@@ -269,17 +273,22 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;// Set rare from a quest由任务来设置出现概率?
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->hildeblue)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
-                rare_monster = true;
+            else if (!acc && (rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf hildeblue %lf", roll_rare_rate, rare_monster_rate->hildeblue);
+
+                if (roll_rare_rate < rare_monster_rate->hildeblue) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
             if (rare_monster)
                 acc = 1;
             gen[count].bp_entry = 0x49 + acc;
             gen[count].pt_index = 0x01 + acc;
             gen[count].rt_index = 0x01 + acc;
+            //DBG_LOG("i %d base_type %d skin %d acc %d rare_rate %lf", i, me.base_type, me.skin, acc, file_rare_rate);
             break;
 
         case 0x0041:    /* Rappies */
@@ -287,25 +296,27 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->rappy)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
-                rare_monster = true;
+            else if (!acc && (rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf rappy %lf", roll_rare_rate, rare_monster_rate->rappy);
+
+                if (roll_rare_rate < rare_monster_rate->rappy) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
             if (rare_monster)
                 acc = 1;
             if (ep == GAME_TYPE_EPISODE_3 || ep == GAME_TYPE_EPISODE_4) {   /* Del Rappy & Sand Rappy */
                 if (alt) {
                     gen[count].bp_entry = 0x17 + acc;
-                    gen[count].pt_index = 0x11 + acc;
-                    gen[count].rt_index = 0x11 + acc;
                 }
                 else {
                     gen[count].bp_entry = 0x05 + acc;
-                    gen[count].pt_index = 0x11 + acc;
-                    gen[count].rt_index = 0x11 + acc;
                 }
+                gen[count].pt_index = 0x11 + acc;
+                gen[count].rt_index = 0x11 + acc;
             }
             else {
                 if (acc) { // Rag Rappy 黄色拉比鸟 and Al Rappy 蓝色拉比鸟 (Love for Episode II)
@@ -316,29 +327,25 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                         gen[count].rt_index = 0x06;
                     }
                     else {
-                        if (ship != NULL) {
-                            switch (ship->game_event)
-                            {
-                            case 0x01:
-                                gen[count].pt_index = 0x4F;
-                                gen[count].rt_index = 0x4F; // St. Rappy 圣诞拉比鸟
-                                break;
-                            case 0x04:
-                                gen[count].pt_index = 0x51;
-                                gen[count].rt_index = 0x51; // Easter Rappy 彩蛋拉比鸟
-                                break;
-                            case 0x05:
-                                gen[count].pt_index = 0x50;
-                                gen[count].rt_index = 0x50; // Halo Rappy 南瓜拉比鸟
-                                break;
-                            default:
-                                gen[count].pt_index = 0x33;
-                                gen[count].rt_index = 0x33; // Love Rappy 爱之拉比鸟
-                                break;
-                            }
+                        switch (cfg->events[0].game_event)
+                        {
+                        case 0x01:
+                            gen[count].pt_index = 0x4F;
+                            gen[count].rt_index = 0x4F; // St. Rappy 圣诞拉比鸟
+                            break;
+                        case 0x04:
+                            gen[count].pt_index = 0x51;
+                            gen[count].rt_index = 0x51; // Easter Rappy 彩蛋拉比鸟
+                            break;
+                        case 0x05:
+                            gen[count].pt_index = 0x50;
+                            gen[count].rt_index = 0x50; // Halo Rappy 南瓜拉比鸟
+                            break;
+                        default:
+                            gen[count].pt_index = 0x33;
+                            gen[count].rt_index = 0x33; // Love Rappy 爱之拉比鸟
+                            break;
                         }
-                        else
-                            gen[count].rt_index = -1;
                     }
                 }
                 else {
@@ -388,18 +395,22 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if ((rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->nar_lily)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
-                rare_monster = true;
+            else if ((rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf nar_lily %lf", roll_rare_rate, rare_monster_rate->nar_lily);
+
+                if (roll_rare_rate < rare_monster_rate->nar_lily) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
-            if (ep == 2 && alt) {
+            if (ep == GAME_TYPE_EPISODE_2 && alt) {
                 gen[count].bp_entry = 0x25;
                 gen[count].rt_index = 0x53;
             }
             else {
-                acc = (expand_rate(me.rare_rate) < rare_monster_rate->nar_lily) ? 1 : 0;
+                acc = (file_rare_rate < rare_monster_rate->nar_lily) ? 1 : 0;
                 if (rare_monster)
                     acc = 1;
                 gen[count].bp_entry = 0x04 + acc;
@@ -420,15 +431,19 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x0064:    /* Slime + 4 clones */
             rare_monster = false;
-            acc = (expand_rate(me.rare_rate) < rare_monster_rate->pouilly_slime) ? 1 : 0;
+            acc = (file_rare_rate < rare_monster_rate->pouilly_slime) ? 1 : 0;
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
-            else if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->pouilly_slime)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
-                rare_monster = true;
+            else if (!acc && (rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf pouilly_slime %lf", roll_rare_rate, rare_monster_rate->pouilly_slime);
+
+                if (roll_rare_rate < rare_monster_rate->pouilly_slime) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
             if (rare_monster)
                 acc = 1;
@@ -439,11 +454,13 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 ++count;
                 gen[count].area = area;
                 rare_monster = false;
-                if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->pouilly_slime)) {
-                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                    rare_enemy_count++;
-                    rare_monster = true;
+                if (!acc && (rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                    if (roll_rare_rate < rare_monster_rate->pouilly_slime) {
+                        rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                        //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                        rare_enemy_count++;
+                        rare_monster = true;
+                    }
                 }
                 if (rare_monster)
                     acc = 1;
@@ -759,7 +776,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 rare_monster = true;
             if (rare_monster)
                 acc = 1;
-            if (alt)
+            if (alt || acc)
                 gen[count].bp_entry = 0x0D + acc + 0x10;
             else
                 gen[count].bp_entry = 0x0D + acc;
@@ -770,11 +787,15 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0112:    /* Merissa A/AA */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->merissa_aa)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
-                rare_monster = true;
+            if (!acc && (rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf merissa_aa %lf", roll_rare_rate, rare_monster_rate->merissa_aa);
+
+                if (roll_rare_rate < rare_monster_rate->merissa_aa) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
             if (rare_monster)
                 acc = 1;
@@ -790,11 +811,15 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0114:    /* Zu & Pazuzu */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->pazuzu)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
-                rare_monster = true;
+            if (!acc && (rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf pazuzu %lf", roll_rare_rate, rare_monster_rate->pazuzu);
+
+                if (roll_rare_rate < rare_monster_rate->pazuzu) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
             if (rare_monster)
                 acc = 1;
@@ -818,11 +843,15 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0116:    /* Dorphon & Eclair */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->dorphon_eclair)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
-                rare_monster = true;
+            if (!acc && (rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf dorphon_eclair %lf", roll_rare_rate, rare_monster_rate->dorphon_eclair);
+
+                if (roll_rare_rate < rare_monster_rate->dorphon_eclair) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
             if (rare_monster)
                 acc = 1;
@@ -846,22 +875,30 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             gen[count].bp_entry = 0x22;
 
             rare_monster = false;
-            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_real1(sfmt) < rare_monster_rate->kondrieu)) {
-                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
-                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
-                rare_enemy_count++;
+
+            if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
+                ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
                 rare_monster = true;
+            else if ((rare_enemy_count < MAX_RARE_MONSTER_IDS)) {
+                //DBG_LOG("roll_rare_rate %lf kondrieu %lf", roll_rare_rate, rare_monster_rate->kondrieu);
+
+                if (roll_rare_rate < rare_monster_rate->kondrieu) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
+                    rare_monster = true;
+                }
             }
 
-            if (expand_rate(me.rare_rate) < rare_monster_rate->kondrieu || rare_monster)
+            if (rare_monster)
                 gen[count].rt_index = 0x15;
             else
                 gen[count].rt_index = 0x13 + acc;
             break;
 
         default:
-            gen[count].rt_index = (uint8_t)me.base_type;
-            gen[count].bp_entry = gen[count].rt_index;
+            gen[count].bp_entry = (uint8_t)me.base_type;
+            gen[count].rt_index = (uint8_t)me.rt_index;
 #ifdef VERBOSE_DEBUGGING1
             ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", me.base_type, me.rt_index, me.skin, me.num_children);
 #endif
@@ -885,13 +922,22 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         tmp = gen;
     }
 
+    //for (size_t z = 0; z < MAX_RARE_MONSTER_IDS; z++) {
+    //    DBG_LOG("rare_enemy_data[%d] = 0x%02X", z, rare_enemy_data[z]);
+    //}
+
+    //getchar();
     game->enemies = (game_enemy_t*)tmp;
     game->enemy_count = count;
     game->rare_enemy_count = rare_enemy_count;
-    for (size_t z = 0; z < 0x10; z++) {
+    for (size_t z = 0; z < MAX_RARE_MONSTER_IDS; z++) {
         game->rare_enemy_data[z] = rare_enemy_data[z];
         //DBG_LOG("game->rare_enemy_data[%d] = 0x%04X", z, game->rare_enemy_data[z]);
     }
+
+    //for (size_t z = 0; z < MAX_RARE_MONSTER_IDS; z++) {
+    //    DBG_LOG("rare_enemy_data[%d] = 0x%04X", z, game->rare_enemy_data[z]);
+    //}
 
     return 0;
 }
@@ -2053,7 +2099,7 @@ int bb_load_game_enemies(lobby_t* l) {
     parsed_objs_t* objs;
     game_enemies_t* sets[0x10] = { 0 };
     game_objs_t* osets[0x10] = { 0 };
-    uint16_t rare_enemy_data[0x10] = { 0 };
+    uint16_t rare_enemy_data[MAX_RARE_MONSTER_IDS] = { 0 };
 
     /* Figure out the parameter set that will be in use first... */
     l->bb_params = battle_params[solo][l->episode - 1][l->difficulty];
@@ -2097,6 +2143,8 @@ int bb_load_game_enemies(lobby_t* l) {
         sets[i >> 1] = &maps->gen_data[index];
         osets[i >> 1] = &objs->gobj_data[index];
         rare_enemy_data[i >> 1] = maps->gen_data[index].rare_enemy_data[i >> 1];
+
+        //DBG_LOG("rare_enemy_raw_data[%d] = 0x%04X", i >> 1, rare_enemy_data[i >> 1]);
     }
 
     /* Allocate space for the enemy set and the enemies therein. */
@@ -2172,14 +2220,14 @@ int bb_load_game_enemies(lobby_t* l) {
 
     /* Done! */
     l->map_enemies = en;
-    for (size_t z = 0; z < 0x10; z++) {
-        //if (l->map_enemies->rare_enemies->rare_monster_data[z] != 0xFFFF)
+    for (size_t z = 0; z < MAX_RARE_MONSTER_IDS; z++) {
         l->rare_enemy_data[z] = rare_enemy_data[z];
 #ifdef DEBUG
 
         DBG_LOG("l->rare_monster_data[%d] = 0x%04X", z, l->rare_enemy_data[z]);
 
 #endif // DEBUG
+
     }
     l->map_objs = ob;
     return 0;
@@ -2397,10 +2445,10 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     ssize_t amt;
 
     /* Cowardly refuse to do this on challenge or battle mode. */
-    if (l->challenge || l->battle) {
-        //DBG_LOG("不处理挑战模式对战模式的怪物");
-        return 0;
-    }
+    //if (l->challenge || l->battle) {
+    //    //DBG_LOG("不处理挑战模式对战模式的怪物");
+    //    return 0;
+    //}
 
     fn = (char*)malloc(sizeof(dlen) + 40);
 

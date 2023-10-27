@@ -3010,12 +3010,25 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         /* 检索物品类型 */
         switch (item.datab[0]) {
         case ITEM_TYPE_WEAPON: // 武器
-            /* 打磨值 0 - 10*/
-            item.datab[3] = sfmt_genrand_uint32(rng) % 11;
-            /* 特殊攻击 0 - 10 配合难度 0 - 3 33%几率 获得特殊EX */
-            if ((sfmt_genrand_uint32(rng) % 3) == 1) {
-                item.datab[4] = sfmt_genrand_uint32(rng) % 11 + 难度;
+            pmt_weapon_bb_t pmt_weapon = { 0 };
+
+            if (err = pmt_lookup_weapon_bb(item.datal[0], &pmt_weapon)) {
+                ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                return -1;
             }
+
+            /* 打磨值 0 - 10*/
+            if (pmt_weapon.max_grind) {
+                item.datab[3] = sfmt_genrand_uint32(rng) % pmt_weapon.max_grind;
+            }
+
+            /* 特殊攻击 0 - 10 配合难度 0 - 3 33%几率 获得特殊EX */
+            if (!pmt_weapon.special_type) {
+                if ((sfmt_genrand_uint32(rng) % 3) == 1) {
+                    item.datab[4] = sfmt_genrand_uint32(rng) % 11 + 难度;
+                }
+            }
+
             /* datab[5] 在这里不涉及 礼物 未鉴定*/
 
             /* 生成属性*/

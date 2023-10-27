@@ -167,15 +167,14 @@ typedef struct game_enemy {
 
 /* Rare Enemy data as used in the game. */
 typedef struct game_rare_enemy {
-    uint32_t rare_enemy_count;
-    uint16_t rare_enemy_data;
+    uint16_t rare_enemy_data[MAX_RARE_MONSTER_IDS];
 } game_rare_enemy_t;
 
 typedef struct game_enemies {
     uint32_t enemy_count;
     game_enemy_t* enemies;
     uint32_t rare_enemy_count;
-    uint16_t rare_enemy_data[0x10];
+    uint16_t rare_enemy_data[MAX_RARE_MONSTER_IDS];
 } game_enemies_t;
 
 typedef struct parsed_map {

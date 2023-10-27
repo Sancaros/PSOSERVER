@@ -3705,7 +3705,7 @@ typedef struct bb_send_quest_state {
 // DE (S->C): Rare monster list (BB)
 typedef struct bb_rare_monster_list {
     bb_pkt_hdr_t hdr;
-    uint16_t enemy_ids[0x10];
+    uint16_t enemy_ids[MAX_RARE_MONSTER_IDS];
 } PACKED bb_rare_monster_list_pkt;
 
 // DF (C->S): Unknown (BB)
@@ -4363,9 +4363,9 @@ struct S_Unknown_BB_0CEA {
     uint16_t unknown_a2[0];
 } PACKED;
 
-// 0DEA (C->S): Unknown
+// 0DEA (C->S): 邀请目标进公会
 // No arguments
-typedef struct bb_guild_invite_0DEA {
+typedef struct bb_guild_invite {
     bb_pkt_hdr_t hdr;
     uint32_t guild_owner_gc;/* 0x08 */
     uint32_t guild_id;/* 0x0C */
@@ -4376,7 +4376,7 @@ typedef struct bb_guild_invite_0DEA {
     uint32_t guild_rank;
     uint8_t guild_flag[0x0800];            // 公会图标
     uint8_t data[];
-} PACKED bb_guild_invite_0DEA_pkt;
+} PACKED bb_guild_invite_pkt;
 
 // 0EEA (S->C): 获取目标公会数据
 typedef struct bb_guild_get_data {

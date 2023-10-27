@@ -2689,7 +2689,7 @@ static int process_bb_guild_unk_0CEA(ship_client_t* c, bb_guild_unk_0CEA_pkt* pk
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_invite_0DEA(ship_client_t* c, bb_guild_invite_0DEA_pkt* pkt) {
+static int process_bb_guild_invite(ship_client_t* c, bb_guild_invite_pkt* pkt) {
     //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -2923,7 +2923,7 @@ static int process_bb_guild_req_privilege_items_list(ship_client_t* c, bb_guild_
     //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unlock_privilege_item_pkt* pkt) {
+static int process_bb_guild_unlock_privilege_item(ship_client_t* c, bb_guild_unlock_privilege_item_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -3000,7 +3000,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_0CEA(c, (bb_guild_unk_0CEA_pkt*)pkt);
 
     case BB_GUILD_INVITE:
-        return process_bb_guild_invite_0DEA(c, (bb_guild_invite_0DEA_pkt*)pkt);
+        return process_bb_guild_invite(c, (bb_guild_invite_pkt*)pkt);
 
     case BB_GUILD_GET_TARGET_DATA:
         return process_bb_guild_unk_0EEA(c, (bb_guild_get_data_pkt*)pkt);
@@ -3042,7 +3042,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_req_privilege_items_list(c, (bb_guild_req_privilege_items_list_pkt*)pkt);
 
     case BB_GUILD_UNLOCK_PRIVILEG_ITEM:
-        return process_bb_guild_unk_1BEA(c, (bb_guild_unlock_privilege_item_pkt*)pkt);
+        return process_bb_guild_unlock_privilege_item(c, (bb_guild_unlock_privilege_item_pkt*)pkt);
 
     case BB_GUILD_RANKING_LIST:
         return process_bb_guild_rank_list(c, (bb_guild_rank_list_pkt*)pkt);

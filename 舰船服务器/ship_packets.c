@@ -13264,18 +13264,13 @@ int send_bb_rare_enemy_index_list(ship_client_t* c, uint16_t* rare_enemies) {
     pkt->hdr.pkt_type = LE16(BB_RARE_MONSTER_LIST);
     pkt->hdr.flags = 0;
 
-    for (size_t z = 0; z < ARRAYSIZE(pkt->enemy_ids); z++) {
-        if(rare_enemies[z] != 0xFFFF)
-            pkt->enemy_ids[z] = rare_enemies[z];
-        else
-            pkt->enemy_ids[z] = 0xFFFF;
-#ifdef DEBUG
-        if (rare_enemies[z] != 0xFFFF)
-            DBG_LOG("pkt->enemy_ids[%d] = 0x%04X", z, pkt->enemy_ids[z]);
-#endif // DEBUG
-        /*if (rare_enemies[z] != 0xFFFF)
-            DBG_LOG("pkt->enemy_ids[%d] = 0x%04X", z, pkt->enemy_ids[z]);*/
+    for (size_t z = 0; z < MAX_RARE_MONSTER_IDS; z++) {
+        pkt->enemy_ids[z] = rare_enemies[z];
     }
+
+    //for (size_t x = 0; x < MAX_RARE_MONSTER_IDS; x++) {
+    //    DBG_LOG("pkt->enemy_ids[%d] = 0x%04X", x, pkt->enemy_ids[x]);
+    //}
 
     return crypt_send(c, sizeof(bb_rare_monster_list_pkt), sendbuf);
 }

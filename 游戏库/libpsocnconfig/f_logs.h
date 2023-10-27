@@ -395,7 +395,7 @@ do { \
 #define DATA_LOG(...) \
 do { \
     pthread_mutex_lock(&pkt_mutex); \
-    flog(__LINE__, DATA_LOG, __VA_ARGS__); \
+    flog_debug(logfilename(__FILE__), __LINE__, DATA_LOG, __VA_ARGS__); \
     pthread_mutex_unlock(&pkt_mutex); \
 } while (0)
 

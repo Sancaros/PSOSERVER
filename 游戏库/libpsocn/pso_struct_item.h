@@ -32,6 +32,8 @@
 #pragma pack(push, 1) 
 #endif
 
+#define MAX_RARE_MONSTER_IDS            0x10
+
 #define MAX_PLAYER_BANK_ITEMS           200
 #define MAX_PLAYER_INV_ITEMS            30
 #define MAX_PLAYER_TECHNIQUES           19

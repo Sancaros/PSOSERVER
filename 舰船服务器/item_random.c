@@ -30,7 +30,10 @@
 #include "item_random.h"
 
 uint32_t rand_int(sfmt_t* rng, uint64_t max) {
-    return sfmt_genrand_uint32(rng) % max;
+    if (max != 0)
+        return sfmt_genrand_uint32(rng) % max;
+    else
+        return 0;
 }
 
 float rand_float_0_1_from_crypt(sfmt_t* rng) {

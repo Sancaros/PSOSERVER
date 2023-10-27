@@ -2211,7 +2211,7 @@ static int handle_bb_guild_unk_0CEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
 /* 处理 Blue Burst 公会 公会邀请*/
 static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    bb_guild_invite_0DEA_pkt* g_data = (bb_guild_invite_0DEA_pkt*)pkt->pkt;
+    bb_guild_invite_pkt* g_data = (bb_guild_invite_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
@@ -6127,15 +6127,17 @@ int handle_pkt(ship_t* ship) {
 
         sz = ship_recv(ship, recvbuf + ship->recvbuf_cur, MAX_PACKET_BUFF - ship->recvbuf_cur);
 
-        //gnutls_datum_t datum = { (void*)recvbuf, sz };
-        //int status = gnutls_check_version(datum.data);
-        //if (status != GNUTLS_E_SUCCESS) {
-        //    ERR_LOG("Gnutls *** 错误: 发送的数据无效.");
-        //}
+        shipgate_hdr_t* pkt = (shipgate_hdr_t*)recvbuf;
 
-        DATA_LOG("从端口 %d 接收数据 %d 字节", ship->sock, sz);
-        DATA_LOG("handle_pkt");
-        //PRINT_HEX_LOG(DBG_LOG, recvbuf, sz);
+        DATA_LOG("ship_t 接收 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
+
+        if (ntohs(pkt->pkt_type) == 0 || ntohs(pkt->pkt_len) == 0) {
+            pthread_rwlock_unlock(&ship->rwlock);
+            ERR_LOG("ship_t 接收到长度为0的数据包,忽略他.");
+            return 0;
+        }
+
         if (sz <= 0) {
             pthread_rwlock_unlock(&ship->rwlock);
             if (sz == SOCKET_ERROR) {

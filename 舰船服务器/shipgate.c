@@ -178,7 +178,7 @@ static int send_raw(shipgate_conn_t* sg, size_t len, uint8_t* sendbuf, int crypt
 
         shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
 
-        DATA_LOG("shipgate_conn_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+        DATA_LOG("shipgate_conn_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
         pthread_rwlock_wrlock(&sg->rwlock);
@@ -1089,7 +1089,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
                         if (dest->guildcard == sender_gc) {
-
+                            /* TODO 实现购买后 解锁相应的物品 */
                             PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
                         }
@@ -3658,9 +3658,10 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         sz = sg_recv(sg, recvbuf + sg->recvbuf_cur, MAX_PACKET_BUFF - sg->recvbuf_cur);
 
-        DATA_LOG("从端口 %d 接收数据 %d 字节", sg->sock, sz);
-        DATA_LOG("process_shipgate_pkt");
-        //PRINT_HEX_LOG(DBG_LOG, recvbuf, sz);
+        shipgate_hdr_t* pkt = (shipgate_hdr_t*)recvbuf;
+
+        DATA_LOG("shipgate_conn_t 接收 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         if (sz <= 0) {

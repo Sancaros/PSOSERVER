@@ -1458,7 +1458,7 @@ static int handle_quick_return(ship_client_t* c, const char* params) {
     }
 
     send_ship_list(c, ship, ship->cfg->menu_code);
-    return send_txt(c, "%s", __(c, "\tE\tC4请选择你要前往的舰船."));
+    return send_txt(c, "%s", __(c, "\tE\tC6请选择你要前往的舰船."));
 }
 
 /* 用法: /lb */
@@ -1471,7 +1471,7 @@ static int handle_lobby(ship_client_t* c, const char* params) {
     }
 
     send_block_list(c, ship);
-    return send_txt(c, "%s", __(c, "\tE\tC4请选择你要前往的大厅."));
+    return send_txt(c, "%s", __(c, "\tE\tC6请选择你要前往的大厅."));
 }
 
 /* 用法: /matuse */

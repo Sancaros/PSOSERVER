@@ -505,6 +505,33 @@ void fix_bb_player_db_save_data(psocn_bb_db_char_t* character) {
 
 /* 人物数据检测修正函数 */
 bool check_bb_pl_data(ship_client_t* c) {
+    /* 非BB版本，不进行数据传输 */
+    if (c->version != CLIENT_VERSION_BB) {
+        //DBG_LOG("%s 版本非BB,无法使用即时存储.", get_player_describe(c));
+        return false;
+    }
+
+    /* 当玩家在舰船选择界面时，不进行数据传输 */
+    if (c->flags & CLIENT_FLAG_TYPE_SHIP) {
+        //DBG_LOG("%s 当玩家在舰船选择界面时,无法使用即时存储.", get_player_describe(c));
+        return false;
+    }
+
+    /* 当玩家在跃迁时，不进行数据传输 */
+    if (c->flags & CLIENT_FLAG_BURSTING) {
+        //DBG_LOG("%s 玩家正在跃迁",get_player_describe(c));
+        return false;
+    }
+
+    /* 当房间在跃迁时，不进行数据传输 */
+    lobby_t* l = c->cur_lobby;
+    if (l) {
+        if (l->flags & CLIENT_FLAG_BURSTING) {
+            //DBG_LOG("%s %s 玩家和房间正在跃迁", get_lobby_describe(l), get_player_describe(c));
+            return false;
+        }
+    }
+
     if (isPacketEmpty(c->bb_pl->character.dress_data.gc_string, sizeof(c->bb_pl->character.dress_data.gc_string))) {
 #ifdef DEBUG
         ERR_LOG("%s 更新的数据有误 %s", get_player_describe(c), c->bb_pl->character.dress_data.gc_string);
@@ -522,8 +549,7 @@ void client_send_bb_data(ship_client_t* c) {
     uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
 
     /* If the client was on Blue Burst, update their db character */
-    if (c->version == CLIENT_VERSION_BB &&
-        !(c->flags & CLIENT_FLAG_TYPE_SHIP) && check_bb_pl_data(c)) {
+    if (check_bb_pl_data(c)) {
 
         c->need_save_data = false;
 

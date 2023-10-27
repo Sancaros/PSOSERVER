@@ -588,7 +588,7 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir, int initial) 
     uint8_t *dat;
     uint32_t dat_sz, tmp;
 
-    char* mdir = (char*)malloc(sizeof(dlen) + 20);
+    char* mdir = (char*)malloc(dlen + 20);
 
     if (!mdir) {
         ERR_LOG("malloc");
@@ -598,14 +598,21 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir, int initial) 
     /* Make sure we have all the directories we'll need. */
     sprintf(mdir, "%s\\.mapcache", dir);
 
-    if (initial) {
-        if (remove_directory(mdir)) {
-            QERR_LOG("É¾³ýµØÍ¼»º´æÎÄ¼þ¼Ð´íÎó: %s",
-                strerror(errno));
-            free_safe(mdir);
-            return 0;
-        }
+    if (remove_directory(mdir)) {
+        QERR_LOG("É¾³ýµØÍ¼»º´æÎÄ¼þ¼Ð´íÎó: %s",
+            strerror(errno));
+        free_safe(mdir);
+        return 0;
     }
+
+    //if (initial) {
+    //    if (remove_directory(mdir)) {
+    //        QERR_LOG("É¾³ýµØÍ¼»º´æÎÄ¼þ¼Ð´íÎó: %s",
+    //            strerror(errno));
+    //        free_safe(mdir);
+    //        return 0;
+    //    }
+    //}
 
     if(_mkdir(mdir) != 0 && errno != EEXIST) {
         QERR_LOG("´´½¨µØÍ¼»º´æÎÄ¼þ¼Ð´íÎó: %s",
@@ -687,9 +694,12 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir, int initial) 
 #endif // DEBUG
                                 cache_quest_enemies(fn2, dat, dat_sz, q->episode);
                                 free_safe(dat);
+#ifdef DEBUG
                                 if (!initial)
                                     QERR_LOG("ÈÎÎñ»º´æ %s ÓïÑÔ %s ÈÎÎñID %d ¸üÐÂÍê³É!",
                                         client_type[j].ver_name_file, language_codes[k], q->qid);
+#endif // DEBUG
+
                             }
                         }
                     }

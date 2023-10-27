@@ -119,7 +119,7 @@ static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
 
         shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
 
-        DATA_LOG("ship_t send_raw \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+        DATA_LOG("ship_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
         pthread_rwlock_wrlock(&ship->rwlock);
@@ -1193,18 +1193,12 @@ int send_pl_lvl_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
 int send_player_max_tech_level_table_bb(ship_t* c) {
     int i;
 
-    //bb_max_tech_level_t* bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_PLAYER_TECHNIQUES);
-
-    //if (!bb_max_tech_level)
-    //    return 0;
-
     if (read_player_max_tech_level_table_bb(max_tech_level)) {
         ERR_LOG("无法读取 Blue Burst 法术等级数据表");
         return -2;
     }
 
     i = send_max_tech_lvl_bb(c, max_tech_level);
-    //free_safe(bb_max_tech_level);
 
     return i;
 }
@@ -1242,6 +1236,8 @@ int send_player_level_table_bb(ship_t* c) {
     }
 
     i = send_pl_lvl_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
+    free_safe(cmp_buf);
+    cmp_buf = NULL;
 
     return i;
 }

@@ -38,7 +38,7 @@
 #define LOBBY_MAX_CLIENTS   12
 #define LOBBY_MAX_IN_TEAM   4
 
-#define LOBBY_MAX_SAVED_ITEMS      3000
+#define LOBBY_MAX_SAVED_ITEMS           3000
 
 /* Forward declaration. */
 struct ship_client;
@@ -178,7 +178,7 @@ struct lobby {
     game_enemies_t *map_enemies;
     game_objs_t *map_objs;
     uint32_t rare_enemy_count;
-    uint16_t rare_enemy_data[0x10];
+    uint16_t rare_enemy_data[MAX_RARE_MONSTER_IDS];
     uint32_t monster_rare_mult;
     bb_battle_param_t *bb_params;
 
