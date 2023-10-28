@@ -986,11 +986,17 @@ typedef struct subcmd_bb_game_client_leave {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_game_client_leave_t;
 
-// 0x3B: Unknown (指令生效范围; 大厅和游戏)
-typedef struct subcmd_bb_Unknown_6x3B {
+// 0x3B: 跃迁至不同层级完成 (指令生效范围; 大厅和游戏)
+typedef struct subcmd_switch_level_done {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+} PACKED subcmd_switch_level_done_t;
+
+// 0x3B: 跃迁至不同层级完成 (指令生效范围; 大厅和游戏)
+typedef struct subcmd_bb_switch_level_done {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_Unknown_6x3B_t;
+} PACKED subcmd_bb_switch_level_done_t;
 
 // 0x3E: Stop moving
 // 0x3F: Set position

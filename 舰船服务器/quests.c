@@ -678,9 +678,11 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir, int initial) 
                             if ((dat = read_and_dec_dat(fn1, &dat_sz))) {
                                 cache_quest_enemies(fn2, dat, dat_sz, q->episode);
                                 free_safe(dat);
+#ifdef DEBUG
                                 if (!initial)
                                     QERR_LOG("任务缓存 %s 语言 %s 任务ID %d 更新完成!",
                                         client_type[j].ver_name_file, language_codes[k], q->qid);
+#endif // DEBUG
                             }
                             else {
                                 ERR_LOG("解析任务文件 %s 失败", fn1);

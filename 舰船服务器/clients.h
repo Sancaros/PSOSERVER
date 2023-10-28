@@ -415,6 +415,7 @@ extern pthread_key_t sendbuf_key;
 #define CLIENT_FLAG_WORD_CENSOR     0x08000000
 #define CLIENT_FLAG_SHOPPING        0x10000000
 #define CLIENT_FLAG_ERR_TO_SHIP     0x20000000
+#define CLIENT_FLAG_LOBBY_INFO      0x40000000
 
 static client_type_t client_type[CLIENT_VERSION_ALL] = {
     {CLIENT_VERSION_DCV1, "DCV1",   "v1", 4},
@@ -552,9 +553,11 @@ inline bool in_game(ship_client_t* src) {
     if (src->version != CLIENT_VERSION_EP3) {
 
         if (l->type != LOBBY_TYPE_GAME) {
+#ifdef DEBUG
             ERR_LOG("%s 不在游戏房间中!", get_player_describe(src));
             ERR_LOG("当前房间信息:");
             ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+#endif // DEBUG
             return false;
         }
 
@@ -562,9 +565,11 @@ inline bool in_game(ship_client_t* src) {
     else {
 
         if (l->type != LOBBY_TYPE_EP3_GAME) {
+#ifdef DEBUG
             ERR_LOG("%s 不在EP3游戏房间中!", get_player_describe(src));
             ERR_LOG("当前房间信息:");
             ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+#endif // DEBUG
             return false;
         }
     }
@@ -582,9 +587,11 @@ inline bool in_lobby(ship_client_t* src) {
     }
 
     if (l->type != LOBBY_TYPE_LOBBY) {
+#ifdef DEBUG
         ERR_LOG("%s 不在大厅中!", get_player_describe(src));
         ERR_LOG("当前房间信息:");
         ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+#endif // DEBUG
         return false;
     }
 

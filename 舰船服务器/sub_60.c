@@ -851,9 +851,15 @@ static int sub60_0D_dc(ship_client_t* src, ship_client_t* dest,
             clean_client_err(&src->game_data->err);
         }
 
-        if (l->flags & LOBBY_TYPE_GAME) {
-            lobby_print_info2(src);
-        }
+        //if (in_game(src)) {
+        //    lobby_print_info2(src);
+        //    //src->flags |= CLIENT_FLAG_LOBBY_INFO;
+        //}
+
+        //if (in_lobby(src)) {
+        //    if (src->flags & CLIENT_FLAG_LOBBY_INFO)
+        //        src->flags &= ~CLIENT_FLAG_LOBBY_INFO;
+        //}
     }
 
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
@@ -874,9 +880,15 @@ static int sub60_0D_bb(ship_client_t* src, ship_client_t* dest,
             clean_client_err(&src->game_data->err);
         }
 
-        if (l->flags & LOBBY_TYPE_GAME) {
-            lobby_print_info2(src);
-        }
+        //if (in_game(src)) {
+        //    lobby_print_info2(src);
+        //    //src->flags |= CLIENT_FLAG_LOBBY_INFO;
+        //}
+
+        //if (in_lobby(src)) {
+        //    if (src->flags & CLIENT_FLAG_LOBBY_INFO)
+        //        src->flags &= ~CLIENT_FLAG_LOBBY_INFO;
+        //}
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2336,10 +2348,10 @@ static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_3B_dc(ship_client_t* src, ship_client_t* dest,
-    subcmd_pkt_t* pkt) {
+    subcmd_switch_level_done_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_GAME) {
+    if (in_game(src)) {
         //if (!l->challenge && !l->battle && !src->mode) {
         //    subcmd_send_bb_set_exp_rate(src, ship->cfg->globla_exp_mult);
         //    src->need_save_data = 1;
@@ -2351,14 +2363,28 @@ static int sub60_3B_dc(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_pkt_t* pkt) {
+    subcmd_bb_switch_level_done_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_GAME) {
+//[2023年10月28日 09:37:43:157] 舰船服务器 调试(sub_60.c 2369): 数据包如下:
+//(00000000) 0C 00 60 00 00 00 00 00  3B 01 00 00    ..`.....;...
+//[2023年10月28日 09:37:58:495] 舰船服务器 调试(sub_60.c 2369): 数据包如下:
+//(00000000) 0C 00 60 00 00 00 00 00  3B 01 00 00    ..`.....;...
+//[2023年10月28日 09:38:04:065] 舰船服务器 调试(sub_60.c 2369): 数据包如下:
+//(00000000) 0C 00 60 00 00 00 00 00  3B 01 00 00    ..`.....;...
+//[2023年10月28日 09:38:14:710] 舰船服务器 调试(sub_60.c 2369): 数据包如下:
+//(00000000) 0C 00 60 00 00 00 00 00  3B 01 00 00    ..`.....;...
+//[2023年10月28日 09:38:35:434] 舰船服务器 调试(sub_60.c 2369): 数据包如下:
+//(00000000) 0C 00 60 00 00 00 00 00  3B 01 00 00    ..`.....;...
+//[2023年10月28日 09:38:43:500] 舰船服务器 调试(sub_60.c 2369): 数据包如下:
+//(00000000) 0C 00 60 00 00 00 00 00  3B 01 00 00    ..`.....;...
+
+    if (in_game(src)) {
         if (!l->challenge && !l->battle && !src->mode) {
             subcmd_send_bb_set_exp_rate(src, ship->cfg->globla_exp_mult);
             src->need_save_data = true;
         }
+
         lobby_print_info2(src);
     }
 
