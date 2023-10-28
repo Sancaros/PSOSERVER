@@ -3263,16 +3263,7 @@ int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
             default:
                 rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
             }
-        } else if (l->subcmd_handle == NULL) {
-
-#ifdef BB_LOG_UNKNOWN_SUBS
-            DBG_LOG("Î´Öª 0x%02X Ö¸Áî: 0x%02X", hdr_type, type);
-            PRINT_HEX_LOG(ERR_LOG, pkt, LE16(pkt->hdr.dc.pkt_len));
-#endif /* BB_LOG_UNKNOWN_SUBS */
-
-            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
-        }
-        else {
+        } else {
             rv = l->subcmd_handle(src, dest, pkt);
         }
 

@@ -7763,28 +7763,8 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
             default:
                 rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
             }
-        }
-        else {
-            //[2023年08月27日 22:09:58:225] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x07 版本 gc(3) 的处理
-            //[2023年08月27日 22:09:58:236] 调试(subcmd_handle_dcgcpcv1v2.c 2088): 未知 0x60 指令: 0x07
-            //( 00000000 )   60 00 48 00 07 11 C0 00   00 00 00 00 28 00 00 00  `.H...?....(...
-            //( 00000010 )   FF FF 0D 00 FF FF FF FF   05 18 1D 00 05 28 1D 01  .......(..
-            //( 00000020 )   36 20 2A 00 3C 00 32 00   FF 00 00 00 FF 00 00 00  6 *.<.2.......
-            //( 00000030 )   FF 00 00 00 FF 00 00 02   FF 00 00 02 FF 00 00 02  ............
-            //( 00000040 )   FF 00 00 02 FF 00 00 02                           ......
-            //[2023年08月27日 22:15:33:238] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x87 版本 bb(5) 的处理
-            //[2023年08月27日 22:15:33:249] 调试(subcmd_handle_60.c 6180): 未知 0x60 指令: 0x87
-            //( 00000000 )   10 00 60 00 00 00 00 00   87 02 00 00 CD CC CC 3E  ..`.....?..吞?
-            if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 %s 0x%02X 指令: 0x%02X", client_type[src->version].ver_name, hdr_type, type);
-                PRINT_HEX_LOG(DBG_LOG, pkt, len);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-                rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
-            }
-            else {
-                rv = l->subcmd_handle(src, dest, pkt);
-            }
+        } else {
+            rv = l->subcmd_handle(src, dest, pkt);
         }
 
         pthread_mutex_unlock(&l->mutex);

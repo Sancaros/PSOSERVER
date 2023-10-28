@@ -109,7 +109,7 @@ static int subCA_B3_ep3(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 }
 
 // 定义函数指针数组
@@ -127,10 +127,6 @@ int subcmd_handle_CA(ship_client_t* src, subcmd_pkt_t* pkt) {
         ship_client_t* dest;
         uint16_t len = pkt->hdr.dc.pkt_len, hdr_type = pkt->hdr.dc.pkt_type;
         uint8_t dnum = pkt->hdr.dc.flags;
-
-        /* The DC NTE must be treated specially, so deal with that elsewhere... */
-        if (src->version == CLIENT_VERSION_DCV1 && (src->flags & CLIENT_FLAG_IS_NTE))
-            return subcmd_dcnte_handle_bcast(src, pkt);
 
         /* 如果客户端不在大厅或者队伍中则忽略数据包. */
         if (!l)
@@ -158,7 +154,7 @@ int subcmd_handle_CA(ship_client_t* src, subcmd_pkt_t* pkt) {
             PRINT_HEX_LOG(DBG_LOG, pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
 
-            rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
             pthread_mutex_unlock(&l->mutex);
             return rv;
         }
@@ -166,30 +162,11 @@ int subcmd_handle_CA(ship_client_t* src, subcmd_pkt_t* pkt) {
         /* If there's a burst going on in the lobby, delay most packets */
         if (l->flags & LOBBY_FLAG_BURSTING) {
             switch (type) {
-            case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
-            case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
-            case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
-            case SUBCMD60_BURST_DONE:
-                /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
-            case SUBCMD60_SET_C_GAME_MODE:
-                rv = l->subcmd_handle(src, dest, pkt);
-                break;
-
             default:
                 rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
             }
-        }
-        else {
-            if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 %s 0x%02X 指令: 0x%02X", client_type[src->version].ver_name, hdr_type, type);
-                PRINT_HEX_LOG(DBG_LOG, pkt, len);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-                rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
-            }
-            else {
-                rv = l->subcmd_handle(src, dest, pkt);
-            }
+        } else {
+            rv = l->subcmd_handle(src, dest, pkt);
         }
 
         pthread_mutex_unlock(&l->mutex);
