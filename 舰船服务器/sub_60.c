@@ -2456,6 +2456,31 @@ static int sub60_3F_dc(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
+static int sub60_3F_ep3(ship_client_t* src, ship_client_t* dest,
+    subcmd_set_pos_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年10月28日 11:12:49:007] 舰船服务器 调试(sub_60.c 7706): 数据包如下:
+//
+//(00000000) 60 00 1C 00 3F 06 00 00  00 00 00 80 0F 00 FF FF    `...?...........
+//(00000010) 00 00 00 00 00 00 A0 41  00 00 07 43    .......A...C
+
+    /* Save the new position and move along */
+    if (src->client_id == pkt->shdr.client_id) {
+        src->w = pkt->w;
+        src->x = pkt->x;
+        src->y = pkt->y;
+        src->z = pkt->z;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_qpos(src, l);
+    }
+
+    /* Clear this, in case we're at the lobby counter */
+    src->last_info_req = 0;
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_3F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3838,7 +3863,7 @@ static int sub60_5F_dc(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_61_dc(ship_client_t* src, ship_client_t* dest,
-    subcmd_levelup_req_t* pkt) {
+    subcmd_active_mag_effect_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     //[2023年10月24日 11:19:03:660] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x61 版本 gc(3) 的处理
@@ -3849,7 +3874,7 @@ static int sub60_61_dc(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    if (!check_pkt_size(src, pkt, sizeof(subcmd_levelup_req_t), 0x03))
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_active_mag_effect_t), 0x03))
         return -2;
 
     //ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
@@ -3858,7 +3883,7 @@ static int sub60_61_dc(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_levelup_req_t* pkt) {
+    subcmd_bb_active_mag_effect_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
 //[2023年10月24日 15:56:56:031] 物品(sub_62.c 1278): 未产生掉落
@@ -3901,8 +3926,10 @@ static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_levelup_req_t), 0x03))
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_active_mag_effect_t), 0x03))
         return -2;
+
+    /* TODO 是否是客户端返回数据审查玛古激活的效果是否合理？ */
 
     //ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
 
@@ -7549,7 +7576,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_GAME_CLIENT_LEAVE          , sub60_3A_dc, sub60_3A_dc, NULL,        sub60_3A_dc, sub60_3A_dc, sub60_3A_bb },
     { SUBCMD60_LOAD_3B                    , sub60_3B_dc, sub60_3B_dc, NULL,        sub60_3B_dc, sub60_3B_dc, sub60_3B_bb },
     { SUBCMD60_SET_POS_3E                 , sub60_3E_dc, sub60_3E_dc, NULL,        sub60_3E_dc, sub60_3E_dc, sub60_3E_bb },
-    { SUBCMD60_SET_POS_3F                 , sub60_3F_dc, sub60_3F_dc, NULL,        sub60_3F_dc, sub60_3F_dc, sub60_3F_bb },
+    { SUBCMD60_SET_POS_3F                 , sub60_3F_dc, sub60_3F_dc, sub60_3F_ep3,        sub60_3F_dc, sub60_3F_dc, sub60_3F_bb },
 
     //cmd_type 40 - 4F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_MOVE_SLOW                  , sub60_40_dc, sub60_40_dc, NULL,        sub60_40_dc, sub60_40_dc, sub60_40_bb },
@@ -7581,7 +7608,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_ITEM_DROP_BOX_ENEMY        , sub60_5F_dc, sub60_5F_dc, NULL,        sub60_5F_dc, sub60_5F_dc, NULL        },
 
     //cmd_type 60 - 6F                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_LEVEL_UP_REQ               , sub60_61_dc, sub60_61_dc, NULL,        sub60_61_dc, sub60_61_dc, sub60_61_bb },
+    { SUBCMD60_ITEM_MAG_ACTIVE_EFFECT     , sub60_61_dc, sub60_61_dc, NULL,        sub60_61_dc, sub60_61_dc, sub60_61_bb },
     { SUBCMD60_ITEM_GROUND_DESTROY        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
     { SUBCMD60_USE_STAR_ATOMIZER          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
     { SUBCMD60_CREATE_ENEMY_SET           , sub60_67_dc, sub60_67_dc, NULL,        sub60_67_dc, sub60_67_dc, sub60_67_bb },

@@ -1487,23 +1487,21 @@ typedef struct subcmd_bb_itemreq {
     float unk3;
 } PACKED subcmd_bb_itemreq_t;
 
-// 0x61: levelup_req
-typedef struct subcmd_levelup_req {
+// 0x61: 激活玛古效果
+typedef struct subcmd_active_mag_effect {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr; /* 0x00 0x85 0x03 0x61*/
-    uint16_t unk1; /* 0x0002*/
-    uint16_t unk2; /* 房主 0x0021? 房2 0x0001*/
-    uint32_t unk3;
-} PACKED subcmd_levelup_req_t;
+    uint32_t mag_item_id;
+    uint32_t effect_number;
+} PACKED subcmd_active_mag_effect_t;
 
-// 0x61: levelup_req
-typedef struct subcmd_bb_levelup_req {
+// 0x61: 激活玛古效果
+typedef struct subcmd_bb_active_mag_effect {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr; /* 0x00 0x85 0x03 0x61*/
-    uint16_t unk1; /* 0x0002*/
-    uint16_t unk2; /* 房主 0x0021? 房2 0x0001*/
-    uint32_t unk3;
-} PACKED subcmd_bb_levelup_req_t;
+    uint32_t mag_item_id;
+    uint32_t effect_number;/* 0 - 8 种效果 */
+} PACKED subcmd_bb_active_mag_effect_t;
 
 // 0x62: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).

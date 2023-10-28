@@ -201,7 +201,7 @@
 #define SUBCMD60_BUY                           0x5E
 #define SUBCMD60_ITEM_DROP_BOX_ENEMY           0x5F // Drop item from box/enemy
 #define SUBCMD60_ITEM_DROP_REQ_ENEMY           0x60 // Request for item drop (handled by the server on BB)
-#define SUBCMD60_LEVEL_UP_REQ                  0x61
+#define SUBCMD60_ITEM_MAG_ACTIVE_EFFECT        0x61
 #define SUBCMD60_UNKNOW_62                     0x62
 #define SUBCMD60_ITEM_GROUND_DESTROY           0x63    /* Sent when game inventory is full */
 #define SUBCMD60_UNKNOW_64                     0x64
