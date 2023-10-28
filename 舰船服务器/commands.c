@@ -146,6 +146,7 @@ static command_t cmds[] = {
     { "rshop"    , handle_rshop         },
     { "qr"       , handle_quick_return  },
     { "lb"       , handle_lobby         },
+    { "lbi"      , handle_lobbyinfo     },
     { "matuse"   , handle_matuse        },
     { "susi"     , handle_susi          },
     { ""         , NULL                 }     /* End marker -- DO NOT DELETE */

@@ -1474,6 +1474,18 @@ static int handle_lobby(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC6请选择你要前往的大厅."));
 }
 
+/* 用法: /lbi */
+static int handle_lobbyinfo(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_GAME) {
+        lobby_print_info2(c);
+        return 0;
+    }
+
+    return send_txt(c, "%s", __(c, "\tE\tC4无法在房间外使用."));
+}
+
 /* 用法: /matuse */
 static int handle_matuse(ship_client_t* c, const char* params) {
     lobby_t* l = c->cur_lobby;
