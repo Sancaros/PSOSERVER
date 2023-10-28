@@ -2996,7 +2996,7 @@ typedef struct subcmd_bb_req_exp {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t enemy_id2;
-    uint16_t client_id;
+    uint16_t killer_client_id;
     uint8_t last_hitter;
     uint8_t unused2[3];
 } PACKED subcmd_bb_req_exp_t;

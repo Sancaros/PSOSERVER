@@ -6776,7 +6776,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     uint16_t mid;
     pmt_guard_bb_t tmp_guard = { 0 };
-    uint32_t bp, exp_amount, eic = 0;
+    uint32_t bp, kill_exp_amount, hit_exp_amount, ext_exp_amount, eic = 0;
     game_enemy_t* en;
 
     if (!in_game(src))
@@ -6801,6 +6801,8 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
        already claim their experience. */
     en = &l->map_enemies->enemies[mid];
 
+    DBG_LOG("%s %d", get_player_describe(src), pkt->last_hitter);
+
     if (!(en->clients_hit & (1 << src->client_id))) {
         return 0;
     }
@@ -6811,11 +6813,11 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Give the client their experience! */
     bp = en->bp_entry;
-    exp_amount = l->bb_params[bp].exp;
+    kill_exp_amount = l->bb_params[bp].exp;
 
     inventory_t* inv = get_client_inv(src);
 
-    for (int x = 0; x < inv->item_count; x++) {
+    for (size_t x = 0; x < inv->item_count; x++) {
         if (!(inv->iitems[x].flags & EQUIP_FLAGS)) {
             continue;
         }
@@ -6842,22 +6844,63 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (eic > 0) {
-        exp_amount += eic;
+        kill_exp_amount += eic;
         //DBG_LOG("经验新值 %d", exp_amount);
     }
 
     if ((src->game_data->expboost) && (l->exp_mult > 0))
-        exp_amount = exp_amount * l->exp_mult;
+        kill_exp_amount = kill_exp_amount * l->exp_mult;
 
-    if (!exp_amount)
-        ERR_LOG("未获取到经验新值 %d bp %d 倍率 %d", exp_amount, bp, l->exp_mult);
+    if (!kill_exp_amount)
+        ERR_LOG("未获取到经验新值 %d bp %d 倍率 %d", kill_exp_amount, bp, l->exp_mult);
 
-    // TODO 新增房间共享经验 分别向其余3个玩家发送数值不等的经验值
-    if (!pkt->last_hitter) {
-        exp_amount = (exp_amount * 80) / 100;
-    }
+    hit_exp_amount = (kill_exp_amount * 30) / 100;
+    ext_exp_amount = (kill_exp_amount * 60) / 100;
 
-    return client_give_exp(src, exp_amount);
+    //DBG_LOG("////////////////");
+
+    for (int x = 0; x < l->max_clients; x++) {
+        ship_client_t* c2 = l->clients[x];
+        /* 忽略不存在的玩家 */
+        if (!c2)
+            continue;
+
+        /* 非同层级玩家 */
+        if (c2->cur_area != src->cur_area)
+            continue;
+
+        if (c2->client_id == src->client_id) {
+            if (!pkt->last_hitter) {
+                client_give_exp(src, hit_exp_amount);
+                //DBG_LOG("%s 击中 hit_exp_amount %d", get_player_describe(c2), hit_exp_amount);
+                continue;
+            }
+            else {
+                /* 增加封印物品的解封数 */
+                add_equip_unsealable_item_kill_count(src, 1);
+                client_give_exp(src, kill_exp_amount);
+                //DBG_LOG("%s 击杀 kill_exp_amount %d", get_player_describe(c2), kill_exp_amount);
+                continue;
+            }
+        }
+        else {
+            if (pkt->last_hitter) {
+                client_give_exp(c2, ext_exp_amount);
+                //DBG_LOG("%s 额外奖励 ext_exp_amount %d", get_player_describe(c2), ext_exp_amount);
+                continue;
+            }
+        }
+    };
+
+    //DBG_LOG("////////////////");
+    //// TODO 新增房间共享经验 分别向其余3个玩家发送数值不等的经验值
+    //if (!pkt->last_hitter) {
+    //    ERR_LOG("%s 不是最后的击杀者", get_player_describe(src));
+    //    exp_amount = (exp_amount * 80) / 100;
+    //    return client_give_exp(src, exp_amount);
+    //}
+
+    return 0;
 }
 
 static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
@@ -7295,82 +7338,6 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &src->sfmt_rng;
 
-    //uint32_t compare_item, ci;
-    //uint32_t itemid = 0;
-    //PLAYER_INVENTORY add_item;
-
-    //dont_send = 1;
-
-    //if (client->lobby_room_num > 0x0F)
-    //{
-    //    compare_item = 0x00031003;
-    //    for (ci = 0; ci < client->character.item_count; ci++)
-    //    {
-    //        if (*(uint32_t*)&client->character.inventory[ci].item.item_data1[0] == compare_item)
-    //        {
-    //            itemid = client->character.inventory[ci].item.item_id;
-    //            break;
-    //        }
-    //    }
-    //    if (!itemid)
-    //    {
-    //        memset(&client->send_pkt[0x00], 0, 0x2C);
-    //        client->send_pkt[0x00] = 0x2C;
-    //        client->send_pkt[0x02] = ITEM_EXCHANGE_GOOD_LUCK;
-    //        client->send_pkt[0x04] = 0x01;
-    //        client->send_pkt[0x08] = client->rcv_pkt[0x0E];
-    //        client->send_pkt[0x0A] = client->rcv_pkt[0x0D];
-    //        for (ci = 0; ci < 8; ci++)
-    //            client->send_pkt[0x0C + (ci << 2)] = (mt_lrand() % (sizeof(good_luck) >> 2)) + 1;
-    //        server_cipher_ptr = &client->server_cipher;
-    //        send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x2C);
-    //    }
-    //    else
-    //    {
-    //        memset(&add_item, 0, sizeof(PLAYER_INVENTORY));
-    //        *(uint32_t*)&add_item.item.item_data1[0] = good_luck[mt_lrand() % (sizeof(good_luck) >> 2)];
-    //        delete_item_from_client(itemid, 1, 0, client);
-
-    //        memset(&client->send_pkt[0x00], 0, 0x18);
-    //        client->send_pkt[0x00] = 0x18;
-    //        client->send_pkt[0x02] = GAME_COMMAND60_TYPE;
-    //        client->send_pkt[0x08] = SUBCMD60_ITEM_EXCHANGE_IN_QUEST;
-    //        client->send_pkt[0x09] = 0x06;
-    //        client->send_pkt[0x0C] = 0x01;
-    //        *(uint32_t*)&client->send_pkt[0x10] = itemid;
-    //        client->send_pkt[0x14] = 0x01;
-    //        server_cipher_ptr = &client->server_cipher;
-    //        send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x18);
-
-    //        // Let everybody else know that item no longer exists...
-
-    //        memset(&client->send_pkt[0x00], 0, 0x14);
-    //        client->send_pkt[0x00] = 0x14;
-    //        client->send_pkt[0x02] = GAME_COMMAND60_TYPE;
-    //        client->send_pkt[0x08] = SUBCMD60_DELETE_ITEM;
-    //        client->send_pkt[0x09] = 0x05;
-    //        client->send_pkt[0x0A] = client->clientID;
-    //        *(uint32_t*)&client->send_pkt[0x0C] = itemid;
-    //        client->send_pkt[0x10] = 0x01;
-    //        send_bb_lobby_pkt(l, 4, &client->send_pkt[0x00], 0x14, client->guildcard);
-
-    //        add_item.item.item_id = l->playerItemID[client->clientID];
-    //        l->playerItemID[client->clientID]++;
-
-    //        add_to_inv(&add_item, 1, 0, client);
-
-    //        memset(&client->send_pkt[0x00], 0, 0x2C);
-    //        client->send_pkt[0x00] = 0x2C;
-    //        client->send_pkt[0x02] = ITEM_EXCHANGE_GOOD_LUCK;
-    //        client->send_pkt[0x04] = 0x00;
-    //        client->send_pkt[0x08] = client->rcv_pkt[0x0E];
-    //        client->send_pkt[0x0A] = client->rcv_pkt[0x0D];
-    //        for (ci = 0; ci < 8; ci++)
-    //            client->send_pkt[0x0C + (ci << 2)] = (mt_lrand() % (sizeof(good_luck) >> 2)) + 1;
-    //        server_cipher_ptr = &client->server_cipher;
-    //        send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x2C);
-    //    }
-    //}
     if (!in_game(src))
         return -1;
 

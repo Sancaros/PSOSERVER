@@ -2271,7 +2271,7 @@ void show_game_cmd_help_msg(ship_client_t* src) {
                 "/lb 快速返回舰仓\n"
                 "/lbi 显示房间详情\n"
                 "/matuse 显示玩家嗑药情况\n"
-                "/suci 参数1 显示玩家背包中解封物品情况 参数1[0-29] 不填则显示全部\n"
+                "/susi 参数1 显示玩家背包中解封物品情况 参数1[0-29] 不填则显示全部\n"
             );
         }
     }
