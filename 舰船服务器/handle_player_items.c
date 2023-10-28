@@ -1123,6 +1123,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     item_t* weapon = { 0 };
     item_t* armor = { 0 };
     item_t* mag = { 0 };
+    uint8_t tmp_value = 0;
     // On PC (and presumably DC), the client sends a 6x29 after this to delete the
     // used item. On GC and later versions, this does not happen, so we should
     // delete the item here.
@@ -1150,18 +1151,28 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         should_add_item = true;
     }
     else {
+        pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, get_player_section(src));
+        uint8_t new_area = get_pt_data_area_bb(l->episode, src->cur_area);
         switch (item.datab[0]) {
         case ITEM_TYPE_WEAPON:
             switch (item.datab[1]) {
             case 0x33:
                 // Unseal Sealed J-Sword => Tsumikiri J-Sword
                 item.datab[1] = 0x32;
+                /* 清理解封数 */
+                item.dataw[5] = 0x0000;
+                /* 新增额外属性奖励 */
+                generate_seal_weapon_extra_bonuses(&src->sfmt_rng, &item, new_area, ent);
                 should_add_item = true;
                 break;
 
             case 0xAB:
                 // Unseal Lame d'Argent => Excalibur
                 item.datab[1] = 0xAC;
+                /* 清理解封数 */
+                item.dataw[5] = 0x0000;
+                /* 新增额外属性奖励 */
+                generate_seal_weapon_extra_bonuses(&src->sfmt_rng, &item, new_area, ent);
                 should_add_item = true;
                 break;
 
@@ -1177,12 +1188,16 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 case 0x4D:
                     // Unseal Limiter => Adept
                     item.datab[2] = 0x4E;
+                    /* 清理解封数 */
+                    item.dataw[5] = 0x0000;
                     should_add_item = true;
                     break;
 
                 case 0x4F:
                     // Unseal Swordsman Lore => Proof of Sword-Saint
                     item.datab[2] = 0x50;
+                    /* 清理解封数 */
+                    item.dataw[5] = 0x0000;
                     should_add_item = true;
                     break;
 

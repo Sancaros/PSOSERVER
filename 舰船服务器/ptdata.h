@@ -630,6 +630,8 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 
 uint32_t rand_int(sfmt_t* rng, uint64_t max);
 float rand_float_0_1_from_crypt(sfmt_t* rng);
+void generate_common_weapon_bonuses(sfmt_t* rng, item_t* item, uint8_t area_norm, pt_bb_entry_t* ent);
+void generate_seal_weapon_extra_bonuses(sfmt_t* rng, item_t* item, uint8_t area_norm, pt_bb_entry_t* ent);
 void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area, item_t* item, pt_bb_entry_t* ent);
 item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t pkt_area, uint8_t area, uint8_t section_id);
 item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint32_t def0, uint32_t def1, uint32_t def2);

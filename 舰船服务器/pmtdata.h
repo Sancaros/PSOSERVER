@@ -489,7 +489,6 @@ bool is_item_rare(const item_t* item);
 uint8_t choose_weapon_special(sfmt_t* rng, uint8_t det);
 int find_tool_by_class(uint8_t tool_class, uint8_t data[2]);
 bool is_unsealable_item(const item_t* item);
-void set_sealed_item_kill_count(item_t* item, int16_t v);
 void set_item_kill_count_if_unsealable(item_t* item);
 void set_item_identified_flag(bool is_mode, item_t* item);
 void generate_unit_weights_tables(uint8_t unit_weights_table1[0x88], int8_t unit_weights_table2[0x0D]);

@@ -3032,14 +3032,14 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             /* datab[5] 在这里不涉及 礼物 未鉴定*/
 
             /* 生成属性*/
-            size_t num_percentages = 0;
-            while (num_percentages < 3) {
+            size_t attrib_slot = 0;
+            while (attrib_slot < 3) {
                 /*0-5 涵盖所有属性*/
                 for (size_t x = 0; x < 6; x++) {
                     /* 后期设置调整 生成属性几率 TODO */
                     if ((sfmt_genrand_uint32(rng) % 6) == 1) {
                         /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
-                        item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
+                        item.datab[(attrib_slot * 2) + 6] = (uint8_t)x;
                         tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 21];/* 0 - 5 % 0 - 19*/
 
                         //if (tmp_value > 50)
@@ -3048,8 +3048,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                         //if (tmp_value < -50)
                         //    tmp_value = -50;
 
-                        item.datab[(num_percentages * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
-                        num_percentages++;
+                        item.datab[(attrib_slot * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
+                        attrib_slot++;
                     }
                 }
             }

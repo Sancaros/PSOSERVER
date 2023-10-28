@@ -395,6 +395,27 @@ int16_t get_unit_bonus(const item_t* item) {
 	return item->dataw[3];
 }
 
+int16_t get_sealed_item_kill_count(const item_t* item) {
+	if (item->dataw[5] == 0xFFFF) {
+		return 0x7FFF;
+	}
+	else {
+		int16_t highByte = item->datab[10] & 0x7F;
+		int16_t lowByte = item->datab[11];
+		return (highByte << 8) | lowByte;
+	}
+}
+
+void set_sealed_item_kill_count(item_t* item, int16_t v) {
+	if (v > 0x7FFF) {
+		item->dataw[5] = 0xFFFF;
+	}
+	else {
+		item->datab[10] = (v >> 8) | 0x80;
+		item->datab[11] = convert_int16_to_uint8(v);
+	}
+}
+
 bool is_s_rank_weapon(const item_t* item) {
 	if (item->datab[0] == 0) {
 		if ((item->datab[1] > 0x6F) && (item->datab[1] < 0x89)) {
@@ -476,7 +497,7 @@ const char* get_unit_bonus_describe(const item_t* item) {
 	// 处理属性1
 	if (x <= attrib_val_len)
 		if (item->datab[10] & 0x80)
-			sprintf(item_attrib_des, "%s 解封:%d", unit_attrib[x], item->datab[11]);
+			sprintf(item_attrib_des, "%s 解封:%d", unit_attrib[x], get_sealed_item_kill_count(item));
 		else
 			sprintf(item_attrib_des, "%s", unit_attrib[x]);
 
@@ -504,7 +525,7 @@ char* get_weapon_attrib_describe(const item_t* item) {
 	if (item->datab[10] < attrib_len)
 		sprintf(attrib3, "%s%d", weapon_attrib[item->datab[10]], item->datab[11]);
 	else if (item->datab[10] & 0x80) {
-		sprintf(attrib3, "解封:%d", item->datab[11]);
+		sprintf(attrib3, "解封:%d", get_sealed_item_kill_count(item));
 	}
 
 	snprintf(item_attrib_des, sizeof(item_attrib_des), "[%s/%s/%s]", attrib1, attrib2, attrib3);
@@ -624,7 +645,7 @@ const char* get_unit_unsealable_bonus_describe(const item_t* item) {
 	// 处理属性1
 	if (x <= attrib_val_len)
 		if (item->datab[10] & 0x80) {
-			sprintf(item_attrib_des, "[解封:%d]", item->datab[11]);
+			sprintf(item_attrib_des, "[解封:%d]", get_sealed_item_kill_count(item));
 			return item_attrib_des;
 		}
 
@@ -638,7 +659,7 @@ char* get_weapon_unsealable_attrib_describe(const item_t* item) {
 	// 处理属性3
 	//if (item->datab[10] & 0x80) {
 	//}
-	snprintf(item_attrib_des, sizeof(item_attrib_des), "[解封:%d]", item->datab[11]);
+	snprintf(item_attrib_des, sizeof(item_attrib_des), "[解封:%d]", get_sealed_item_kill_count(item));
 	return item_attrib_des;
 }
 

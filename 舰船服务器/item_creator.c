@@ -122,7 +122,7 @@ uint8_t get_rand_from_weighted_tables_2d_vertical(sfmt_t* rng,
 
 void generate_common_weapon_bonuses(sfmt_t* rng,
 	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
-	if (item->datab[0] == 0) {
+	if (item->datab[0] == ITEM_TYPE_WEAPON) {
 		for (size_t row = 0; row < 3; row++) {
 			uint8_t spec = ent->nonrare_bonus_prob_spec[row][area_norm];
 			if (spec != 0xFF) {
@@ -141,9 +141,24 @@ void generate_common_weapon_bonuses(sfmt_t* rng,
 	}
 }
 
+void generate_seal_weapon_extra_bonuses(sfmt_t* rng,
+	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
+	if (item->datab[0] == ITEM_TYPE_WEAPON) {
+		uint8_t spec = ent->nonrare_bonus_prob_spec[2][area_norm];
+		if (spec != 0xFF) {
+			item->datab[10] = get_rand_from_weighted_tables_2d_vertical(rng,
+				ent->bonus_type_prob_tables, area_norm, 6, 10);
+			int16_t amount = get_rand_from_weighted_tables_2d_vertical(rng,
+				ent->bonus_value_prob_tables, spec, 23, 6);
+			item->datab[11] = amount * 5 - 10;
+		}
+		deduplicate_weapon_bonuses(item);
+	}
+}
+
 void generate_common_weapon_grind(sfmt_t* rng,
 	item_t* item, uint8_t offset_within_subtype_range, pt_bb_entry_t* ent) {
-	if (item->datab[0] == 0) {
+	if (item->datab[0] == ITEM_TYPE_WEAPON) {
 		uint8_t offset = (uint8_t)clamp(offset_within_subtype_range, 0, 3);
 		item->datab[3] = get_rand_from_weighted_tables_2d_vertical(rng,
 			ent->grind_prob_tables, offset, 9, 4);
@@ -152,7 +167,7 @@ void generate_common_weapon_grind(sfmt_t* rng,
 
 void generate_common_weapon_special(sfmt_t* rng,
 	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
-	if (item->datab[0] != 0) {
+	if (item->datab[0] != ITEM_TYPE_WEAPON) {
 		return;
 	}
 	if (is_item_rare(item)) {
@@ -171,7 +186,7 @@ void generate_common_weapon_special(sfmt_t* rng,
 
 void generate_common_weapon_variances(lobby_t* l, sfmt_t* rng, uint8_t area_norm, item_t* item, pt_bb_entry_t* ent) {
 	clear_inv_item(item);
-	item->datab[0] = 0x00;
+	item->datab[0] = ITEM_TYPE_WEAPON;
 
 	uint8_t weapon_type_prob_table[0x0D] = { 0 };
 	weapon_type_prob_table[0] = 0;

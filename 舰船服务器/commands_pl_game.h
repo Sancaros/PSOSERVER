@@ -1530,31 +1530,33 @@ static int handle_susi(ship_client_t* c, const char* params) {
                     , get_item_unsealable_describe(&inv->iitems[i].data, c->version)
                 );
 
-                // 计算剩余可用空间
-                size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
+                //// 计算剩余可用空间
+                //size_t remaining_space = sizeof(tmp_msg) - strlen(tmp_msg);
 
-                // 检查剩余空间是否足够
-                if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
-                    break;  // 停止追加数据
-                }
+                //// 检查剩余空间是否足够
+                //if (strlen(data_str) + 1 > remaining_space) {  // +1 是为了考虑结尾的 null 字符
+                //    break;  // 停止追加数据
+                //}
 
-                strcat_s(data_str, sizeof(data_str), " | ");
+                //strcat_s(data_str, sizeof(data_str), " | ");
 
                 // 将格式化后的数据追加到 tmp_msg 字符数组中
-                strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+                //strcat_s(tmp_msg, sizeof(tmp_msg), data_str);
+
+                send_txt(c, "%s \tE\tC6%s", __(c, "\tE\tC7封印:"), data_str);
             }
         }
 
-        return send_msg(c, BB_SCROLL_MSG_TYPE, "%s %s", __(c, "\tE\tC7未解封物品情况:"), tmp_msg);
+        return 0;
     }
     else {
         item_t* item = &inv->iitems[item_slot - 1].data;
 
         if (is_unsealable_item(item)) {
-            return send_txt(c, "%s\n%s", __(c, "\tE\tC7未解封物品情况:"), get_item_unsealable_describe(item, c->version));
+            return send_txt(c, "%s \tE\tC6%s", __(c, "\tE\tC7封印:"), get_item_unsealable_describe(item, c->version));
         }
 
     }
 
-    return send_txt(c, "\tE\tC4未找到 %d 槽未解封物品", item_slot);
+    return send_txt(c, "\tE\tC4未找到 %d 槽封印物品", item_slot);
 }

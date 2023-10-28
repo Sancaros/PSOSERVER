@@ -6824,18 +6824,20 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
         if (inv->iitems[x].data.datab[0] != ITEM_TYPE_GUARD) {
             continue;
         }
-        switch (inv->iitems[x].data.datab[1]) {
+
+        item_t* item = &inv->iitems[x].data;
+        switch (item->datab[1]) {
         case ITEM_SUBTYPE_FRAME:
-            if (pmt_lookup_guard_bb(inv->iitems[x].data.datal[0], &tmp_guard)) {
-                ERR_LOG("未从PMT获取到 0x%04X 的数据!", inv->iitems[x].data.datal[0]);
+            if (pmt_lookup_guard_bb(item->datal[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->datal[0]);
                 break;
             }
             eic += LE32(tmp_guard.eic);
             break;
 
         case ITEM_SUBTYPE_BARRIER:
-            if (pmt_lookup_guard_bb(inv->iitems[x].data.datal[0], &tmp_guard)) {
-                ERR_LOG("未从PMT获取到 0x%04X 的数据!", inv->iitems[x].data.datal[0]);
+            if (pmt_lookup_guard_bb(item->datal[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->datal[0]);
                 break;
             }
             eic += LE32(tmp_guard.eic);

@@ -30,6 +30,18 @@
 
 #include "pso_text.h"
 
+uint8_t convert_int16_to_uint8(int16_t value) {
+    if (value > UINT8_MAX) {
+        return UINT8_MAX;  // 处理大于 uint8_t 范围的情况
+    }
+    else if (value < 0) {
+        return (uint8_t)abs(value);  // 处理负数的情况，取绝对值并转换为 uint8_t
+    }
+    else {
+        return (uint8_t)value;  // 正常情况下的类型转换
+    }
+}
+
 int count_element_int(void** arr) {
     int count = 0;
     for (int i = 0; i < INT_MAX; i++) {
