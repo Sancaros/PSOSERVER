@@ -6801,7 +6801,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
        already claim their experience. */
     en = &l->map_enemies->enemies[mid];
 
-    DBG_LOG("%s %d", get_player_describe(src), pkt->last_hitter);
+    //DBG_LOG("%s %d", get_player_describe(src), pkt->last_hitter);
 
     if (!(en->clients_hit & (1 << src->client_id))) {
         return 0;
@@ -6845,7 +6845,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
 
     if (eic > 0) {
         kill_exp_amount += eic;
-        //DBG_LOG("经验新值 %d", exp_amount);
+        //DBG_LOG("经验新值 %d", kill_exp_amount);
     }
 
     if ((src->game_data->expboost) && (l->exp_mult > 0))
@@ -6896,8 +6896,8 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     //// TODO 新增房间共享经验 分别向其余3个玩家发送数值不等的经验值
     //if (!pkt->last_hitter) {
     //    ERR_LOG("%s 不是最后的击杀者", get_player_describe(src));
-    //    exp_amount = (exp_amount * 80) / 100;
-    //    return client_give_exp(src, exp_amount);
+    //    kill_exp_amount = (kill_exp_amount * 80) / 100;
+    //    return client_give_exp(src, kill_exp_amount);
     //}
 
     return 0;
