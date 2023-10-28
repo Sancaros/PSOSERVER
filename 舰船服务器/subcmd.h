@@ -2131,7 +2131,7 @@ typedef struct subcmd_bb_Unknown_6x82 {
 typedef struct subcmd_bb_place_trap {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unknown_a1;
+    uint16_t trap_type;
     uint16_t unknown_a2;
 } PACKED subcmd_bb_place_trap_t;
 
