@@ -11823,7 +11823,7 @@ int send_ep3_jukebox_reply(ship_client_t *c, uint16_t magic) {
     /* XXXX: Fill in meseta values with correct numbers. */
 
     /* 填充数据头 first... */
-    pkt->hdr.pkt_type = EP3_COMMAND_TYPE;
+    pkt->hdr.pkt_type = GAME_COMMAND_BA_TYPE;
     pkt->hdr.flags = EP3_COMMAND_JUKEBOX_REPLY;
     pkt->hdr.pkt_len = LE16(0x0010);
     pkt->meseta = LE32(0x0000012C);
@@ -11842,7 +11842,7 @@ int send_ep3_ba01(ship_client_t *c, uint16_t magic) {
     /* XXXX: Fill in meseta values with correct numbers. */
 
     /* 填充数据头 first... */
-    pkt->hdr.pkt_type = EP3_COMMAND_TYPE;
+    pkt->hdr.pkt_type = GAME_COMMAND_BA_TYPE;
     pkt->hdr.flags = EP3_COMMAND_LEAVE_TEAM;
     pkt->hdr.pkt_len = LE16(0x0010);
     pkt->meseta = LE32(0x0000012C);

@@ -2949,7 +2949,7 @@ static int process_dc_update_quest_stats(ship_client_t* c,
 }
 
 /* Process a 0xBA packet. */
-static int process_ep3_command(ship_client_t* c, uint8_t* pkt) {
+static int process_ep3_BA_command(ship_client_t* c, uint8_t* pkt) {
     dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)pkt;
     uint16_t len = LE16(hdr->pkt_len);
     uint16_t tmp;
@@ -2979,6 +2979,168 @@ static int process_ep3_command(ship_client_t* c, uint8_t* pkt) {
         }
         return 0;
     }
+}
+
+/* Process a 0xCA packet. */
+static int process_ep3_CA_command(ship_client_t* c, uint8_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)pkt;
+    uint16_t len = LE16(hdr->pkt_len);
+    uint16_t tmp = 0;
+
+    DBG_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.gc_string,
+        c->guildcard);
+    PRINT_HEX_LOG(DBG_LOG, pkt, len);
+//[2023年09月24日 16:04:38:035] 调试(block.c 2823): Ep3 服务器数据来自 Sancaros (10000000)
+//[2023年09月24日 16:04:38:037] 调试(f_logs.c 0088): 数据包如下:
+//(00000000) CA 00 14 00 B3 04 42 01  40 00 00 10 FF FF FF FF    ......B.@.......
+//(00000010) 00 00 00 00    ....
+
+//[2023年10月28日 12:49:08:679] 调试(block.c 2992): Ep3 服务器数据来自 Sancaros (10000000)
+//[2023年10月28日 12:49:08:682] 调试(block.c 2993): 数据包如下:
+//(00000000) CA 00 08 03 B3 C1 1C CE  49 00 00 B8 FF FF FF FF    ........I.......
+//(00000010) 00 00 00 00 EE 00 00 05  27 C4 D4 2B D2 20 A1 27    ........'..+. .'
+//(00000020) BE BE AF 63 E9 98 F9 DE  57 B4 85 9A 03 10 50 94    ...c....W.....P.
+//(00000030) EF AC 5D D2 1B 88 A9 4E  87 A4 35 0A 33 00 01 06    ..]....N..5.3...
+//(00000040) 1D 9E 0D 42 4A 78 59 BE  B7 94 E5 7A 61 F1 B1 76    ...BJxY....za..v
+//(00000050) 4F 8C BD B2 7B 68 09 2E  E5 85 97 EA 93 E0 61 E6    O...{h........a.
+//(00000060) 7F 7C 6D 22 AB 58 B9 9E  17 74 45 5A C3 D0 13 56    .|m".X...tEZ...V
+//(00000070) AF 6E 1C 90 DB 48 69 0C  47 66 F5 CA F1 C0 C1 C6    .n...Hi.Gf......
+//(00000080) DF 5C CD 02 0B 38 19 7E  77 54 A5 3A 23 B0 71 36    .\...8.~wT.:#.q6
+//(00000090) 0D 4C 7D 72 3B 28 C9 EE  A7 44 55 AA 53 A0 21 A6    .L}r;(...DU.S.!.
+//(000000A0) 3F 3C 2F E2 69 18 78 5E  D7 34 05 1B 83 90 D1 16    ?</.i.x^.4......
+//(000000B0) 6F 2C DD 52 9B 08 29 CE  07 24 B5 8B B3 80 81 86    o,.R..)..$......
+//(000000C0) 9F 1C 8D C2 CB F8 D9 3E  37 14 65 FA E3 70 31 F6    .......>7.e..p1.
+//(000000D0) CF 0C 3D 32 FB E8 89 AE  67 04 15 6A 13 62 E3 66    ..=2....g..j.b.f
+//(000000E0) FF FC ED A2 2A D8 39 1E  97 F4 C5 DA 43 50 91 D6    ....*.9.....CP..
+//(000000F0) 2D EC 9D 13 5B C8 E8 8E  C7 E4 75 4A 73 40 41 46    -...[.....uJs@AF
+//(00000100) 5F DC 4D 82 8B B8 99 FE  F7 D4 25 BA A3 30 F1 B6    _.M........0..
+//(00000110) 8F CC FD F2 BB A8 49 6E  27 C4 D5 2A D3 20 A1 26    ......In'..*. .&
+//(00000120) BF BC AD 62 EB 98 F9 DE  57 B4 85 9A 03 10 50 96    ...b....W.....P.
+//(00000130) EF AC 5D D2 1B 88 A9 4E  87 A4 35 0A 33 00 01 06    ..]....N..5.3...
+//(00000140) 1F 9C 0D 42 4B 78 59 BE  B7 94 E5 7A 63 F0 B1 76    ...BKxY....zc..v
+//(00000150) 4F 8C BD B2 7B 68 09 2E  E7 84 95 EA 93 E0 61 E6    O...{h........a.
+//(00000160) 7F 7C 6D 22 AB 58 B9 9E  17 75 45 5A C3 D0 11 56    .|m".X...uEZ...V
+//(00000170) AF 6C 1D 92 DB 48 69 0E  47 64 F5 CA F3 C0 C1 C6    .l...Hi.Gd......
+//(00000180) DF 5C CD 02 0B 38 19 7E  77 54 A5 3A 23 B0 71 36    .\...8.~wT.:#.q6
+//(00000190) 0F 4C 7D 72 3B 28 C9 EE  A7 44 55 AA 53 A0 21 A6    .L}r;(...DU.S.!.
+//(000001A0) 3F 3C 2D E2 6B 18 79 5F  D7 34 05 1A 83 90 D1 16    ?<-.k.y_.4......
+//(000001B0) 6F 2C DD 52 9B 08 29 CE  07 24 B5 88 B3 80 81 86    o,.R..)..$......
+//(000001C0) 9F 1C 8D C2 CB F8 D9 3E  37 14 65 FA E3 70 31 F6    .......>7.e..p1.
+//(000001D0) CF 0C 3D 32 FB E8 89 AE  67 04 15 6A 13 60 E1 66    ..=2....g..j.`.f
+//(000001E0) FF FC ED A2 2B D8 39 1E  97 F4 C5 DA 43 50 91 D6    ....+.9.....CP..
+//(000001F0) 2F EC 9D 12 5B C8 E9 8E  C7 E4 75 4A 73 40 41 46    /...[.....uJs@AF
+//(00000200) 5F DC 4D 82 8B B8 99 FE  F7 D4 25 BA A3 30 F1 B6    _.M........0..
+//(00000210) 8F CC FD F2 BB A8 49 6E  27 C4 D5 2A D3 20 A1 26    ......In'..*. .&
+//(00000220) BF BC AD 62 EB 98 F9 DE  57 B4 85 9A 03 10 51 96    ...b....W.....Q.
+//(00000230) EF AC 5D D2 1B 88 A9 4E  87 A4 35 0A 33 00 01 06    ..]....N..5.3...
+//(00000240) 1F 9C 0D 42 4B 78 59 BE  B7 94 E5 7A 63 F0 B1 76    ...BKxY....zc..v
+//(00000250) 4F 8C BD B2 7B 68 09 2E  E7 84 95 EA 93 E0 60 E6    O...{h........`.
+//(00000260) 7F 7C 6D 22 AB 58 B9 9E  17 74 45 5A C3 D0 11 56    .|m".X...tEZ...V
+//(00000270) AF 6C 1D 92 DB 48 69 0E  47 64 F5 CA F3 C0 C1 C6    .l...Hi.Gd......
+//(00000280) DF 5C CD 02 0B 38 19 7E  77 54 A5 3A 23 B0 71 36    .\...8.~wT.:#.q6
+//(00000290) 0F 4C 7D 72 3B 28 C9 EE  A7 44 55 AA 53 A0 21 A6    .L}r;(...DU.S.!.
+//(000002A0) 3F 3C 2D E2 6B 18 79 5E  D7 34 05 1A 83 90 D1 16    ?<-.k.y^.4......
+//(000002B0) 6F 2C DD 52 9B 08 29 CE  07 24 B5 8A B3 80 81 86    o,.R..)..$......
+//(000002C0) 9F 1C 8D C2 CB F8 D9 3E  37 14 65 FA E3 70 31 F6    .......>7.e..p1.
+//(000002D0) CF 0C 3D 32 FB E8 89 AE  67 04 15 6A 13 60 E1 66    ..=2....g..j.`.f
+//(000002E0) FF FC ED A2 2B D8 39 1E  97 F4 C5 DA 43 50 91 D6    ....+.9.....CP..
+//(000002F0) 2F EC 9D 12 5B C8 E9 8E  C7 E4 75 4A 73 40 41 46    /...[.....uJs@AF
+//(00000300) 5F DC 4D 82 8B B8 99 FE     _.M.....
+    return 0;
+    //try {
+    //    l = s->find_lobby(c->lobby_id);
+    //}
+    //catch (const out_of_range&) {
+    //    // In rare cases (e.g. when two players end a tournament's match results
+    //    // screens at exactly the same time), the client can send a server data
+    //    // command when it's not in any lobby at all. We just ignore such commands.
+    //    return;
+    //}
+    //if (!l->is_game() || !l->is_ep3()) {
+    //    throw runtime_error("Episode 3 server data request sent outside of Episode 3 game");
+    //}
+
+    //const auto& header = check_size_t<G_CardServerDataCommandHeader>(data, 0xFFFF);
+    //if (header.subcommand != 0xB3) {
+    //    throw runtime_error("unknown Episode 3 server data request");
+    //}
+
+    //if (!l->ep3_server_base || l->ep3_server_base->server->battle_finished) {
+    //    if (!l->ep3_server_base) {
+    //        l->log.info("Creating Episode 3 server state");
+    //    }
+    //    else {
+    //        l->log.info("Recreating Episode 3 server state");
+    //    }
+    //    auto tourn = l->tournament_match ? l->tournament_match->tournament.lock() : nullptr;
+    //    bool is_trial = (l->flags & Lobby::Flag::IS_EP3_TRIAL);
+    //    l->ep3_server_base = make_shared<Episode3::ServerBase>(
+    //        l,
+    //        is_trial ? s->ep3_card_index_trial : s->ep3_card_index,
+    //        s->ep3_map_index,
+    //        s->ep3_behavior_flags,
+    //        l->random_crypt,
+    //        tourn ? tourn->get_map() : nullptr);
+    //    l->ep3_server_base->init();
+
+    //    if (s->ep3_behavior_flags & Episode3::BehaviorFlag::ENABLE_STATUS_MESSAGES) {
+    //        for (size_t z = 0; z < l->max_clients; z++) {
+    //            if (l->clients[z]) {
+    //                send_text_message_printf(l->clients[z], "Your client ID: $C6%zu", z);
+    //            }
+    //        }
+    //    }
+
+    //    if (s->ep3_behavior_flags & Episode3::BehaviorFlag::ENABLE_RECORDING) {
+    //        if (l->battle_record) {
+    //            l->prev_battle_record = l->battle_record;
+    //            l->prev_battle_record->set_battle_end_timestamp();
+    //        }
+    //        l->battle_record.reset(new Episode3::BattleRecord(s->ep3_behavior_flags));
+    //        for (auto existing_c : l->clients) {
+    //            if (existing_c) {
+    //                PlayerLobbyDataDCGC lobby_data;
+    //                lobby_data.name = encode_sjis(existing_c->game_data.player()->disp.name);
+    //                lobby_data.player_tag = 0x00010000;
+    //                lobby_data.guild_card = existing_c->license->serial_number;
+    //                l->battle_record->add_player(lobby_data,
+    //                    existing_c->game_data.player()->inventory,
+    //                    existing_c->game_data.player()->disp.to_dcpcv3());
+    //            }
+    //        }
+    //        if (l->prev_battle_record) {
+    //            send_text_message(l, u"$C6Recording complete");
+    //        }
+    //        send_text_message(l, u"$C6Recording enabled");
+    //    }
+    //}
+    //l->ep3_server_base->server->on_server_data_input(data);
+    //if (l->tournament_match &&
+    //    l->ep3_server_base->server->setup_phase == Episode3::SetupPhase::BATTLE_ENDED &&
+    //    !l->ep3_server_base->server->tournament_match_result_sent) {
+    //    int8_t winner_team_id = l->ep3_server_base->server->get_winner_team_id();
+    //    if (winner_team_id == -1) {
+    //        throw runtime_error("match complete, but winner team not specified");
+    //    }
+
+    //    auto tourn = l->tournament_match->tournament.lock();
+    //    tourn->print_bracket(stderr);
+
+    //    if (winner_team_id == 0) {
+    //        l->tournament_match->set_winner_team(l->tournament_match->preceding_a->winner_team);
+    //    }
+    //    else if (winner_team_id == 1) {
+    //        l->tournament_match->set_winner_team(l->tournament_match->preceding_b->winner_team);
+    //    }
+    //    else {
+    //        throw logic_error("invalid winner team id");
+    //    }
+    //    send_ep3_tournament_match_result(s, l, l->tournament_match);
+
+    //    on_tournament_bracket_updated(s, tourn);
+    //    l->ep3_server_base->server->tournament_match_result_sent = true;
+    //}
 }
 
 static int process_qload_done(ship_client_t* c) {
@@ -3442,11 +3604,11 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_COMMAND_CB_TYPE:
             return subcmd_handle_ep3_bcast(c, (subcmd_pkt_t*)pkt);
 
-        case EP3_COMMAND_TYPE:
-            return process_ep3_command(c, pkt);
+        case GAME_COMMAND_BA_TYPE:
+            return process_ep3_BA_command(c, pkt);
 
-        case GAME_SUBCMDCA_TYPE:
-            return subcmd_handle_CA(c, (subcmd_pkt_t*)pkt);
+        case GAME_COMMAND_CA_TYPE:
+            return process_ep3_CA_command(c, pkt);
 
         case EP3_MENU_CHANGE_TYPE:
             if (dc->flags != 0) {

@@ -109,7 +109,7 @@ static int subCA_B3_ep3(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+    return 0;
 }
 
 // 定义函数指针数组
@@ -145,6 +145,8 @@ int subcmd_handle_CA(ship_client_t* src, subcmd_pkt_t* pkt) {
         PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.dc.pkt_len);
 
 #endif // DEBUG
+
+        DBG_LOG("0x%02X 指令: 0x%02X", pkt->hdr.dc.pkt_type, type);
 
         l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
         if (!l->subcmd_handle) {

@@ -153,7 +153,7 @@
 #define PATCH_RETURN_TYPE                            0x00B3
 #define EP3_RANK_UPDATE_TYPE                         0x00B7
 #define EP3_CARD_UPDATE_TYPE                         0x00B8
-#define EP3_COMMAND_TYPE                             0x00BA
+#define GAME_COMMAND_BA_TYPE                         0x00BA
 #define CHOICE_OPTION_TYPE                           0x00C0
 #define GAME_CREATE_TYPE                             0x00C1
 #define CHOICE_SETTING_TYPE                          0x00C2
@@ -164,7 +164,7 @@
 #define AUTOREPLY_SET_TYPE                           0x00C7
 #define AUTOREPLY_CLEAR_TYPE                         0x00C8
 #define GAME_COMMAND_C9_TYPE                         0x00C9
-#define GAME_SUBCMDCA_TYPE                           0x00CA
+#define GAME_COMMAND_CA_TYPE                         0x00CA
 #define GAME_COMMAND_CB_TYPE                         0x00CB
 #define CLIENT_UNKNOW_CC                             0x00CC
 #define TRADE_0_TYPE                                 0x00D0

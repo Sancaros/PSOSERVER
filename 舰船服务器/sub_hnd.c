@@ -106,7 +106,7 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
             func = subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
             break;
 
-        case GAME_SUBCMDCA_TYPE:
+        case GAME_COMMAND_CA_TYPE:
             count = _countof(subcmdCA_handler);
             func = subcmd_search_handler(subcmdCA_handler, count, subcmd_type, version);
             break;
