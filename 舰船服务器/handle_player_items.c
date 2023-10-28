@@ -2623,9 +2623,7 @@ void add_equip_unsealable_item_kill_count(ship_client_t* src, int16_t v) {
     for (size_t x = 0; x < inv->item_count; x++) {
         iitem_t* iitem = &inv->iitems[x];
         if (iitem->flags & EQUIP_FLAGS && is_unsealable_item(&iitem->data)) {
-            print_item_data(&iitem->data, src->version);
             set_sealed_item_kill_count(&iitem->data, get_sealed_item_kill_count(&iitem->data) + v);
-            print_item_data(&iitem->data, src->version);
         }
     }
 }
