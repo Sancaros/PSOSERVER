@@ -481,7 +481,7 @@ bool isIPBlocked(const char* ipAddress, const char* fn) {
     file = fopen(fn, "r");
     if (file == NULL) {
         ERR_LOG("无法打开文件");
-        return 0; // 默认不屏蔽IP地址
+        return false; // 默认不屏蔽IP地址
     }
 
     // 逐行读取文件并与给定的IP地址进行比较

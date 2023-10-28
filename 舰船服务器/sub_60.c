@@ -6646,7 +6646,6 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_steal_exp_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    pmt_weapon_bb_t tmp_wp = { 0 };
     game_enemy_t* en;
     uint32_t exp_percent = 0;
     uint32_t exp_to_add;
@@ -6654,60 +6653,49 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     /* Make sure the enemy is in range. */
     uint16_t mid = LE16(pkt->shdr.enemy_id);
     uint32_t bp, exp_amount;
-    int i;
 
     if (!in_game(src))
         return -1;
-
-    psocn_bb_char_t* character = get_client_char_bb(src);
 
     mid = LE16(pkt->shdr.enemy_id);
     mid &= 0xFFF;
 
     if (mid < 0xB50) {
-        for (i = 0; i < character->inv.item_count; i++) {
-            if ((character->inv.iitems[i].flags & EQUIP_FLAGS) &&
-                (character->inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
-                if ((character->inv.iitems[i].data.datab[1] < 0x0A) &&
-                    (character->inv.iitems[i].data.datab[2] < 0x05)) {
-                    special = (character->inv.iitems[i].data.datab[4] & 0x1F);
-                }
-                else {
-                    if ((character->inv.iitems[i].data.datab[1] < 0x0D) &&
-                        (character->inv.iitems[i].data.datab[2] < 0x04))
-                        special = (character->inv.iitems[i].data.datab[4] & 0x1F);
-                    else {
-                        if (pmt_lookup_weapon_bb(character->inv.iitems[i].data.datal[0], &tmp_wp)) {
-                            ERR_LOG("%s 装备了不存在的物品数据!",
-                                get_player_describe(src));
-                            return -1;
-                        }
+        inventory_t* inv = get_client_inv(src);
+        int wp_index = find_equipped_weapon(inv);
+        item_t* item = &inv->iitems[wp_index].data;
 
-                        special = tmp_wp.special_type;
-                    }
-                }
-
-                switch (special) {
-                case 0x09:
-                    // Master's
-                    exp_percent = 8;
-                    break;
-
-                case 0x0A:
-                    // Lord's
-                    exp_percent = 10;
-                    break;
-
-                case 0x0B:
-                    // King's
-                    exp_percent = 12;
-                    if ((l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) && (src->equip_flags & PLAYER_EQUIP_FLAGS_DROID))
-                        exp_percent += 30;
-                    break;
-                }
-
-                break;
+        if (((item->datab[1] < 0x0A) && (item->datab[2] < 0x05)) ||
+            ((item->datab[1] < 0x0D) && (item->datab[2] < 0x04))) {
+            special = item->datab[4] & 0x1F;
+        }
+        else {
+            pmt_weapon_bb_t tmp_wp = { 0 };
+            if (pmt_lookup_weapon_bb(item->datal[0], &tmp_wp)) {
+                ERR_LOG("%s 装备了不存在的物品数据!",
+                    get_player_describe(src));
+                return -1;
             }
+            special = tmp_wp.special_type;
+        }
+
+        switch (special) {
+        case 0x09:
+            // Master's
+            exp_percent = 8;
+            break;
+
+        case 0x0A:
+            // Lord's
+            exp_percent = 10;
+            break;
+
+        case 0x0B:
+            // King's
+            exp_percent = 12;
+            if ((l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) && (src->equip_flags & PLAYER_EQUIP_FLAGS_DROID))
+                exp_percent += 30;
+            break;
         }
 
         if (exp_percent) {
@@ -6738,10 +6726,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
             bp = en->bp_entry;
 
             //新增经验倍率提升参数 exp_mult expboost 11.18
-            exp_amount = (l->bb_params[bp].exp * exp_percent) / 100L;
-
-            if (exp_amount > 80)  // Limit the amount of exp stolen to 80
-                exp_amount = 80;
+            exp_amount = min(((l->bb_params[bp].exp * exp_percent) / 100L), 80);
 
             if ((src->game_data->expboost) && (l->exp_mult > 0)) {
                 exp_to_add = exp_amount;
