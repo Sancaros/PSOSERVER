@@ -337,3 +337,5 @@
 #define SUBCMD60_DCNTE_MOVE_FAST      0x39    /* 0x42 */
 #define SUBCMD60_DCNTE_TALK_SHOP      0x46    /* 0x52 */
 
+/* Subcommands that we might care about in the GameCube EP3 (0xCA) */
+#define SUBCMDCA_EP3_SERVER_DATA      0xB3

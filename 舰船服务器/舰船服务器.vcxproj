@@ -57,6 +57,7 @@
     <ClCompile Include="mag_bb.c" />
     <ClCompile Include="sub_send.c" />
     <ClCompile Include="item_creator.c" />
+    <ClCompile Include="sub_CA.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h" />

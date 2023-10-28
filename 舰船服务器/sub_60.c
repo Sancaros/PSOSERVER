@@ -839,7 +839,10 @@ static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_0D_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
+//[2023年10月28日 12:48:46:449] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x0D 版本 e3(4) 的处理
+//[2023年10月28日 12:48:46:452] 调试(sub_60.c 7732): 未知 EP3 0x60 指令: 0x0D
+//[2023年10月28日 12:48:46:454] 调试(sub_60.c 7733): 数据包如下:
+//(00000000) 60 00 10 00 0D 03 00 00  01 00 00 00 00 00 00 00    `...............
     if (pkt->condition_type) {
         if (src->game_data->err.has_error) {
             send_msg(src, BB_SCROLL_MSG_TYPE,
@@ -1317,9 +1320,13 @@ static int sub60_22_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_23_dc(ship_client_t* src, ship_client_t* dest,
-    subcmd_pkt_t* pkt) {
+    subcmd_set_player_visibility_6x22_6x23_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int i, rv;
+
+//[2023年10月28日 12:48:46:446] 调试(sub_60.c 7732): 未知 EP3 0x60 指令: 0x23
+//[2023年10月28日 12:48:46:447] 调试(sub_60.c 7733): 数据包如下:
+//(00000000) 60 00 08 00 23 01 00 00     `...#...
 
     if (l->type != LOBBY_TYPE_GAME) {
         for (i = 0; i < l->max_clients; ++i) {
@@ -1352,7 +1359,7 @@ static int sub60_23_dc(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_pkt_t* pkt) {
+    subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int i, rv;
 
@@ -1391,7 +1398,7 @@ static int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_24_dc(ship_client_t* src, ship_client_t* dest,
-    subcmd_pkt_t* pkt) {
+    subcmd_set_pos_0x24_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     /* Ugh... For some reason, v1 really likes to send these at the start of
@@ -1410,14 +1417,14 @@ static int sub60_24_dc(ship_client_t* src, ship_client_t* dest,
 
         /* Oh look, misusing other portions of the client structure so that I
            don't have to make a new field... */
-        if (src->autoreply_len && pkt->data[0] != src->client_id) {
+        if (src->autoreply_len && pkt->shdr.client_id != src->client_id) {
             /* Silently drop the packet. */
             --src->autoreply_len;
             return 0;
         }
     }
 
-    return subcmd_send_lobby_dc(l, src, pkt, 0);
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
@@ -2089,11 +2096,15 @@ send_pkt:
 static int sub60_2C_dc(ship_client_t* src, ship_client_t* dest, 
     subcmd_select_menu_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
+//[2023年10月28日 13:15:23:178] 调试(sub_hnd.c 0117): subcmd_get_handler 未完成对 0x60 0x2C 版本 e3(4) 的处理
+//[2023年10月28日 13:15:23:180] 调试(sub_60.c 7734): 未知 EP3 0x60 指令: 0x2C
+//[2023年10月28日 13:15:23:181] 调试(sub_60.c 7735): 数据包如下:
+//(00000000) 60 00 18 00 2C 05 00 00  FF FF 00 00 95 5E 49 43    `...,........^IC
+//(00000010) CE 57 36 C3 00 00 00 00     .W6.....
     if (!in_game(src))
         return -1;
 
-    if (!check_pkt_size(src, pkt, 0, 0x05))
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_select_menu_t), 0x05))
         return -2;
 
     /* Clear the list of dropped items. */
@@ -2125,10 +2136,14 @@ static int sub60_2D_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_select_done_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
+//[2023年10月28日 13:15:35:021] 调试(sub_hnd.c 0117): subcmd_get_handler 未完成对 0x60 0x2D 版本 e3(4) 的处理
+//[2023年10月28日 13:15:35:023] 调试(sub_60.c 7734): 未知 EP3 0x60 指令: 0x2D
+//[2023年10月28日 13:15:35:024] 调试(sub_60.c 7735): 数据包如下:
+//(00000000) 60 00 08 00 2D 01 00 00     `...-...
     if (!in_game(src))
         return -1;
 
-    if (!check_pkt_size(src, pkt, 0, 0x01))
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_select_done_t), 0x01))
         return -2;
 
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
@@ -2394,7 +2409,11 @@ static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_3E_dc(ship_client_t* src, ship_client_t* dest, 
     subcmd_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
+//[2023年10月28日 12:48:51:349] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x3E 版本 e3(4) 的处理
+//[2023年10月28日 12:48:51:355] 调试(sub_60.c 7732): 未知 EP3 0x60 指令: 0x3E
+//[2023年10月28日 12:48:51:357] 调试(sub_60.c 7733): 数据包如下:
+//(00000000) 60 00 1C 00 3E 06 00 00  00 00 07 80 0F 00 01 00    `...>...........
+//(00000010) 81 AD 8E C0 00 00 0A 35  8E 86 4E 42    .......5..NB
     /* Save the new position and move along */
     if (src->client_id == pkt->shdr.client_id) {
         src->w = pkt->w;
@@ -2456,31 +2475,6 @@ static int sub60_3F_dc(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
-static int sub60_3F_ep3(ship_client_t* src, ship_client_t* dest,
-    subcmd_set_pos_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-//[2023年10月28日 11:12:49:007] 舰船服务器 调试(sub_60.c 7706): 数据包如下:
-//
-//(00000000) 60 00 1C 00 3F 06 00 00  00 00 00 80 0F 00 FF FF    `...?...........
-//(00000010) 00 00 00 00 00 00 A0 41  00 00 07 43    .......A...C
-
-    /* Save the new position and move along */
-    if (src->client_id == pkt->shdr.client_id) {
-        src->w = pkt->w;
-        src->x = pkt->x;
-        src->y = pkt->y;
-        src->z = pkt->z;
-
-        if ((l->flags & LOBBY_FLAG_QUESTING))
-            update_qpos(src, l);
-    }
-
-    /* Clear this, in case we're at the lobby counter */
-    src->last_info_req = 0;
-
-    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
-}
-
 static int sub60_3F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2507,6 +2501,11 @@ static int sub60_3F_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_40_dc(ship_client_t* src, ship_client_t* dest, 
     subcmd_move_t* pkt) {
     lobby_t* l = src->cur_lobby;
+//[2023年10月28日 12:48:49:116] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x40 版本 e3(4) 的处理
+//[2023年10月28日 12:48:49:118] 调试(sub_60.c 7732): 未知 EP3 0x60 指令: 0x40
+//[2023年10月28日 12:48:49:119] 调试(sub_60.c 7733): 数据包如下:
+//(00000000) 60 00 14 00 40 04 00 00  5A 88 A8 36 00 00 FE 42    `...@...Z..6...B
+//(00000010) 00 00 00 00    ....
 
     /* Save the new position and move along */
     if (src->client_id == pkt->shdr.client_id) {
@@ -2548,7 +2547,15 @@ static int sub60_40_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_42_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_move_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
+//[2023年10月28日 12:48:49:916] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x42 版本 e3(4) 的处理
+//[2023年10月28日 12:48:49:918] 调试(sub_60.c 7732): 未知 EP3 0x60 指令: 0x42
+//[2023年10月28日 12:48:49:920] 调试(sub_60.c 7733): 数据包如下:
+//(00000000) 60 00 10 00 42 03 00 00  6F 02 B5 C0 B0 AF D2 42    `...B...o......B
+//
+//[2023年10月28日 12:48:50:079] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x42 版本 e3(4) 的处理
+//[2023年10月28日 12:48:50:082] 调试(sub_60.c 7732): 未知 EP3 0x60 指令: 0x42
+//[2023年10月28日 12:48:50:083] 调试(sub_60.c 7733): 数据包如下:
+//(00000000) 60 00 10 00 42 03 00 00  48 6F AC C0 47 D8 C2 42    `...B...Ho..G..B
     /* Save the new position and move along */
     if (src->client_id == pkt->shdr.client_id) {
         src->x = pkt->x;
@@ -3356,9 +3363,12 @@ static int sub60_50_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_52_dc(ship_client_t* src, ship_client_t* dest, 
-    subcmd_pkt_t* pkt) {
+    subcmd_menu_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
+//[2023年10月28日 12:48:51:416] 调试(sub_hnd.c 0112): subcmd_get_handler 未完成对 0x60 0x52 版本 e3(4) 的处理
+//[2023年10月28日 12:48:51:418] 调试(sub_60.c 7732): 未知 EP3 0x60 指令: 0x52
+//[2023年10月28日 12:48:51:419] 调试(sub_60.c 7733): 数据包如下:
+//(00000000) 60 00 10 00 52 03 00 00  00 00 00 00 07 80 FF FF    `...R...........
     /* We don't care about these in lobbies. */
     if (l->type == LOBBY_TYPE_LOBBY) {
         return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
@@ -7534,7 +7544,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_HIT_MONSTER                , sub60_0A_dc, sub60_0A_dc, NULL,        sub60_0A_dc, sub60_0A_dc, sub60_0A_bb },
     { SUBCMD60_HIT_OBJ                    , sub60_0B_dc, sub60_0B_dc, NULL,        sub60_0B_dc, sub60_0B_dc, sub60_0B_bb },
     { SUBCMD60_CONDITION_ADD              , sub60_0C_dc, sub60_0C_dc, NULL,        sub60_0C_dc, sub60_0C_dc, sub60_0C_bb },
-    { SUBCMD60_CONDITION_REMOVE           , sub60_0D_dc, sub60_0D_dc, NULL,        sub60_0D_dc, sub60_0D_dc, sub60_0D_bb },
+    { SUBCMD60_CONDITION_REMOVE           , sub60_0D_dc, sub60_0D_dc, sub60_0D_dc, sub60_0D_dc, sub60_0D_dc, sub60_0D_bb },
 
     //cmd_type 10 - 1F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_BOSS_ACT_DRAGON            , sub60_12_dc, sub60_12_dc, NULL,        sub60_12_dc, sub60_12_dc, sub60_12_bb },
@@ -7547,13 +7557,13 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_BOSS_ACT_DARK_FALZ         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_19_bb },
     { SUBCMD60_CREATE_NPC                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1B_bb },
     { SUBCMD60_DESTORY_NPC                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1C_bb },
-    { SUBCMD60_SET_AREA_1F                , sub60_1F_dc, sub60_1F_dc, NULL,        sub60_1F_dc, sub60_1F_dc, sub60_1F_bb },
+    { SUBCMD60_SET_AREA_1F                , sub60_1F_dc, sub60_1F_dc, sub60_1F_dc, sub60_1F_dc, sub60_1F_dc, sub60_1F_bb },
 
     //cmd_type 20 - 2F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SET_AREA_20                , sub60_20_dc, sub60_20_dc, NULL,        sub60_20_dc, sub60_20_dc, sub60_20_bb },
     { SUBCMD60_INTER_LEVEL_WARP           , sub60_21_dc, sub60_21_dc, NULL,        sub60_21_dc, sub60_21_dc, sub60_21_bb },
     { SUBCMD60_LOAD_22                    , sub60_22_dc, sub60_22_dc, NULL,        sub60_22_dc, sub60_22_dc, sub60_22_bb },
-    { SUBCMD60_FINISH_LOAD                , sub60_23_dc, sub60_23_dc, NULL,        sub60_23_dc, sub60_23_dc, sub60_23_bb },
+    { SUBCMD60_FINISH_LOAD                , sub60_23_dc, sub60_23_dc, sub60_23_dc, sub60_23_dc, sub60_23_dc, sub60_23_bb },
     { SUBCMD60_SET_POS_24                 , sub60_24_dc, sub60_24_dc, NULL,        NULL,        NULL,        sub60_24_bb },
     { SUBCMD60_EQUIP                      , sub60_25_dc, sub60_25_dc, NULL,        sub60_25_dc, sub60_25_dc, sub60_25_bb },
     { SUBCMD60_REMOVE_EQUIP               , sub60_26_dc, sub60_26_dc, NULL,        sub60_26_dc, sub60_26_dc, sub60_26_bb },
@@ -7562,8 +7572,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_ITEM_DELETE                , sub60_29_dc, sub60_29_dc, NULL,        sub60_29_dc, sub60_29_dc, sub60_29_bb },
     { SUBCMD60_ITEM_DROP                  , sub60_2A_dc, sub60_2A_dc, NULL,        sub60_2A_dc, sub60_2A_dc, sub60_2A_bb },
     { SUBCMD60_ITEM_TAKE                  , sub60_2B_dc, sub60_2B_dc, NULL,        sub60_2B_dc, sub60_2B_dc, sub60_2B_bb },
-    { SUBCMD60_SELECT_MENU                , sub60_2C_dc, sub60_2C_dc, NULL,        sub60_2C_dc, sub60_2C_dc, sub60_2C_bb },
-    { SUBCMD60_SELECT_DONE                , sub60_2D_dc, sub60_2D_dc, NULL,        sub60_2D_dc, sub60_2D_dc, sub60_2D_bb },
+    { SUBCMD60_SELECT_MENU                , sub60_2C_dc, sub60_2C_dc, sub60_2C_dc, sub60_2C_dc, sub60_2C_dc, sub60_2C_bb },
+    { SUBCMD60_SELECT_DONE                , sub60_2D_dc, sub60_2D_dc, sub60_2D_dc, sub60_2D_dc, sub60_2D_dc, sub60_2D_bb },
     { SUBCMD60_HIT_BY_ENEMY               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2F_bb },
 
     //cmd_type 30 - 3F                      DC           GC           EP3          XBOX         PC           BB
@@ -7574,13 +7584,13 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_PB_BLAST                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_37_bb },
     { SUBCMD60_PB_BLAST_READY             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_39_bb },
     { SUBCMD60_GAME_CLIENT_LEAVE          , sub60_3A_dc, sub60_3A_dc, NULL,        sub60_3A_dc, sub60_3A_dc, sub60_3A_bb },
-    { SUBCMD60_LOAD_3B                    , sub60_3B_dc, sub60_3B_dc, NULL,        sub60_3B_dc, sub60_3B_dc, sub60_3B_bb },
-    { SUBCMD60_SET_POS_3E                 , sub60_3E_dc, sub60_3E_dc, NULL,        sub60_3E_dc, sub60_3E_dc, sub60_3E_bb },
-    { SUBCMD60_SET_POS_3F                 , sub60_3F_dc, sub60_3F_dc, sub60_3F_ep3,        sub60_3F_dc, sub60_3F_dc, sub60_3F_bb },
+    { SUBCMD60_LOAD_3B                    , sub60_3B_dc, sub60_3B_dc, sub60_3B_dc, sub60_3B_dc, sub60_3B_dc, sub60_3B_bb },
+    { SUBCMD60_SET_POS_3E                 , sub60_3E_dc, sub60_3E_dc, sub60_3E_dc, sub60_3E_dc, sub60_3E_dc, sub60_3E_bb },
+    { SUBCMD60_SET_POS_3F                 , sub60_3F_dc, sub60_3F_dc, sub60_3F_dc, sub60_3F_dc, sub60_3F_dc, sub60_3F_bb },
 
     //cmd_type 40 - 4F                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_MOVE_SLOW                  , sub60_40_dc, sub60_40_dc, NULL,        sub60_40_dc, sub60_40_dc, sub60_40_bb },
-    { SUBCMD60_MOVE_FAST                  , sub60_42_dc, sub60_42_dc, NULL,        sub60_42_dc, sub60_42_dc, sub60_42_bb },
+    { SUBCMD60_MOVE_SLOW                  , sub60_40_dc, sub60_40_dc, sub60_40_dc, sub60_40_dc, sub60_40_dc, sub60_40_bb },
+    { SUBCMD60_MOVE_FAST                  , sub60_42_dc, sub60_42_dc, sub60_42_dc, sub60_42_dc, sub60_42_dc, sub60_42_bb },
     { SUBCMD60_ATTACK1                    , sub60_43_dc, sub60_43_dc, NULL,        sub60_43_dc, sub60_43_dc, sub60_43_bb },
     { SUBCMD60_ATTACK2                    , sub60_44_dc, sub60_44_dc, NULL,        sub60_44_dc, sub60_44_dc, sub60_44_bb },
     { SUBCMD60_ATTACK3                    , sub60_45_dc, sub60_45_dc, NULL,        sub60_45_dc, sub60_45_dc, sub60_45_bb },
@@ -7597,7 +7607,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type 50 - 5F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SWITCH_REQ                 , sub60_50_dc, sub60_50_dc, NULL,        sub60_50_dc, sub60_50_dc, sub60_50_bb },
-    { SUBCMD60_MENU_REQ                   , sub60_52_dc, sub60_52_dc, NULL,        sub60_52_dc, sub60_52_dc, sub60_52_bb },
+    { SUBCMD60_MENU_REQ                   , sub60_52_dc, sub60_52_dc, sub60_52_dc, sub60_52_dc, sub60_52_dc, sub60_52_bb },
     { SUBCMD60_UNKNOW_53                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
     { SUBCMD60_WARP_55                    , sub60_55_dc, sub60_55_dc, NULL,        sub60_55_dc, sub60_55_dc, sub60_55_bb },
     { SUBCMD60_LOBBY_ACT                  , sub60_58_dc, sub60_58_dc, NULL,        sub60_58_dc, sub60_58_dc, sub60_58_bb },

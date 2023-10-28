@@ -649,6 +649,17 @@ typedef struct subcmd_bb_set_player_visibility_6x22_6x23 {
 } PACKED subcmd_bb_set_player_visibility_6x22_6x23_t;
 
 // 0x24: subcmd_bb_set_pos_0x24 (指令生效范围; 仅限游戏)
+typedef struct subcmd_set_pos_0x24 {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t unk1;
+    uint16_t unused;
+    float x;
+    float y;
+    float z;
+} PACKED subcmd_set_pos_0x24_t;
+
+// 0x24: subcmd_bb_set_pos_0x24 (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_set_pos_0x24 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -1248,6 +1259,14 @@ typedef struct subcmd_bb_switch_req {
 } PACKED subcmd_bb_switch_req_t;
 
 // 0x51: Invalid subcommand
+
+// 0x52: Toggle shop/bank interaction
+typedef struct subcmd_menu_req {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t menu_id;
+    uint32_t item_id;
+} PACKED subcmd_menu_req_t;
 
 // 0x52: Toggle shop/bank interaction
 typedef struct subcmd_bb_menu_req {
@@ -2647,6 +2666,7 @@ typedef struct subcmd_EP3_CardBattleCommandHeader {
 // The 0xB3 subcommand has a longer header than 0xB4 and 0xB5. This header is
 // common to all 6xB3x (CAx) subcommands.
 typedef struct subcmd_EP3_CardServerDataCommandHeader {
+    dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t subsubcommand; // See 0xBx subcommand table (after this table)
     uint8_t sender_client_id;
@@ -3336,5 +3356,8 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt);
 
 /* 处理 EP3 0xC9/0xCB 来自客户端的数据包. */
 int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
+
+/* 处理 EP3 0xCA 来自客户端的数据包. */
+int subcmd_handle_CA(ship_client_t* c, subcmd_pkt_t* pkt);
 
 #endif /* !SUBCMD60_H */

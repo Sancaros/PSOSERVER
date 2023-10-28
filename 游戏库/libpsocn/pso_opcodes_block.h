@@ -164,7 +164,7 @@
 #define AUTOREPLY_SET_TYPE                           0x00C7
 #define AUTOREPLY_CLEAR_TYPE                         0x00C8
 #define GAME_COMMAND_C9_TYPE                         0x00C9
-#define EP3_SERVER_DATA_TYPE                         0x00CA
+#define GAME_SUBCMDCA_TYPE                           0x00CA
 #define GAME_COMMAND_CB_TYPE                         0x00CB
 #define CLIENT_UNKNOW_CC                             0x00CC
 #define TRADE_0_TYPE                                 0x00D0

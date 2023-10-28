@@ -137,7 +137,7 @@ static cmd_map_st c_cmd_names[] = {
     { AUTOREPLY_SET_TYPE, "AUTOREPLY_SET_TYPE", "客户端至服务器指令" },
     { AUTOREPLY_CLEAR_TYPE, "AUTOREPLY_CLEAR_TYPE", "客户端至服务器指令" },
     { GAME_COMMAND_C9_TYPE, "GAME_COMMAND_C9_TYPE", "客户端至服务器指令" },
-    { EP3_SERVER_DATA_TYPE, "EP3_SERVER_DATA_TYPE", "客户端至服务器指令" },
+    { GAME_SUBCMDCA_TYPE, "EP3_SERVER_DATA_TYPE", "客户端至服务器指令" },
     { GAME_COMMAND_CB_TYPE, "GAME_COMMAND_CB_TYPE", "客户端至服务器指令" },
     { TRADE_0_TYPE, "TRADE_0_TYPE", "客户端至服务器指令" },
     { TRADE_1_TYPE, "TRADE_1_TYPE", "客户端至服务器指令" },

@@ -129,6 +129,9 @@
     <ClCompile Include="item_creator.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="sub_CA.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">

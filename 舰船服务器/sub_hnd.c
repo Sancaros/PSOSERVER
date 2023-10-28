@@ -44,9 +44,9 @@
 #include "subcmd_handle.h"
 
 extern subcmd_handle_func_t subcmd60_handler[0x100];
-extern subcmd_handle_func_t subcmdmode_handler[0x100];
 extern subcmd_handle_func_t subcmd62_handler[0x100];
 extern subcmd_handle_func_t subcmd6D_handler[0x100];
+extern subcmd_handle_func_t subcmdCA_handler[0x100];
 
 subcmd_handle_t subcmd_search_handler(
     subcmd_handle_func_t* handler,
@@ -104,6 +104,11 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
         case GAME_SUBCMD6D_TYPE:
             count = _countof(subcmd6D_handler);
             func = subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
+            break;
+
+        case GAME_SUBCMDCA_TYPE:
+            count = _countof(subcmdCA_handler);
+            func = subcmd_search_handler(subcmdCA_handler, count, subcmd_type, version);
             break;
         }
 
