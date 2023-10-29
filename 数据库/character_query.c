@@ -820,24 +820,24 @@ bool db_check_is_gm(uint32_t gc, uint32_t* priv) {
 
     memset(myquery, 0, sizeof(myquery));
 
-    sprintf(myquery, "SELECT is_gm, privlevel FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
+    sprintf(myquery, "SELECT isgm, privlevel FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询 %s 角色数据 (%u: %u)", AUTH_ACCOUNT, gc);
+        SQLERR_LOG("无法查询 %s 角色数据 (%u)", AUTH_ACCOUNT, gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return false;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色 %s 数据 (%u: %u)", AUTH_ACCOUNT, gc);
+        SQLERR_LOG("未获取到角色 %s 数据 (%u)", AUTH_ACCOUNT, gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return false;
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色 %s 数据 (%u: %u)", AUTH_ACCOUNT, gc);
+        SQLERR_LOG("未找到保存的角色 %s 数据 (%u)", AUTH_ACCOUNT, gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return false;
     }
