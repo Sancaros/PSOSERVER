@@ -27,9 +27,11 @@
     mfree：释放已分配的内存块。
 */
 
-block_t* get_free_block(size_t size)
+mem_block_t* head = NULL, * tail = NULL;
+
+mem_block_t* get_free_block(size_t size)
 {
-    block_t* curr = head;
+    mem_block_t* curr = head;
     while (curr)
     {
         if (curr->is_free && curr->size >= size)
@@ -47,10 +49,10 @@ void mfree(void* block)
         return;
 
     pthread_mutex_lock(&mem_lock);
-    block_t* header = (block_t*)block - 1;
+    mem_block_t* header = (mem_block_t*)block - 1;
     if (tail == header)
     {
-        size_t free_size = header->size - sizeof(block_t);
+        size_t free_size = header->size - sizeof(mem_block_t);
         VirtualFree(header, free_size, MEM_RELEASE); // 释放内存
         pthread_mutex_unlock(&mem_lock);
         return;
@@ -67,7 +69,7 @@ void* mmalloc(size_t size)
 
     pthread_mutex_lock(&mem_lock);
 
-    block_t* header = get_free_block(size);
+    mem_block_t* header = get_free_block(size);
 
     // 如果找到合适的空闲块
     if (header)
@@ -77,10 +79,10 @@ void* mmalloc(size_t size)
         return (void*)(++header); // 返回已分配内存的指针（隐藏头部）
     }
 
-    size_t total_size = sizeof(block_t) + size; // 头部和数据块的总大小，需要为两者都分配内存
+    size_t total_size = sizeof(mem_block_t) + size; // 头部和数据块的总大小，需要为两者都分配内存
 
-    block_t* new_block;
-    if ((new_block = (block_t*)VirtualAlloc(NULL, total_size, MEM_COMMIT, PAGE_READWRITE)) == NULL)
+    mem_block_t* new_block;
+    if ((new_block = (mem_block_t*)VirtualAlloc(NULL, total_size, MEM_COMMIT, PAGE_READWRITE)) == NULL)
     {
         fprintf(stderr, "VirtualAlloc 失败");
         pthread_mutex_unlock(&mem_lock);
@@ -122,7 +124,7 @@ void* mrealloc(void* block, size_t size)
     if (!block || !size)
         return NULL;
 
-    block_t* header = (block_t*)block - 1;
+    mem_block_t* header = (mem_block_t*)block - 1;
 
     if (header->size >= size)
     {

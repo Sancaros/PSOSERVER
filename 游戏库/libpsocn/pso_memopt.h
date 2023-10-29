@@ -24,17 +24,15 @@
 #include <stdbool.h>
 #include <string.h>
 
-typedef struct block {
-    struct block* next; // 下一个内存块的指针
+typedef struct mem_block {
+    struct mem_block* next; // 下一个内存块的指针
     size_t size;        // 当前内存块的大小（不包括头部）
     bool is_free;        // 标志当前内存块是否空闲
-} block_t;
-
-block_t* head = NULL, * tail = NULL;
+} mem_block_t;
 
 pthread_mutex_t mem_lock; // 全局锁，用于保护对内存块链表的并发访问
 
-block_t* get_free_block(size_t size);
+mem_block_t* get_free_block(size_t size);
 
 void mfree(void* block);
 

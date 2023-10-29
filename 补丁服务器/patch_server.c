@@ -67,6 +67,7 @@
 #include <f_checksum.h>
 #include <pso_ping.h>
 #include <pso_crash_handle.h>
+#include <pso_memopt.h>
 
 #ifndef _WIN32
 #if HAVE_LIBUTIL_H == 1
@@ -1129,6 +1130,7 @@ int __cdecl main(int argc, char** argv) {
     server_name_num = PATCH_SERVER;
 
     __try {
+        mem_mutex_init();
         log_mutex_init();
 
         load_program_info(server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
@@ -1181,6 +1183,7 @@ int __cdecl main(int argc, char** argv) {
 
         UnhookHandler();
         log_mutex_destory();
+        mem_mutex_destory();
     }
 
     __except (crash_handler(GetExceptionInformation())) {
@@ -1188,6 +1191,7 @@ int __cdecl main(int argc, char** argv) {
 
         CRASH_LOG("出现错误, 程序将退出.");
         log_mutex_destory();
+        mem_mutex_destory();
         (void)getchar();
     }
 

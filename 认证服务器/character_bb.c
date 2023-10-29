@@ -42,6 +42,7 @@
 #include <f_iconv.h>
 #include <pso_version.h>
 #include <pso_packet_length.h>
+#include <pso_memopt.h>
 
 #include <PRS.h>
 
@@ -626,7 +627,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
     //DBG_LOG("handle_update_char 标签 %d", flags);
 
-    char_data = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
+    char_data = (psocn_bb_db_char_t*)mmalloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
     if (!char_data) {
         ERR_LOG("无法分配角色数据内存空间");
@@ -673,7 +674,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         if (send_bb_char_dressing_room(&char_data->character, &pkt->data)) {
             ERR_LOG("无法更新玩家更衣室数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
         
@@ -693,14 +694,14 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         if (db_backup_bb_char_data(c->guildcard, pkt->slot)) {
             ERR_LOG("无法备份已删除的玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
         if (db_delete_bb_char_data(c->guildcard, pkt->slot)) {
             SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -708,7 +709,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法创建玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -730,7 +731,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -738,7 +739,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -746,7 +747,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -754,7 +755,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家名字数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -762,7 +763,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家科技数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -771,7 +772,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -780,7 +781,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -789,7 +790,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -798,7 +799,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -807,7 +808,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -816,7 +817,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -825,7 +826,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -843,7 +844,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -851,7 +852,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             SQLERR_LOG("无法获取玩家外观数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -861,7 +862,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -870,7 +871,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
                 "槽位 %" PRIu8 "):%s", CHARACTER, c->guildcard, pkt->slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            free_safe(char_data);
+            mfree(char_data);
             return -1;
         }
 
@@ -887,7 +888,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         /* Should send an error message to the user */
         ERR_LOG("无法初始化更衣室 (GC %" PRIu32 ", 标签 %"
             PRIu8 ")", c->guildcard, c->flags);
-        free_safe(char_data);
+        mfree(char_data);
         return -1;
     }
     
@@ -901,11 +902,11 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
     if (send_bb_security(c, c->guildcard, 0, c->guild_id, &c->sec_data,
         sizeof(bb_client_config_pkt))) {
-        free_safe(char_data);
+        mfree(char_data);
         return -1;
     }
 
-    free_safe(char_data);
+    mfree(char_data);
 
     return send_bb_char_ack(c, pkt->slot, BB_CHAR_ACK_UPDATE);
 }
@@ -983,7 +984,7 @@ static int handle_checksum(login_client_t *c, bb_checksum_pkt *pkt) {
     uint32_t ack_checksum = 1;
 
     if (!c->gc_data) {
-        c->gc_data = (bb_guildcard_data_t*)malloc(PSOCN_STLENGTH_BB_GC_DATA);
+        c->gc_data = (bb_guildcard_data_t*)mmalloc(PSOCN_STLENGTH_BB_GC_DATA);
 
         if (!c->gc_data) {
             ERR_LOG("无法分配GC数据的内存空间");
@@ -1011,7 +1012,7 @@ static int handle_guild_request(login_client_t *c) {
     uint32_t gc;
 
     if(!c->gc_data) {
-        c->gc_data = (bb_guildcard_data_t *)malloc(PSOCN_STLENGTH_BB_GC_DATA);
+        c->gc_data = (bb_guildcard_data_t *)mmalloc(PSOCN_STLENGTH_BB_GC_DATA);
 
         if(!c->gc_data) {
             /* XXXX: Should send an error message to the user */
@@ -1224,7 +1225,7 @@ int load_param_data(void) {
     uint8_t *rawbuf;
 
     /* Allocate space for the buffer first */
-    rawbuf = (uint8_t *)malloc(MAX_PARAMS_SIZE);
+    rawbuf = (uint8_t *)mmalloc(MAX_PARAMS_SIZE);
     if(!rawbuf) {
         ERR_LOG("无法分配参数缓冲区内存:\n%s",
               strerror(errno));
@@ -1233,11 +1234,11 @@ int load_param_data(void) {
 
     /* Allocate space for the parameter header */
     len = 0x08 + (NUM_PARAM_FILES * 0x4C);
-    param_hdr = (bb_param_hdr_pkt *)malloc(len);
+    param_hdr = (bb_param_hdr_pkt *)mmalloc(len);
     if(!param_hdr) {
         ERR_LOG("无法分配参数标头内存:\n%s",
               strerror(errno));
-        free(rawbuf);
+        mfree(rawbuf);
         return -3;
     }
 
@@ -1320,12 +1321,12 @@ int load_param_data(void) {
     }
 
     /* Allocate space for the array of chunks */
-    param_chunks = (bb_param_chunk_pkt **)malloc(sizeof(bb_param_chunk_pkt *) *
+    param_chunks = (bb_param_chunk_pkt **)mmalloc(sizeof(bb_param_chunk_pkt *) *
                                                  num_param_chunks);
     if(!param_chunks) {
         ERR_LOG("无法生成参数区块数组: %s",
               strerror(errno));
-        free(rawbuf);
+        mfree(rawbuf);
         return -4;
     }
 
@@ -1340,11 +1341,11 @@ int load_param_data(void) {
             len = 0x680C;
         }
 
-        param_chunks[i] = (bb_param_chunk_pkt *)malloc(len);
+        param_chunks[i] = (bb_param_chunk_pkt *)mmalloc(len);
 
         if(!param_chunks[i]) {
             ERR_LOG("无法生成参数区块: %s", strerror(errno));
-            free(rawbuf);
+            mfree(rawbuf);
             return -5;
         }
 
@@ -1357,7 +1358,7 @@ int load_param_data(void) {
     }
 
     /* Cleanup time */
-    free(rawbuf);
+    mfree(rawbuf);
     //chdir("../..");
     AUTH_LOG("读取 %" PRIu32 " 个参数文件至 %d 区块", NUM_PARAM_FILES,
           num_param_chunks);
@@ -1369,13 +1370,13 @@ void cleanup_param_data(void) {
     int i;
 
     for(i = 0; i < num_param_chunks; ++i) {
-        free(param_chunks[i]);
+        mfree(param_chunks[i]);
     }
 
-    free(param_chunks);
+    mfree(param_chunks);
     param_chunks = NULL;
     num_param_chunks = 0;
-    free(param_hdr);
+    mfree(param_hdr);
     param_hdr = NULL;
 }
 

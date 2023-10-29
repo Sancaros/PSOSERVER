@@ -2,7 +2,7 @@
     梦幻之星中国 认证服务器
     版权 (C) 2022, 2023 Sancaros
 
-    This program is free software: you can redistribute it and/or modify
+    This program is mfree software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License version 3
     as published by the Free Software Foundation.
 
@@ -26,6 +26,7 @@
 
 #include <debug.h>
 #include <f_logs.h>
+#include <pso_memopt.h>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -43,17 +44,17 @@ static void free_patch(patch_t *p) {
     uint32_t j;
 
     for(j = 0; j < CLIENT_LANG_ALL; ++j) {
-        free(p->name[j]);
-        free(p->desc[j]);
+        mfree(p->name[j]);
+        mfree(p->desc[j]);
     }
 
     for(j = 0; j < p->patchset_count; ++j) {
-        free(p->patches[j]->filename);
+        mfree(p->patches[j]->filename);
     }
 
-    free(p->patches);
-    free(p->requires);
-    free(p->conflicts);
+    mfree(p->patches);
+    mfree(p->requires);
+    mfree(p->conflicts);
 }
 
 /* Handles name and description tags. */
@@ -146,7 +147,7 @@ static int handle_patchset(xmlNode *n, patchset_t **rv) {
         goto out;
     }
 
-    ps = (patchset_t *)malloc(sizeof(patchset_t));
+    ps = (patchset_t *)mmalloc(sizeof(patchset_t));
     if(!ps) {
         ERR_LOG("Cannot allocate memory for patchset: %s",
               strerror(errno));
@@ -177,7 +178,7 @@ static int handle_patchset(xmlNode *n, patchset_t **rv) {
     return 0;
 
 out1:
-    free(ps);
+    mfree(ps);
 out:
     xmlFree(filename);
     xmlFree(version);
@@ -194,7 +195,7 @@ static int handle_patch(xmlNode *n, patch_list_t *l) {
     int lang_code;
     void *tmp;
 
-    p = (patch_t *)malloc(sizeof(patch_t));
+    p = (patch_t *)mmalloc(sizeof(patch_t));
     if(!p) {
         ERR_LOG("Cannot allocate memory for patch: %s",
               strerror(errno));
@@ -204,19 +205,19 @@ static int handle_patch(xmlNode *n, patch_list_t *l) {
     memset(p, 0, sizeof(patch_t));
 
     /* Allocate space for some basic things... */
-    p->name = (char **)malloc(sizeof(char *) * CLIENT_LANG_ALL);
+    p->name = (char **)mmalloc(sizeof(char *) * CLIENT_LANG_ALL);
     if(!p->name) {
         ERR_LOG("Cannot allocate memory for patch: %s",
               strerror(errno));
-        free(p);
+        mfree(p);
         return -2;
     }
 
-    p->desc = (char **)malloc(sizeof(char *) * CLIENT_LANG_ALL);
+    p->desc = (char **)mmalloc(sizeof(char *) * CLIENT_LANG_ALL);
     if(!p->desc) {
         ERR_LOG("Cannot allocate memory for patch: %s",
               strerror(errno));
-        free(p->name);
+        mfree(p->name);
         return -3;
     }
 
@@ -233,9 +234,9 @@ static int handle_patch(xmlNode *n, patch_list_t *l) {
         xmlFree(perms);
         xmlFree(gmonly);
         xmlFree(id);
-        free(p->desc);
-        free(p->name);
-        free(p);
+        mfree(p->desc);
+        mfree(p->name);
+        mfree(p);
         return -4;
     }
 
@@ -248,9 +249,9 @@ static int handle_patch(xmlNode *n, patch_list_t *l) {
         xmlFree(perms);
         xmlFree(gmonly);
         xmlFree(id);
-        free(p->desc);
-        free(p->name);
-        free(p);
+        mfree(p->desc);
+        mfree(p->name);
+        mfree(p);
         return -5;
     }
 
@@ -268,9 +269,9 @@ static int handle_patch(xmlNode *n, patch_list_t *l) {
         ERR_LOG("Invalid value for gmonly for patch");
         xmlFree(perms);
         xmlFree(gmonly);
-        free(p->desc);
-        free(p->name);
-        free(p);
+        mfree(p->desc);
+        mfree(p->name);
+        mfree(p);
         return -17;
     }
 
@@ -284,9 +285,9 @@ static int handle_patch(xmlNode *n, patch_list_t *l) {
             ERR_LOG("Invalid pemisisons value for patch: %s",
                 (const char*)perms);
             xmlFree(perms);
-            free(p->desc);
-            free(p->name);
-            free(p);
+            mfree(p->desc);
+            mfree(p->name);
+            mfree(p);
             return -18;
         }
 
@@ -408,12 +409,12 @@ int patch_list_read(const char *fn, patch_list_t **cfg) {
     patch_list_t *rv;
 
     /* Allocate space for the base of the config. */
-    rv = (patch_list_t *)malloc(sizeof(patch_list_t));
+    rv = (patch_list_t *)mmalloc(sizeof(patch_list_t));
 
     if(!rv) {
         *cfg = NULL;
         ERR_LOG("Couldn't allocate space for patch list");
-        perror("malloc");
+        perror("mmalloc");
         return -1;
     }
 
@@ -491,7 +492,7 @@ err_cxt:
     xmlFreeParserCtxt(cxt);
 err:
     if(irv && irv > -7) {
-        free(rv);
+        mfree(rv);
         *cfg = NULL;
     }
     else if(irv) {
@@ -512,8 +513,8 @@ void patch_list_free(patch_list_t *l) {
         free_patch(l->patches[i]);
     }
 
-    free(l->patches);
-    free(l);
+    mfree(l->patches);
+    mfree(l);
 }
 
 const patchset_t *patch_find(patch_list_t *l, uint32_t version, uint32_t id) {
@@ -588,7 +589,7 @@ login_patch_file_t *patch_file_read(const char *fn) {
     }
 
     /* Allocate space */
-    buf = (uint8_t *)malloc(len);
+    buf = (uint8_t *)mmalloc(len);
     if(!buf) {
         ERR_LOG("Cannot allocate space for patch file: %s",
               strerror(errno));
@@ -599,7 +600,7 @@ login_patch_file_t *patch_file_read(const char *fn) {
     /* Read it */
     if(fread(buf, 1, len, fp) != len) {
         ERR_LOG("Cannot read patch file: %s", strerror(errno));
-        free(buf);
+        mfree(buf);
         fclose(fp);
         return NULL;
     }
@@ -610,7 +611,7 @@ login_patch_file_t *patch_file_read(const char *fn) {
     /* Parse it... */
     if(buf[0] != 'S' || buf[1] != 'Y' || buf[2] != 'L' || buf[3] != 'P') {
         ERR_LOG("Patch file '%s' appears invalid (bad sig)", fn);
-        free(buf);
+        mfree(buf);
         return NULL;
     }
 
@@ -618,7 +619,7 @@ login_patch_file_t *patch_file_read(const char *fn) {
     tmp = buf[4] | (buf[5] << 8) | (buf[6] << 16) | (buf[7] << 24);
     if(tmp != 0x00010001 && tmp != 0x00010002) {
         ERR_LOG("Patch file '%s' has bad version", fn);
-        free(buf);
+        mfree(buf);
         return NULL;
     }
 
@@ -626,23 +627,23 @@ login_patch_file_t *patch_file_read(const char *fn) {
     tmp = buf[8] | (buf[9] << 8) | (buf[10] << 16) | (buf[11] << 24);
 
     /* Filling in the struct */
-    rv = (login_patch_file_t *)malloc(sizeof(login_patch_file_t));
+    rv = (login_patch_file_t *)mmalloc(sizeof(login_patch_file_t));
     if(!rv) {
         ERR_LOG("Cannot allocate space for patch file: %s",
               strerror(errno));
-        free(buf);
+        mfree(buf);
         return NULL;
     }
 
     rv->patch_count = tmp;
     rv->length = (uint32_t)(len - 16);
 
-    rv->data = (uint8_t *)malloc(rv->length);
+    rv->data = (uint8_t *)mmalloc(rv->length);
     if(!rv->data) {
         ERR_LOG("Cannot allocate space for patch data: %s",
               strerror(errno));
-        free(rv);
-        free(buf);
+        mfree(rv);
+        mfree(buf);
         return NULL;
     }
 
@@ -657,8 +658,8 @@ void patch_file_free(login_patch_file_t *f) {
     if(!f)
         return;
 
-    free(f->data);
-    free(f);
+    mfree(f->data);
+    mfree(f);
 }
 
 #define U8_TO_BE32(b) ((b[0] << 24) | (b[1] << 16) | (b[2] << 8) | (b[3]))

@@ -36,6 +36,7 @@
 #include <pso_opcodes_block.h>
 #include <pso_menu.h>
 #include <pso_packet_length.h>
+#include <pso_memopt.h>
 
 #include "auth_packets.h"
 #include "patch_stubs.h"
@@ -58,12 +59,12 @@ static void ascii_to_utf16(const char *in, uint16_t *out, int maxlen) {
 
 /* 获取当前线程的 sendbuf 线程特定数据. */
 uint8_t* get_sendbuf() {
-    uint8_t* sendbuf = (uint8_t*)malloc(65536);
+    uint8_t* sendbuf = (uint8_t*)mmalloc(65536);
 
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
        we need to do that now. */
     if (!sendbuf) {
-        perror("malloc");
+        perror("mmalloc");
         return NULL;
     }
 
@@ -122,7 +123,7 @@ static int send_raw(login_client_t *c, int len, uint8_t* sendbuf) {
     }
 
     if (sendbuf)
-        free_safe(sendbuf);
+        mfree(sendbuf);
 
     return 0;
 }

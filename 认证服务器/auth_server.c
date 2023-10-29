@@ -40,6 +40,7 @@
 #include <f_checksum.h>
 #include <pso_ping.h>
 #include <pso_crash_handle.h>
+#include <pso_memopt.h>
 
 #include <database.h>
 #include <encryption.h>
@@ -374,9 +375,9 @@ static void load_patch_config() {
     if (cfg->patch_dir) {
         AUTH_LOG("实时补丁路径: %s", cfg->patch_dir);
 
-        pfn = (char*)malloc(strlen(cfg->patch_dir) + 32);
+        pfn = (char*)mmalloc(strlen(cfg->patch_dir) + 32);
         if (!pfn) {
-            perror("malloc");
+            perror("mmalloc");
             exit(EXIT_FAILURE);
         }
 
@@ -1571,6 +1572,7 @@ int __cdecl main(int argc, char** argv) {
     initialization();
 
     __try {
+        mem_mutex_init();
         log_mutex_init();
 
         server_name_num = AUTH_SERVER;
@@ -1651,6 +1653,7 @@ int __cdecl main(int argc, char** argv) {
         }
 
         log_mutex_destory();
+        mem_mutex_destory();
     }
 
     __except (crash_handler(GetExceptionInformation())) {
@@ -1658,6 +1661,7 @@ int __cdecl main(int argc, char** argv) {
 
         CRASH_LOG("出现错误, 程序将退出.");
         log_mutex_destory();
+        mem_mutex_destory();
         (void)getchar();
     }
 

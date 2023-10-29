@@ -29,6 +29,7 @@
 #include <encryption.h>
 //#include <mtwist.h>
 #include <SFMT.h>
+#include <pso_memopt.h>
 
 #include "auth.h"
 #include "auth_packets.h"
@@ -234,13 +235,13 @@ int keycheck(char serial[8], char ak[8]) {
 /* Create a new connection, storing it in the list of clients. */
 login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                                   socklen_t size, uint16_t port) {
-    login_client_t *rv = (login_client_t *)malloc(sizeof(login_client_t));
+    login_client_t *rv = (login_client_t *)mmalloc(sizeof(login_client_t));
     uint32_t client_seed_dc, server_seed_dc;
     uint8_t client_seed_bb[48] = { 0 }, server_seed_bb[48] = { 0 };
     int i;
 
     if(!rv) {
-        perror("malloc");
+        perror("mmalloc");
         return NULL;
     }
 
@@ -474,7 +475,7 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
 
 err:
     closesocket(sock);
-    free(rv);
+    mfree(rv);
     return NULL;
 }
 
@@ -483,7 +484,7 @@ void destroy_connection(login_client_t *c) {
     TAILQ_REMOVE(&clients, c, qentry);
 
     if(c->gc_data) {
-        free(c->gc_data);
+        mfree(c->gc_data);
     }
 
     if(c->sock >= 0) {
@@ -491,14 +492,14 @@ void destroy_connection(login_client_t *c) {
     }
 
     if(c->recvbuf) {
-        free(c->recvbuf);
+        mfree(c->recvbuf);
     }
 
     if(c->sendbuf) {
-        free(c->sendbuf);
+        mfree(c->sendbuf);
     }
 
-    free(c);
+    mfree(c);
 }
 
 /* Read data from a client that is connected to any port. */
@@ -526,8 +527,8 @@ int read_from_client(login_client_t *c) {
             }
 
             /* Otherwise, its just not all there yet, so punt for now... */
-            if(!(c->recvbuf = (unsigned char *)malloc(hs))) {
-                ERR_LOG("malloc: %s", strerror(errno));
+            if(!(c->recvbuf = (unsigned char *)mmalloc(hs))) {
+                ERR_LOG("mmalloc: %s", strerror(errno));
                 return -1;
             }
 
@@ -644,8 +645,8 @@ int read_from_client(login_client_t *c) {
 #endif // DEBUG
 
         /* Allocate space for the packet */
-        if(!(c->recvbuf = (unsigned char *)malloc(sz)))  {
-            ERR_LOG("malloc: %s", strerror(errno));
+        if(!(c->recvbuf = (unsigned char *)mmalloc(sz)))  {
+            ERR_LOG("mmalloc: %s", strerror(errno));
             return -1;
         }
 
@@ -721,7 +722,7 @@ process:
     }
 
     if (c->recvbuf) {
-        free_safe(c->recvbuf);
+        mfree(c->recvbuf);
     }
     c->recvbuf = NULL;
     c->pkt_cur = c->pkt_sz = 0;
