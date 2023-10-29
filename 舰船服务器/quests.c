@@ -598,21 +598,14 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir, int initial) 
     /* Make sure we have all the directories we'll need. */
     sprintf(mdir, "%s\\.mapcache", dir);
 
-    if (remove_directory(mdir)) {
-        QERR_LOG("删除地图缓存文件夹错误: %s",
-            strerror(errno));
-        free_safe(mdir);
-        return 0;
+    if (initial) {
+        if (remove_directory(mdir)) {
+            QERR_LOG("删除地图缓存文件夹错误: %s",
+                strerror(errno));
+            free_safe(mdir);
+            return 0;
+        }
     }
-
-    //if (initial) {
-    //    if (remove_directory(mdir)) {
-    //        QERR_LOG("删除地图缓存文件夹错误: %s",
-    //            strerror(errno));
-    //        free_safe(mdir);
-    //        return 0;
-    //    }
-    //}
 
     if(_mkdir(mdir) != 0 && errno != EEXIST) {
         QERR_LOG("创建地图缓存文件夹错误: %s",

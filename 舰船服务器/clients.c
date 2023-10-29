@@ -544,26 +544,20 @@ bool check_bb_pl_data(ship_client_t* c) {
 
 void client_send_bb_data(ship_client_t* c) {
     int i = 0;
-    time_t now = time(NULL);
 
-    uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
+    uint32_t num_seconds = (uint32_t)srv_time - (uint32_t)c->save_time;
 
     /* If the client was on Blue Burst, update their db character */
     if (check_bb_pl_data(c)) {
 
+        pthread_mutex_lock(&c->mutex);
+
         c->need_save_data = false;
 
         /* 将游戏时间存储入人物数据 */
-        c->bb_pl->character.play_time += ((uint32_t)now / 60) - ((uint32_t)c->login_time / 60);
+        c->bb_pl->character.play_time += ((uint32_t)srv_time / 60) - ((uint32_t)c->login_time / 60);
 
-        c->save_time = now;
-
-#ifdef DEBUG
-        DBG_LOG("mode %d", c->mode);
-        fix_client_inv(&c->bb_pl->character.inv);
-        fix_equip_item(&c->bb_pl->character.inv);
-
-#endif // DEBUG
+        c->save_time = srv_time;
 
         if (!c->mode) {
             /* 将玩家数据存入数据库 */
@@ -580,9 +574,7 @@ void client_send_bb_data(ship_client_t* c) {
         /* 将玩家选项数据存入数据库 */
         shipgate_send_bb_opts(&ship->sg, c);
 
-#ifdef DEBUG
-        DBG_LOG("%d 秒", num_seconds);
-#endif // DEBUG
+        pthread_mutex_unlock(&c->mutex);
     }
 }
 

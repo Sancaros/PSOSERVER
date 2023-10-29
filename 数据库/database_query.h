@@ -101,6 +101,9 @@ int db_compress_char_data(psocn_bb_db_char_t *char_data, uint16_t data_len, uint
 /* 角色备份功能 */
 int db_backup_bb_char_data(uint32_t gc, uint8_t slot);
 
+/* 检测角色分表数据是否存在 */
+bool db_check_bb_char_split_data_exist(uint32_t gc, uint8_t slot, char* table);
+
 /* 删除角色数据 */
 int db_delete_bb_char_data(uint32_t gc, uint8_t slot);
 

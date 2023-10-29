@@ -102,14 +102,26 @@ int db_update_char_tech_menu(uint8_t* tech_menu, uint32_t gc, uint8_t slot, uint
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        if (db_updata_tech_menu(tech_menu, gc, slot)) {
+        if (db_check_bb_char_split_data_exist(gc, slot, CHARACTER_TECH_MENU)) {
+            if (db_updata_tech_menu(tech_menu, gc, slot)) {
+                SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_TECH_MENU, gc, slot);
+
+                return -2;
+            }
+        }
+        else {
 
             if (db_del_char_tech_menu(gc, slot)) {
-                return -1;
+                SQLERR_LOG("无法删除数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_TECH_MENU, gc, slot);
+                return -3;
             }
 
             if (db_insert_char_tech_menu(tech_menu, gc, slot)) {
-                return -1;
+                SQLERR_LOG("无法保存数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_TECH_MENU, gc, slot);
+                return -4;
             }
         }
     }

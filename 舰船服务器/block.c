@@ -249,7 +249,7 @@ static void* block_thd(void* d) {
                 continue;
             }
 
-            /* 默认间隔0秒存储一次数据 */
+            /* 默认间隔5秒存储一次数据 */
             if ((it->save_time < srv_time) && 
                 (it->need_save_data) && 
                 !(it->flags & CLIENT_FLAG_DISCONNECTED) &&

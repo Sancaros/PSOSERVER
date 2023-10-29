@@ -129,14 +129,26 @@ int db_update_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, 
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        if (db_updata_mode_quest_data(mode_quest_data, gc, slot)) {
+        if (db_check_bb_char_split_data_exist(gc, slot, CHARACTER_MODE_QUEST_DATA)) {
+            if (db_updata_mode_quest_data(mode_quest_data, gc, slot)) {
+                SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_MODE_QUEST_DATA, gc, slot);
+
+                return -2;
+            }
+        }
+        else {
 
             if (db_del_char_mode_quest_data(gc, slot)) {
-                return -1;
+                SQLERR_LOG("无法删除数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_MODE_QUEST_DATA, gc, slot);
+                return -3;
             }
 
             if (db_insert_char_mode_quest_data(mode_quest_data, gc, slot)) {
-                return -1;
+                SQLERR_LOG("无法保存数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_MODE_QUEST_DATA, gc, slot);
+                return -4;
             }
         }
     }

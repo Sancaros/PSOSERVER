@@ -134,10 +134,15 @@ int db_update_char_disp(psocn_disp_char_t* disp_data,
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
 
-        if (db_upd_char_disp(disp_data, gc, slot)) {
-            SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 ")", TABLE, gc, slot);
+        if (db_check_bb_char_split_data_exist(gc, slot, TABLE)) {
+            if (db_upd_char_disp(disp_data, gc, slot)) {
+                SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", TABLE, gc, slot);
 
+                return -2;
+            }
+        }
+        else {
             if (db_del_char_disp(gc, slot)) {
 
                 SQLERR_LOG("无法删除数值数据 %s (GC %" PRIu32 ", "

@@ -3681,7 +3681,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
 
         /* 从数据库中获取玩家角色的TECH_MENU数据 */
         if ((err |= db_get_char_tech_menu(gc, slot, bb_data->tech_menu, 0))) {
-            SQLERR_LOG("无法获取(GC%u:%u槽)角色mode_quest_data数据, 错误码:%d", gc, slot, err);
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色TECH_MENU数据, 错误码:%d", gc, slot, err);
         }
 
         /* 从数据库中获取玩家角色的银行数据 */

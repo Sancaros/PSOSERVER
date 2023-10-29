@@ -779,3 +779,36 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot) {
 
     return 0;
 }
+
+bool db_check_bb_char_split_data_exist(uint32_t gc, uint8_t slot, char* table) {
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "SELECT * FROM %s WHERE guildcard='%u' "
+        "AND slot='%u'", table, gc, slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询 %s 角色数据 (%u: %u)", table, gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return false;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色 %s 数据 (%u: %u)", table, gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return false;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的角色 %s 数据 (%u: %u)", table, gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return false;
+    }
+
+    psocn_db_result_free(result);
+    return true;
+}

@@ -141,14 +141,30 @@ int db_update_char_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t 
         return db_insert_techniques(character, gc, slot);
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        if (db_update_techniques(character, gc, slot)) {
 
-            if (db_del_techniques(gc, slot))
-                return -1;
+        if (db_check_bb_char_split_data_exist(gc, slot, CHARACTER_TECHNIQUES)) {
+            if (db_update_techniques(character, gc, slot)) {
+
+                SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_TECHNIQUES, gc, slot);
+
+                return -2;
+            }
+        }
+        else {
+
+            if (db_del_techniques(gc, slot)) {
+                SQLERR_LOG("无法删除数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_TECHNIQUES, gc, slot);
+                return -3;
+            }
 
             /* TODO 这里需要检测 职业 新建人物的默认魔法值 */
-
-            return db_insert_techniques(character, gc, slot);
+            if (db_insert_techniques(character, gc, slot)) {
+                SQLERR_LOG("无法保存数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_TECHNIQUES, gc, slot);
+                return -4;
+            }
         }
     }
 

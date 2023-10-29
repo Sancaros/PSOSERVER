@@ -21,6 +21,10 @@
 #include <f_iconv.h>
 #include <pso_text.h>
 
+static int db_insert_char_name() {
+
+}
+
 int db_update_char_name(psocn_bb_char_name_t* name, uint32_t gc, uint8_t slot) {
 	char tmp_name[20] = { 0 };
 

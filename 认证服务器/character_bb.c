@@ -553,21 +553,6 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
 
                     return -2;
                 }
-
-                if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, PSOCN_DB_UPDATA_CHAR)) {
-                    SQLERR_LOG("无法更新玩家数据 (GC %"
-                        PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-                    /* XXXX: 未完成给客户端发送一个错误信息 */
-                    return -3;
-                }
-
-                if (db_update_char_dress_data(&char_data->character.dress_data, c->guildcard, pkt->slot, PSOCN_DB_UPDATA_CHAR)) {
-                    ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
-                        PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-                    /* XXXX: 未完成给客户端发送一个错误信息 */
-                    return -3;
-                }
-                
                 /* XXXX: 未完成给客户端发送一个错误信息 */
             }
 

@@ -98,18 +98,35 @@ int db_update_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot, 
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
         if (db_insert_char_quest_data1(quest_data1, gc, slot)) {
+            SQLERR_LOG("无法保存数据 %s (GC %" PRIu32 ", "
+                "槽位 %" PRIu8 ")", CHARACTER_QUEST_DATA1, gc, slot);
+
             return -1;
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        if (db_updata_quest_data1(quest_data1, gc, slot)) {
+
+        if (db_check_bb_char_split_data_exist(gc, slot, CHARACTER_QUEST_DATA1)) {
+            if (db_updata_quest_data1(quest_data1, gc, slot)) {
+                SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_QUEST_DATA1, gc, slot);
+
+                return -2;
+            }
+        }
+        else {
 
             if (db_del_char_quest_data1(gc, slot)) {
-                return -1;
+                SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_QUEST_DATA1, gc, slot);
+                return -3;
             }
 
             if (db_insert_char_quest_data1(quest_data1, gc, slot)) {
-                return -1;
+                SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", CHARACTER_QUEST_DATA1, gc, slot);
+
+                return -4;
             }
         }
     }
