@@ -91,7 +91,7 @@ static uint8_t default_guild_flag_slashes[4098];
 extern bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 /* The key for accessing our thread-specific receive buffer. */
-pthread_key_t recvbuf_key;
+//pthread_key_t recvbuf_key;
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
 uint8_t* get_sg_recvbuf(void) {
@@ -410,20 +410,20 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     //pthread_create(&c->read_tid, NULL, read_thread, NULL);
     //pthread_create(&c->write_tid, NULL, write_thread, NULL);
 
-    pthread_mutex_init(&rv->pkt_mutex, NULL);
+    //pthread_mutex_init(&rv->pkt_mutex, NULL);
     /* Clean up... */
-    void* pt_tmp;
-    pt_tmp = pthread_getspecific(sendbuf_key);
-    if (pt_tmp) {
-        free_safe(pt_tmp);
-        pthread_setspecific(sendbuf_key, NULL);
-    }
+    //void* pt_tmp;
+    //pt_tmp = pthread_getspecific(sendbuf_key);
+    //if (pt_tmp) {
+    //    free_safe(pt_tmp);
+    //    pthread_setspecific(sendbuf_key, NULL);
+    //}
 
-    pt_tmp = pthread_getspecific(recvbuf_key);
-    if (pt_tmp) {
-        free_safe(pt_tmp);
-        pthread_setspecific(recvbuf_key, NULL);
-    }
+    //pt_tmp = pthread_getspecific(recvbuf_key);
+    //if (pt_tmp) {
+    //    free_safe(pt_tmp);
+    //    pthread_setspecific(recvbuf_key, NULL);
+    //}
 
     /* 将基础参数存储进客户端的结构. */
     rv->sock = sock;
@@ -584,7 +584,7 @@ research_cert:
     return rv;
 
 err_cert:
-    pthread_mutex_destroy(&rv->pkt_mutex);
+    //pthread_mutex_destroy(&rv->pkt_mutex);
     gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
     closesocket(sock);
     gnutls_deinit(rv->session);
@@ -661,8 +661,8 @@ void destroy_connection_err(ship_t* s) {
     }
 
     // 销毁读写锁并释放内存
-    pthread_rwlock_destroy(&s->rwlock);
-    pthread_mutex_destroy(&s->pkt_mutex);
+    //pthread_rwlock_destroy(&s->rwlock);
+    //pthread_mutex_destroy(&s->pkt_mutex);
 
     free_safe(s);
 }
@@ -697,8 +697,8 @@ void destroy_connection(ship_t* s) {
     }
 
     // 销毁读写锁并释放内存
-    pthread_rwlock_destroy(&s->rwlock);
-    pthread_mutex_destroy(&s->pkt_mutex);
+    //pthread_rwlock_destroy(&s->rwlock);
+    //pthread_mutex_destroy(&s->pkt_mutex);
 
     free_safe(s);
 }
@@ -933,7 +933,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
     }
 
     // 初始化读写锁
-    pthread_rwlock_init(&s->rwlock, NULL);
+    //pthread_rwlock_init(&s->rwlock, NULL);
 
     SGATE_LOG("%s: 舰船与船闸完成对接", s->ship_name);
     return 0;
@@ -3198,8 +3198,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     slot = ntohl(pkt->slot);
 
     if (gc == 0) {
-        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         return 0;
     }
 
@@ -3212,6 +3212,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_inv(&char_data->character.inv, gc, slot)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的背包数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家背包数据 (GC %"
@@ -3220,6 +3222,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_disp(&char_data->character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数值数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家数据 (GC %"
@@ -3228,6 +3232,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_dress_data(&char_data->character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的外观数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家外观数据 (GC %"
@@ -3236,6 +3242,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_name(&char_data->character.name, gc, slot)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的名称数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家名字数据 (GC %"
@@ -3244,6 +3252,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_techniques(&char_data->character, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的法术数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
@@ -3252,6 +3262,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_bank(&char_data->bank, gc, slot)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的银行数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家银行数据 (GC %"
@@ -3260,6 +3272,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_b_records(&char_data->b_records, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的对战数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         SQLERR_LOG("无法保存角色对战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -3269,6 +3283,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_c_records(&char_data->c_records, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的挑战数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -3305,6 +3321,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_gc_login_state(gc, 0, -1, (char*)&char_data->character.name)) {
+        ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的登录状态数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
+
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
@@ -6104,7 +6122,8 @@ int handle_pkt(ship_t* ship) {
             return -3;
         }
 
-        pthread_rwlock_rdlock(&ship->rwlock);
+        //pthread_mutex_lock(&ship->pkt_mutex);
+        //pthread_rwlock_rdlock(&ship->rwlock);
 
         ssize_t sz;
         uint16_t pkt_sz;
@@ -6116,7 +6135,8 @@ int handle_pkt(ship_t* ship) {
 
         memset(&ship->pkt, 0, hdr_size);
         if (recvbuf == NULL) {
-            pthread_rwlock_unlock(&ship->rwlock);
+            //pthread_mutex_unlock(&ship->pkt_mutex);
+            //pthread_rwlock_unlock(&ship->rwlock);
             ERR_LOG("内存分配失败");
             return -1;
         }
@@ -6133,7 +6153,8 @@ int handle_pkt(ship_t* ship) {
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
         if (sz <= 0) {
-            pthread_rwlock_unlock(&ship->rwlock);
+            //pthread_mutex_unlock(&ship->pkt_mutex);
+            //pthread_rwlock_unlock(&ship->rwlock);
             if (sz == SOCKET_ERROR) {
                 DBG_LOG("%s Gnutls *** 注意: SOCKET_ERROR", get_ship_describe(ship));
             }
@@ -6169,7 +6190,8 @@ int handle_pkt(ship_t* ship) {
                 ship->last_message = time(NULL);
                 rv = process_ship_pkt(ship, (shipgate_hdr_t*)rbp);
                 if (rv != 0) {
-                    pthread_rwlock_unlock(&ship->rwlock);
+                    //pthread_mutex_unlock(&ship->pkt_mutex);
+                    //pthread_rwlock_unlock(&ship->rwlock);
                     ERR_LOG("process_ship_pkt 错误 rv = %d", rv);
                     //free_safe(recvbuf);
                     return -5;
@@ -6188,7 +6210,8 @@ int handle_pkt(ship_t* ship) {
             if (ship->recvbuf_size < sz) {
                 tmp = realloc(ship->recvbuf, sz);
                 if (tmp == NULL) {
-                    pthread_rwlock_unlock(&ship->rwlock);
+                    //pthread_mutex_unlock(&ship->pkt_mutex);
+                    //pthread_rwlock_unlock(&ship->rwlock);
                     ERR_LOG("重新分配内存失败");
                     //free_safe(recvbuf);
                     return -6;
@@ -6207,7 +6230,8 @@ int handle_pkt(ship_t* ship) {
             ship->recvbuf_size = 0;
         }
 
-        pthread_rwlock_unlock(&ship->rwlock);
+        //pthread_mutex_unlock(&ship->pkt_mutex);
+        //pthread_rwlock_unlock(&ship->rwlock);
         //free_safe(recvbuf);
 
         return rv;

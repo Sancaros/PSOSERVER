@@ -225,7 +225,7 @@ uint8_t get_item_amount(item_t* item, uint32_t amount) {
 }
 
 void clear_tool_item_if_invalid(item_t* item) {
-	if ((item->datab[1] == 2) &&
+	if ((item->datab[1] == ITEM_SUBTYPE_DISK) &&
 		((item->datab[2] > 0x1D) || (item->datab[4] > 0x12))) {
 		clear_inv_item(item);
 	}
@@ -396,14 +396,7 @@ int16_t get_unit_bonus(const item_t* item) {
 }
 
 int16_t get_sealed_item_kill_count(const item_t* item) {
-	if (item->dataw[5] == 0xFFFF) {
-		return 0x7FFF;
-	}
-	else {
-		int16_t highByte = item->datab[10] & 0x7F;
-		int16_t lowByte = item->datab[11];
-		return (highByte << 8) | lowByte;
-	}
+	return ((item->datab[10] << 8) | item->datab[11]) & 0x7FFF;
 }
 
 void set_sealed_item_kill_count(item_t* item, int16_t v) {
@@ -412,7 +405,7 @@ void set_sealed_item_kill_count(item_t* item, int16_t v) {
 	}
 	else {
 		item->datab[10] = (v >> 8) | 0x80;
-		item->datab[11] = convert_int16_to_uint8(v);
+		item->datab[11] = v;
 	}
 }
 

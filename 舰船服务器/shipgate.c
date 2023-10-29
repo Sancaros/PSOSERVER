@@ -181,7 +181,8 @@ static int send_raw(shipgate_conn_t* sg, size_t len, uint8_t* sendbuf, int crypt
         DATA_LOG("shipgate_conn_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
-        pthread_rwlock_wrlock(&sg->rwlock);
+        //pthread_mutex_lock(&sg->pkt_mutex);
+        //pthread_rwlock_wrlock(&sg->rwlock);
         //PRINT_HEX_LOG(DBG_LOG, sendbuf, len);
 
         //gnutls_datum_t datum = { (void*)sendbuf, len };
@@ -203,7 +204,8 @@ static int send_raw(shipgate_conn_t* sg, size_t len, uint8_t* sendbuf, int crypt
                     continue;
                 }
                 else if (rv < 0) {
-                    pthread_rwlock_unlock(&sg->rwlock);
+                    //pthread_mutex_unlock(&sg->pkt_mutex);
+                    //pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //PRINT_HEX_LOG(ERR_LOG, sendbuf, len);
@@ -214,7 +216,8 @@ static int send_raw(shipgate_conn_t* sg, size_t len, uint8_t* sendbuf, int crypt
             }
         }
 
-        pthread_rwlock_unlock(&sg->rwlock);
+        //pthread_mutex_unlock(&sg->pkt_mutex);
+        //pthread_rwlock_unlock(&sg->rwlock);
         return 0;
     }
 
@@ -346,10 +349,12 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
             free_safe(rv->sendbuf);
         rv->sendbuf = NULL;
         rv->sendbuf_cur = rv->sendbuf_size = 0;
+        //pthread_mutex_init(&rv->pkt_mutex, NULL);
     }
     else {
         /* Clear it first. */
         memset(rv, 0, sizeof(shipgate_conn_t));
+        //pthread_mutex_init(&rv->pkt_mutex, NULL);
     }
 
 reconnet:
@@ -514,8 +519,9 @@ void shipgate_cleanup(shipgate_conn_t* c) {
         gnutls_deinit(c->session);
     }
 
+    //pthread_mutex_destroy(&c->pkt_mutex);
     // 销毁读写锁并释放内存
-    pthread_rwlock_destroy(&c->rwlock);
+    //pthread_rwlock_destroy(&c->rwlock);
 
     free_safe(c->recvbuf);
     free_safe(c->sendbuf);
@@ -3351,7 +3357,7 @@ static int handle_shipgate_recv_data_complete(shipgate_conn_t * sg, shipgate_hdr
     uint16_t flags = ntohs(pkt->flags);
 
     //初始化读写锁
-    pthread_rwlock_init(&sg->rwlock, NULL);
+    //pthread_rwlock_init(&sg->rwlock, NULL);
 
     SHIPS_LOG("舰闸数据接收完成.");
     ///* Ignore responses for now... we don't send these just yet. */
@@ -3633,7 +3639,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
             return -3; // 错误检查，确保 c->session 不为空
         }
 
-        pthread_rwlock_rdlock(&sg->rwlock);
+        //pthread_rwlock_rdlock(&sg->rwlock);
+        //pthread_mutex_lock(&sg->pkt_mutex);
 
         ssize_t sz;
         ssize_t pkt_sz;
@@ -3647,7 +3654,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
         memset(&sg->pkt, 0, recv_size);
         /* 如果无法分配空间，则退出。 */
         if (recvbuf == NULL) {
-            pthread_rwlock_unlock(&sg->rwlock);
+            //pthread_mutex_unlock(&sg->pkt_mutex);
+            //pthread_rwlock_unlock(&sg->rwlock);
             ERR_LOG("内存分配失败");
             return -1;
         }
@@ -3667,7 +3675,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
 
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         if (sz <= 0) {
-            pthread_rwlock_unlock(&sg->rwlock);
+            //pthread_mutex_unlock(&sg->pkt_mutex);
+            //pthread_rwlock_unlock(&sg->rwlock);
             if (sz == SOCKET_ERROR) {
                 ERR_LOG("%s Gnutls *** 注意: SOCKET_ERROR", get_shipgate_describe(sg));
             }
@@ -3711,7 +3720,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
                 sg->last_message = time(NULL);
                 rv = handle_pkt(sg, (shipgate_hdr_t*)rbp);
                 if (rv) {
-                    pthread_rwlock_unlock(&sg->rwlock);
+                    //pthread_mutex_unlock(&sg->pkt_mutex);
+                    //pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("处理数据包出错，rv = %d", rv);
                     //shipgate_hdr_t* errpkt = (shipgate_hdr_t*)rbp;
                     //PRINT_HEX_LOG(ERR_LOG, errpkt, errpkt->pkt_len);
@@ -3735,7 +3745,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
                 tmp = realloc(sg->recvbuf, sz);
 
                 if (!tmp) {
-                    pthread_rwlock_unlock(&sg->rwlock);
+                    //pthread_mutex_unlock(&sg->pkt_mutex);
+                    //pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("重新分配内存失败");
                     return -6;
                 }
@@ -3754,7 +3765,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
             sg->recvbuf_size = 0;
         }
 
-        pthread_rwlock_unlock(&sg->rwlock);
+        //pthread_mutex_unlock(&sg->pkt_mutex);
+        //pthread_rwlock_unlock(&sg->rwlock);
         return 0;
     }
 

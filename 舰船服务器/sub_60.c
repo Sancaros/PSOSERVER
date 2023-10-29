@@ -6693,7 +6693,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
         case 0x0B:
             // King's
             exp_percent = 12;
-            if ((l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) && (src->equip_flags & PLAYER_EQUIP_FLAGS_DROID))
+            if ((l->difficulty == GAME_TYPE_DIFFICULTY_ULTIMATE) && (char_class_is_android(src->equip_flags)))
                 exp_percent += 30;
             break;
         }
@@ -6726,7 +6726,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
             bp = en->bp_entry;
 
             //新增经验倍率提升参数 exp_mult expboost 11.18
-            exp_amount = min(((l->bb_params[bp].exp * exp_percent) / 100L), 80);
+            exp_amount = min(((l->bb_params[bp].exp * exp_percent) / 100L), (l->difficulty + 1) * 20);
 
             if ((src->game_data->expboost) && (l->exp_mult > 0)) {
                 exp_to_add = exp_amount;

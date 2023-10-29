@@ -37,7 +37,7 @@ static uint8_t sendbuf[MAX_PACKET_BUFF];
 bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 
 /* The key for accessing our thread-specific send buffer. */
-pthread_key_t sendbuf_key;
+//pthread_key_t sendbuf_key;
 
 /* 获取 sendbuf 动态内存数据. */
 uint8_t* get_sg_sendbuf(void) {
@@ -122,8 +122,8 @@ static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
         DATA_LOG("ship_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
             , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
 
-        pthread_rwlock_wrlock(&ship->rwlock);
-        //pthread_mutex_lock(&c->pkt_mutex);
+        //pthread_mutex_lock(&ship->pkt_mutex);
+        //pthread_rwlock_wrlock(&ship->rwlock);
 
         /* Keep trying until the whole thing's sent. */
         if (!ship->has_key || ship->sock < 0 || !ship->sendbuf_cur) {
@@ -141,8 +141,8 @@ static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
                     continue;
                 }
                 else if (rv < 0) {
-                    pthread_rwlock_unlock(&ship->rwlock);
-                    //pthread_mutex_unlock(&c->pkt_mutex);
+                    //pthread_rwlock_unlock(&ship->rwlock);
+                    //pthread_mutex_unlock(&ship->pkt_mutex);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
                     //free_safe(sendbuf);
@@ -153,8 +153,8 @@ static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
             }
         }
 
-        pthread_rwlock_unlock(&ship->rwlock);
-        //pthread_mutex_unlock(&c->pkt_mutex);
+        //pthread_rwlock_unlock(&ship->rwlock);
+        //pthread_mutex_unlock(&ship->pkt_mutex);
         //free_safe(sendbuf);
 
         return 0;
