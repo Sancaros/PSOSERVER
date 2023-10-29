@@ -6073,32 +6073,30 @@ bool quest_flag_check_ep1_solo(uint8_t* flag_data, uint32_t difficulty) {
     return true;
 }
 
-/* EP2 单人任务的完成度检测 */
-uint32_t quest_flag_check_ep2_solo(uint8_t* flag_data, uint32_t difficulty) {
-    int i;
+/* EP2 单人任务的完成度检测 TODO */
+bool quest_flag_check_ep2_solo(uint8_t* flag_data, uint32_t difficulty) {
     uint32_t quest_flag;
 
-    for (i = 1; i <= 25; i++) {
+    for (int i = 1; i <= 25; i++) {
         quest_flag = 0x63 + (i << 1);
         if (!quest_flag_check(flag_data, quest_flag, difficulty))
-            return 0;
+            return false;
     }
 
-    return 1;
+    return true;
 }
 
-/* EP4 单人任务的完成度检测 */
-uint32_t quest_flag_check_ep4_solo(uint8_t* flag_data, uint32_t difficulty) {
-    int i;
+/* EP4 单人任务的完成度检测 TODO */
+bool quest_flag_check_ep4_solo(uint8_t* flag_data, uint32_t difficulty) {
     uint32_t quest_flag;
 
-    for (i = 1; i <= 25; i++) {
+    for (int i = 1; i <= 25; i++) {
         quest_flag = 0x63 + (i << 1);
         if (!quest_flag_check(flag_data, quest_flag, difficulty))
-            return 0;
+            return false;
     }
 
-    return 1;
+    return true;
 }
 
 /* TODO 挑战任务的完成度检测 */
@@ -6117,9 +6115,9 @@ uint32_t quest_flag_check_cmode(uint8_t* flag_data, uint32_t difficulty) {
 
 /* 单人任务的完成度状态检测 */
 uint32_t check_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint8_t episode, uint32_t difficulty, uint8_t* flag_data) {
-    uint32_t ep1solo = quest_flag_check_ep1_solo(flag_data, difficulty);
-    uint32_t ep2solo = 0;
-    uint32_t ep4solo = 0;
+    bool ep1solo = quest_flag_check_ep1_solo(flag_data, difficulty);
+    bool ep2solo = 0;
+    bool ep4solo = 0;
     uint32_t show_quest = 1, quest_flag = 0, tier1 = 0;
 
     if (oneperson) {

@@ -4332,6 +4332,8 @@ static int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
+
+
     // The client explicitly checks for both 0 and 1 - any other value means no
     // operation is performed.
     size_t bit_index = (difficulty << 10) + flag_index;
@@ -6726,7 +6728,8 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
             bp = en->bp_entry;
 
             //新增经验倍率提升参数 exp_mult expboost 11.18
-            exp_amount = min(((l->bb_params[bp].exp * exp_percent) / 100L), (l->difficulty + 1) * 20);
+            uint32_t exp_diff_ext_amount = (l->difficulty + 1) * 20;
+            exp_amount = min(((l->bb_params[bp].exp * exp_percent) / 100L), exp_diff_ext_amount);
 
             if ((src->game_data->expboost) && (l->exp_mult > 0)) {
                 exp_to_add = exp_amount;
