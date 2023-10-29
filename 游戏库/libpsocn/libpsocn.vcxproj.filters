@@ -118,6 +118,9 @@
     <ClInclude Include="pso_guild_privilege_item_list.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_memopt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -157,6 +160,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_lobby.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pso_memopt.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

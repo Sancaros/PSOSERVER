@@ -11,5 +11,6 @@ E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_cmd_name.c;E:\梦幻之�
 E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_timer.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_timer.obj
 E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_text.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_text.obj
 E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_lobby.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_lobby.obj
+E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\pso_memopt.c;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\pso_memopt.obj
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.ixx;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\std.ixx.obj
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.compat.ixx;E:\梦幻之星项目\PSOSERVER\游戏库\libpsocn\Library\std.compat.ixx.obj
