@@ -3781,7 +3781,9 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     block = ntohl(pkt->block);
 
     if (db_check_is_gm(gc, &priv)) {
+#ifdef DEBUG
         DBG_LOG("GC %u ÓµÓÐGMÈ¨ÏÞ", gc);
+#endif // DEBUG
         islogged = 1;
         goto gm_login_done;
     }
