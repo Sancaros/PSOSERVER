@@ -101,67 +101,6 @@ static int inet_pton4(const char* src, void* dst) {
 
 #endif
 
-/* The key for accessing our thread-specific receive buffer. */
-pthread_key_t recvbuf_key;
-
-/* Retrieve the thread-specific recvbuf for the current thread. */
-uint8_t* get_recvbuf(void) {
-    uint8_t* recvbuf = (uint8_t*)pthread_getspecific(recvbuf_key);
-
-    /* If we haven't initialized the recvbuf pointer yet for this thread, then
-       we need to do that now. */
-    if (!recvbuf) {
-        recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
-
-        if (!recvbuf) {
-            ERR_LOG("malloc");
-            perror("malloc");
-            return NULL;
-        }
-
-        memset(recvbuf, 0, MAX_PACKET_BUFF);
-
-        if (pthread_setspecific(recvbuf_key, recvbuf)) {
-            ERR_LOG("pthread_setspecific");
-            perror("pthread_setspecific");
-            free_safe(recvbuf);
-            return NULL;
-        }
-    }
-
-    return recvbuf;
-}
-
-/* The key for accessing our thread-specific send buffer. */
-pthread_key_t sendbuf_key;
-
-/* 获取当前线程的 sendbuf 线程特定内存空间. */
-uint8_t* get_sendbuf() {
-    uint8_t* sendbuf = (uint8_t*)pthread_getspecific(sendbuf_key);
-
-    /* If we haven't initialized the sendbuf pointer yet for this thread, then
-       we need to do that now. */
-    if (!sendbuf) {
-        sendbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
-
-        if (!sendbuf) {
-            ERR_LOG("malloc");
-            perror("malloc");
-            return NULL;
-        }
-
-        memset(sendbuf, 0, MAX_PACKET_BUFF);
-
-        if (pthread_setspecific(sendbuf_key, sendbuf)) {
-            ERR_LOG("pthread_setspecific");
-            free_safe(sendbuf);
-            return NULL;
-        }
-    }
-
-    return sendbuf;
-}
-
 static int cmp_str(const char* s1, const char* s2) {
     int v;
 
@@ -285,8 +224,8 @@ static int read_config(const char* dir, const char* fn) {
     void* tmp;
 
     /* Curse you, Visual C++... */
-    if (!(fullfn = (char*)malloc(dlen + flen + 2))) {
-        ERR_LOG("malloc");
+    if (!(fullfn = (char*)mmalloc(dlen + flen + 2))) {
+        ERR_LOG("mmalloc");
         return -1;
     }
 
@@ -302,7 +241,7 @@ static int read_config(const char* dir, const char* fn) {
 
     /* Allocate some space to start. We probably won't need this many entries,
        so we'll trim it later on. */
-    if (!(hosts = (host_info_t*)malloc(sizeof(host_info_t) * MAX_HOST_COUNT))) {
+    if (!(hosts = (host_info_t*)mmalloc(sizeof(host_info_t) * MAX_HOST_COUNT))) {
         ERR_LOG("read_config - 分配内存错误");
         return -3;
     }
@@ -361,9 +300,9 @@ static int read_config(const char* dir, const char* fn) {
 
         /* Make sure we have enough space in the hosts array. */
         if (entries == host_count) {
-            tmp = realloc(hosts, host_count * sizeof(host_info_t) * 2);
+            tmp = mrealloc(hosts, host_count * sizeof(host_info_t) * 2);
             if (!tmp) {
-                ERR_LOG("read_config - realloc");
+                ERR_LOG("read_config - mrealloc");
                 return -6;
             }
 
@@ -372,23 +311,23 @@ static int read_config(const char* dir, const char* fn) {
         }
 
         /* Make space to store the hostname. */
-        hosts[entries].name = (char*)malloc(strlen(name) + 1);
+        hosts[entries].name = (char*)mmalloc(strlen(name) + 1);
         if (!hosts[entries].name) {
-            ERR_LOG("read_config - malloc name");
+            ERR_LOG("read_config - mmalloc name");
             return -7;
         }
 
         /* Make space to store the hostname. */
-        hosts[entries].host4 = (char*)malloc(strlen(host4) + 1);
+        hosts[entries].host4 = (char*)mmalloc(strlen(host4) + 1);
         if (!hosts[entries].host4) {
-            ERR_LOG("read_config - malloc host4");
+            ERR_LOG("read_config - mmalloc host4");
             return -8;
         }
 
         /* Make space to store the hostname. */
-        hosts[entries].host6 = (char*)malloc(strlen(host6) + 1);
+        hosts[entries].host6 = (char*)mmalloc(strlen(host6) + 1);
         if (!hosts[entries].host6) {
-            ERR_LOG("read_config - malloc host6");
+            ERR_LOG("read_config - mmalloc host6");
             return -9;
         }
 
@@ -413,13 +352,13 @@ static int read_config(const char* dir, const char* fn) {
     fclose(fp);
 
     /* Trim the hosts array down to the size that it needs to be. */
-    tmp = realloc(hosts, entries * sizeof(host_info_t));
+    tmp = mrealloc(hosts, entries * sizeof(host_info_t));
     if (tmp)
         hosts = (host_info_t*)tmp;
 
     host_count = entries;
 
-    free(fullfn);
+    mfree(fullfn);
 
     return 0;
 }
@@ -461,15 +400,7 @@ void destroy_connection(dns_client_t* c) {
         close(c->sock);
     }
 
-    if (c->recvbuf) {
-        free_safe(c->recvbuf);
-    }
-
-    if (c->sendbuf) {
-        free_safe(c->sendbuf);
-    }
-
-    free_safe(c);
+    mfree(c);
 }
 
 #define MAX_IP_LENGTH 20 // 最大IP地址长度
@@ -535,10 +466,9 @@ bool addBlockedIP(const char* ipAddress, const char* fn) {
 
 /* 创建一个新连接，并将它存储在客户端列表中。*/
 dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size) {
-    pthread_mutexattr_t attr;
 
     /* 为新客户端分配内存空间。*/
-    dns_client_t* rv = (dns_client_t*)malloc(sizeof(dns_client_t));
+    dns_client_t* rv = (dns_client_t*)mmalloc(sizeof(dns_client_t));
     if (!rv) {
         return NULL;
     }
@@ -552,12 +482,6 @@ dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size
     if (ip->sin_family == AF_INET6) {
         rv->is_ipv6 = 1;
     }
-
-    /* 创建互斥锁。*/
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&(rv->mutex), &attr);
-    pthread_mutexattr_destroy(&attr);
 
     memcpy(&(rv->ip_addr), ip, size);
 
@@ -599,7 +523,7 @@ static int respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     host_info_t* h, dnsmsg_t* inmsg) {
     __try {
         in_addr_t a;
-        uint8_t* outbuf = get_sendbuf();
+        uint8_t outbuf[1024] = { 0 };
         dnsmsg_t* outmsg = (dnsmsg_t*)outbuf;
 
         /* DNS specifies that any UDP messages over 512 bytes are truncated. We
@@ -1121,7 +1045,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
     socklen_t len;
     ssize_t recive_len;
     dns_client_t* i = { 0 }, * tmp;
-    uint8_t* inbuf = get_recvbuf();
+    uint8_t inbuf[1024] = { 0 };
     int sock = SOCKET_ERROR, j;
     int rv = 0, dns_size = sizeof(dnsmsg_t);
     size_t client_count = 0;
@@ -1230,34 +1154,7 @@ void* server_thread(void* arg) {
     return NULL;
 }
 
-/* Destructor for the thread-specific receive buffer */
-static void buf_dtor(void* rb) {
-    free_safe(rb);
-}
-
-/* Initialize the clients system, allocating any thread specific keys */
-int client_init() {
-    if (pthread_key_create(&recvbuf_key, &buf_dtor)) {
-        perror("pthread_key_create");
-        return -1;
-    }
-
-    if (pthread_key_create(&sendbuf_key, &buf_dtor)) {
-        perror("pthread_key_create");
-        return -1;
-    }
-
-    return 0;
-}
-
-/* Clean up the clients system. */
-void client_shutdown(void) {
-    pthread_key_delete(recvbuf_key);
-    pthread_key_delete(sendbuf_key);
-}
-
 int __cdecl main(int argc, char** argv) {
-    void* tmp;
     int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX] = { 0 };
 
     initialization();
@@ -1290,10 +1187,6 @@ int __cdecl main(int argc, char** argv) {
             ERR_EXIT("read_config 错误");
         }
 
-        /* Set up things for clients to connect. */
-        if (client_init())
-            ERR_EXIT("无法设置 客户端 接入");
-
         listen_sockets(sockets);
 
         DNS_LOG("%s启动完成.", server_name[DNS_SERVER].name);
@@ -1308,20 +1201,6 @@ int __cdecl main(int argc, char** argv) {
         // 等待服务器线程结束
         pthread_join(server_tid, NULL);
 
-        /* Clean up... */
-        tmp = pthread_getspecific(sendbuf_key);
-        if (tmp) {
-            free_safe(tmp);
-            pthread_setspecific(sendbuf_key, NULL);
-        }
-
-        tmp = pthread_getspecific(recvbuf_key);
-        if (tmp) {
-            free_safe(tmp);
-            pthread_setspecific(recvbuf_key, NULL);
-        }
-
-
         // 释放资源
 #ifndef _WIN32
         close(sockets[0]);
@@ -1329,8 +1208,6 @@ int __cdecl main(int argc, char** argv) {
         cleanup_sockets(sockets);
         WSACleanup();
 #endif
-
-        client_shutdown();
         log_mutex_destory();
         mem_mutex_destory();
     }

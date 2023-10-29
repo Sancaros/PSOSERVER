@@ -105,7 +105,6 @@ typedef struct host_info {
 typedef struct dns_client {
     TAILQ_ENTRY(dns_client) qentry;
 
-    pthread_mutex_t mutex;
     sfmt_t sfmt_rng;
 
     int type;
@@ -116,19 +115,6 @@ typedef struct dns_client {
     int is_ipv6;
 
     struct sockaddr_in ip_addr;
-
-    unsigned char* recvbuf;
-    int pkt_cur;
-    int pkt_sz;
-
-    unsigned char* sendbuf;
-    int sendbuf_cur;
-    int sendbuf_size;
-    int sendbuf_start;
-
-    int sending_data;
-    int cur_chunk;
-    int cur_pos;
 
 } dns_client_t;
 
