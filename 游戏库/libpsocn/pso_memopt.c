@@ -15,11 +15,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <windows.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "pso_memopt.h"
 
 /*这段代码实现了一个简单的内存分配器。通过链表管理已分配和空闲的内存块，
@@ -31,17 +26,6 @@
     mrealloc：重新分配已分配内存块的大小。
     mfree：释放已分配的内存块。
 */
-
-struct block
-{
-    struct block* next; // 下一个内存块的指针
-    size_t size;        // 当前内存块的大小（不包括头部）
-    int is_free;        // 标志当前内存块是否空闲
-};
-
-block_t* head = NULL, * tail = NULL;
-
-pthread_mutex_t global_lock; // 全局锁，用于保护对内存块链表的并发访问
 
 block_t* get_free_block(size_t size)
 {
@@ -62,17 +46,17 @@ void mfree(void* block)
     if (!block)
         return;
 
-    pthread_mutex_lock(&global_lock);
+    pthread_mutex_lock(&mem_lock);
     block_t* header = (block_t*)block - 1;
     if (tail == header)
     {
         size_t free_size = header->size - sizeof(block_t);
         VirtualFree(header, free_size, MEM_RELEASE); // 释放内存
-        pthread_mutex_unlock(&global_lock);
+        pthread_mutex_unlock(&mem_lock);
         return;
     }
-    header->is_free = 1; // 设置内存块为空闲状态
-    pthread_mutex_unlock(&global_lock);
+    header->is_free = true; // 设置内存块为空闲状态
+    pthread_mutex_unlock(&mem_lock);
     return;
 }
 
@@ -81,15 +65,15 @@ void* mmalloc(size_t size)
     if (!size)
         return NULL;
 
-    pthread_mutex_lock(&global_lock);
+    pthread_mutex_lock(&mem_lock);
 
     block_t* header = get_free_block(size);
 
     // 如果找到合适的空闲块
     if (header)
     {
-        header->is_free = 0; // 将内存块标记为已分配状态
-        pthread_mutex_unlock(&global_lock);
+        header->is_free = false; // 将内存块标记为已分配状态
+        pthread_mutex_unlock(&mem_lock);
         return (void*)(++header); // 返回已分配内存的指针（隐藏头部）
     }
 
@@ -99,12 +83,12 @@ void* mmalloc(size_t size)
     if ((new_block = (block_t*)VirtualAlloc(NULL, total_size, MEM_COMMIT, PAGE_READWRITE)) == NULL)
     {
         fprintf(stderr, "VirtualAlloc 失败");
-        pthread_mutex_unlock(&global_lock);
+        pthread_mutex_unlock(&mem_lock);
         return NULL;
     }
 
     new_block->size = size;
-    new_block->is_free = 0;
+    new_block->is_free = false;
     new_block->next = NULL;
 
     if (!head)
@@ -116,7 +100,7 @@ void* mmalloc(size_t size)
         tail->next = new_block;
     }
     tail = new_block;
-    pthread_mutex_unlock(&global_lock);
+    pthread_mutex_unlock(&mem_lock);
     // 返回数据块的指针，而不是头部的指针
     return (void*)(++new_block);
 }
@@ -155,3 +139,40 @@ void* mrealloc(void* block, size_t size)
     }
     return NULL; // 如果 mmalloc 失败
 }
+//
+//int main()
+//{
+//    // 分配内存块
+//    int* ptr1 = (int*)mmalloc(sizeof(int));
+//    if (ptr1)
+//    {
+//        *ptr1 = 10;
+//        printf("ptr1: %d\n", *ptr1);
+//    }
+//
+//    // 分配并初始化一段内存
+//    int* ptr2 = (int*)mcalloc(5, sizeof(int));
+//    if (ptr2)
+//    {
+//        for (int i = 0; i < 5; i++)
+//        {
+//            printf("ptr2[%d]: %d\n", i, ptr2[i]);
+//        }
+//    }
+//
+//    // 重新分配内存大小
+//    int* ptr3 = (int*)mrealloc(ptr2, 10 * sizeof(int));
+//    if (ptr3)
+//    {
+//        for (int i = 0; i < 10; i++)
+//        {
+//            printf("ptr3[%d]: %d\n", i, ptr3[i]);
+//        }
+//    }
+//
+//    // 释放内存块
+//    mfree(ptr1);
+//    mfree(ptr3);
+//
+//    return 0;
+//}
