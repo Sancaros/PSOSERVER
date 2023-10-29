@@ -253,12 +253,12 @@ int Ping_Pong(char* IP, uint32_t srvip)
     //WSACleanup();
 }
 
-int get_ips_by_domain(const char* const domain) {
+int get_ipstr_by_domain(const char* const domain, char* ipaddr) {
     struct hostent* _hostent = NULL;
     _hostent = gethostbyname(domain);
     int i = 0;
     while (_hostent->h_addr_list[i] != NULL) {
-        char* ipaddr = inet_ntoa(*((struct in_addr*)_hostent->h_addr_list[i]));
+        ipaddr = inet_ntoa(*((struct in_addr*)_hostent->h_addr_list[i]));
         printf("ip addr%d: %s\n", i + 1, ipaddr);
         i++;
     }

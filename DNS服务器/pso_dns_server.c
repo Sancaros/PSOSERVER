@@ -1139,7 +1139,8 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                 get_ip_address(&client_addr, ipstr);
 
                 if (check_inmsg(inbuf)) {
-                    ERR_LOG("断开非法连接 来源: %s:%d", ipstr, sock);
+                    //ERR_LOG("断开非法连接 来源: %s:%d", ipstr, sock);
+                    //PRINT_HEX_LOG(DBG_LOG, inbuf, recive_len);
                     close(sock);
                     continue; // 继续等待下一次接收
                 }

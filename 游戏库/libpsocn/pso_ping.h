@@ -24,6 +24,6 @@
 
 int Ping_Pong(char* IP, uint32_t srvip);
 
-int get_ips_by_domain(const char* const domain);
+int get_ipstr_by_domain(const char* const domain, char* ipaddr);
 
 #endif /* !PSO_PING_HAVE_HEADER */
