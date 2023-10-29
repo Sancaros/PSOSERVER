@@ -6733,7 +6733,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
 
             if ((src->game_data->expboost) && (l->exp_mult > 0)) {
                 exp_to_add = exp_amount;
-                exp_amount = exp_to_add + (l->bb_params[bp].exp * l->exp_mult);
+                exp_amount = exp_to_add + (exp_amount * l->exp_mult);
             }
 
             if (!exp_amount) {
