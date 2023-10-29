@@ -44,8 +44,8 @@ typedef SSIZE_T ssize_t;
 #define MAX_TMP_BUFF 65536
 #define MAX_PACKET_BUFF 65536
 
-char dp[MAX_PACKET_BUFF];
-char dbgdp[MAX_PACKET_BUFF];
+char dp[MAX_PACKET_BUFF * 2];
+char dbgdp[MAX_PACKET_BUFF * 2];
 
 pthread_mutex_t log_mutex;
 pthread_mutex_t log_item_mutex;
@@ -499,7 +499,7 @@ typedef void (*LogFunc)(const char*, ...);
     pthread_mutex_lock(&pkt_mutex);\
     size_t i;\
     memset(&dp[0], 0, sizeof(dp));\
-    if (data == NULL || length <= 0 || length > MAX_PACKET_BUFF) {\
+    if (data == NULL || length <= 0 || length > sizeof(dp)) {\
         pthread_mutex_unlock(&pkt_mutex);\
         sprintf(dp, "空指针数据包或无效长度 % d 数据包.", length);\
         method(dp);\
@@ -540,7 +540,7 @@ typedef void (*LogFunc)(const char*, ...);
                 }\
             }\
             pthread_mutex_unlock(&pkt_mutex); \
-            if (strlen(dp) + 2 + 1 <= MAX_PACKET_BUFF) {\
+            if (strlen(dp) + 2 + 1 <= sizeof(dp)) {\
                 strcat(dp, "\n\r"); \
             }\
             else {\

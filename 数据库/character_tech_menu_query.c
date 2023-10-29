@@ -19,21 +19,19 @@
 #include "database_query.h"
 #include "f_checksum.h"
 
-#define TABLE1 CHARACTER_TECH_MENU
-
 static int db_del_char_tech_menu(uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "DELETE FROM %s"
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'"
-        , TABLE1
+        , CHARACTER_TECH_MENU
         , gc, slot
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_TECH_MENU, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
@@ -47,7 +45,7 @@ static int db_updata_tech_menu(uint8_t* tech_menu, uint32_t gc, uint8_t slot) {
 
     sprintf(myquery, "UPDATE %s SET "
         "data = '",
-        TABLE1
+        CHARACTER_TECH_MENU
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
@@ -59,7 +57,7 @@ static int db_updata_tech_menu(uint8_t* tech_menu, uint32_t gc, uint8_t slot) {
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新玩家 %s 数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_TECH_MENU, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
@@ -76,7 +74,7 @@ int db_insert_char_tech_menu(uint8_t* tech_menu, uint32_t gc, uint8_t slot) {
         " VALUES "
         "('%" PRIu32 "', '%" PRIu8 "', '"
         ,
-        TABLE1
+        CHARACTER_TECH_MENU
         , gc, slot
     );
 
@@ -88,7 +86,7 @@ int db_insert_char_tech_menu(uint8_t* tech_menu, uint32_t gc, uint8_t slot) {
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法保存数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            "槽位 %" PRIu8 "):\n%s", CHARACTER_TECH_MENU, gc, slot,
             psocn_db_error(&conn));
         return -1;
     }
@@ -129,7 +127,7 @@ int db_get_char_tech_menu(uint32_t gc, uint8_t slot, uint8_t* tech_menu, int che
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT data FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%" PRIu8 "'", TABLE1, gc, slot);
+        "AND slot = '%" PRIu8 "'", CHARACTER_TECH_MENU, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);

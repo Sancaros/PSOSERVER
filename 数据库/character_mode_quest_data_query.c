@@ -19,21 +19,19 @@
 #include "database_query.h"
 #include "f_checksum.h"
 
-#define TABLE1 CHARACTER_MODE_QUEST_DATA
-
 static int db_del_char_mode_quest_data(uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "DELETE FROM %s"
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'"
-        , TABLE1
+        , CHARACTER_MODE_QUEST_DATA
         , gc, slot
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_MODE_QUEST_DATA, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
@@ -53,7 +51,7 @@ static int db_updata_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data
         "data15 = '%d', data16 = '%d', data17 = '%d', data18 = '%d', data19 = '%d', "
         "data20 = '%d', data21 = '%d', "
         "full_data = '"
-        ,TABLE1
+        ,CHARACTER_MODE_QUEST_DATA
         , mode_quest_data->part[0], mode_quest_data->part[1], mode_quest_data->part[2], mode_quest_data->part[3], mode_quest_data->part[4]
         , mode_quest_data->part[5], mode_quest_data->part[6], mode_quest_data->part[7], mode_quest_data->part[8], mode_quest_data->part[9]
         , mode_quest_data->part[10], mode_quest_data->part[11], mode_quest_data->part[12], mode_quest_data->part[13], mode_quest_data->part[14]
@@ -70,7 +68,7 @@ static int db_updata_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新玩家 %s 数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_MODE_QUEST_DATA, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
@@ -98,7 +96,7 @@ int db_insert_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, 
         "'%d', '%d', '%d', '%d', '%d', "
         "'%d', '%d', "
         "'"
-        , TABLE1
+        , CHARACTER_MODE_QUEST_DATA
         , gc, slot
         , mode_quest_data->part[0], mode_quest_data->part[1], mode_quest_data->part[2], mode_quest_data->part[3], mode_quest_data->part[4]
         , mode_quest_data->part[5], mode_quest_data->part[6], mode_quest_data->part[7], mode_quest_data->part[8], mode_quest_data->part[9]
@@ -115,7 +113,7 @@ int db_insert_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, 
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法保存数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            "槽位 %" PRIu8 "):\n%s", CHARACTER_MODE_QUEST_DATA, gc, slot,
             psocn_db_error(&conn));
         return -1;
     }
@@ -156,7 +154,7 @@ int db_get_char_mode_quest_data(uint32_t gc, uint8_t slot, psocn_bb_mode_quest_d
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%" PRIu8 "'", TABLE1, gc, slot);
+        "AND slot = '%" PRIu8 "'", CHARACTER_MODE_QUEST_DATA, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);

@@ -61,7 +61,7 @@ typedef struct shipgate_error {
     uint32_t block;
     uint32_t target_gc;
     uint32_t reserved;
-    uint8_t data[4096];
+    uint8_t data[10240];
 } PACKED shipgate_error_pkt;
 
 //typedef struct shipgate_error_hdr {

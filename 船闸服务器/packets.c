@@ -117,11 +117,6 @@ static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
             return 0;
         }
 
-        shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
-
-        DATA_LOG("ship_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
-            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
-
         //pthread_mutex_lock(&ship->pkt_mutex);
         //pthread_rwlock_wrlock(&ship->rwlock);
 
@@ -141,10 +136,16 @@ static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
                     continue;
                 }
                 else if (rv < 0) {
+                    shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
+
+                    ERR_LOG("ship_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+                        , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
+
                     //pthread_rwlock_unlock(&ship->rwlock);
                     //pthread_mutex_unlock(&ship->pkt_mutex);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
+                    PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
                     //free_safe(sendbuf);
                     return -1;
                 }

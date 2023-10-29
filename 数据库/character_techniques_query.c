@@ -19,8 +19,6 @@
 #include "database_query.h"
 #include "pso_player.h"
 
-#define TABLE1 CHARACTER_TECHNIQUES
-
 static int db_insert_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_t slot) {
     memset(myquery, 0, sizeof(myquery));
     techniques_t* tech = &character->technique_levels_v1;
@@ -41,7 +39,7 @@ static int db_insert_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_
         ", '%02X', '%02X', '%02X', '%02X', '%02X', '%02X', '%02X'"
         ", '%02X', '%02X', '%02X', '%02X', '%02X', '%02X'"
         ")",
-        TABLE1,
+        CHARACTER_TECHNIQUES,
         gc, slot,
         tech->all[0], tech->all[1], tech->all[2], tech->all[3], tech->all[4], tech->all[5], tech->all[6],
         tech->all[7], tech->all[8], tech->all[9], tech->all[10], tech->all[11], tech->all[12], tech->all[13],
@@ -52,7 +50,7 @@ static int db_insert_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            "槽位 %" PRIu8 "):\n%s", CHARACTER_TECHNIQUES, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -6;
@@ -76,7 +74,7 @@ static int db_update_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_
         "data14 = '%02X', data15 = '%02X', data16 = '%02X', data17 = '%02X', data18 = '%02X', data19 = '%02X'"
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
-        TABLE1,
+        CHARACTER_TECHNIQUES,
         tech->all[0], tech->all[1], tech->all[2], tech->all[3], tech->all[4], tech->all[5], tech->all[6],
         tech->all[7], tech->all[8], tech->all[9], tech->all[10], tech->all[11], tech->all[12], tech->all[13],
         tech->all[14], tech->all[15], tech->all[16], tech->all[17], tech->all[18], tech->all[19]
@@ -87,7 +85,7 @@ static int db_update_techniques(psocn_bb_char_t* character, uint32_t gc, uint32_
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+            "槽位 %" PRIu8 "):\n%s", CHARACTER_TECHNIQUES, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -6;
@@ -103,7 +101,7 @@ static int db_del_techniques(uint32_t gc, uint32_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "SELECT * FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", TABLE1, gc,
+        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_TECHNIQUES, gc,
         slot);
 
     if (!psocn_db_real_query(&conn, myquery)) {
@@ -113,12 +111,12 @@ static int db_del_techniques(uint32_t gc, uint32_t slot) {
         while ((row = psocn_db_result_fetch(result)) != NULL) {
 
             sprintf(myquery, "DELETE FROM %s WHERE guildcard="
-                "'%" PRIu32 "' AND slot='%" PRIu8 "'", TABLE1, gc,
+                "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_TECHNIQUES, gc,
                 slot);
 
             if (psocn_db_real_query(&conn, myquery)) {
                 SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-                    PRIu32 ", 槽位 %" PRIu8 "):\n%s", TABLE1, gc, slot,
+                    PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_TECHNIQUES, gc, slot,
                     psocn_db_error(&conn));
                 /* XXXX: 未完成给客户端发送一个错误信息 */
                 return -1;
@@ -129,7 +127,7 @@ static int db_del_techniques(uint32_t gc, uint32_t slot) {
     }
     else {
         SQLERR_LOG("未找到旧玩家 %s 数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 ")", TABLE1, gc, slot);
+            PRIu32 ", 槽位 %" PRIu8 ")", CHARACTER_TECHNIQUES, gc, slot);
     }
 
     return 0;
@@ -165,7 +163,7 @@ int db_get_char_techniques(uint32_t gc, uint8_t slot, psocn_bb_char_t* character
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", TABLE1, gc, slot);
+        "AND slot = '%u'", CHARACTER_TECHNIQUES, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);

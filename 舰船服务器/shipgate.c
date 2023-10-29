@@ -176,11 +176,6 @@ static int send_raw(shipgate_conn_t* sg, size_t len, uint8_t* sendbuf, int crypt
             return 0;
         }
 
-        shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
-
-        DATA_LOG("shipgate_conn_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
-            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
-
         //pthread_mutex_lock(&sg->pkt_mutex);
         //pthread_rwlock_wrlock(&sg->rwlock);
         //PRINT_HEX_LOG(DBG_LOG, sendbuf, len);
@@ -204,11 +199,16 @@ static int send_raw(shipgate_conn_t* sg, size_t len, uint8_t* sendbuf, int crypt
                     continue;
                 }
                 else if (rv < 0) {
+                    shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
+
+                    ERR_LOG("shipgate_conn_t 发送 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+                        , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
+
                     //pthread_mutex_unlock(&sg->pkt_mutex);
                     //pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
-                    //PRINT_HEX_LOG(ERR_LOG, sendbuf, len);
+                    PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
                     return -1;
                 }
 
@@ -1757,6 +1757,7 @@ static int handle_char_data_db_save(shipgate_conn_t* conn, shipgate_cdata_err_pk
     uint32_t dest = ntohl(pkt->guildcard);
     int done = 0;
     uint16_t flags = ntohs(pkt->base.hdr.flags);
+    char ip[INET6_ADDRSTRLEN];
 
     /* Make sure the packet looks sane */
     if (!(flags & SHDR_RESPONSE)) {
@@ -1774,11 +1775,11 @@ static int handle_char_data_db_save(shipgate_conn_t* conn, shipgate_cdata_err_pk
                 if (c->guildcard == dest && c->pl) {
                     /* We've found them, figure out what to tell them. */
                     if (flags & SHDR_FAILURE) {
-                        ERR_LOG("无法保存 %s 角色数据", get_player_describe(c));
+                        my_ntop(&c->ip_addr, ip);
+                        ERR_LOG("无法保存 %s 角色数据 %s:%d", get_player_describe(c), ip, c->sock);
                         send_txt(c, "%s", __(c, "\tE\tC7无法保存角色数据."));
                     }
                     else {
-                        ERR_LOG("无法保存 %s 角色数据", get_player_describe(c));
                         send_txt(c, "%s", __(c, "\tE\tC7角色数据已保存."));
                     }
 
@@ -3668,13 +3669,13 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         sz = sg_recv(sg, recvbuf + sg->recvbuf_cur, MAX_PACKET_BUFF - sg->recvbuf_cur);
 
-        shipgate_hdr_t* pkt = (shipgate_hdr_t*)recvbuf;
-
-        DATA_LOG("shipgate_conn_t 接收 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
-            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
-
         /* 尝试读取数据，如果没有获取到，则结束处理。 */
         if (sz <= 0) {
+            shipgate_hdr_t* pkt = (shipgate_hdr_t*)recvbuf;
+
+            ERR_LOG("shipgate_conn_t 接收 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+                , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
+
             //pthread_mutex_unlock(&sg->pkt_mutex);
             //pthread_rwlock_unlock(&sg->rwlock);
             if (sz == SOCKET_ERROR) {
@@ -3688,6 +3689,7 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
                 ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_shipgate_describe(sg), sz);
             }
 
+            PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
             return -4;
         }
 

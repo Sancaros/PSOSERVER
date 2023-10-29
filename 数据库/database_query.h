@@ -329,7 +329,7 @@ int db_get_character_default_mode(psocn_bb_mode_char_t* data);
 
 ////////////////////////////////////////////////////////////////
 
-int db_get_orignal_char_full_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t* char_data, int check);
+int db_get_orignal_char_full_to_db_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t* char_data, int check);
 int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name);
 int db_update_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name);
 

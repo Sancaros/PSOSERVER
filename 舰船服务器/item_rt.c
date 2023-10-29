@@ -292,10 +292,134 @@ out:
     return rv;
 }
 
+uint32_t expand_rate2(uint8_t pc) {
+    int8_t shift = ((pc >> 3) & 0x1F) - 4;
+    if (shift < 0) {
+        shift = 0;
+    }
+    return ((2 << shift) * ((pc & 7) + 7));
+}
+
+int rt_read_bb_rel(const char* fn) {
+    StringReader* r = StringReader_file(fn);
+    size_t i = 0, j = 0;
+    rt_table_t* ent;
+    rt_table_t* buf;
+    rt_table_t bb_rtdata_rel_be[4][4][10] = { 0 };
+    int rv = 0, 章节, 难度, 颜色/*, z*/;
+
+    if (!r->length) {
+        ERR_LOG("未读取到数据流");
+        StringReader_destroy(r);
+        (void)getchar();
+        return -1;
+    }
+
+    if (r->length != 76800) {
+        ERR_LOG("读取的数据长度不为76800 %d", r->length);
+        StringReader_destroy(r);
+        (void)getchar();
+        return -2;
+    }
+
+    memcpy(bb_rtdata_rel_be, r->data, r->length);
+
+#ifdef DEBUG
+
+    //76800 120 640
+    DBG_LOG("%d %d %d", r->length, r->length / sizeof(rt_table_t), sizeof(rt_table_t));
+    getchar();
+
+#endif // DEBUG
+
+    /* Now, parse each entry... */
+    for (章节 = 0; 章节 < 4; ++章节) {
+        for (难度 = 0; 难度 < 4; ++难度) {
+            for (颜色 = 0; 颜色 < 10; ++颜色) {
+
+                buf = &bb_rtdata_rel_be[章节][难度][颜色];
+                /* Dump it into our nicer (not packed) structure. */
+                ent = &bb_rtdata_rel[章节][难度][颜色];
+
+                for (i = 0; i < 0x65; i++) {
+                    ent->enemy_rares[i].probability = buf->enemy_rares[i].probability;
+                    for (j = 0; j < 3; j++) {
+                        ent->enemy_rares[i].item_code[j] = buf->enemy_rares[i].item_code[j];
+                    }
+                }
+
+                for (i = 0; i < 0x1E; i++) {
+                    ent->box_areas[i] = buf->box_areas[i];
+                }
+
+                for (i = 0; i < 0x1E; i++) {
+                    ent->box_rares[i].probability = buf->box_rares[i].probability;
+                    for (j = 0; j < 3; j++) {
+                        ent->box_rares[i].item_code[j] = buf->box_rares[i].item_code[j];
+                    }
+                }
+
+                for (i = 0; i < 2; i++) {
+                    ent->unknown_a1[i] = buf->unknown_a1[i];
+                }
+
+                ent->enemy_rares_offset = bswap32(buf->enemy_rares_offset);
+                ent->box_count = bswap32(buf->box_count);
+                ent->box_areas_offset = bswap32(buf->box_areas_offset);
+                ent->box_rares_offset = bswap32(buf->box_rares_offset);
+                ent->unused_offset1 = bswap32(buf->unused_offset1);
+
+                for (i = 0; i < 0x10; i++) {
+                    ent->unknown_a2[i] = bswap16(buf->unknown_a2[i]);
+                }
+
+                ent->unknown_a2_offset = bswap32(buf->unknown_a2_offset);
+                ent->unknown_a2_count = bswap32(buf->unknown_a2_count);
+                ent->unknown_a3 = bswap32(buf->unknown_a3);
+                ent->unknown_a3 = bswap32(buf->unknown_a3);
+                ent->unknown_a4 = bswap32(buf->unknown_a4);
+                ent->offset_table_offset = bswap32(buf->offset_table_offset);
+
+                for (i = 0; i < 3; i++) {
+                    ent->unknown_a5[i] = bswap32(buf->unknown_a5[i]);
+                }
+
+#ifdef DEBUG
+                char filename[32];
+                const char difficulties[4] = { 'n', 'h', 'v', 'u' };
+                // 0  NULL / EP2 1  l /  CHALLENGE1 2 c / EP4 3 bb
+                const char* game_ep_rt_index[4] = { "", "l" , "c", "bb" };
+                snprintf(filename, sizeof(filename), "ItemRT%s%c%d.rel", game_ep_rt_index[章节],
+                    tolower(abbreviation_for_difficulty(难度)), 颜色);
+
+                if (章节 == 3) {
+                    if (颜色 == 0) {
+                        DBG_LOG("/////////////////2");
+                        for (size_t x = 0; x < 0x1E; x++) {
+                            DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+                            DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+                            DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+                            DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+                            DBG_LOG("/////////////////");
+                        }
+                        DBG_LOG("%s %d box_count %d", filename, 难度, ent->box_count);
+                        DBG_LOG("/////////////////2");
+                    }
+                }
+#endif // DEBUG
+
+            }
+        }
+    }
+
+    StringReader_destroy(r);
+    return 0;
+}
+
 int rt_read_bb(const char* fn) {
     pso_gsl_read_t* a;
     const char difficulties[4] = { 'n', 'h', 'v', 'u' };
-    // 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
+    // 0  NULL / EP2 1  l /  CHALLENGE1 2 c / EP4 3 bb
     const char* game_ep_rt_index[4] = { "", "l" , "c", "bb" };
     char filename[32];
     uint32_t hnd;
@@ -331,7 +455,7 @@ int rt_read_bb(const char* fn) {
             for (颜色 = 0; 颜色 < 10; ++颜色) {
                 /* Figure out the name of the file in the archive that we're
                    looking for... */
-                snprintf(filename, 32, "ItemRT%s%c%d.rel", game_ep_rt_index[章节],
+                snprintf(filename, sizeof(filename), "ItemRT%s%c%d.rel", game_ep_rt_index[章节],
                     tolower(abbreviation_for_difficulty(难度)), 颜色);
 
 #ifdef DEBUG
@@ -390,29 +514,75 @@ int rt_read_bb(const char* fn) {
                     ent->unknown_a1[i] = buf->unknown_a1[i];
                 }
 
-                ent->enemy_rares_offset = buf->enemy_rares_offset;
-                ent->box_count = buf->box_count;
-                ent->box_areas_offset = buf->box_areas_offset;
-                ent->box_rares_offset = buf->box_rares_offset;
-                ent->unused_offset1 = buf->unused_offset1;
+                ent->enemy_rares_offset = bswap32(buf->enemy_rares_offset);
+                ent->box_count = bswap32(buf->box_count);
+                ent->box_areas_offset = bswap32(buf->box_areas_offset);
+                ent->box_rares_offset = bswap32(buf->box_rares_offset);
+                ent->unused_offset1 = bswap32(buf->unused_offset1);
 
                 for (i = 0; i < 0x10; i++) {
-                    ent->unknown_a2[i] = buf->unknown_a2[i];
+                    ent->unknown_a2[i] = bswap16(buf->unknown_a2[i]);
                 }
 
-                ent->unknown_a2_offset = buf->unknown_a2_offset;
-                ent->unknown_a2_count = buf->unknown_a2_count;
-                ent->unknown_a3 = buf->unknown_a3;
-                ent->unknown_a3 = buf->unknown_a3;
-                ent->unknown_a4 = buf->unknown_a4;
-                ent->offset_table_offset = buf->offset_table_offset;
+                ent->unknown_a2_offset = bswap32(buf->unknown_a2_offset);
+                ent->unknown_a2_count = bswap32(buf->unknown_a2_count);
+                ent->unknown_a3 = bswap32(buf->unknown_a3);
+                ent->unknown_a3 = bswap32(buf->unknown_a3);
+                ent->unknown_a4 = bswap32(buf->unknown_a4);
+                ent->offset_table_offset = bswap32(buf->offset_table_offset);
 
                 for (i = 0; i < 3; i++) {
-                    ent->unknown_a5[i] = buf->unknown_a5[i];
+                    ent->unknown_a5[i] = bswap32(buf->unknown_a5[i]);
                 }
 
 #ifdef DEBUG
+                if (章节 == 3) {
+                    if (颜色 == 0) {
+                        for (size_t x = 0; x < 0x1E; x++) {
+                            DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+                            DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+                            DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+                            DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+                            DBG_LOG("/////////////////");
+                        }
+                        DBG_LOG("%s %d box_count %d", filename, 难度, ent->box_count);
+                    }
+                }
 
+                if (章节 == 1) {
+
+                    DBG_LOG("颜色 ID %d", 颜色);
+                    DBG_LOG("enemy_rares_offset 0x%08X", ent->enemy_rares_offset);
+                    DBG_LOG("box_count 0x%08X", ent->box_count);
+                    DBG_LOG("box_areas_offset 0x%08X", ent->box_areas_offset);
+                    DBG_LOG("box_rares_offset 0x%08X", ent->box_rares_offset);
+                    for (size_t z = 0; z < 0x10; z++) {
+                        DBG_LOG("unknown_a2 x %d 0x%04X", z, ent->unknown_a2[z]);
+                    }
+                    DBG_LOG("unknown_a2_offset 0x%08X", ent->unknown_a2_offset);
+                    DBG_LOG("unknown_a2_count 0x%08X", ent->unknown_a2_count);
+                    DBG_LOG("unknown_a3 0x%08X", ent->unknown_a3);
+                    DBG_LOG("unknown_a4 0x%08X", ent->unknown_a4);
+                    DBG_LOG("offset_table_offset 0x%08X", ent->offset_table_offset);
+                    for (size_t z = 0; z < 3; z++) {
+                        DBG_LOG("unknown_a5 x %d 0x%04X", z, ent->unknown_a5[z]);
+                    }
+                    for (size_t x = 0; x < 0x65; x++) {
+                        DBG_LOG("enemy_rares item_code0 0x%02X", ent->enemy_rares[x].item_code[0]);
+                        DBG_LOG("enemy_rares item_code1 0x%02X", ent->enemy_rares[x].item_code[1]);
+                        DBG_LOG("enemy_rares item_code2 0x%02X", ent->enemy_rares[x].item_code[2]);
+                        DBG_LOG("enemy_rares probability %d %lf", ent->enemy_rares[x].probability, expand_rate(ent->enemy_rares[x].probability));
+                        DBG_LOG("/////////////////");
+                    }
+
+                    for (size_t x = 0; x < 0x1E; x++) {
+                        DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+                        DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+                        DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+                        DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+                        DBG_LOG("/////////////////");
+                    }
+                }
                 if (章节 == 3) {
 
                     DBG_LOG("颜色 ID %d", 颜色);
@@ -473,8 +643,39 @@ int rt_read_bb(const char* fn) {
         }
     }
 
-    have_bbrt = 1;
+    /* Now, parse each entry... */
+    //for (章节 = 0; 章节 < 4; ++章节) {
+    //    for (难度 = 0; 难度 < 4; ++难度) {
+    //        for (颜色 = 0; 颜色 < 10; ++颜色) {
 
+    //            snprintf(filename, sizeof(filename), "ItemRT%s%c%d.rel", game_ep_rt_index[章节],
+    //                tolower(abbreviation_for_difficulty(难度)), 颜色);
+
+    //            /* Dump it into our nicer (not packed) structure. */
+    //            ent = &bb_rtdata[章节][难度][颜色];
+
+    //            if (章节 == 3) {
+    //                if (颜色 == 0) {
+    //                    DBG_LOG("/////////////////2--------------------------------");
+    //                    for (size_t x = 0; x < 0x1E; x++) {
+    //                        DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+    //                        DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+    //                        DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+    //                        DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+    //                        DBG_LOG("/////////////////");
+    //                    }
+    //                    DBG_LOG("%s %d box_count %d", filename, 难度, ent->box_count);
+    //                    DBG_LOG("/////////////////2--------------------------------");
+    //                }
+    //            }
+
+    //        }
+    //    }
+    //}
+    //PRINT_HEX_LOG(DBG_LOG, bb_rtdata, sizeof(bb_rtdata));
+    //getchar();
+
+    have_bbrt = 1;
 out:
     pso_gsl_read_close(a);
     free_safe(buf);
@@ -755,7 +956,7 @@ rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficul
         }
     }
 
-    rt_table_t* tmp = rt_dynamics_read_bb(ship->cfg->bb_rtdata_file, game_ep_rt_index, difficulty, section);
+    rt_table_t* tmp = rt_dynamics_read_bb(ship->cfg->bb_rtdata_gsl_file, game_ep_rt_index, difficulty, section);
     if(!tmp)
         return &bb_rtdata[game_ep_rt_index][difficulty][section];
 

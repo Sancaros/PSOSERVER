@@ -542,21 +542,36 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
         if(char_data != NULL) {
            
             /* 已获得角色数据... 将其从检索的行中复制出来. */
-            if (db_get_dress_data(c->guildcard, pkt->slot, &mc.dress_data, 0)) {
+            if (db_get_dress_data(c->guildcard, pkt->slot, &char_data->character.dress_data, 0)) {
                 SQLERR_LOG("无法获取玩家外观数据 (GC %"
                     PRIu32 ", 槽位 %" PRIu8 "), 读取原始数据.", c->guildcard, pkt->slot);
-                if (db_get_orignal_char_full_data(c->guildcard, pkt->slot, char_data, 0)) {
+
+                if (db_get_orignal_char_full_to_db_data(c->guildcard, pkt->slot, char_data, 0)) {
                     SQLERR_LOG("无法读取原始外观数据 (GC %"
                         PRIu32 ", 槽位 %" PRIu8 "), 读取原始数据失败.", c->guildcard, pkt->slot);
 
 
                     return -2;
                 }
-                /* XXXX: 未完成给客户端发送一个错误信息 */
+
+                if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, PSOCN_DB_UPDATA_CHAR)) {
+                    SQLERR_LOG("无法更新玩家数据 (GC %"
+                        PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+                    /* XXXX: 未完成给客户端发送一个错误信息 */
+                    return -3;
+                }
+
+                if (db_update_char_dress_data(&char_data->character.dress_data, c->guildcard, pkt->slot, PSOCN_DB_UPDATA_CHAR)) {
+                    ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
+                        PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+                    /* XXXX: 未完成给客户端发送一个错误信息 */
+                    return -3;
+                }
                 
-                mc.dress_data = char_data->character.dress_data;
+                /* XXXX: 未完成给客户端发送一个错误信息 */
             }
 
+            mc.dress_data = char_data->character.dress_data;
             mc.name.name_tag = char_data->character.name.name_tag;
             mc.name.name_tag2 = char_data->character.name.name_tag2;
             fix_char_name_w(char_data->character.name.char_name);

@@ -231,8 +231,6 @@ int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int che
     if (data->meseta > MAX_PLAYER_MESETA)
         data->meseta = MAX_PLAYER_MESETA;
 
-    data->unknown_a1 = 999;
-
     psocn_db_result_free(result);
 
     return 0;

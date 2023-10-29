@@ -46,11 +46,6 @@ typedef struct PackedDrop {
     uint8_t item_code[3];
 } PACKED PackedDrop_t;
 
-typedef struct ExpandedDrop {
-    uint32_t probability;
-    uint8_t item_code[3];
-} PACKED ExpandedDrop_t;
-
 typedef struct rt_table {
     // 0x280 in size; describes one difficulty, section ID, and episode
     // TODO: It looks like this structure can actually vary. In PSOGC, these all
@@ -60,17 +55,17 @@ typedef struct rt_table {
     /* 0194 */ uint8_t box_areas[0x1E];
     /* 01B2 */ PackedDrop_t box_rares[0x1E];
     /* 022A */ uint8_t unknown_a1[2];
-    /* 022C */ uint32_t enemy_rares_offset; // == 0x00000000
-    /* 0230 */ uint32_t box_count; // == 0x1E000000
-    /* 0234 */ uint32_t box_areas_offset; // == 0x94010000
-    /* 0238 */ uint32_t box_rares_offset; // == 0xB2010000
-    /* 023C */ uint32_t unused_offset1;
+    /* 022C */ uint32_t enemy_rares_offset; // == 0x00000000 大端序
+    /* 0230 */ uint32_t box_count; // == 0x1E000000 大端序
+    /* 0234 */ uint32_t box_areas_offset; // == 0x94010000 大端序
+    /* 0238 */ uint32_t box_rares_offset; // == 0xB2010000 大端序
+    /* 023C */ uint32_t unused_offset1;// 大端序
     /* 0240 */ uint16_t unknown_a2[0x10];
-    /* 0260 */ uint32_t unknown_a2_offset;// == 0x40020000
-    /* 0264 */ uint32_t unknown_a2_count;// == 0x03000000
-    /* 0268 */ uint32_t unknown_a3;// == 0x01000000
+    /* 0260 */ uint32_t unknown_a2_offset;// == 0x40020000 大端序
+    /* 0264 */ uint32_t unknown_a2_count;// == 0x03000000 大端序
+    /* 0268 */ uint32_t unknown_a3;// == 0x01000000 大端序
     /* 026C */ uint32_t unknown_a4;
-    /* 0270 */ uint32_t offset_table_offset; // == 0x2C020000
+    /* 0270 */ uint32_t offset_table_offset; // == 0x2C020000 大端序
     /* 0274 */ uint32_t unknown_a5[3];
     /* 0280 */
 } PACKED rt_table_t;
@@ -101,6 +96,7 @@ static rt_set_t gc_rtdata[2][4][10];
 static int have_bbrt = 0;
 //static rt_set_t bb_rtdata[4][4][10];
 static rt_table_t bb_rtdata[4][4][10];
+static rt_table_t bb_rtdata_rel[4][4][10];
 static rt_table_t bb_dymnamic_rtdata[4][4][10];
 
 /* 返回难度文字名称 */
@@ -108,6 +104,7 @@ char abbreviation_for_difficulty(uint8_t difficulty);
 
 int rt_read_v2(const char *fn);
 int rt_read_gc(const char *fn);
+int rt_read_bb_rel(const char* fn);
 int rt_read_bb(const char* fn);
 
 int rt_v2_enabled(void);

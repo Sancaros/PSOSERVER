@@ -1111,7 +1111,8 @@ static int handle_itemrt(xmlNode* n, psocn_ship_t* cur) {
     /* Grab the rtdata filenames */
     cur->v2_rtdata_file = (char*)xmlGetProp(n, XC"v2");
     cur->gc_rtdata_file = (char*)xmlGetProp(n, XC"gc");
-    cur->bb_rtdata_file = (char*)xmlGetProp(n, XC"bb");
+    cur->bb_rtdata_gsl_file = (char*)xmlGetProp(n, XC"bb_gsl");
+    cur->bb_rtdata_rel_file = (char*)xmlGetProp(n, XC"bb_rel");
 
     quest = xmlGetProp(n, XC"questrares");
 
@@ -1588,7 +1589,7 @@ void psocn_free_ship_config(psocn_ship_t* cfg) {
         xmlFree(cfg->bb_pmtdata_file);
         xmlFree(cfg->v2_rtdata_file);
         xmlFree(cfg->gc_rtdata_file);
-        xmlFree(cfg->bb_rtdata_file);
+        xmlFree(cfg->bb_rtdata_gsl_file);
         xmlFree(cfg->smutdata_file);
 
         free_safe(cfg->events);

@@ -508,8 +508,8 @@ static void print_config(psocn_ship_t* cfg) {
     if (cfg->bb_pmtdata_file)
         CONFIG_LOG("Blue Burst ItemPMT 文件: %s", cfg->bb_pmtdata_file);
 
-    if (cfg->bb_rtdata_file)
-        CONFIG_LOG("Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
+    if (cfg->bb_rtdata_gsl_file)
+        CONFIG_LOG("Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_gsl_file);
 
     CONFIG_LOG("写入 服务器倍率/////////////////////////");
 
@@ -535,7 +535,7 @@ static void print_config(psocn_ship_t* cfg) {
         (cfg->local_flags & PSOCN_SHIP_PMT_LIMITGC) ? "true" : "false",
         (cfg->local_flags & PSOCN_SHIP_PMT_LIMITBB) ? "true" : "false");
 
-    if (cfg->v2_rtdata_file || cfg->gc_rtdata_file || cfg->bb_rtdata_file) {
+    if (cfg->v2_rtdata_file || cfg->gc_rtdata_file || cfg->bb_rtdata_gsl_file) {
         CONFIG_LOG("任务稀有掉落: %s",
             (cfg->local_flags & PSOCN_SHIP_QUEST_RARES) ? "true" :
             "false");
@@ -962,11 +962,20 @@ int read_param_file(psocn_ship_t* cfg) {
         rv = bb_read_params(cfg);
 
         /* Read the BB ItemRT file... */
-        if (cfg->bb_rtdata_file) {
-            CONFIG_LOG("读取 Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
-            rv = rt_read_bb(cfg->bb_rtdata_file);
+        if (cfg->bb_rtdata_gsl_file) {
+            CONFIG_LOG("读取 Blue Burst ItemRT GSL 文件: %s", cfg->bb_rtdata_gsl_file);
+            rv = rt_read_bb(cfg->bb_rtdata_gsl_file);
             if (rv) {
-                ERR_LOG("无法读取 Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
+                ERR_LOG("无法读取 Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_gsl_file);
+            }
+        }
+
+        if (cfg->bb_rtdata_rel_file) {
+            CONFIG_LOG("读取 Blue Burst ItemRT REL 文件: %s", cfg->bb_rtdata_rel_file);
+            rv = rt_read_bb_rel(cfg->bb_rtdata_rel_file);
+
+            if (rv) {
+                ERR_LOG("无法读取 Blue Burst ItemRT REL 文件: %s", cfg->bb_rtdata_rel_file);
             }
         }
 

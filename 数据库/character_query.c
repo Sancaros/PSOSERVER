@@ -368,6 +368,7 @@ psocn_bb_db_char_t* db_get_uncompress_char_data(uint32_t gc, uint8_t slot) {
     if (!char_data) {
         ERR_LOG("无法分配角色数据内存空间");
         ERR_LOG("%s", strerror(errno));
+        return NULL;
     }
 
     memset(myquery, 0, sizeof(myquery));

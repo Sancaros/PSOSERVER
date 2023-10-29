@@ -699,6 +699,8 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 		else
 			new_rare_rate = orignal_rare_rate * (1 + l->monster_rare_drop_mult);
 
+		DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, orignal_rare_rate, new_rare_rate);
+
 		if (drop_rare >= new_rare_rate) {
 #ifdef DBG_RARE_ITEM_PROC
 

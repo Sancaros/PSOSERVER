@@ -3207,7 +3207,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return 0;
     }
 
@@ -3215,7 +3215,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的背包数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         SQLERR_LOG("无法更新玩家背包数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3225,7 +3225,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的数值数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         SQLERR_LOG("无法更新玩家数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3235,7 +3235,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的外观数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         SQLERR_LOG("无法更新玩家外观数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3245,7 +3245,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的名称数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         SQLERR_LOG("无法更新玩家名字数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3255,7 +3255,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的法术数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3265,7 +3265,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的银行数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         SQLERR_LOG("无法更新玩家银行数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3278,7 +3278,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return 0;
     }
 
@@ -3289,7 +3289,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return 0;
     }
 
@@ -3298,7 +3298,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return 0;
     }
 
@@ -3307,7 +3307,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return 0;
     }
 
@@ -3316,7 +3316,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return 0;
     }
 
@@ -3324,7 +3324,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的登录状态数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return 0;
     }
 
@@ -3333,13 +3333,13 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
             "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
         return -6;
     }
 
     /* Return success (yeah, bad use of this function, but whatever). */
     return send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
+        (uint8_t*)&pkt->guildcard, 8, gc, slot, 0, 0, 0);
 }
 
 static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
@@ -3702,7 +3702,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
         if (err) {
             err = 0;
             psocn_bb_db_char_t backupdata = { 0 };
-            if ((err |= db_get_orignal_char_full_data(gc, slot, &backupdata, 0))) {
+            if ((err |= db_get_orignal_char_full_to_db_data(gc, slot, &backupdata, 0))) {
                 SQLERR_LOG("无法读取原始外观数据 (GC %"
                     PRIu32 ", 槽位 %" PRIu8 "), 读取原始数据 错误码 %d.", gc, slot, err);
 
@@ -6147,12 +6147,12 @@ int handle_pkt(ship_t* ship) {
 
         sz = ship_recv(ship, recvbuf + ship->recvbuf_cur, MAX_PACKET_BUFF - ship->recvbuf_cur);
 
-        shipgate_hdr_t* pkt = (shipgate_hdr_t*)recvbuf;
-
-        DATA_LOG("ship_t 接收 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
-            , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
-
         if (sz <= 0) {
+            shipgate_hdr_t* pkt = (shipgate_hdr_t*)recvbuf;
+
+            ERR_LOG("ship_t 接收 \ntype:0x%04X \nlen:0x%04X \nversion:0x%02X \nreserved:0x%02X \nflags:0x%04X"
+                , ntohs(pkt->pkt_type), ntohs(pkt->pkt_len), pkt->version, pkt->reserved, pkt->flags);
+
             //pthread_mutex_unlock(&ship->pkt_mutex);
             //pthread_rwlock_unlock(&ship->rwlock);
             if (sz == SOCKET_ERROR) {
@@ -6169,6 +6169,7 @@ int handle_pkt(ship_t* ship) {
                 ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_ship_describe(ship), sz);
             }
 
+            PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
             //free_safe(recvbuf);
             return -4;
         }

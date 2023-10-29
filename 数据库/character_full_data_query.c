@@ -44,7 +44,7 @@ typedef struct bb_full_char {
 
 #undef PACKED
 
-int db_get_orignal_char_full_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t* char_data, int check) {
+int db_get_orignal_char_full_to_db_data(uint32_t gc, uint8_t slot, psocn_bb_db_char_t* char_data, int check) {
     void* result;
     char** row;
     int j = 0;
