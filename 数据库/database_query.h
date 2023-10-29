@@ -104,6 +104,9 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot);
 /* 检测角色分表数据是否存在 */
 bool db_check_bb_char_split_data_exist(uint32_t gc, uint8_t slot, char* table);
 
+/* 数据库检测是否为GM */
+bool db_check_is_gm(uint32_t gc, uint32_t* priv);
+
 /* 删除角色数据 */
 int db_delete_bb_char_data(uint32_t gc, uint8_t slot);
 

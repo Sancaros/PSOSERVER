@@ -812,3 +812,43 @@ bool db_check_bb_char_split_data_exist(uint32_t gc, uint8_t slot, char* table) {
     psocn_db_result_free(result);
     return true;
 }
+
+bool db_check_is_gm(uint32_t gc, uint32_t* priv) {
+    void* result;
+    char** row;
+    uint32_t is_gm = 0;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "SELECT is_gm, privlevel FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询 %s 角色数据 (%u: %u)", AUTH_ACCOUNT, gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return false;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色 %s 数据 (%u: %u)", AUTH_ACCOUNT, gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return false;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的角色 %s 数据 (%u: %u)", AUTH_ACCOUNT, gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return false;
+    }
+
+    is_gm = (uint32_t)strtoul(row[0], NULL, 0);
+    *priv = (uint32_t)strtoul(row[1], NULL, 0);
+
+    psocn_db_result_free(result);
+
+    if (is_gm)
+        return true;
+    else
+        return false;
+}

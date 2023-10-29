@@ -3780,6 +3780,12 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     gc = ntohl(pkt->guildcard);
     block = ntohl(pkt->block);
 
+    if (db_check_is_gm(gc, &priv)) {
+        DBG_LOG("GC %u 拥有GM权限", gc);
+        islogged = 1;
+        goto gm_login_done;
+    }
+
     /* Build the query asking for the data. */
     sprintf(query, "SELECT password, regtime, privlevel, islogged FROM %s "
         "NATURAL JOIN %s WHERE guildcard='%u' AND username='%s'"
@@ -3844,6 +3850,10 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
             8, 0, 0, 0, 0, 0);
     }
 
+    /* We're done if we got this far. */
+    psocn_db_result_free(result);
+
+gm_login_done:
     /* Filter out any privileges that don't make sense. Can't have global GM
        without local GM support. Also, anyone set as a root this way must have
        BOTH root bits set, not just one! */
@@ -3852,7 +3862,6 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         ((priv & CLIENT_PRIV_LOCAL_ROOT) && !(priv & CLIENT_PRIV_GLOBAL_ROOT))) {
         SQLERR_LOG("登录失败 - 玩家权限无效 %u: %02x", pkt->username,
             priv);
-        psocn_db_result_free(result);
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
             ERR_USRLOGIN_BAD_PRIVS, (uint8_t*)&pkt->guildcard,
@@ -3869,9 +3878,6 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     if (db_update_gc_login_state(gc, islogged, -1, NULL)) {
         return -4;
     }
-
-    /* We're done if we got this far. */
-    psocn_db_result_free(result);
 
     /* Send a success message. */
     return send_usrloginreply(c, gc, block, 1, priv);
