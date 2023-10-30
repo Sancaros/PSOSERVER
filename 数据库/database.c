@@ -197,6 +197,14 @@ unsigned int psocn_db_result_fields(psocn_dbconn_t* conn) {
     return mysql_field_count((MYSQL*)conn->conndata);
 }
 
+unsigned int psocn_db_num_fields(void* result) {
+    if (!result) {
+        return -42;
+    }
+
+    return mysql_num_fields((MYSQL_RES*)result);
+}
+
 char** psocn_db_result_fetch(void* result) {
     if (!result) {
         return NULL;

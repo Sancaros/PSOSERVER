@@ -202,6 +202,7 @@ void psocn_db_next_result_free(psocn_dbconn_t* conn, void* result);
 
 long long int psocn_db_result_rows(void* result);
 unsigned int psocn_db_result_fields(psocn_dbconn_t* conn);
+unsigned int psocn_db_num_fields(void* result);
 char** psocn_db_result_fetch(void* result);
 unsigned long* psocn_db_result_lengths(void* result);
 

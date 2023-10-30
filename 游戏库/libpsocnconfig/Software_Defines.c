@@ -49,7 +49,7 @@ void load_program_info(const char* servername, const char* ver)
 	//system("color F7");
 	printf(" <Ctrl-C> 关闭程序.\n");
 	printf(" ______                                ______\n");
-	printf(" __    梦幻之星中国 %s    __\n", servername);
+	printf(" __     梦幻之星中国 %s    __\n", servername);
 	printf("      http://www.phantasystaronline.cn:88    \n");
 	printf(" ______       %s - %s版本       ______\n", PSOBBCN_PLATFORM_STR, PSOBBCN_LINKAGE_TYPE_STR);
 	printf("        %s       \n", ver);
