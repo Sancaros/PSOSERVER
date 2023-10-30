@@ -538,7 +538,7 @@ static int handle_logina(login_client_t* c, dcv2_login_9a_pkt* pkt) {
         }
         else {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
-                "serial_number='%d' AND access_key='%s'"
+                "serial_number='%u' AND access_key='%s'"
                 , AUTH_ACCOUNT_PC
                 , serial_number, access);
             c->ext_version = CLIENT_EXTVER_PC;
@@ -664,6 +664,21 @@ static int handle_gchlcheck(login_client_t* c, v3_hlcheck_pkt* pkt) {
     time_t banlen;
     int banned = is_ip_banned(c, &banlen, query);
 
+//[2023年10月30日 10:41:02:556] 错误(auth_dc.c 0667): 数据包如下:
+//(00000000) DB 00 E0 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(00000010) 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(00000020) 00 00 00 00 45 39 46 30  38 31 45 44 00 00 00 00    ....E9F081ED....
+//(00000030) 00 00 00 00 31 31 31 31  31 31 31 31 31 31 31 31    ....111111111111
+//(00000040) 00 00 00 00 00 00 00 00  00 00 00 00 36 00 00 00    ............6...
+//(00000050) 45 39 46 30 38 31 45 44  00 00 00 00 00 00 00 00    E9F081ED........
+//(00000060) 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(00000070) 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(00000080) 31 31 31 31 31 31 31 31  31 31 31 31 00 00 00 00    111111111111....
+//(00000090) 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(000000A0) 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(000000B0) 31 31 31 31 31 31 31 31  00 00 00 00 00 00 00 00    11111111........
+//(000000C0) 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(000000D0) 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
     c->ext_version = CLIENT_EXTVER_GC;
 
     /* Check the version code of the connecting client since some clients seem
@@ -753,7 +768,7 @@ static int handle_gchlcheck(login_client_t* c, v3_hlcheck_pkt* pkt) {
     psocn_db_escape_str(&conn, access, pkt->access_key1, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
-        "serial_number='%d' AND access_key='%s'"
+        "serial_number='%u' AND access_key='%s'"
         , AUTH_ACCOUNT_GAMECUBE
         , serial_number, access);
 
@@ -762,68 +777,77 @@ static int handle_gchlcheck(login_client_t* c, v3_hlcheck_pkt* pkt) {
         return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
     }
 
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 " : %s)", serial_number, access);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 " : %s)", serial_number, access);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_NO_HL);
+    }
+
+    gc = (uint32_t)strtoul(row[0], NULL, 0);
+    psocn_db_result_free(result);
+
+    /* Make sure the guildcard isn't banned. */
+    banned = is_gc_banned(gc, &banlen, query);
+
+    if (banned == -1) {
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
+    }
+    else if (banned) {
+        send_ban_msg(c, banlen, query);
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_SUSPENDED);
+    }
+
+    /* Make sure the guildcard isn't online already. */
+    banned = db_check_gc_online(gc);
+
+    if (banned == -1) {
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
+    }
+    else if (banned) {
+        send_large_msg(c, __(c, "\tEYour account is already online."));
+        return -1;
+    }
+
+    /* The client has at least registered, check the password...
+       We need the account to do that though. */
+    sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%u'"
+        , AUTH_ACCOUNT_GUILDCARDS, gc);
+
+    if (psocn_db_real_query(&conn, query)) {
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
+    }
+
+    result = psocn_db_result_store(&conn);
+
+    if (!(row = psocn_db_result_fetch(result))) {
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
+    }
+
+    account = (uint32_t)strtoul(row[0], NULL, 0);
+    psocn_db_result_free(result);
+
+    sprintf(query, "SELECT privlevel FROM %s WHERE "
+        "account_id='%u'"
+        , AUTH_ACCOUNT
+        , account);
+
+    /* If we can't query the DB, fail. */
+    if (psocn_db_real_query(&conn, query)) {
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
+    }
+
     result = psocn_db_result_store(&conn);
 
     if ((row = psocn_db_result_fetch(result))) {
-        gc = (uint32_t)strtoul(row[0], NULL, 0);
-        psocn_db_result_free(result);
-
-        /* Make sure the guildcard isn't banned. */
-        banned = is_gc_banned(gc, &banlen, query);
-
-        if (banned == -1) {
-            return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
-        }
-        else if (banned) {
-            send_ban_msg(c, banlen, query);
-            return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_SUSPENDED);
-        }
-
-        /* Make sure the guildcard isn't online already. */
-        banned = db_check_gc_online(gc);
-
-        if (banned == -1) {
-            return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
-        }
-        else if (banned) {
-            send_large_msg(c, __(c, "\tEYour account is already online."));
-            return -1;
-        }
-
-        /* The client has at least registered, check the password...
-           We need the account to do that though. */
-        sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%u'"
-            , AUTH_ACCOUNT_GUILDCARDS, gc);
-
-        if (psocn_db_real_query(&conn, query)) {
-            return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
-        }
-
-        result = psocn_db_result_store(&conn);
-
-        if (!(row = psocn_db_result_fetch(result))) {
-            return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
-        }
-
-        account = (uint32_t)strtoul(row[0], NULL, 0);
-        psocn_db_result_free(result);
-
-        sprintf(query, "SELECT privlevel FROM %s WHERE "
-            "account_id='%u'"
-            , AUTH_ACCOUNT
-            , account);
-
-        /* If we can't query the DB, fail. */
-        if (psocn_db_real_query(&conn, query)) {
-            return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
-        }
-
-        result = psocn_db_result_store(&conn);
-
-        if ((row = psocn_db_result_fetch(result))) {
-            c->priv = strtoul(row[0], NULL, 0);
-            return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_OK);
-        }
+        c->priv = strtoul(row[0], NULL, 0);
+        return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_OK);
     }
 
 #ifdef DEBUG
@@ -853,7 +877,7 @@ static int handle_gcloginc(login_client_t* c, gc_login_9c_pkt* pkt) {
     psocn_db_escape_str(&conn, access, pkt->access_key, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
-        "serial_number='%d' AND access_key='%s'"
+        "serial_number='%u' AND access_key='%s'"
         , AUTH_ACCOUNT_GAMECUBE
         , serial_number, access);
 
@@ -948,7 +972,7 @@ static int handle_gclogine(login_client_t* c, gc_login_9e_pkt* pkt) {
     psocn_db_escape_str(&conn, access, pkt->access_key1, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
-        "serial_number='%d' AND access_key='%s'"
+        "serial_number='%u' AND access_key='%s'"
         , AUTH_ACCOUNT_GAMECUBE
         , serial_number, access);
 
