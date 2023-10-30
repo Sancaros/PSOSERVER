@@ -49,6 +49,12 @@ int load_ArmorRandomSet_data(const char* fn) {
     StringReader* r = StringReader_file(fn);
     uint32_t tmp, tmp2 = 0;
 
+    if (!r) {
+        ERR_LOG("读取的数据长度错误");
+        (void)getchar();
+        return -1;
+    }
+
     if (!r->length) {
         ERR_LOG("读取的数据长度错误");
         StringReader_destroy(r);

@@ -1,0 +1,651 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C6011",
+          "message": {
+            "text": "取消对 NULL 指针“cat->quests”的引用。"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                },
+                "region": {
+                  "startLine": 1146,
+                  "startColumn": 17,
+                  "endLine": 1146,
+                  "endColumn": 35
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "psocn_quests_destroy",
+                  "decoratedName": "psocn_quests_destroy",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1139,
+                            "startColumn": 9
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1139,
+                            "startColumn": 12
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1140,
+                            "startColumn": 29
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1142,
+                            "startColumn": 11
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1142,
+                            "startColumn": 18
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1143,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1145,
+                            "startColumn": 15
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1145,
+                            "startColumn": 22
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1146,
+                            "startColumn": 32
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1145,
+                            "startColumn": 42
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1145,
+                            "startColumn": 22
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1152,
+                            "startColumn": 15
+                          }
+                        },
+                        "message": {
+                          "text": "“cat->quests”可能为 NULL (跳过此分支)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1142,
+                            "startColumn": 37
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1142,
+                            "startColumn": 18
+                          }
+                        },
+                        "message": {
+                          "text": "继续此循环(假定“i<list->cat_count”)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1143,
+                            "startColumn": 13
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1145,
+                            "startColumn": 15
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1145,
+                            "startColumn": 22
+                          }
+                        },
+                        "message": {
+                          "text": "进入此循环(假定“j<cat->quest_count”)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1146,
+                            "startColumn": 32
+                          }
+                        },
+                        "message": {
+                          "text": "跳过此分支(假定“cat->quests[j]!=(((void *)0))”为 false)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+                          },
+                          "region": {
+                            "startLine": 1146,
+                            "startColumn": 32
+                          }
+                        },
+                        "message": {
+                          "text": "已取消对“cat->quests”的引用，但可能仍为 NULL"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "essential"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.36.32535.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///E:/梦幻之星项目/PSOSERVER/游戏库/libpsocnconfig/quest.c"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "c05d64fc172c9b9c36e44deca3669543b3c115c0690ddc34902f1766acd682d0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/parser.h"
+          },
+          "hashes": {
+            "sha-256": "2c1ba41b5be16f04398d9b9b146b3774fa4b47f7d57b718510970fba8ac5ba24"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlversion.h"
+          },
+          "hashes": {
+            "sha-256": "d633a07258224c459a3ab5213f1dd7fbc0a969c803fe55ef26f3463bac5ba8d0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlexports.h"
+          },
+          "hashes": {
+            "sha-256": "c40acb0aa1b6acdcf1b55f91923a5d7f768bb8575746eaa7a65e32b200a6b312"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/tree.h"
+          },
+          "hashes": {
+            "sha-256": "8339397a4bbd05b7827b0047abed9bbcb547a2e10ebcda436c92e89a8b9bdeb7"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlstring.h"
+          },
+          "hashes": {
+            "sha-256": "e2030019b4ec0dca96f5f26d233ea6b8baff1ec62069e408d5fc8896a8e1e2e3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlregexp.h"
+          },
+          "hashes": {
+            "sha-256": "710e5763924e28e9ce49034dd1a18e64b34c33b2cd9e4bdddf4ff9fc4af4a409"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/dict.h"
+          },
+          "hashes": {
+            "sha-256": "03ac6fc4972aa7e796c83949642b524f4e571d73b5e3813f0127944d02d57cce"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/hash.h"
+          },
+          "hashes": {
+            "sha-256": "792d842138a0ddba7822331929186a473fe39c3ed152625079d9ab826c00420e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/valid.h"
+          },
+          "hashes": {
+            "sha-256": "37ab9e3d163d6796dab5b2d4cdfe9eccab8018c6399314a68091a14c6e8290b8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlerror.h"
+          },
+          "hashes": {
+            "sha-256": "9bb23e8a1ee7c08384aba65164892c00d8dfb68c66e4b53ad1e5a6f01bdaa39a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/list.h"
+          },
+          "hashes": {
+            "sha-256": "53ab842d6c360ebae87a0fc14391eb00583793e33c7ba72b58c2ac7aeb61ee45"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlautomata.h"
+          },
+          "hashes": {
+            "sha-256": "5d13007461d3f5b7ad1500f0fd870ef789e82b6e495e1b4cf02d9c72983add9b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/entities.h"
+          },
+          "hashes": {
+            "sha-256": "44f79488049980a3887a7841a5d9d867175ba1df808e2a569d078671d894f3dc"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/encoding.h"
+          },
+          "hashes": {
+            "sha-256": "8c95ed582fa0aabb077d28a6ca9900462337cdbe6a70214fa554204c071de16c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libiconv-win-build/include/iconv.h"
+          },
+          "hashes": {
+            "sha-256": "eae49b572d765c4c503068de4ad19bb43f8d619f1e58081fad2dbb1702f944cf"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlio.h"
+          },
+          "hashes": {
+            "sha-256": "527e18f68b9c79d584af645f9f8f9ebbd8f64f63e116304cabee308c83d1ae2c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/globals.h"
+          },
+          "hashes": {
+            "sha-256": "8b41e0b47c51942f4b98ad9ffd8a0a3ef08e3efe93c9b4b73f0c51e4ad5594c5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/sax2.h"
+          },
+          "hashes": {
+            "sha-256": "c460270f35f5a197a439eade9c9d76dbfa496709824e704e608750812fbd6d95"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/xmlmemory.h"
+          },
+          "hashes": {
+            "sha-256": "78fe364911ed1fe2b39302030b3bcc676f885ed955693e05f040583cda6b0dbc"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/libxml2-win-build/include/libxml/threads.h"
+          },
+          "hashes": {
+            "sha-256": "24f1c3fe29aa43b077144796955d23a8bdb27ee6295fad1b9ed999c046ce25b3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/quest.h"
+          },
+          "hashes": {
+            "sha-256": "212a755d42444924c35b4e47ff79482d2371020a5c9e0641d5df5b3936a35c2c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/f_logs.h"
+          },
+          "hashes": {
+            "sha-256": "016a829612c26a4661300db04def22f50dbf3f777e7d5060efe28e1726dc1d1d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/software_defines.h"
+          },
+          "hashes": {
+            "sha-256": "06349c31ab290ea7e4d619a7bcd90ee21633c9f6c10f4a54e50c5f00d32f0631"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/pthread_win32/pthread.h"
+          },
+          "hashes": {
+            "sha-256": "9776265e5b555990ef1157ba6558a95b720a1b4f40b65e9f3a54a32b2570de2b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/pthread_win32/_ptw32.h"
+          },
+          "hashes": {
+            "sha-256": "108bfef4bdc7f9048247691ce50566f039470ce0748985666b984752eb62fa16"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/pthread_win32/sched.h"
+          },
+          "hashes": {
+            "sha-256": "f41a0688b766b47bd66f897d6eede64d8ec7f1f7be6c4e321afb0a2db3c2aea6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_cmd_name.h"
+          },
+          "hashes": {
+            "sha-256": "1f99f0e9e05cfe08be8c0405ed8e531aaa744b0246d89536ced9724ddbb013b3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_opcodes_block.h"
+          },
+          "hashes": {
+            "sha-256": "0b79985342f42f09e9599780bb38e7a36976ad2358aa6b612b6f2300906c1419"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_opcodes_subcmd.h"
+          },
+          "hashes": {
+            "sha-256": "3632df69c68952c4011e3f3dc91838c4338034caf17af71064b9e12c2dcbdd79"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_opcodes_shipgate.h"
+          },
+          "hashes": {
+            "sha-256": "13a34fcb8b0df7a08f1dfd43f6e0bcca91b3ea827a0c50742e6438c6f54bfe78"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_text.h"
+          },
+          "hashes": {
+            "sha-256": "e0c3f1a90ba2fb3cfaad6eb6723fc886b0899b3eb9ea9313a19b31abd413474a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_timer.h"
+          },
+          "hashes": {
+            "sha-256": "b199b3e2572485893cbe5db63fb85e54a2519b0fc42b119a6cad1f62c9697d97"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/f_iconv.h"
+          },
+          "hashes": {
+            "sha-256": "1aa06d2f52e324b57ac8faf9f47d0146de17cdacae9fc30a28897fbcebf086be"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/psomemory.h"
+          },
+          "hashes": {
+            "sha-256": "7957730618e318bf2dc20124ea138726455b68daf4a7697728f5ff865e9d5b07"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/strptime_win.h"
+          },
+          "hashes": {
+            "sha-256": "8247496296a08cf0cfc3687cde1236f7c748b4f3db4894620fd619f3ed592252"
+          }
+        }
+      ]
+    }
+  ]
+}

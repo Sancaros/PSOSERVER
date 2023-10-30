@@ -1,0 +1,43 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.36.32535.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/f_checksum.c"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "1a39056684cd3e83104f8733dec6bff5cc5265e092d3f2bbfe78e3eb78cfd4c9"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/f_checksum.h"
+          },
+          "hashes": {
+            "sha-256": "e3d469fb54a38da764eda29803f0bea408f2e3a036de99dd80102030fea0b096"
+          }
+        }
+      ]
+    }
+  ]
+}

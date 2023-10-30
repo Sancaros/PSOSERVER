@@ -1,0 +1,75 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.36.32535.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/utsname.c"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "d6ea2681323b0cadfd16e62634d610fb424639a61ad8eb95d082b3a5b43eca0e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/utsname.h"
+          },
+          "hashes": {
+            "sha-256": "13671aedd3ce2e5f0f7fd1a45b60adc4e0019b4d696054678049cd642c13ff0e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/regex/include/regex.h"
+          },
+          "hashes": {
+            "sha-256": "ce449881b85ee11aedaa4bc171045a3617771d694c1944fe69092186087c6217"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/winsock_defines.h"
+          },
+          "hashes": {
+            "sha-256": "703e59fb118d102512d0ec899714756bdc6e314e1315e196a5bb5359611e468a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/winsock2i.h"
+          },
+          "hashes": {
+            "sha-256": "b804ea1039fbf986aed1088158685319286da556a3563b135649408f051fc4a3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_crash_handle.h"
+          },
+          "hashes": {
+            "sha-256": "f54faa6e5e8170db384b4a53b451c14bf85af6ef9a8e80bbf2bf5fc099c77394"
+          }
+        }
+      ]
+    }
+  ]
+}

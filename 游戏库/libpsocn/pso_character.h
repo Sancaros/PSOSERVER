@@ -182,7 +182,7 @@ typedef struct psocn_bb_guild {
             uint8_t guild_reward7;
         }PACKED;
         uint8_t guild_reward[8];
-        uint32_t guild_rewards;
+        uint32_t guild_rewards[2];
     }PACKED;
 } PACKED bb_guild_t;
 

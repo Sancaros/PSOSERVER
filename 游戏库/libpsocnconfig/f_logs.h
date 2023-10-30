@@ -539,19 +539,17 @@ typedef void (*LogFunc)(const char*, ...);
                     }\
                 }\
             }\
-            pthread_mutex_unlock(&pkt_mutex); \
             if (strlen(dp) + 2 + 1 <= sizeof(dp)) {\
                 strcat(dp, "\n\r"); \
+                method(dp); \
             }\
             else {\
                 method("²»×ãÒÔÈÝÄÉ»»ÐÐ·û"); \
             }\
-            method(dp); \
+            pthread_mutex_unlock(&pkt_mutex); \
         }\
     }\
 } while (0)
-
-//extern void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length);
 
 extern double expand_rate(uint8_t rate);
 
@@ -586,45 +584,47 @@ extern int remove_directory(const char* path);
 
 extern ssize_t clamp(ssize_t value, ssize_t min, ssize_t max);
 
-//static inline void errl(const char* message) {
-//    ERR_LOG("%s", message);
-//}
-//
-//static inline void dbgl(const char* message) {
-//    DBG_LOG("%s", message);
-//}
-//
-//static inline void gml(const char* message) {
-//    GM_LOG("%s", message);
-//}
-//
-//static inline void iteml(const char* message) {
-//    ITEM_LOG("%s", message);
-//}
-//
-//static inline void pickl(const char* message) {
-//    PICKS_LOG("%s", message);
-//}
-//
-//static inline void dropl(const char* message) {
-//    DROPS_LOG("%s", message);
-//}
-//
-//static inline void mdropl(const char* message) {
-//    MDROPS_LOG("%s", message);
-//}
-//
-//static inline void bdropl(const char* message) {
-//    BDROPS_LOG("%s", message);
-//}
-//
-//static inline void tradel(const char* message) {
-//    TRADES_LOG("%s", message);
-//}
-//
-//static inline void testl(const char* message) {
-//    TEST_LOG("%s", message);
-//}
+extern void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length);
+
+static inline void errl(const char* message) {
+    ERR_LOG("%s", message);
+}
+
+static inline void dbgl(const char* message) {
+    DBG_LOG("%s", message);
+}
+
+static inline void gml(const char* message) {
+    GM_LOG("%s", message);
+}
+
+static inline void iteml(const char* message) {
+    ITEM_LOG("%s", message);
+}
+
+static inline void pickl(const char* message) {
+    PICKS_LOG("%s", message);
+}
+
+static inline void dropl(const char* message) {
+    DROPS_LOG("%s", message);
+}
+
+static inline void mdropl(const char* message) {
+    MDROPS_LOG("%s", message);
+}
+
+static inline void bdropl(const char* message) {
+    BDROPS_LOG("%s", message);
+}
+
+static inline void tradel(const char* message) {
+    TRADES_LOG("%s", message);
+}
+
+static inline void testl(const char* message) {
+    TEST_LOG("%s", message);
+}
 
 static inline void log_mutex_init() {
     int result = 0;

@@ -723,7 +723,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[char_data->character.dress_data.ch_class].cn_name, sizeof(char_class_name_text));
 
         if (db_insert_bb_full_char_data(&full_data_pkt, c->guildcard, pkt->slot, char_data->character.dress_data.ch_class, char_class_name_text)) {
-            DBG_LOG("GC %u slot %d %s 数据已存在,进行更新操作", c->guildcard, pkt->slot, pso_class[char_data->character.dress_data.ch_class].cn_name);
+            DBG_LOG("GC %u slot %d %s 数据已存在,无法进行插入操作", c->guildcard, pkt->slot, pso_class[char_data->character.dress_data.ch_class].cn_name);
         }
 
         /* 获取玩家角色背包数据数据项 */

@@ -34,7 +34,7 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/winsock_defines.h"
           },
           "hashes": {
-            "sha-256": "ff409b4277ece764ddc5ec33ede988c79c16d3b5238e154f36c02020325d9bed"
+            "sha-256": "703e59fb118d102512d0ec899714756bdc6e314e1315e196a5bb5359611e468a"
           }
         },
         {
@@ -50,7 +50,7 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_crash_handle.h"
           },
           "hashes": {
-            "sha-256": "9fd38e48a00c773120006581efea8b38c02ed0fe135d752d4a625d9f61dec607"
+            "sha-256": "f54faa6e5e8170db384b4a53b451c14bf85af6ef9a8e80bbf2bf5fc099c77394"
           }
         },
         {
@@ -218,7 +218,7 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/psoconfig.h"
           },
           "hashes": {
-            "sha-256": "7764e131111e0896e72a51c0af290ee0712d19536b77624bc9bc00d813f34e58"
+            "sha-256": "5e7de3f0ada30039667ba640bc70bc779a27016390337a420a832f4854104766"
           }
         },
         {
@@ -234,7 +234,7 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_opcodes_block.h"
           },
           "hashes": {
-            "sha-256": "425ff7865c38a616bddd162acec69edf273ef112facd24e3b3feb511dfb9e0d6"
+            "sha-256": "0b79985342f42f09e9599780bb38e7a36976ad2358aa6b612b6f2300906c1419"
           }
         },
         {
@@ -242,7 +242,7 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_opcodes_subcmd.h"
           },
           "hashes": {
-            "sha-256": "f5e98c59ef37ff3bbd4a94dfb40f0baa14c6cd5a64c3143443d37dbab2312cdc"
+            "sha-256": "3632df69c68952c4011e3f3dc91838c4338034caf17af71064b9e12c2dcbdd79"
           }
         },
         {
@@ -250,7 +250,7 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_opcodes_shipgate.h"
           },
           "hashes": {
-            "sha-256": "e3255c538139c16b80b02a20a7fd2d6c4ed151389ae191f4cbfa7f27e855254d"
+            "sha-256": "13a34fcb8b0df7a08f1dfd43f6e0bcca91b3ea827a0c50742e6438c6f54bfe78"
           }
         },
         {
@@ -258,31 +258,7 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/f_logs.h"
           },
           "hashes": {
-            "sha-256": "750807afadd98a45ed6f3a5967eb2ad94298f8f1c406f8432e52a222eba6f726"
-          }
-        },
-        {
-          "location": {
-            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_cmd_name.h"
-          },
-          "hashes": {
-            "sha-256": "f2876cc778553ec58b63ec6a92b0f883a028c904692a8ee1a96acd91bceeb64b"
-          }
-        },
-        {
-          "location": {
-            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_timer.h"
-          },
-          "hashes": {
-            "sha-256": "79efbba736e4fb42fdda14c3cb4bf2028de4ba8ae5f3529cdb33884abd8d5eba"
-          }
-        },
-        {
-          "location": {
-            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_text.h"
-          },
-          "hashes": {
-            "sha-256": "3124b3b74c81d785411319f24948d83570e916fbcf05b95b6f870e1e9c720894"
+            "sha-256": "016a829612c26a4661300db04def22f50dbf3f777e7d5060efe28e1726dc1d1d"
           }
         },
         {
@@ -290,7 +266,55 @@
             "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocnconfig/software_defines.h"
           },
           "hashes": {
-            "sha-256": "34948b8a76784652739f8a2b243d63d31bb4253684fb9a95b3f727840d88462e"
+            "sha-256": "06349c31ab290ea7e4d619a7bcd90ee21633c9f6c10f4a54e50c5f00d32f0631"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/pthread_win32/pthread.h"
+          },
+          "hashes": {
+            "sha-256": "9776265e5b555990ef1157ba6558a95b720a1b4f40b65e9f3a54a32b2570de2b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/pthread_win32/_ptw32.h"
+          },
+          "hashes": {
+            "sha-256": "108bfef4bdc7f9048247691ce50566f039470ce0748985666b984752eb62fa16"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/pthread_win32/sched.h"
+          },
+          "hashes": {
+            "sha-256": "f41a0688b766b47bd66f897d6eede64d8ec7f1f7be6c4e321afb0a2db3c2aea6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_cmd_name.h"
+          },
+          "hashes": {
+            "sha-256": "1f99f0e9e05cfe08be8c0405ed8e531aaa744b0246d89536ced9724ddbb013b3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_text.h"
+          },
+          "hashes": {
+            "sha-256": "e0c3f1a90ba2fb3cfaad6eb6723fc886b0899b3eb9ea9313a19b31abd413474a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsocn/pso_timer.h"
+          },
+          "hashes": {
+            "sha-256": "b199b3e2572485893cbe5db63fb85e54a2519b0fc42b119a6cad1f62c9697d97"
           }
         },
         {

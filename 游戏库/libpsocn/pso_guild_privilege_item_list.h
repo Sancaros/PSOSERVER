@@ -29,6 +29,10 @@
 
 */
 
+#define BB_GUILD_PRIVILEGE_FLAG_NONE                0x00000000
+#define BB_GUILD_PRIVILEGE_FLAG_ICON                0x00000001
+#define BB_GUILD_PRIVILEGE_FLAG_DRESS               0x00000002
+
 typedef struct bb_guild_privilege_items {
     char item_name[64];
     char item_desc[128];

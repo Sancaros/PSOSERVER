@@ -39,68 +39,68 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp)
 }
 #endif
 
-//void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length) {
-//	pthread_mutex_lock(&pkt_mutex);
-//	size_t i;
-//	memset(&dp[0], 0, sizeof(dp));
-//
-//	if (data == NULL || length <= 0 || length > MAX_PACKET_BUFF) {
-//		sprintf(dp, "空指针数据包或无效长度 % d 数据包.", length);
-//		goto done;
-//	}
-//
-//	uint8_t* buff = (uint8_t*)data;
-//
-//	if (isPacketEmpty(buff, length)) {
-//		sprintf(dp, "空数据包 长度 %d.", length);
-//		goto done;
-//	}
-//
-//	strcpy(dp, "数据包如下:\n\r");	
-//
-//	for (i = 0; i < length; i++) {
-//		if (i % 16 == 0) {
-//			if (i != 0) {
-//				SAFE_STRCAT(dp, "\n");
-//			}
-//			sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i);
-//		}
-//		sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]);
-//
-//		if (i % 8 == 7 && i % 16 != 15) {
-//			SAFE_STRCAT(dp, " "); // 在8个二进制后增加一个空格
-//		}
-//
-//		if (i % 16 == 15 || i == length - 1) {
-//			size_t j;
-//			SAFE_STRCAT(dp, "    ");
-//			for (j = i - (i % 16); j <= i; j++) {
-//				if (j >= length) {
-//					SAFE_STRCAT(dp, " ");
-//				}
-//				else if (buff[j] >= ' ' && buff[j] <= '~') {
-//					char tmp_str[2] = { buff[j], '\0' };
-//					SAFE_STRCAT(dp, tmp_str);
-//				}
-//				else {
-//					SAFE_STRCAT(dp, ".");
-//				}
-//			}
-//		}
-//	}
-//
-//	if (strlen(dp) + 2 + 1 <= MAX_PACKET_BUFF) { // 检查长度是否足够
-//		SAFE_STRCAT(dp, "\n\r"); // 添加两个换行符
-//	}
-//	else {
-//		print_method("不足以容纳换行符");
-//	}
-//
-//done:
-//	print_method(dp);
-//
-//	pthread_mutex_unlock(&pkt_mutex);
-//}
+void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length) {
+	pthread_mutex_lock(&pkt_mutex);
+	size_t i;
+	memset(&dp[0], 0, sizeof(dp));
+
+	if (data == NULL || length <= 0 || length > MAX_PACKET_BUFF) {
+		sprintf(dp, "空指针数据包或无效长度 % d 数据包.", length);
+		goto done;
+	}
+
+	uint8_t* buff = (uint8_t*)data;
+
+	if (isPacketEmpty(buff, length)) {
+		sprintf(dp, "空数据包 长度 %d.", length);
+		goto done;
+	}
+
+	strcpy(dp, "数据包如下:\n\r");	
+
+	for (i = 0; i < length; i++) {
+		if (i % 16 == 0) {
+			if (i != 0) {
+				SAFE_STRCAT(dp, "\n");
+			}
+			sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i);
+		}
+		sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]);
+
+		if (i % 8 == 7 && i % 16 != 15) {
+			SAFE_STRCAT(dp, " "); // 在8个二进制后增加一个空格
+		}
+
+		if (i % 16 == 15 || i == length - 1) {
+			size_t j;
+			SAFE_STRCAT(dp, "    ");
+			for (j = i - (i % 16); j <= i; j++) {
+				if (j >= length) {
+					SAFE_STRCAT(dp, " ");
+				}
+				else if (buff[j] >= ' ' && buff[j] <= '~') {
+					char tmp_str[2] = { buff[j], '\0' };
+					SAFE_STRCAT(dp, tmp_str);
+				}
+				else {
+					SAFE_STRCAT(dp, ".");
+				}
+			}
+		}
+	}
+
+	if (strlen(dp) + 2 + 1 <= MAX_PACKET_BUFF) { // 检查长度是否足够
+		SAFE_STRCAT(dp, "\n\r"); // 添加两个换行符
+done:
+		print_method(dp);
+	}
+	else {
+		print_method("不足以容纳换行符");
+	}
+
+
+	pthread_mutex_unlock(&pkt_mutex);
+}
 
 /* This function based on information from a couple of different sources, namely
    Fuzziqer's newserv and information from Lee (through Aleron Ives). */

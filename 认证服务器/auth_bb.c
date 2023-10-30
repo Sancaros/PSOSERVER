@@ -52,21 +52,21 @@ static int handle_bb_burst(login_client_t* c, bb_burst_pkt* pkt) {
 
 /* 0x0093 147*/
 static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
-    char query[512];
-    int len;
-    char tmp_username[32];
+    char query[512] = { 0 };
+    int len = 0;
+    char tmp_username[48] = { 0 };
     void *result;
     char **row;
     //uint8_t hash[32];
-    uint32_t ch;
-    int8_t security_sixtyfour_binary[18] = { 0 };
+    uint32_t ch = 0;
+    char security_sixtyfour_binary[18] = { 0 };
     //int64_t security_sixtyfour_check;
     uint32_t hwinfo[2] = { 0 };
     uint32_t /*guild_id = 0, priv, guildcard,*/ isbanded, isactive, islogged;
     //uint16_t clientver;
-    uint8_t MDBuffer[0x30] = { 0 };
-    int8_t password[0x30] = { 0 };
-    int8_t md5password[0x30] = { 0 };
+    uint8_t MDBuffer[48] = { 0 };
+    char password[48] = { 0 };
+    char md5password[48] = { 0 };
     time_t banlen;
     int banned = is_ip_banned(c, &banlen, query);
     int logged = 0;

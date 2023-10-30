@@ -32,8 +32,6 @@
 int psocn_db_open(psocn_dbconfig_t* dbcfg, psocn_dbconn_t* conn) {
     MYSQL* mysql;
 
-    psocn_read_db_config(NULL, &dbcfg);
-
     if (!dbcfg || !conn) {
         return -42;
     }

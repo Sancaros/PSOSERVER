@@ -273,7 +273,7 @@ static void parse_command_line(int argc, char* argv[]) {
 
 /* 读取设置文件. */
 static psocn_config_t* load_config(void) {
-    psocn_config_t* cfg;
+    psocn_config_t* cfg = { 0 };
 
     AUTH_LOG("读取设置文件...");
 
@@ -343,7 +343,7 @@ void read_quests() {
     read_quests = 1;
 }
 
-static void load_patch_config() {
+static void load_auth_config() {
     char query[256];
     char* fn;
     char* pfn;
@@ -1589,7 +1589,7 @@ int __cdecl main(int argc, char** argv) {
 
     restart:
         shutting_down = 0;
-        load_patch_config();
+        load_auth_config();
 
         srvcfg = load_srv_config();
 
