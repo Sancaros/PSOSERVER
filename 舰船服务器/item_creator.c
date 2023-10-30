@@ -688,8 +688,6 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 		return item;
 	}
 
-	// Note: The original code uses 0xFFFFFFFF as the maximum here. We use
-	// 0x100000000 instead, which makes all rare items SLIGHTLY more rare.
 	if (!l->drop_rare) {
 		drop_rare = sfmt_genrand_real1(rng);
 		orignal_rare_rate = expand_rate(drop.probability);
@@ -719,29 +717,32 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 	item.datab[0] = drop.item_code[0];
 	item.datab[1] = drop.item_code[1];
 	item.datab[2] = drop.item_code[2];
-	switch (item.datab[0]) {
-	case ITEM_TYPE_WEAPON:
-		generate_rare_weapon_bonuses(rng, ent, &item, rand_int(rng, 10));
-		set_item_identified_flag(l->challenge, &item);
-		break;
-	case ITEM_TYPE_GUARD:
-		generate_common_armor_slots_and_bonuses(rng, &item, ent);
-		break;
-	case ITEM_TYPE_MAG:
-		generate_common_mag_variances(&item, get_player_msg_color_set(l->clients[l->leader_id]));
-		break;
-	case ITEM_TYPE_TOOL:
-		clear_tool_item_if_invalid(&item);
-		get_item_amount(&item, 1);
-		break;
-	case ITEM_TYPE_MESETA:
-		break;
-	default:
-		ERR_LOG("无效物品类型");
+	/* 再次检测物品是否存在 */
+	if (!is_item_empty(&item)) {
+		switch (item.datab[0]) {
+		case ITEM_TYPE_WEAPON:
+			generate_rare_weapon_bonuses(rng, ent, &item, rand_int(rng, 10));
+			set_item_identified_flag(l->challenge, &item);
+			break;
+		case ITEM_TYPE_GUARD:
+			generate_common_armor_slots_and_bonuses(rng, &item, ent);
+			break;
+		case ITEM_TYPE_MAG:
+			generate_common_mag_variances(&item, get_player_msg_color_set(l->clients[l->leader_id]));
+			break;
+		case ITEM_TYPE_TOOL:
+			clear_tool_item_if_invalid(&item);
+			get_item_amount(&item, 1);
+			break;
+		case ITEM_TYPE_MESETA:
+			break;
+		default:
+			ERR_LOG("无效物品类型");
+		}
+
+		clear_item_if_restricted(l, &item);
+		set_item_kill_count_if_unsealable(&item);
 	}
-	
-	clear_item_if_restricted(l, &item);
-	set_item_kill_count_if_unsealable(&item);
 	return item;
 }
 
