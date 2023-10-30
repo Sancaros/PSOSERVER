@@ -87,7 +87,7 @@ char* db_get_auth_ip(uint32_t gc, uint8_t slot);
 char* db_get_char_create_time(uint32_t gc, uint8_t slot);
 
 /* 解压角色数据 */
-psocn_bb_db_char_t *db_uncompress_char_data(unsigned long* len, char** row, uint32_t data_size);
+psocn_bb_db_char_t* db_uncompress_char_data(unsigned long* len, char** row, uint32_t data_size, uint32_t gc, uint8_t slot);
 
 /* 获取并解压未结构化的角色数据 */
 int db_uncompress_char_data_raw(uint8_t* data, char* raw_data, uint32_t data_legth, uint32_t data_size);

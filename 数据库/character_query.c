@@ -279,7 +279,7 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     return row[0];
 }
 
-psocn_bb_db_char_t* db_uncompress_char_data(unsigned long* len, char** row, uint32_t data_size) {
+psocn_bb_db_char_t* db_uncompress_char_data(unsigned long* len, char** row, uint32_t data_size, uint32_t gc, uint8_t slot) {
     psocn_bb_db_char_t* char_data;
     int sz;
     uLong sz2, csz;
@@ -309,7 +309,7 @@ psocn_bb_db_char_t* db_uncompress_char_data(unsigned long* len, char** row, uint
     else {
 
         if (len[0] != PSOCN_STLENGTH_BB_DB_CHAR) {
-            ERR_LOG("无效(未知)角色数据,长度不一致!");
+            ERR_LOG("无效(未知)角色数据,长度不一致! (GC%u:%u)", gc, slot);
         }
         else
             memcpy(char_data, row[0], len[0]);
@@ -411,7 +411,7 @@ psocn_bb_db_char_t* db_get_uncompress_char_data(uint32_t gc, uint8_t slot) {
 
     data_size = (uint32_t)strtoul(row[1], NULL, 10);
 
-    char_data = db_uncompress_char_data(len, row, data_size);
+    char_data = db_uncompress_char_data(len, row, data_size, gc, slot);
 
     return char_data;
 
@@ -756,7 +756,7 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot) {
 
             data_size = (uint32_t)strtoul(row[1], NULL, 10);
 
-            char_data = db_uncompress_char_data(len, row, data_size);
+            char_data = db_uncompress_char_data(len, row, data_size, gc, slot);
 
             sprintf(query, "INSERT INTO %s (guildcard, slot, size, deleteip, data) "
                 "VALUES ('%" PRIu32 "', '%" PRIu8 "', '0', '%s', '", CHARACTER_DELETE

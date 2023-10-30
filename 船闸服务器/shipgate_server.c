@@ -264,6 +264,42 @@ static psocn_config_t* load_config(void) {
     return cfg;
 }
 
+static psocn_dbconfig_t* load_db_config(void) {
+    psocn_dbconfig_t* cfg = NULL;
+
+    FILE* file = fopen(psocn_database_cfg, "r");
+    if (file == NULL) {
+        printf("未找到数据库设置文件,即将读取默认数据库设置!\n");
+        if (!cfg) {
+            cfg = (psocn_dbconfig_t*)malloc(sizeof(psocn_dbconfig_t));
+            if (!cfg) {
+                ERR_EXIT("mmalloc 错误...");
+            }
+
+            memset(cfg, 0, sizeof(psocn_dbconfig_t));
+
+            cfg->type = "mariadb";
+            cfg->host = "localhost";
+            cfg->user = "root";
+            cfg->pass = "root";
+            cfg->db = "psoserver";
+            cfg->port = 3306;
+            cfg->auto_reconnect = "true";
+            cfg->char_set = "utf8mb4";
+            cfg->show_setting = "0";
+        }
+    }
+    else {
+        fclose(file);
+
+        if (psocn_read_db_config(psocn_database_cfg, &cfg)) {
+            printf("读取数据库设置文件失败,即将读取默认数据库设置!\n");
+        }
+    }
+
+    return cfg;
+}
+
 static int init_gnutls() {
     int rv;
 
@@ -519,6 +555,8 @@ static int read_events_table() {
 static void open_db() {
 
     SGATE_LOG("初始化数据库连接");
+
+    dbcfg = load_db_config();
 
     if (psocn_db_open(dbcfg, &conn)) {
         SQLERR_LOG("无法连接至数据库");

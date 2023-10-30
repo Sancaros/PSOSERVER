@@ -296,16 +296,41 @@ static psocn_srvconfig_t* load_srv_config(void) {
     return cfg;
 }
 
-//static psocn_dbconfig_t* load_db_config(void) {
-//    psocn_dbconfig_t* cfg;
-//
-//    if (psocn_read_db_config(config_file, &cfg)) {
-//        ERR_LOG("无法读取设置文件!");
-//        exit(EXIT_FAILURE);
-//    }
-//
-//    return cfg;
-//}
+static psocn_dbconfig_t* load_db_config(void) {
+    psocn_dbconfig_t* cfg = NULL;
+
+    FILE* file = fopen(psocn_database_cfg, "r");
+    if (file == NULL) {
+        printf("未找到数据库设置文件,即将读取默认数据库设置!\n");
+        if (!cfg) {
+            cfg = (psocn_dbconfig_t*)malloc(sizeof(psocn_dbconfig_t));
+            if (!cfg) {
+                ERR_EXIT("mmalloc 错误...");
+            }
+
+            memset(cfg, 0, sizeof(psocn_dbconfig_t));
+
+            cfg->type = "mariadb";
+            cfg->host = "localhost";
+            cfg->user = "root";
+            cfg->pass = "root";
+            cfg->db = "psoserver";
+            cfg->port = 3306;
+            cfg->auto_reconnect = "true";
+            cfg->char_set = "utf8mb4";
+            cfg->show_setting = "0";
+        }
+    }
+    else {
+        fclose(file);
+
+        if (psocn_read_db_config(psocn_database_cfg, &cfg)) {
+            printf("读取数据库设置文件失败,即将读取默认数据库设置!\n");
+        }
+    }
+
+    return cfg;
+}
 
 void read_quests() {
     int i, j;
@@ -408,6 +433,8 @@ static void load_auth_config() {
     }
 
     AUTH_LOG("初始化数据库...");
+
+    dbcfg = load_db_config();
 
     if (psocn_db_open(dbcfg, &conn)) {
         ERR_LOG("连接数据库失败");
@@ -1582,8 +1609,6 @@ int __cdecl main(int argc, char** argv) {
         parse_command_line(argc, argv);
 
         cfg = load_config();
-
-        //dbcfg = load_db_config();
 
         open_log();
 

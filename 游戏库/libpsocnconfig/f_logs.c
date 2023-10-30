@@ -214,21 +214,25 @@ void display_packet_old(const void* buf, size_t len) {
 }
 
 /* 日志设置 */
-void load_log_config(void)
-{
-	int32_t config_index = 0;
+void load_log_config(void) {
+	int config_index = 0;
 	char config_data[255] = { 0 };
 	uint32_t ch;
 
 	FILE* fp;
 	const char* Log_config = "Config\\Config_Log.ini";
 	errno_t err = fopen_s(&fp, Log_config, "r");
-	if (err)
-	{
-		printf("设置文件 %s 缺失了.\n", Log_config); //12.22
-		printf("按下 [回车键] 退出");
-		gets_s(&dp[0], 0);
-		exit(EXIT_FAILURE);
+	if (err) {
+		//printf("设置文件 %s 缺失了.\n", Log_config); //12.22
+		printf("日志设置文件不存在, 加载默认设置");
+re_load_log_setting:
+		int x = 0;
+		for (x = 0; x < LOG_FILES_MAX;x++) {
+			log_file_show[x] = true;
+			printf(".");
+		}
+		printf("完成\n");
+		config_index = x;
 	}
 	else {
 		while (fgets(&config_data[0], 255, fp) != NULL)
@@ -254,12 +258,10 @@ void load_log_config(void)
 		fclose(fp);
 	}
 
-	if (config_index < LOG_FILES_MAX)
-	{
+	if (config_index < LOG_FILES_MAX) {
 		printf("%s 文件貌似已损坏.\n", Log_config);
-		printf("按下 [回车键] 退出");
-		gets_s(&dp[0], 0);
-		exit(EXIT_FAILURE);
+		printf("加载默认设置");
+		goto re_load_log_setting;
 	}
 }
 
