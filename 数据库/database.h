@@ -47,6 +47,8 @@ static char myquery[MAX_PACKET_BUFF] = { 0 };
 #define AUTH_LOGIN_TOKENS "auth_login_tokens"
 #define AUTH_SECURITY "auth_security"
 #define AUTH_SERVER_LIST "auth_server_list"
+
+#define BB_DATA_GUILD_PRIVILEGE_ITEM_LIST "bb_data_guild_privilege_item_list"
 //#define AUTH_QUESTITEM "auth_questitem"
 
 #define CHARACTER "character_"

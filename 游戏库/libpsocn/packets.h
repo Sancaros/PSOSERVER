@@ -4487,7 +4487,7 @@ typedef struct bb_guild_buy_privilege_and_point_info {
     bb_guild_point_info_list_t entries[0];
 } PACKED bb_guild_buy_privilege_and_point_info_pkt;
 
-// 19EA: 公会排行榜 需要数据库读取支持
+// 19EA: 公会已解锁特典详情 需要数据库读取支持
 // 客户端只发送8字节请求 (C->S)
 // TODO: 服务器发送至客户端 S->C
 typedef struct bb_guild_privilege_list {
@@ -4512,7 +4512,7 @@ typedef struct bb_guild_req_privilege_items {
 // 1BEA (C->S->C): 购买公会特典完成 扣除点数
 // header.flag 是购买的特典item_id
 typedef struct bb_guild_unlock_privilege_item {
-    bb_pkt_hdr_t hdr;
+    bb_pkt_hdr_t hdr;//flag = 购买的物品的 item_id 这个可以是 物品
 } PACKED bb_guild_unlock_privilege_item_pkt;
 
 typedef struct bb_guild_rank_entry {

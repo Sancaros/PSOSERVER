@@ -2680,7 +2680,7 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
 }
 
 /* 处理 Blue Burst 公会 权限列表 */
-static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
+static int handle_bb_unlock_guild_privilege_info(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guild_privilege_list_pkt* g_data = (bb_guild_privilege_list_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
@@ -2706,23 +2706,84 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* 处理 Blue Burst 公会  */
+/* 处理 Blue Burst 处理公会特典购买列表请求  */
 static int handle_bb_guild_req_privilege_items_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guild_req_privilege_items_list_pkt* g_data = (bb_guild_req_privilege_items_list_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint16_t num = 0;
+    void* result;
+    char** row;
 
-    if (len != sizeof(bb_guild_req_privilege_items_list_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        PRINT_HEX_LOG(ERR_LOG, (uint8_t*)g_data, len);
+    //BB_DATA_GUILD_PRIVILEGE_ITEM_LIST
 
-        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
+    int guild_id = db_get_bb_char_guild_id(sender);
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf_s(myquery, sizeof(myquery), "SELECT "
+        "id, item_name, item_desc, point_amount, item_id, is_invalid"
+        " FROM "
+        "%s"
+        " ORDER BY id ASC"
+        , BB_DATA_GUILD_PRIVILEGE_ITEM_LIST
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("公会排行榜数据查询错误: %s", psocn_db_error(&conn));
         return 0;
     }
 
-    PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g_data, len);
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        istrncpy(ic_utf8_to_utf16, (char*)g_data->entries[num].item_name, "特典列表为空", sizeof(g_data->entries[num].item_name));
+        istrncpy(ic_utf8_to_utf16, (char*)g_data->entries[num].item_desc, "特典列表为空", sizeof(g_data->entries[num].item_desc));
+        g_data->entries[num].point_amount = 0;
+        g_data->entries[num].item_id = 0;
+        num++;
+    }
+    else {
+        while ((row = psocn_db_result_fetch(result)) != NULL) {
+            uint32_t is_invalid = (uint32_t)strtoul(row[5], NULL, 10);
+            if(is_invalid) {
+                continue; // 跳过该行不进行处理
+            }
+
+            // 假设我们要忽略 point_amount 小于等于 0 的行
+            uint32_t point_amount = (uint32_t)strtoul(row[3], NULL, 10);
+            if (point_amount < 0) {
+                continue; // 跳过该行不进行处理
+            }
+
+            char tmp_text[64] = { 0 };
+            sprintf_s(tmp_text, sizeof(tmp_text), "%02d.%s", num + 1, row[1]);
+            istrncpy(ic_utf8_to_utf16, (char*)g_data->entries[num].item_name, tmp_text, sizeof(g_data->entries[num].item_name));
+            wchar_add_color_tag(g_data->entries[num].item_name);
+            istrncpy(ic_utf8_to_utf16, (char*)g_data->entries[num].item_desc, row[2], sizeof(g_data->entries[num].item_desc));
+            wchar_add_color_tag(g_data->entries[num].item_desc);
+            g_data->entries[num].point_amount = point_amount;
+            g_data->entries[num].item_id = (uint32_t)strtoul(row[4], NULL, 10);
+            num++;
+        }
+
+        psocn_db_result_free(result);
+    }
+
+    /* 填充数据头 */
+    g_data->hdr.pkt_len = LE16(sizeof(bb_guild_privilege_item_entry_t) * num + sizeof(bb_pkt_hdr_t));
+    g_data->hdr.pkt_type = BB_GUILD_REQ_PRIVILEG_ITEMS_LIST;
+    g_data->hdr.flags = 0x00000000;
+
+    g_data->entries_num = num;
+
+    //PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g_data, g_data->hdr.pkt_len);
+
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
+    }
+
     return 0;
 }
 
@@ -2745,8 +2806,6 @@ static int handle_bb_guild_unlock_privilege_item(ship_t* c, shipgate_fw_9_pkt* p
 
     int guild_id = db_get_bb_char_guild_id(sender);
 
-    DBG_LOG("%d", guild_id);
-
     memset(myquery, 0, sizeof(myquery));
 
     sprintf_s(myquery, sizeof(myquery), "UPDATE %s SET "
@@ -2763,12 +2822,24 @@ static int handle_bb_guild_unlock_privilege_item(ship_t* c, shipgate_fw_9_pkt* p
         return 0;
     }
 
+    /*[2023年10月30日 14:18 : 52 : 925] 调试(ship.c 2766) : 数据包如下:
+    *                      列表物品序号
+    (00000000) 08 00 EA 1B 00 00 00 00     ........*/
+    /*[2023年10月30日 14:57 : 10 : 238] 调试(ship.c 2825) : 数据包如下:
+    (00000000) 08 00 EA 1B 15 B6 F3 AD     ........*/
+
+    /* TODO 解锁对应列表的东西 并扣除pt */
+
+
+
+
+
+
     PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g_data, len);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
-        return 0;
     }
 
     return 0;
@@ -2815,7 +2886,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     else {
         while ((row = psocn_db_result_fetch(result)) != NULL) {
             // 假设我们要忽略 point_amount 小于等于 0 的行
-            int point_amount = atoi(row[1]);
+            uint32_t point_amount = (uint32_t)strtoul(row[1], NULL, 10);
             if (point_amount < 0) {
                 continue; // 跳过该行不进行处理
             }
@@ -2825,6 +2896,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
             g_data->entries[num].point_amount = point_amount;
             num++;
         }
+        psocn_db_result_free(result);
     }
 
     /* 填充数据头 */
@@ -2838,7 +2910,6 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
-        return 0;
     }
 
     return 0;
@@ -2948,8 +3019,8 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
         return handle_bb_guild_buy_privilege_and_point_info(c, pkt);
 
-    case BB_GUILD_PRIVILEGE_LIST:
-        return handle_bb_guild_privilege_list(c, pkt);
+    case BB_GUILD_UNLOCK_PRIVILEGE_ITEMS_INFO:
+        return handle_bb_unlock_guild_privilege_info(c, pkt);
 
     case BB_GUILD_REQ_PRIVILEG_ITEMS_LIST:
         return handle_bb_guild_req_privilege_items_list(c, pkt);

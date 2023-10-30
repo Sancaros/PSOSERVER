@@ -248,7 +248,7 @@
 #define BB_GUILD_UNK_16EA                            0x16EA
 #define BB_GUILD_UNK_17EA                            0x17EA
 #define BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO        0x18EA
-#define BB_GUILD_PRIVILEGE_LIST                      0x19EA
+#define BB_GUILD_UNLOCK_PRIVILEGE_ITEMS_INFO         0x19EA
 #define BB_GUILD_REQ_PRIVILEG_ITEMS_LIST             0x1AEA
 #define BB_GUILD_UNLOCK_PRIVILEG_ITEM                0x1BEA
 #define BB_GUILD_RANKING_LIST                        0x1CEA

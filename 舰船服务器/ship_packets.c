@@ -12886,7 +12886,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
         /* 19EA */
-    case BB_GUILD_PRIVILEGE_LIST:
+    case BB_GUILD_UNLOCK_PRIVILEGE_ITEMS_INFO:
 
         memset(&pkt->data[0x00], 0, 0x04);
 
@@ -12896,6 +12896,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
+        /* TODO 改为数据库发送 */
         /* 1AEA */
     case BB_GUILD_REQ_PRIVILEG_ITEMS_LIST:
         bb_guild_req_privilege_items_list_pkt* privilege_list = (bb_guild_req_privilege_items_list_pkt*)sendbuf;

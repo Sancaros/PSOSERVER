@@ -888,7 +888,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -910,7 +910,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -930,7 +930,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -963,7 +963,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -971,7 +971,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -979,7 +979,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -998,7 +998,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 #ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
 #endif // DEBUG
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -1038,7 +1038,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == promote_pkt->target_guildcard) {
 #ifdef DEBUG
                             DBG_LOG("BB_GUILD_MEMBER_PROMOTE %d %d", dest->guildcard, dest->guild_master_exfer);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
 #endif // DEBUG
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
@@ -1051,7 +1051,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
 #ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
 #endif // DEBUG
                         }
                         break;
@@ -1073,7 +1073,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_FULL_DATA:
                         if (dest->guildcard == sender_gc) {
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -1081,7 +1081,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -1089,37 +1089,38 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
                     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
                         if (dest->guildcard == sender_gc) {
-                            /* TODO 实现购买后 解锁相应的物品 */
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            //PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
                         }
                         break;
 
-                    case BB_GUILD_PRIVILEGE_LIST:
+                    case BB_GUILD_UNLOCK_PRIVILEGE_ITEMS_INFO:
                         if (dest->guildcard == sender_gc) {
 
-                            send_bb_guild_cmd(dest, BB_GUILD_PRIVILEGE_LIST);
+                            send_bb_guild_cmd(dest, BB_GUILD_UNLOCK_PRIVILEGE_ITEMS_INFO);
                         }
                         break;
 
                     case BB_GUILD_REQ_PRIVILEG_ITEMS_LIST:
                         if (dest->guildcard == sender_gc) {
 
-                            send_bb_guild_cmd(dest, BB_GUILD_REQ_PRIVILEG_ITEMS_LIST);
+                            send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
+                            //send_bb_guild_cmd(dest, BB_GUILD_REQ_PRIVILEG_ITEMS_LIST);
                         }
                         break;
 
                     case BB_GUILD_UNLOCK_PRIVILEG_ITEM:
                         if (dest->guildcard == sender_gc) {
 
+                            /* TODO 实现购买后 解锁相应的物品 */
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
                         }
                         break;
@@ -1137,7 +1138,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, len);
+                            PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         }
                         break;
 
@@ -1163,6 +1164,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     default:
                         DBG_LOG("未处理 handle_bb_guild 0x%04X %d %d", type, len, sender_gc);
+                        PRINT_HEX_LOG(DBG_LOG, (uint8_t*)g, g->hdr.pkt_len);
                         break;
                     }
                 }
