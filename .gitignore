@@ -378,3 +378,4 @@ FodyWeavers.xsd
 /工具/gnutls key cert tool/client-template.conf
 /工具/gnutls key cert tool/server-template.conf
 /数据库/Library/std.ixx.ifc.dt.d.json
+/工具/char_export
