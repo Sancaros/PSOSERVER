@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "regex.h"
+
 #include "f_logs.h"
 
 typedef void (*write_data_func)(const void*, size_t);
@@ -52,6 +54,8 @@ typedef struct {
     uint8_t* data;
     size_t len;
 } Buffer;
+
+int is_valid_email(char* email);
 
 int count_element_int(void** arr);
 

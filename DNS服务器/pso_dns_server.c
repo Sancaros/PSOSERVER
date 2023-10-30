@@ -1157,15 +1157,15 @@ void* server_thread(void* arg) {
 int __cdecl main(int argc, char** argv) {
     int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX] = { 0 };
 
-    initialization();
-
-    server_name_num = DNS_SERVER;
-
     __try {
         mem_mutex_init();
-        log_mutex_init();
+
+        server_name_num = DNS_SERVER;
 
         load_program_info(server_name[DNS_SERVER].name, DNS_SERVER_VERSION);
+
+        initialization();
+        log_mutex_init();
 
         /* Open the socket. We will probably need root for this on UNIX-like
            systems. */

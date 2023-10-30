@@ -1125,15 +1125,15 @@ static void cleanup_sockets(int sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX]) {
 int __cdecl main(int argc, char** argv) {
     int sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX] = { 0 };
 
-    initialization();
-
-    server_name_num = PATCH_SERVER;
-
     __try {
         mem_mutex_init();
-        log_mutex_init();
+
+        server_name_num = PATCH_SERVER;
 
         load_program_info(server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
+
+        initialization();
+        log_mutex_init();
 
         /* 读取命令行并读取设置. */
         parse_command_line(argc, argv);

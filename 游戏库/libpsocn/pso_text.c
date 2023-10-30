@@ -15,9 +15,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdbool.h>
-#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <WinSock_Defines.h>
+
+#include <stdbool.h>
 #include <time.h>
 #include <ctype.h>
 #ifndef _WIN32
@@ -29,6 +32,66 @@
 #include <f_iconv.h>
 
 #include "pso_text.h"
+
+int is_valid_email(char* email) {
+    // 检查字符串是否为空
+    if (email == NULL || *email == '\0') {
+        return 0;
+    }
+
+    // 定义正则表达式规则
+    const char* pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+
+    // 编译正则表达式规则
+    regex_t reg;
+    if (regcomp(&reg, pattern, REG_EXTENDED) != 0) {
+        return 0;
+    }
+
+    // 检查邮箱地址是否匹配正则表达式规则
+    if (regexec(&reg, email, 0, NULL, 0) != 0) {
+        regfree(&reg);
+        return 0;
+    }
+
+    // 获取域名
+    char* domain = strrchr(email, '@');
+    domain++;
+
+    // 初始化Winsock库
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        regfree(&reg);
+        return 0;
+    }
+
+    // 查询MX记录
+    struct addrinfo hints, * res;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+
+    if (getaddrinfo(domain, "smtp", &hints, &res) != 0) {
+        WSACleanup();
+        regfree(&reg);
+        return 0;
+    }
+
+    // 检查是否存在MX记录
+    if (res == NULL) {
+        freeaddrinfo(res);
+        WSACleanup();
+        regfree(&reg);
+        return 0;
+    }
+
+    // 释放内存并返回结果
+    freeaddrinfo(res);
+    WSACleanup();
+    regfree(&reg);
+    return 1;
+}
 
 int count_element_int(void** arr) {
     int count = 0;

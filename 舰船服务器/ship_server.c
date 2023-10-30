@@ -1013,15 +1013,15 @@ int read_param_file(psocn_ship_t* cfg) {
 int __cdecl main(int argc, char** argv) {
     void* tmp;
 
-    initialization();
-
     __try {
         mem_mutex_init();
-        log_mutex_init();
 
         server_name_num = SHIPS_SERVER;
 
         load_program_info(server_name[SHIPS_SERVER].name, SHIPS_SERVER_VERSION);
+
+        initialization();
+        log_mutex_init();
 
         /* Parse the command line... */
         parse_command_line(argc, argv);

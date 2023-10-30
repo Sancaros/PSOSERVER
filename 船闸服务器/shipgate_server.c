@@ -269,11 +269,13 @@ static psocn_dbconfig_t* load_db_config(void) {
 
     FILE* file = fopen(psocn_database_cfg, "r");
     if (file == NULL) {
-        printf("未找到数据库设置文件,即将读取默认数据库设置!\n");
+        printf("........失败\n");
+        printf("未找到数据库设置文件!\n");
+        printf("读取默认数据库设置!");
         if (!cfg) {
             cfg = (psocn_dbconfig_t*)malloc(sizeof(psocn_dbconfig_t));
             if (!cfg) {
-                ERR_EXIT("mmalloc 错误...");
+                ERR_EXIT("malloc 错误...");
             }
 
             memset(cfg, 0, sizeof(psocn_dbconfig_t));
@@ -287,7 +289,12 @@ static psocn_dbconfig_t* load_db_config(void) {
             cfg->auto_reconnect = "true";
             cfg->char_set = "utf8mb4";
             cfg->show_setting = "0";
+
+            printf("........完成\n");
+            printf("默认数据库设置初始化完成\n\n");
         }
+        else
+            printf("........失败\n\n");
     }
     else {
         fclose(file);
@@ -1097,15 +1104,15 @@ static void initialization() {
 int __cdecl main(int argc, char** argv) {
     int tsock = SOCKET_ERROR, tsock6 = SOCKET_ERROR;
 
-    initialization();
-
     __try {
         mem_mutex_init();
-        log_mutex_init();
 
         server_name_num = SGATE_SERVER;
 
         load_program_info(server_name[SGATE_SERVER].name, SGATE_SERVER_VERSION);
+
+        initialization();
+        log_mutex_init();
 
         /* Parse the command line and read our configuration. */
         parse_command_line(argc, argv);

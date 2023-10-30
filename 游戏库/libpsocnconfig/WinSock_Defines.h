@@ -4,7 +4,7 @@
 #include "winsock2i.h"
 #include <WS2tcpip.h>
 
-#include <pso_crash_handle.h>
+#include "pso_crash_handle.h"
 
 #pragma comment(lib , "Ws2_32.lib")
 
