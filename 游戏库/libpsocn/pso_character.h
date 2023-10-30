@@ -171,7 +171,7 @@ typedef struct psocn_bb_guild {
     uint8_t guild_flag[0x0800];            // 公会图标     2048
     // 公会奖励     8种奖励
     union {
-        struct guild_rewards {
+        struct{
             uint8_t guild_reward0;
             uint8_t guild_reward1;
             uint8_t guild_reward2;
@@ -182,6 +182,7 @@ typedef struct psocn_bb_guild {
             uint8_t guild_reward7;
         }PACKED;
         uint8_t guild_reward[8];
+        uint32_t guild_rewards;
     }PACKED;
 } PACKED bb_guild_t;
 

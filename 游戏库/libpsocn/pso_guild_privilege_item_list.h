@@ -20,6 +20,15 @@
 
 #include <stdint.h>
 
+/*
+0 什么都没解锁
+1 解锁公会标志
+
+
+
+
+*/
+
 typedef struct bb_guild_privilege_items {
     char item_name[64];
     char item_desc[128];
