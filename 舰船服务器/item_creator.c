@@ -659,7 +659,7 @@ void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area,
 }
 
 void generate_rare_weapon_bonuses(sfmt_t* rng, pt_bb_entry_t* ent, item_t* item, uint32_t random_sample) {
-	if (item->datab[0] != 0) {
+	if (item->datab[0] != ITEM_TYPE_WEAPON) {
 		return;
 	}
 
