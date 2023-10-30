@@ -491,7 +491,7 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
     uLong cmp_sz;
     int compressed = ~Z_OK;
     int compress_power = 0;
-    uint32_t* len;
+    uint32_t* len = NULL;
     char** row;
     //uint32_t data_size;
     void* result;
@@ -507,7 +507,7 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
 
     play_time = char_data->character.play_time;
 
-    memcpy(&lastip, db_get_auth_ip(gc, slot), sizeof(lastip));
+    memcpy(lastip, db_get_auth_ip(gc, slot), INET6_ADDRSTRLEN);
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -554,8 +554,8 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
 
     /* Ñ¹Ëõ½ÇÉ«Êý¾Ý */
     cmp_sz = compressBound((uLong)data_len);
-
-    if ((cmp_buf = (Bytef*)malloc(cmp_sz))) {
+    cmp_buf = (Bytef*)malloc(cmp_sz);
+    if (cmp_buf) {
         compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)char_data,
             (uLong)data_len, compress_power);
     }

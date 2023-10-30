@@ -1089,14 +1089,14 @@ static int handle_guild_request(login_client_t *c) {
         lengths = psocn_db_result_lengths(result);
 
         gc = (uint32_t)strtoul(row[0], NULL, 0);
-        c->gc_data->black_list[i].guildcard = LE32(gc);
-        memcpy(&c->gc_data->black_list[i].name, row[1], min(48, lengths[1]));
-        memcpy(c->gc_data->black_list[i].guild_name, row[2], min(32, lengths[2]));
-        memcpy(c->gc_data->black_list[i].guildcard_desc, row[3], min(176, lengths[3]));
-        c->gc_data->black_list[i].present = 1;
-        c->gc_data->black_list[i].language = (uint8_t)strtoul(row[4], NULL, 0);
-        c->gc_data->black_list[i].section = (uint8_t)strtoul(row[5], NULL, 0);
-        c->gc_data->black_list[i].char_class = (uint8_t)strtoul(row[6], NULL, 0);
+        c->gc_data->blockedlist[i].guildcard = LE32(gc);
+        memcpy(&c->gc_data->blockedlist[i].name, row[1], min(48, lengths[1]));
+        memcpy(c->gc_data->blockedlist[i].guild_name, row[2], min(32, lengths[2]));
+        memcpy(c->gc_data->blockedlist[i].guildcard_desc, row[3], min(176, lengths[3]));
+        c->gc_data->blockedlist[i].present = 1;
+        c->gc_data->blockedlist[i].language = (uint8_t)strtoul(row[4], NULL, 0);
+        c->gc_data->blockedlist[i].section = (uint8_t)strtoul(row[5], NULL, 0);
+        c->gc_data->blockedlist[i].char_class = (uint8_t)strtoul(row[6], NULL, 0);
 
         ++i;
     }

@@ -276,13 +276,15 @@ void lobby_print_info2(ship_client_t* src) {
     //    __(src, "\tE\tC7普通")
     //);
 
-    send_msg(src, TEXT_MSG_TYPE, "详情:%s/%s/%s"
+    send_msg(src, TEXT_MSG_TYPE, "详情:%s/%s/%s/%s"
         , (int)l->battle == 1 ? __(src, "\tE\tC6对战") :
         (int)l->challenge == 1 ? __(src, "\tE\tC8挑战") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人") :
         __(src, "\tE\tC7团队")
         , get_difficulty_describe(l->difficulty)
         , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC8随机") : __(src, "\tE\tC6独立") :
         __(src, "\tE\tC7默认")
+        , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC4随颜") : get_section_describe(src, 0, false) :
+        get_section_describe(l->clients[l->leader_id], 0, false)
     );
 
     send_msg(src, TEXT_MSG_TYPE, "经验:\tE\tC8%d\tE\tC7倍"

@@ -1916,7 +1916,7 @@ static int bb_process_blacklist(ship_client_t* c,
     bb_blacklist_update_pkt* pkt) {
     memcpy(c->blacklist, pkt->list, 30 * sizeof(uint32_t));
     memcpy(c->pl->bb.blacklist, pkt->list, 30 * sizeof(uint32_t));
-    memcpy(c->bb_opts->black_gc_list, pkt->list, 30 * sizeof(uint32_t));
+    memcpy(c->bb_opts->blacklist, pkt->list, 30 * sizeof(uint32_t));
     return send_txt(c, "%s", __(c, "\tE\tC7黑名单已更新."));
 }
 

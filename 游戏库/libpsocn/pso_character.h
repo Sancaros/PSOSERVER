@@ -135,6 +135,19 @@ typedef struct psocn_v1v2v3pc_char {
     techniques_t technique_levels_v1;
 } PACKED psocn_v1v2v3pc_char_t;
 
+typedef struct bb_system_file {
+    /* 0000 */ uint32_t checksum;//0 大端序
+    /* 0004 */ int16_t music_volume;// = -50 大端序
+    /* 0006 */ int8_t sound_volume;//0
+    /* 0007 */ uint8_t language;//0
+    /* 0008 */ uint32_t server_time_delta_frames;// = 1728000 大端序
+    /* 000C */ uint16_t udp_behavior; // 0 = auto, 1 = on, 2 = off 大端序
+    /* 000E */ uint16_t surround_sound_enabled;//0 大端序
+    /* 0010 */ uint8_t event_flags[0x0100];
+    /* 0110 */ uint32_t creation_timestamp;//0
+    /* 0114 */
+} PACKED bb_system_file_t;
+
 /* BB键位设置数据结构 410 字节*/
 typedef struct psocn_bb_key_config {
     uint8_t keyboard_config[0x016C];// 0114
@@ -234,7 +247,7 @@ typedef struct psocn_bb_full_char {
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
     uint8_t unk4[0x002C];                                                    // 未完成保存
     psocn_bb_mode_quest_data_t mode_quest_data;                              // 玩家任务数据表2
-    uint8_t unk1[276];                                                       // 276 - 264 = 12
+    bb_system_file_t system_file;
     bb_key_config_t key_cfg;                                                 // 选项数据表               OK
     bb_guild_t guild_data;                                                   // GUILD数据表              OK
 } PACKED psocn_bb_full_char_t;
@@ -277,9 +290,9 @@ typedef struct psocn_bb_guild_card_entry {
 //BB GC 数据文件 TODO 
 // 276 + 120 = 396 - 264 = 132     384 + 276 = 660 - 264 = 396
 typedef struct bb_guildcard_data {
-    uint8_t unk1[0x000C];//276 - 264 = 12
-    psocn_bb_guild_card_t black_list[0x001E]; //30个 264大小/个
-    uint32_t black_gc_list[0x001E];//120
+    bb_system_file_t system_file;
+    psocn_bb_guild_card_t blockedlist[0x1C]; //28个 264大小/个
+    uint32_t unknown_a2[0x180];//384
     psocn_bb_guild_card_entry_t entries[0x0069]; //105个 444大小/个
     //uint8_t unk3[0x01BC];
 } bb_guildcard_data_t; //54672
@@ -288,7 +301,7 @@ typedef struct bb_guildcard_data {
 /* 从完整BB角色数据中分离出来的设置数据,存储于 数据库 中,
 来自于 newserv 的 .nsa 文件. */
 typedef struct psocn_bb_db_opts {
-    uint32_t black_gc_list[0x001E];//30 120字节             /* 黑名单列表 */
+    uint32_t blacklist[0x001E];//30 120字节             /* 黑名单列表 */
     bb_key_config_t key_cfg; //420                          /* 键位设置数据 */
     uint32_t option_flags;
     uint8_t shortcuts[0x0A40];//2624
