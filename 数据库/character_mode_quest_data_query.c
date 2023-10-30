@@ -45,11 +45,11 @@ static int db_updata_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data
 
     sprintf(myquery, "UPDATE %s SET "
         "change_time = NOW(), "
-        "data0 = '%d', data1 = '%d', data2 = '%d', data3 = '%d', data4 = '%d', "
-        "data5 = '%d', data6 = '%d', data7 = '%d', data8 = '%d', data9 = '%d', "
-        "data10 = '%d', data11 = '%d', data12 = '%d', data13 = '%d', data14 = '%d', "
-        "data15 = '%d', data16 = '%d', data17 = '%d', data18 = '%d', data19 = '%d', "
-        "data20 = '%d', data21 = '%d', "
+        "data0 = '%u', data1 = '%u', data2 = '%u', data3 = '%u', data4 = '%u', "
+        "data5 = '%u', data6 = '%u', data7 = '%u', data8 = '%u', data9 = '%u', "
+        "data10 = '%u', data11 = '%u', data12 = '%u', data13 = '%u', data14 = '%u', "
+        "data15 = '%u', data16 = '%u', data17 = '%u', data18 = '%u', data19 = '%u', "
+        "data20 = '%u', data21 = '%u', "
         "full_data = '"
         ,CHARACTER_MODE_QUEST_DATA
         , mode_quest_data->part[0], mode_quest_data->part[1], mode_quest_data->part[2], mode_quest_data->part[3], mode_quest_data->part[4]
@@ -89,12 +89,12 @@ int db_insert_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, 
         "data20, data21, "
         "full_data"
         ") VALUES ("
-        "'%d', '%d', NOW(), "
-        "'%d', '%d', '%d', '%d', '%d', "
-        "'%d', '%d', '%d', '%d', '%d', "
-        "'%d', '%d', '%d', '%d', '%d', "
-        "'%d', '%d', '%d', '%d', '%d', "
-        "'%d', '%d', "
+        "'%u', '%u', NOW(), "
+        "'%u', '%u', '%u', '%u', '%u', "
+        "'%u', '%u', '%u', '%u', '%u', "
+        "'%u', '%u', '%u', '%u', '%u', "
+        "'%u', '%u', '%u', '%u', '%u', "
+        "'%u', '%u', "
         "'"
         , CHARACTER_MODE_QUEST_DATA
         , gc, slot

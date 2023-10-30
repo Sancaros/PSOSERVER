@@ -50,7 +50,7 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.guild_name,
         sizeof(opts.guild_name));
 
-    sprintf(myquery + strlen(myquery), "', option_flags = '%d' WHERE guildcard='%" PRIu32 "'", opts.option_flags, gc);
+    sprintf(myquery + strlen(myquery), "', option_flags = '%u' WHERE guildcard='%" PRIu32 "'", opts.option_flags, gc);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, myquery)) {

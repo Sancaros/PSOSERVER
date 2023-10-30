@@ -73,7 +73,7 @@ int db_updata_char_play_time(uint32_t play_time, uint32_t gc, uint8_t slot) {
 
     memset(myquery, 0, sizeof(myquery));
 
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET play_time = '%d' WHERE guildcard = '%"
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET play_time = '%u' WHERE guildcard = '%"
         PRIu32 "' AND slot = '%"PRIu8"' ", CHARACTER, play_time, gc, slot);
     if (psocn_db_real_query(&conn, myquery))
     {
@@ -562,7 +562,7 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
 
     if (compressed == Z_OK && cmp_sz < data_len) {
         sprintf(myquery, "UPDATE %s SET "
-            "size = '%u', play_time = '%d', lastip = '%s', data = '",
+            "size = '%u', play_time = '%u', lastip = '%s', data = '",
             CHARACTER, (unsigned)data_len, play_time, lastip);
 
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)cmp_buf,
@@ -570,7 +570,7 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
     }
     else {
         sprintf(myquery, "UPDATE %s SET "
-            "size = '0', play_time = '%d', lastip = '%s', data = '",
+            "size = '0', play_time = '%u', lastip = '%s', data = '",
             CHARACTER, play_time, lastip);
 
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)char_data,

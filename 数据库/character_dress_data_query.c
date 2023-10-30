@@ -20,7 +20,7 @@
 
 int db_updata_bb_char_create_code(uint32_t code,
     uint32_t gc, uint8_t slot) {
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET create_code = '%d' "
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET create_code = '%u' "
         "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
         CHARACTER_DRESS, code,
         gc, slot);
@@ -58,13 +58,13 @@ static int db_insert_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc
         "'%" PRIu32 "', '%" PRIu8 "', "//2
         "'%s', "//1
         "'%s', "
-        "'%d', '%d', '%d', '%d', "//5
-        "'%d', "
+        "'%u', '%u', '%u', '%u', "//5
+        "'%u', "
         "'%s', "
-        "'%d', '%d', '%d', "//5
-        "'%d', '%d', '%d', '%d', '%d', "//5
-        "'%d', '%d', '%d', '%d', "//4
-        "'%d', '%d', '%d', "
+        "'%u', '%u', '%u', "//5
+        "'%u', '%u', '%u', '%u', '%u', "//5
+        "'%u', '%u', '%u', '%u', "//4
+        "'%u', '%u', '%u', "
         "'%f', '%f'"
         ")",//5
         CHARACTER_DRESS,
@@ -104,13 +104,13 @@ static int db_upd_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, u
         "guildcard =  '%" PRIu32 "', slot = '%" PRIu8 "', "
         "gc_string = '%s', "
         "unk1 = '%s', "
-        "name_color_b = '%d', name_color_g = '%d', name_color_r = '%d', name_color_transparency = '%d', "
-        "model = '%d', "
+        "name_color_b = '%u', name_color_g = '%u', name_color_r = '%u', name_color_transparency = '%u', "
+        "model = '%u', "
         "unk3 = '%s', "
-        "create_code = '%d', name_color_checksum = '%d', section = '%d', "
-        "ch_class = '%d', v2flags = '%d', version = '%d', v1flags = '%d', "
-        "costume = '%d', skin = '%d', face = '%d', head = '%d', "
-        "hair = '%d', hair_r = '%d', hair_g = '%d', hair_b = '%d', "
+        "create_code = '%u', name_color_checksum = '%u', section = '%u', "
+        "ch_class = '%u', v2flags = '%u', version = '%u', v1flags = '%u', "
+        "costume = '%u', skin = '%u', face = '%u', head = '%u', "
+        "hair = '%u', hair_r = '%u', hair_g = '%u', hair_b = '%u', "
         "prop_x = '%f', prop_y = '%f'"
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",

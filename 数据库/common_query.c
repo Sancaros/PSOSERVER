@@ -326,7 +326,7 @@ int db_update_gc_char_last_block(uint32_t gc, uint32_t char_slot, uint32_t block
 
     if (block_num > 0) {
         sprintf_s(query, _countof(query), "UPDATE %s SET "
-            "lastblock = '%d' "
+            "lastblock = '%u' "
             "WHERE guildcard = '%u' AND slot = '%u'",
             CHARACTER,
             block_num,

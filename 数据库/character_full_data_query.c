@@ -162,7 +162,7 @@ int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
         "autoreply, infoboard, b_records, c_records, tech_menu, mode_quest_data, "
         "`full_data`"
         ") VALUES ("
-        "'%d', '%d', '%d', '%s', NOW(), '",
+        "'%u', '%u', '%u', '%s', NOW(), '",
         CHARACTER_DATA_FULL,
         gc, slot, char_class, class_name
     );
@@ -238,7 +238,7 @@ int db_update_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
     memset(myquery, 0, sizeof(myquery));
 
     snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "ch_class = '%d', class_name = '%s', update_time = NOW(), "
+        "ch_class = '%u', class_name = '%s', update_time = NOW(), "
         "`full_data` = '"
         , CHARACTER_DATA_FULL
         , char_class, class_name

@@ -85,7 +85,7 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, 
         "`qid`, ch_class, class_name, "
         "`character`, inventory, tech"
         ") VALUES ("
-        "'%d', '%d', '%s', '",
+        "'%d', '%u', '%s', '",
         CHARACTER_DEFAULT_MODE,
         qid, char_class, class_name
     );

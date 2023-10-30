@@ -37,10 +37,10 @@ static int db_insert_b_records(battle_records_t* b_records, uint32_t gc, uint8_t
         "'%" PRIu32 "', '%" PRIu8 "', "
         "'%04X', '%04X', '%04X', '%04X', "
         "'%04X', "
-        "'%d', '%d', '%d', '%d', "
-        "'%d', '%d', '%d', '%d', "
-        "'%d', '%d', '%d', '%d', "
-        "'%d', '%d', "
+        "'%u', '%u', '%u', '%u', "
+        "'%u', '%u', '%u', '%u', "
+        "'%u', '%u', '%u', '%u', "
+        "'%u', '%u', "
         "'", 
         TABLE, 
         gc, slot

@@ -418,7 +418,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         rawtime.wYear, rawtime.wMonth, rawtime.wDay,
         rawtime.wHour, rawtime.wMinute, rawtime.wSecond);
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET menu_id = '%d', preferred_lobby_id = '%d', lastbbversion = '%u', lastip = '%s', last_login_time = '%s'"
+    sprintf_s(query, _countof(query), "UPDATE %s SET menu_id = '%u', preferred_lobby_id = '%u', lastbbversion = '%u', lastip = '%s', last_login_time = '%s'"
         "WHERE username = '%s'", AUTH_ACCOUNT, c->menu_id, c->preferred_lobby_id, c->bbversion, ipstr, timestamp, pkt->username);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
@@ -445,7 +445,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     /* Has the user picked a character already? */
     if(c->sec_data.sel_char) {
         sprintf_s(query, _countof(query), "UPDATE %s SET "
-            "menu_id = '%d', preferred_lobby_id = '%d', isgm = '%d', security_data = '%s', slot = '%d' "
+            "menu_id = '%u', preferred_lobby_id = '%u', isgm = '%d', security_data = '%s', slot = '%d' "
             "WHERE guildcard = '%u'", 
             AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, c->isgm, (char*)&c->sec_data, c->sec_data.slot, c->guildcard);
         if (psocn_db_real_query(&conn, query))

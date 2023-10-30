@@ -43,10 +43,10 @@ static int db_insert_char_disp(psocn_disp_char_t* disp_data,
         "level, exp, meseta"
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', "
-        "'%d', '%d', '%d', '%d', "
-        "'%d', '%d', '%d', "
-        "'%d', '%f', '%f',"
-        "'%d', '%d', '%d'"
+        "'%u', '%u', '%u', '%u', "
+        "'%u', '%u', '%u', "
+        "'%u', '%f', '%f',"
+        "'%u', '%u', '%u'"
         ")"
         , TABLE, gc, slot
         , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp
@@ -81,9 +81,9 @@ static int db_upd_char_disp(psocn_disp_char_t* disp_data,
         disp_data->meseta = MAX_PLAYER_MESETA;
 
     sprintf(myquery, "UPDATE %s SET"
-        " atp='%d', mst='%d', evp='%d', hp='%d', dfp='%d', ata='%d', lck='%d',"
-        " unknown_a1='%d', unknown_a2='%f', unknown_a3='%f',"
-        " level='%d', exp='%d', meseta='%d'"
+        " atp='%u', mst='%u', evp='%u', hp='%u', dfp='%u', ata='%u', lck='%u',"
+        " unknown_a1='%u', unknown_a2='%f', unknown_a3='%f',"
+        " level='%u', exp='%u', meseta='%u'"
         " WHERE guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'", TABLE
         , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp, disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
         , disp_data->unknown_a1, disp_data->unknown_a2, disp_data->unknown_a3
