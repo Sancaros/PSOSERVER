@@ -379,3 +379,6 @@ FodyWeavers.xsd
 /工具/gnutls key cert tool/server-template.conf
 /数据库/Library/std.ixx.ifc.dt.d.json
 /工具/char_export
+/通用库/psocn_data_manage_dll/psocn_data_manage_dll.vcxproj
+/通用库/psocn_data_manage_dll/psocn_data_manage_dll.vcxproj.filters
+/通用库/psocn_data_manage_dll
