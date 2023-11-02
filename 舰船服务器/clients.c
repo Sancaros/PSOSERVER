@@ -881,8 +881,6 @@ uint8_t* get_recvbuf(void) {
             free_safe(recvbuf);
             return NULL;
         }
-
-        memset(recvbuf, 0, MAX_PACKET_BUFF);
     }
 
     return recvbuf;

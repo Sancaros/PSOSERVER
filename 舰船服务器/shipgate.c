@@ -3368,7 +3368,7 @@ static int handle_shipgate_recv_data_complete(shipgate_conn_t * sg, shipgate_hdr
     //    return 0;
     //}
 
-    return shipgate_send_ping(sg, 1);
+    return 0;
 }
 
 static int handle_pkt(shipgate_conn_t* sg, shipgate_hdr_t* pkt) {

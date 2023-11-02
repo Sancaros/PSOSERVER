@@ -216,11 +216,6 @@ static void* ship_thd(void* d) {
             break;
         }
 
-        //if (srv_time && srv_time > now + 5) {
-        //    shipgate_send_ping(&s->sg, 0);
-        //    now = srv_time;
-        //}
-
         /* If we haven't swept the bans list in the last day, do it now. */
         if ((last_ban_sweep + 3600 * 24) <= srv_time) {
             ban_sweep(s);

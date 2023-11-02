@@ -331,8 +331,6 @@ uint8_t *get_sendbuf() {
             free_safe(sendbuf);
             return NULL;
         }
-
-        memset(sendbuf, 0, MAX_PACKET_BUFF);
     }
 
     return sendbuf;
