@@ -3204,13 +3204,9 @@ static int handle_pl_level_bb(shipgate_conn_t* sg, shipgate_pl_level_bb_pkt* pkt
         return -1;
     }
 
-    int sz;
-    uLong sz2, csz;
-
     /* 获取压缩数据的大小 */
-    sz = (int)ntohl(pkt->compressed_size);
-    sz2 = sizeof(bb_level_table_t);
-    csz = (uLong)sz;
+    uLong sz2 = sizeof(bb_level_table_t);
+    uLong csz = ntohl(pkt->compressed_size);
 
 #ifdef DEBUG
 
@@ -3223,8 +3219,6 @@ static int handle_pl_level_bb(shipgate_conn_t* sg, shipgate_pl_level_bb_pkt* pkt
         ERR_LOG("无法解压角色数据");
         return -2;
     }
-
-    sz = sz2;
 
 #ifdef DEBUG
 
@@ -3308,13 +3302,9 @@ static int handle_default_mode_char_data_bb(shipgate_conn_t* sg, shipgate_defaul
         return -1;
     }
 
-    int sz;
-    uLong sz2, csz;
-
     /* 获取压缩数据的大小 */
-    sz = (int)ntohl(pkt->compressed_size);
-    sz2 = sizeof(psocn_bb_mode_char_t);
-    csz = (uLong)sz;
+    uLong sz2 = sizeof(psocn_bb_mode_char_t);
+    uLong csz = ntohl(pkt->compressed_size);
 
 #ifdef DEBUG
 
@@ -3327,8 +3317,6 @@ static int handle_default_mode_char_data_bb(shipgate_conn_t* sg, shipgate_defaul
         ERR_LOG("无法解压角色数据");
         return -2;
     }
-
-    sz = sz2;
 
 #ifdef DEBUG
 
