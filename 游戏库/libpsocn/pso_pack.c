@@ -25,106 +25,128 @@
 
 #include <f_logs.h>
 
-int compress_data(const char* uncompressed_data, uLong uncompressed_length, char* compressed_data, uLong* compressed_length, int compression_level) {
-    z_stream stream;
-    stream.zalloc = Z_NULL;
-    stream.zfree = Z_NULL;
-    stream.opaque = Z_NULL;
+int compress_data(void* data, size_t data_size, Bytef** cmp_buf, uLong* cmp_sz, int compress_power) {
+    int compressed = ~Z_OK;
 
-    if (deflateInit(&stream, compression_level) != Z_OK) {
-        return Z_ERRNO; // ≥ı ºªØ—πÀı∆˜ ß∞‹
+    *cmp_sz = compressBound((uLong)data_size);
+    *cmp_buf = (Bytef*)mmalloc(*cmp_sz);
+
+    if (!(*cmp_buf)) {
+        ERR_LOG("Œﬁ∑®∑÷≈‰—πÀı ˝æ›ƒ⁄¥Ê");
+        return -1;
     }
 
-    stream.next_in = (Bytef*)uncompressed_data;
-    stream.avail_in = (uInt)uncompressed_length;
-    stream.next_out = (Bytef*)compressed_data;
-    stream.avail_out = (uInt)*compressed_length;
+    compressed = compress2(*cmp_buf, cmp_sz, (Bytef*)data, (uLong)data_size, compress_power);
 
-    int result = deflate(&stream, Z_FINISH);
-
-    *compressed_length = stream.total_out;
-
-    deflateEnd(&stream);
-
-    if (result == Z_STREAM_END) {
-        return Z_OK; // —πÀı≥…π¶
+    if (compressed != Z_OK || *cmp_sz >= data_size) {
+        mfree(*cmp_buf);
+        ERR_LOG("—πÀı ß∞‹ ‘≠¥Û–° %d —πÀı∫Û %d", data_size, *cmp_sz);
+        return -2;
     }
-    else {
-        return Z_DATA_ERROR; // —πÀı ß∞‹
-    }
+
+    return 0;
 }
 
-int decompress_data(const char* compressed_data, uLong compressed_length, char* decompressed_data, uLong* decompressed_length) {
-    z_stream stream;
-    stream.zalloc = Z_NULL;
-    stream.zfree = Z_NULL;
-    stream.opaque = Z_NULL;
+//int compress_data(const char* uncompressed_data, uLong uncompressed_length, char* compressed_data, uLong* compressed_length, int compression_level) {
+//    z_stream stream;
+//    stream.zalloc = Z_NULL;
+//    stream.zfree = Z_NULL;
+//    stream.opaque = Z_NULL;
+//
+//    if (deflateInit(&stream, compression_level) != Z_OK) {
+//        return Z_ERRNO; // ≥ı ºªØ—πÀı∆˜ ß∞‹
+//    }
+//
+//    stream.next_in = (Bytef*)uncompressed_data;
+//    stream.avail_in = (uInt)uncompressed_length;
+//    stream.next_out = (Bytef*)compressed_data;
+//    stream.avail_out = (uInt)*compressed_length;
+//
+//    int result = deflate(&stream, Z_FINISH);
+//
+//    *compressed_length = stream.total_out;
+//
+//    deflateEnd(&stream);
+//
+//    if (result == Z_STREAM_END) {
+//        return Z_OK; // —πÀı≥…π¶
+//    }
+//    else {
+//        return Z_DATA_ERROR; // —πÀı ß∞‹
+//    }
+//}
 
-    if (inflateInit(&stream) != Z_OK) {
-        return Z_ERRNO; // ≥ı ºªØΩ‚—π∆˜ ß∞‹
-    }
+//int decompress_data(const char* compressed_data, uLong compressed_length, char* decompressed_data, uLong* decompressed_length) {
+//    z_stream stream;
+//    stream.zalloc = Z_NULL;
+//    stream.zfree = Z_NULL;
+//    stream.opaque = Z_NULL;
+//
+//    if (inflateInit(&stream) != Z_OK) {
+//        return Z_ERRNO; // ≥ı ºªØΩ‚—π∆˜ ß∞‹
+//    }
+//
+//    stream.next_in = (Bytef*)compressed_data;
+//    stream.avail_in = (uInt)compressed_length;
+//    stream.next_out = (Bytef*)decompressed_data;
+//    stream.avail_out = (uInt)*decompressed_length;
+//
+//    int result = inflate(&stream, Z_FINISH);
+//
+//    *decompressed_length = stream.total_out;
+//
+//    inflateEnd(&stream);
+//
+//    if (result == Z_STREAM_END) {
+//        return Z_OK; // Ω‚—π≥…π¶
+//    }
+//    else {
+//        return Z_DATA_ERROR; // Ω‚—π ß∞‹
+//    }
+//}
+//
+//void pack(Packet_t* packet, uint8_t packet_type, const void* packet_data, size_t packet_length, int compression_level) {
+//    packet->type = packet_type;
+//
+//    // —πÀı«∞µƒŒ¥—πÀı ˝æ›
+//    const char* uncompressed_data = (const char*)packet_data;
+//    uLong uncompressed_length = (uLong)packet_length;
+//
+//    uLong compressed_length = MAX_PACKET_SIZE - sizeof(uint16_t) - sizeof(uint8_t);
+//    char* compressed_data = (char*)malloc(compressed_length);
+//
+//    int result = compress_data(uncompressed_data, uncompressed_length, compressed_data, &compressed_length, compression_level);
+//    if (result == Z_OK) {
+//        memcpy(packet->data, compressed_data, compressed_length);
+//        packet->length = (uint16_t)(compressed_length + sizeof(uint16_t) + sizeof(uint8_t));
+//    }
+//    else {
+//        printf("—πÀı ß∞‹\n");
+//        // —πÀı ß∞‹
+//        packet->length = sizeof(uint16_t) + sizeof(uint8_t);
+//    }
+//
+//    free(compressed_data);
+//}
 
-    stream.next_in = (Bytef*)compressed_data;
-    stream.avail_in = (uInt)compressed_length;
-    stream.next_out = (Bytef*)decompressed_data;
-    stream.avail_out = (uInt)*decompressed_length;
-
-    int result = inflate(&stream, Z_FINISH);
-
-    *decompressed_length = stream.total_out;
-
-    inflateEnd(&stream);
-
-    if (result == Z_STREAM_END) {
-        return Z_OK; // Ω‚—π≥…π¶
-    }
-    else {
-        return Z_DATA_ERROR; // Ω‚—π ß∞‹
-    }
-}
-
-void pack(Packet_t* packet, uint8_t packet_type, const void* packet_data, size_t packet_length, int compression_level) {
-    packet->type = packet_type;
-
-    // —πÀı«∞µƒŒ¥—πÀı ˝æ›
-    const char* uncompressed_data = (const char*)packet_data;
-    uLong uncompressed_length = (uLong)packet_length;
-
-    uLong compressed_length = MAX_PACKET_SIZE - sizeof(uint16_t) - sizeof(uint8_t);
-    char* compressed_data = (char*)malloc(compressed_length);
-
-    int result = compress_data(uncompressed_data, uncompressed_length, compressed_data, &compressed_length, compression_level);
-    if (result == Z_OK) {
-        memcpy(packet->data, compressed_data, compressed_length);
-        packet->length = (uint16_t)(compressed_length + sizeof(uint16_t) + sizeof(uint8_t));
-    }
-    else {
-        printf("—πÀı ß∞‹\n");
-        // —πÀı ß∞‹
-        packet->length = sizeof(uint16_t) + sizeof(uint8_t);
-    }
-
-    free(compressed_data);
-}
-
-void unpack(Packet_t* packet, void* output_data, size_t output_length) {
-    if (packet->length <= sizeof(uint16_t) + sizeof(uint8_t)) {
-        //  ˝æ›≥§∂»≤ª◊„
-        return;
-    }
-
-    uLong decompressed_length = (uLong)output_length;
-    char* decompressed_data = (char*)output_data;
-
-    int result = decompress_data((const char*)packet->data, packet->length - sizeof(uint16_t) - sizeof(uint8_t), decompressed_data, &decompressed_length);
-    if (result == Z_OK) {
-        // Ω‚—π≥…π¶
-    }
-    else {
-        printf("Ω‚—π ß∞‹\n");
-        // Ω‚—π ß∞‹
-    }
-}
+//void unpack(Packet_t* packet, void* output_data, size_t output_length) {
+//    if (packet->length <= sizeof(uint16_t) + sizeof(uint8_t)) {
+//        //  ˝æ›≥§∂»≤ª◊„
+//        return;
+//    }
+//
+//    uLong decompressed_length = (uLong)output_length;
+//    char* decompressed_data = (char*)output_data;
+//
+//    int result = decompress_data((const char*)packet->data, packet->length - sizeof(uint16_t) - sizeof(uint8_t), decompressed_data, &decompressed_length);
+//    if (result == Z_OK) {
+//        // Ω‚—π≥…π¶
+//    }
+//    else {
+//        printf("Ω‚—π ß∞‹\n");
+//        // Ω‚—π ß∞‹
+//    }
+//}
 
 int is_compressed_data_valid(const char* compressed_data, uLong compressed_length) {
     z_stream stream;

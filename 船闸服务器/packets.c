@@ -27,11 +27,12 @@
 #include <f_checksum.h>
 #include <f_iconv.h>
 #include <database.h>
+#include <pso_pack.h>
+#include <pso_memopt.h>
 
 #include "version.h"
 #include "shipgate.h"
 #include "ship.h"
-#include <pso_pack.h>
 
 static uint8_t sendbuf[MAX_PACKET_BUFF];
 bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
@@ -1161,7 +1162,7 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
 int send_pl_lvl_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
     uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_pl_level_bb_pkt* pkt = (shipgate_pl_level_bb_pkt*)sendbuf;
-    uint16_t len = (uint16_t)(compressed_size + 4 + sizeof(shipgate_hdr_t));
+    uint16_t len = (uint16_t)(compressed_size + sizeof(shipgate_pl_level_bb_pkt));
 
     if (!sendbuf) {
         ERR_LOG("申请动态内存失败");
@@ -1205,40 +1206,32 @@ int send_player_max_tech_level_table_bb(ship_t* c) {
 }
 
 int send_player_level_table_bb(ship_t* c) {
-    int i;
-    Bytef* cmp_buf;
-    uLong cmp_sz;
-    int compressed = ~Z_OK;
-    int compress_power = 9;
     size_t data_size = sizeof(bb_level_table_t);
-    bb_level_table_t bb_level_tb = { 0 };
+    bb_level_table_t* bb_level_tb = (bb_level_table_t*)mmalloc(data_size);
 
-    if (read_player_level_table_bb(&bb_level_tb)) {
+    if (!bb_level_tb) {
+        ERR_LOG("无法分配 Blue Burst 数据内存");
+        return -1;
+    }
+
+    if (read_player_level_table_bb(bb_level_tb)) {
+        mfree(bb_level_tb);
         ERR_LOG("无法读取 Blue Burst 等级数据表");
         return -2;
     }
 
     /* 压缩角色数据 */
-    cmp_sz = compressBound((uLong)data_size);
-
-    if ((cmp_buf = (Bytef*)malloc(cmp_sz))) {
-        compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)&bb_level_tb,
-            (uLong)data_size, compress_power);
-    }
-
-    if (compressed == Z_OK && cmp_sz < data_size) {
-#ifdef DEBUG
-        DBG_LOG("压缩成功 原大小 %d 压缩后 %d ", data_size, cmp_sz);
-#endif // DEBUG
-    }
-    else {
-        DBG_LOG("压缩失败 原大小 %d 压缩后 %d ", data_size, cmp_sz);
+    uLong cmp_sz = 0;
+    Bytef* cmp_buf = NULL;
+    if (compress_data(bb_level_tb, data_size, &cmp_buf, &cmp_sz, 9)) {
+        mfree(bb_level_tb);
+        ERR_LOG("舰闸压缩数据失败");
         return -3;
     }
 
-    i = send_pl_lvl_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
-    free_safe(cmp_buf);
-    cmp_buf = NULL;
+    int i = send_pl_lvl_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
+    mfree(cmp_buf);
+    cmp_sz = 0;
 
     return i;
 }
@@ -1246,7 +1239,7 @@ int send_player_level_table_bb(ship_t* c) {
 int send_def_mode_char_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
     uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_default_mode_char_data_bb_pkt* pkt = (shipgate_default_mode_char_data_bb_pkt*)sendbuf;
-    uint16_t len = (uint16_t)(compressed_size + 4 + sizeof(shipgate_hdr_t));
+    uint16_t len = (uint16_t)(compressed_size + sizeof(shipgate_default_mode_char_data_bb_pkt));
 
     /* Make sure we don't try to send to a ship that won't know what to do with
        the packet. */
@@ -1270,14 +1263,8 @@ int send_def_mode_char_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_siz
 }
 
 int send_default_mode_char_data_bb(ship_t* c) {
-    int i = 0, j = 0, len = 0;
-    Bytef* cmp_buf;
-    uLong cmp_sz;
-    int compressed = ~Z_OK;
-    int compress_power = 9;
     size_t data_size = sizeof(psocn_bb_mode_char_t);
-
-    psocn_bb_mode_char_t* mode_chars = (psocn_bb_mode_char_t*)malloc(data_size);
+    psocn_bb_mode_char_t* mode_chars = (psocn_bb_mode_char_t*)mmalloc(data_size);
 
     if (!mode_chars) {
         ERR_LOG("给 mode_chars 分配内存失败!");
@@ -1285,33 +1272,23 @@ int send_default_mode_char_data_bb(ship_t* c) {
     }
 
     if (db_get_character_default_mode(mode_chars)) {
+        mfree(mode_chars);
         ERR_LOG("舰闸获取职业初始数据错误, 请检查函数错误");
         return -2;
     }
 
     /* 压缩角色数据 */
-    cmp_sz = compressBound((uLong)data_size);
-
-    if ((cmp_buf = (Bytef*)malloc(cmp_sz))) {
-        compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)mode_chars,
-            (uLong)data_size, compress_power);
-    }
-
-    if (compressed == Z_OK && cmp_sz < data_size) {
-#ifdef DEBUG
-        DBG_LOG("压缩成功 原大小 %d 压缩后 %d ", data_size, cmp_sz);
-#endif // DEBUG
-    }
-    else {
-        DBG_LOG("压缩失败 原大小 %d 压缩后 %d ", data_size, cmp_sz);
+    uLong cmp_sz = 0;
+    Bytef* cmp_buf = NULL;
+    if (compress_data(mode_chars, data_size, &cmp_buf, &cmp_sz, 9)) {
+        mfree(mode_chars);
+        ERR_LOG("舰闸压缩数据失败");
         return -3;
     }
 
-    i = send_def_mode_char_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
-
-    free_safe(cmp_buf);
-    free_safe(mode_chars);
-    mode_chars = NULL;
+    int i = send_def_mode_char_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
+    mfree(cmp_buf);
+    cmp_sz = 0;
 
     return i;
 }

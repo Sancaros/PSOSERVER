@@ -26,6 +26,8 @@
 #include <string.h>
 #include <zlib.h>
 
+#include "pso_memopt.h"
+
 #define MAX_PACKET_SIZE 65535
 #define DELAY_TIME_MS 5    // —” ± ±º‰£®∫¡√Î£©
 
@@ -42,9 +44,11 @@ typedef struct Packet {
     uint8_t data[MAX_PACKET_SIZE - sizeof(uint16_t) - sizeof(uint8_t)];
 } Packet_t;
 
-void pack(Packet_t* packet, uint8_t packet_type, const void* packet_data, size_t packet_length, int compression_level);
+int compress_data(void* data, size_t data_size, Bytef** cmp_buf, uLong* cmp_sz, int compress_power);
 
-void unpack(Packet_t* packet, void* output_data, size_t output_length);
+//void pack(Packet_t* packet, uint8_t packet_type, const void* packet_data, size_t packet_length, int compression_level);
+//
+//void unpack(Packet_t* packet, void* output_data, size_t output_length);
 
 int is_compressed_data_valid(const char* compressed_data, uLong compressed_length);
 
