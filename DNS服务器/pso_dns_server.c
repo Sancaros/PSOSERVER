@@ -699,7 +699,7 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint
                     return -4;
                 }
                 else {
-                    hostbuf[hostlen - 1] = '\0';
+                    hostbuf[hostlen] = '\0';
                     // 在长度限制内，可以继续处理
                     // 进行相应的操作
                     DBG_LOG("Hostname: %s", hostbuf);
