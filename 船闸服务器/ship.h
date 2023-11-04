@@ -82,7 +82,7 @@ typedef struct ship {
     int sock;
     int disconnected;
     int has_key;
-    int err_inconnect;
+    //int err_inconnect;
     uint32_t flags;
     uint32_t menu;
 

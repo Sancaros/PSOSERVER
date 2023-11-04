@@ -200,17 +200,27 @@ int db_update_char_c_records(bb_challenge_records_t* c_records, uint32_t gc, uin
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
 
-        if (db_clean_up_char_c_records(gc, slot)) {
-            SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-                PRIu32 ", 槽位 %" PRIu8 ")", TABLE, gc, slot);
-            return -1;
-        }
+        //if (db_check_bb_char_split_data_exist(gc, slot, TABLE)) {
+        //    if (db_updata_tech_menu(tech_menu, gc, slot)) {
+        //        SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+        //            "槽位 %" PRIu8 ")", TABLE, gc, slot);
 
-        if (db_insert_c_records(c_records, gc, slot)) {
-            SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 ")", TABLE, gc, slot);
-            return 0;
-        }
+        //        return -2;
+        //    }
+        //}
+        //else {
+            if (db_clean_up_char_c_records(gc, slot)) {
+                SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
+                    PRIu32 ", 槽位 %" PRIu8 ")", TABLE, gc, slot);
+                return -1;
+            }
+
+            if (db_insert_c_records(c_records, gc, slot)) {
+                SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", TABLE, gc, slot);
+                return 0;
+            }
+        //}
     }
 
     return 0;

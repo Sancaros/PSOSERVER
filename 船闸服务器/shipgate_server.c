@@ -689,20 +689,20 @@ void run_server(int tsock, int tsock6) {
                     continue; // 或者采取其他适当的操作
                 }
 
-                if (i->disconnected || i->err_inconnect) {
+                if (i->disconnected/* || i->err_inconnect*/) {
                     continue;
                 }
 
                 /* Check if this ship was trying to send us anything. */
                 if (FD_ISSET(i->sock, &readfds)) {
                     rv = handle_pkt(i);
-                    if (rv && rv != -1) {
-                        ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
+                    //if (rv && rv != -1) {
+                    //    ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
 
-                        i->last_ping = 0;
-                        i->err_inconnect = 1;
-                        continue;
-                    }
+                    //    i->last_ping = 0;
+                    //    i->err_inconnect = 1;
+                    //    continue;
+                    //}
 
                     if (rv == -1) {
 
@@ -762,11 +762,11 @@ void run_server(int tsock, int tsock6) {
 #endif // DEBUG
                     destroy_connection(i);
                 }
-                else if (i->err_inconnect) {
-                    ERR_LOG("断开 %s 错误的连接", i->ship_name);
+                //else if (i->err_inconnect) {
+                //    ERR_LOG("断开 %s 错误的连接", i->ship_name);
 
-                    destroy_connection_err(i);
-                }
+                //    destroy_connection_err(i);
+                //}
 
                 i = tmp;
             }
