@@ -2335,8 +2335,8 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
             if (src->bb_guild->data.guild_id != 0) {
                 DBG_LOG("被邀请方 GUILD ID %u", dest->bb_guild->data.guild_id);
                 /* 到这就没了, 获取对方已经属于某个公会. */
-                send_msg(src, TEXT_MSG_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
-                    __(src, "\tC7对方已在公会中."));
+                //send_msg(src, TEXT_MSG_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
+                //    __(src, "\tC7对方已在公会中."));
             }
             else
                 src->guild_accept = true;
@@ -2345,24 +2345,28 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 对方拒绝加入公会 */
     case 0x03:
-        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
-            __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
+        //if (dest)
+        //    send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
+        //        __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
         break;
 
         /* 公会邀请失败 给双方返回错误信息 */
     case 0x04:
-        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
-            __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
+        //if (dest)
+        //    send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
+        //        __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
         break;
 
     default:
-        ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
-            type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
+        if (dest)
+            ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
+                type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
         PRINT_HEX_LOG(ERR_LOG, pkt, len);
         break;
     }
 
-    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    //return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    return 0;
 }
 
 int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,

@@ -3679,7 +3679,8 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
                 ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_shipgate_describe(sg), sz);
             }
 
-            PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
+            if(pkt)
+                PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
             return -4;
         }
 

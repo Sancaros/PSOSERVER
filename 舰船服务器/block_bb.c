@@ -2795,6 +2795,9 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
 #endif // DEBUG
 
     for (i = 0; i < l->max_clients; ++i) {
+        if (!l->clients[i])
+            continue;
+
         if (l->clients[i]->guildcard == target_gc && l->clients[i]->guild_master_exfer != true) {
             c2 = l->clients[i];
 #ifdef DEBUG

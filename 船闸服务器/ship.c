@@ -6198,7 +6198,8 @@ int handle_pkt(ship_t* ship) {
                 ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_ship_describe(ship), sz);
             }
 
-            PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
+            if (pkt)
+                PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
             //free_safe(recvbuf);
             return -4;
         }

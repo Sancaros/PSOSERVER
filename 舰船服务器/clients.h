@@ -250,7 +250,7 @@ struct ship_client {
     bool isvip;
     bool can_chat; //控制玩家是否可以说话的开关
     bool bank_type;
-    bool need_save_data;
+    //bool need_save_data;
     bool guild_accept;
     bool guild_master_exfer;
     bool reset_quest;

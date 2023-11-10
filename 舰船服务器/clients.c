@@ -344,7 +344,7 @@ ship_client_t* client_create_connection(int sock, int version, int type,
         rv->isvip = false;
         rv->can_chat = true;
         rv->mode = 0;
-        rv->need_save_data = false;
+        //rv->need_save_data = false;
         rv->bank_type = false;
 
         /* Create the mutex */
@@ -552,7 +552,7 @@ void client_send_bb_data(ship_client_t* c) {
 
         pthread_mutex_lock(&c->mutex);
 
-        c->need_save_data = false;
+        //c->need_save_data = false;
 
         /* 将游戏时间存储入人物数据 */
         c->bb_pl->character.play_time += ((uint32_t)srv_time / 60) - ((uint32_t)c->login_time / 60);

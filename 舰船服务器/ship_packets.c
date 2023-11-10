@@ -1848,7 +1848,7 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
         return -1;
 
     /* Figure out what to do based on version... */
-    if(c->version == CLIENT_VERSION_BB) {
+    if (c->version == CLIENT_VERSION_BB) {
         if (safe_memcpy(sendbuf, (uint8_t*)pkt, len, sendbuf, sendbuf + len)) {
 #ifdef DEBUG
             DBG_LOG("安全复制成功！");
@@ -1864,8 +1864,8 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
         }
         //memcpy(sendbuf, pkt, len);
     }
-    else if(c->version == CLIENT_VERSION_PC) {
-        pc_pkt_hdr_t *hdr = (pc_pkt_hdr_t *)sendbuf;
+    else if (c->version == CLIENT_VERSION_PC) {
+        pc_pkt_hdr_t* hdr = (pc_pkt_hdr_t*)sendbuf;
 
         hdr->pkt_len = LE16(len - 4);
         hdr->flags = (uint8_t)pkt->flags;
@@ -1888,7 +1888,7 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
         len -= 4;
     }
     else {
-        dc_pkt_hdr_t *hdr = (dc_pkt_hdr_t *)sendbuf;
+        dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)sendbuf;
 
         hdr->pkt_len = LE16(len - 4);
         hdr->flags = (uint8_t)pkt->flags;

@@ -1959,6 +1959,9 @@ int lobby_handle_done_burst(lobby_t* l, ship_client_t* c) {
     while ((i = STAILQ_FIRST(&l->pkt_queue))) {
         STAILQ_REMOVE_HEAD(&l->pkt_queue, qentry);
 
+        if (i->pkt == NULL || !i->pkt)
+            continue;
+
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
         if (rv == 0) {
@@ -2013,6 +2016,9 @@ int lobby_resend_burst(lobby_t *l, ship_client_t *c) {
     while((i = STAILQ_FIRST(&l->burst_queue))) {
         STAILQ_REMOVE_HEAD(&l->burst_queue, qentry);
 
+        if (i->pkt == NULL || !i->pkt)
+            continue;
+
         /* As long as none of the earlier packets have errored out, continue on
            by re-handling the old packet. */
         if(rv == 0) {
@@ -2044,6 +2050,9 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
     /* Go through each packet and handle it */
     while ((i = STAILQ_FIRST(&l->pkt_queue))) {
         STAILQ_REMOVE_HEAD(&l->pkt_queue, qentry);
+
+        if (i->bb_pkt == NULL || !i->bb_pkt)
+            continue;
 
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
@@ -2099,6 +2108,9 @@ int lobby_resend_burst_bb(lobby_t* l, ship_client_t* c) {
     /* Go through each packet and handle it */
     while ((i = STAILQ_FIRST(&l->burst_queue))) {
         STAILQ_REMOVE_HEAD(&l->burst_queue, qentry);
+
+        if (i->bb_pkt == NULL || !i->bb_pkt)
+            continue;
 
         /* As long as none of the earlier packets have errored out, continue on
            by re-handling the old packet. */

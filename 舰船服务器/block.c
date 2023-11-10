@@ -249,15 +249,12 @@ static void* block_thd(void* d) {
                 continue;
             }
 
-            /* 默认间隔5秒存储一次数据 */
-            if ((it->save_time < srv_time) && 
-                (it->need_save_data) && 
-                !(it->flags & CLIENT_FLAG_DISCONNECTED) &&
-                !(it->flags & CLIENT_FLAG_BURSTING)
-                ) {
-                client_send_bb_data(it);
-                it->need_save_data = true;
-            }
+            /* 默认间隔30秒存储一次数据 */
+            //if ((it->save_time + 30 < srv_time) &&
+            //    !(it->flags & CLIENT_FLAG_BURSTING)
+            //    ) {
+            //    client_send_bb_data(it);
+            //}
 
             //if ((it->last_message + 30 < srv_time) && it->create_lobby) {
             //    if (it->create_lobby->num_clients == 0) {
@@ -272,6 +269,7 @@ static void* block_thd(void* d) {
             /* Only add to the write fd set if we have something to send out. */
             if (it->sendbuf_cur) {
                 FD_SET(it->sock, &writefds);
+                client_send_bb_data(it);
             }
 
             nfds = max(nfds, it->sock);
@@ -521,7 +519,16 @@ static void* block_thd(void* d) {
 
                 /* Remove the player from the lobby before disconnecting
                    them, or else bad things might happen. */
-                lobby_remove_player(it);
+                switch (it->version)
+                {
+                case CLIENT_VERSION_BB:
+                    lobby_remove_player_bb(it);
+                    break;
+
+                default:
+                    lobby_remove_player(it);
+                    break;
+                }
                 client_destroy_connection(it, b->clients);
                 --b->num_clients;
             }
