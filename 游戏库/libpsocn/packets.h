@@ -4383,11 +4383,12 @@ typedef struct bb_guild_get_data {
     bb_pkt_hdr_t hdr;                      // 0x00 - 0x07
     uint32_t guildcard;                    // 0x08 - 0x0B
     uint32_t guild_id;                     // 0x0C - 0x0F
-    uint32_t guild_points_rank;
-    uint32_t guild_points_rest;
-    uint16_t guild_name[0x000E];           // 0x18 - 0x1C
-    uint32_t guild_rank;
+    uint32_t guild_points_rank;            // 0x10 - 0x13
+    uint32_t guild_points_rest;            // 0x14 - 0x17
+    uint16_t guild_name[0x000E];           // 0x18 - 0x33
+    uint16_t guild_rank;                   // 0x34 - 0x35 ?? T 0x6C84
     uint8_t guild_flag[0x0800];            // 公会图标
+    uint8_t unknow;
 } PACKED bb_guild_get_data_pkt;
 
 // 0FEA (C->S): 设置公会旗帜
@@ -4435,6 +4436,7 @@ typedef struct bb_guild_lobby_client {
     uint32_t client_guildcard;
     uint32_t client_id;
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
+    uint32_t unused[2];
     uint8_t guild_flag[0x0800];
 } PACKED bb_guild_lobby_client_t;
 

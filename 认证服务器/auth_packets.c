@@ -59,7 +59,7 @@ static void ascii_to_utf16(const char *in, uint16_t *out, int maxlen) {
 
 /* 获取当前线程的 sendbuf 线程特定数据. */
 uint8_t* get_sendbuf() {
-    uint8_t* sendbuf = (uint8_t*)mmalloc(65536);
+    uint8_t* sendbuf = (uint8_t*)mmalloc(MAX_PACKET_BUFF);
 
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
        we need to do that now. */
@@ -68,7 +68,7 @@ uint8_t* get_sendbuf() {
         return NULL;
     }
 
-    memset(sendbuf, 0, 65536);
+    memset(sendbuf, 0, MAX_PACKET_BUFF);
 
     return sendbuf;
 }
@@ -122,8 +122,7 @@ static int send_raw(login_client_t *c, int len, uint8_t* sendbuf) {
         c->sendbuf_cur += rv;
     }
 
-    if (sendbuf)
-        mfree(sendbuf);
+    mfree(sendbuf);
 
     return 0;
 }

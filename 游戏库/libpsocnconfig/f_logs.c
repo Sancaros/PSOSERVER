@@ -294,7 +294,11 @@ void flog(int32_t codeline, uint32_t files_num, const char* fmt, ...)
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "Log\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
@@ -359,7 +363,11 @@ void flog_item(const char* func, int32_t codeline, uint32_t files_num, const cha
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "Log\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
@@ -426,7 +434,11 @@ void flog_file(int32_t codeline, uint32_t files_num, const char* file, const cha
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "%s\\%u年%02u月%02u日.", file, rawtime.wYear, rawtime.wMonth, rawtime.wDay);
@@ -491,7 +503,11 @@ void flog_err(const char* func, int32_t codeline, uint32_t files_num, const char
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "Error\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
@@ -559,7 +575,11 @@ void flog_crash(const char* func, int32_t codeline, uint32_t files_num, const ch
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "Crash\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
@@ -628,8 +648,11 @@ void flog_debug(const char* func, int32_t codeline, uint32_t files_num, const ch
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
-	mes[MAX_PACKET_BUFF - 1] = '\0';
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 
 	//strcpy(logfile, "Log\\");
@@ -698,7 +721,11 @@ void flog_undone(int32_t codeline, const char* files_name, const char* fmt, ...)
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "未完成指令日志\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
@@ -761,7 +788,11 @@ void flog_unknow(int32_t codeline, const char* files_name, const char* fmt, ...)
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "未处理指令日志\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
@@ -824,7 +855,11 @@ void flog_err_packet(int32_t codeline, const char* files_name, const char* fmt, 
 	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 	//SAFE_STRCAT(headermes, log_header[files]);
 	va_start(args, fmt);
-	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	int len = vsnprintf(mes, MAX_PACKET_BUFF, fmt, args); // 使用vsnprintf确保不会发生溢出
+	if (len >= 0 && len < MAX_PACKET_BUFF - 2) { // 确保剩余空间足够放置"\r\n\0"
+		strncpy(mes + len, "\r\n", 2); // 使用strncpy进行拼接，并手动添加结尾的空字符
+		mes[len + 2] = '\0'; // 手动添加结尾的空字符
+	}
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "错误数据包\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);

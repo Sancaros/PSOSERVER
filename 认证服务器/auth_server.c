@@ -353,6 +353,10 @@ void read_quests() {
                 continue;
 
             for (j = 0; j < CLIENT_LANG_ALL; ++j) {
+#ifdef DEBUG
+                AUTH_LOG("¶ÁÈ¡ÈÎÎñ %s ÓïÑÔ %s", client_type[i].ver_name_file,
+                    language_codes[j]);
+#endif // DEBUG
                 sprintf(fn, "%s/%s/quests_%s.xml", cfg->quests_dir,
                     client_type[i].ver_name_file, language_codes[j]);
                 if (!psocn_quests_read(fn, &tmp)) {

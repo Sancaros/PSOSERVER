@@ -12758,6 +12758,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 0EEA */
     case BB_GUILD_GET_TARGET_DATA:
+
         bb_guild_get_data_pkt* target_data = (bb_guild_get_data_pkt*)sendbuf;
 
         len = sizeof(bb_guild_get_data_pkt);
@@ -12769,6 +12770,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         memcpy(target_data->guild_name, c->bb_guild->data.guild_name, sizeof(target_data->guild_name));
         target_data->guild_rank = c->bb_guild->data.guild_rank;
         memcpy(target_data->guild_flag, c->bb_guild->data.guild_flag, 0x800);
+        target_data->unknow = 0xFF;
 
         target_data->hdr.pkt_len = LE16(len);
         target_data->hdr.pkt_type = cmd_code;
@@ -12823,12 +12825,13 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 13EA */
     case BB_GUILD_LOBBY_SETTING:
+
         bb_guild_lobby_setting_pkt* lbs = (bb_guild_lobby_setting_pkt*)sendbuf;
 
         len = sizeof(bb_guild_lobby_client_t);
 
         for (i = 0; i < l->max_clients; i++) {
-            if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
+            if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version == CLIENT_VERSION_BB)) {
                 c2 = l->clients[i];
 
                 lbs->entires[num].guild_owner_gc = c2->bb_guild->data.guild_owner_gc;
@@ -13210,8 +13213,8 @@ int send_bb_lobby_guild_data(ship_client_t* src, ship_client_t* nosend) {
             (l->clients[i]->version == CLIENT_VERSION_BB)
             ) {
             rv = send_pkt_bb(src, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
-            //rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(src));
+            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
         }
     }
 

@@ -2261,7 +2261,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_guild_invite_t* pkt) {
     uint16_t len = pkt->hdr.pkt_len;
     uint8_t type = pkt->shdr.type;
-    uint32_t invite_cmd = pkt->trans_cmd;
+    uint32_t invite_cmd = pkt->invite_cmd;
     uint32_t target_guildcard = pkt->traget_guildcard;
 
     if (!check_pkt_size(src, pkt, sizeof(subcmd_bb_guild_invite_t), 0x17))
@@ -2309,7 +2309,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_guild_invite_t* pkt) {
     uint16_t len = pkt->hdr.pkt_len;
     uint8_t type = pkt->shdr.type;
-    uint32_t invite_cmd = pkt->trans_cmd;
+    uint32_t invite_cmd = pkt->invite_cmd;
     uint32_t target_guildcard = pkt->traget_guildcard;
     char guild_name_text[24];
     char inviter_name_text[24];
@@ -2345,28 +2345,24 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 对方拒绝加入公会 */
     case 0x03:
-        //if (dest)
-        //    send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
-        //        __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
+            __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
         break;
 
         /* 公会邀请失败 给双方返回错误信息 */
     case 0x04:
-        //if (dest)
-        //    send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
-        //        __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
+            __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
         break;
 
     default:
-        if (dest)
-            ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
-                type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
+        ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
+            type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
         PRINT_HEX_LOG(ERR_LOG, pkt, len);
         break;
     }
 
-    //return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-    return 0;
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
 int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,

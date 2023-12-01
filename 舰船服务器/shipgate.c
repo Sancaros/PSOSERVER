@@ -208,7 +208,7 @@ static int send_raw(shipgate_conn_t* sg, size_t len, uint8_t* sendbuf, int crypt
                     //pthread_rwlock_unlock(&sg->rwlock);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
-                    PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
+                    //PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
                     return -1;
                 }
 
@@ -3679,8 +3679,6 @@ int process_shipgate_pkt(shipgate_conn_t* sg) {
                 ERR_LOG("%s Gnutls *** 错误: 接收到损坏的数据长度(%d). 取消响应.", get_shipgate_describe(sg), sz);
             }
 
-            if(pkt)
-                PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
             return -4;
         }
 

@@ -698,11 +698,15 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr, uint
                     ERR_LOG("Error: %d Hostname exceeds maximum length", sock);
                     return -4;
                 }
-                else {
-                    hostbuf[hostlen] = '\0';
+                else if (hostlen > 0){
+                    hostbuf[hostlen - 1] = '\0';
                     // 在长度限制内，可以继续处理
                     // 进行相应的操作
                     DBG_LOG("Hostname: %s", hostbuf);
+                }
+                else {
+                    ERR_LOG("Error: %d Hostname exceeds minimum length", sock);
+                    return -4;
                 }
 
                 i = len;

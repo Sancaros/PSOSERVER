@@ -2911,7 +2911,7 @@ typedef struct subcmd_bb_guild_invite {
     bb_pkt_hdr_t hdr;//8 + 4 + 4 + 4 + 48 + 32 = 100
     params_hdr_t shdr;
     uint32_t traget_guildcard;
-    uint32_t trans_cmd;
+    uint32_t invite_cmd;// 0 or 1 for 6xC1, 2 (or not 2) for 6xC2
     uint16_t inviter_name[0x0018];
     uint16_t guild_name[0x000E];
     uint32_t guild_rank; /*????????? δ֪ 00 00 D9 01*/

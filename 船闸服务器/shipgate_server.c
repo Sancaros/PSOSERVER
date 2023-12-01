@@ -704,7 +704,7 @@ void run_server(int tsock, int tsock6) {
                     //    continue;
                     //}
 
-                    if (rv == -1) {
+                    if (rv) {
 
                         i->last_ping = 0;
                         i->disconnected = 1;

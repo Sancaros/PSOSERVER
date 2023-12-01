@@ -718,8 +718,12 @@ static int handle_quest(xmlNode *n, psocn_quest_category_t *c) {
     q->event = (int)event_list;
     q->format = (int)format;
 
-    strncpy(q->name, convert_enc("utf-8", "gbk", (const char*)name), 31);
-    q->name[31] = '\0';
+    //DBG_LOG("qid %d", q->qid);
+
+    istrncpy(ic_utf8_to_gbk, q->name, name, 32);
+
+    //strncpy(q->name, convert_enc("utf-8", "gbk", (const char*)name), 31);
+    //q->name[31] = '\0';
     q->prefix = (char *)prefix;
 
     /* Fill in the versions */

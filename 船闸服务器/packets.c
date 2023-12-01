@@ -146,7 +146,7 @@ static int send_raw(ship_t* ship, size_t len, uint8_t* sendbuf) {
                     //pthread_mutex_unlock(&ship->pkt_mutex);
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 发送损坏的数据长度(%d). 取消响应.", rv);
-                    PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
+                    //PRINT_HEX_LOG(ERR_LOG, pkt, ntohs(pkt->pkt_len));
                     //free_safe(sendbuf);
                     return -1;
                 }

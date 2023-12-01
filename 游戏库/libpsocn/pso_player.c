@@ -137,10 +137,10 @@ uint8_t get_material_usage(inventory_t* inv, MaterialType which) {
 
 		switch (which) {
 		case MATERIAL_HP:
-			return inv->hpmats_used;
+			return inv->hpmats_used >> 1;
 
 		case MATERIAL_TP:
-			return inv->tpmats_used;
+			return inv->tpmats_used >> 1;
 
 		case MATERIAL_POWER:
 		case MATERIAL_MIND:
@@ -166,11 +166,11 @@ void set_material_usage(inventory_t* inv, MaterialType which, uint8_t usage) {
 
 		switch (which) {
 		case MATERIAL_HP:
-			inv->hpmats_used = usage;
+			inv->hpmats_used = usage << 1;
 			break;
 
 		case MATERIAL_TP:
-			inv->tpmats_used = usage;
+			inv->tpmats_used = usage << 1;
 			break;
 
 		case MATERIAL_POWER:

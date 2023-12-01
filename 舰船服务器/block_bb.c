@@ -1940,9 +1940,9 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         return -2;
     }
 
-    ERR_LOG("///////////////bb_process_trade start %s", get_player_describe(src));
+    //ERR_LOG("///////////////bb_process_trade start %s", get_player_describe(src));
 
-    PRINT_HEX_LOG(ERR_LOG, pkt, LE16(pkt->hdr.pkt_len));
+    //PRINT_HEX_LOG(ERR_LOG, pkt, LE16(pkt->hdr.pkt_len));
 
     /* 搜索目标客户端. */
     ship_client_t* dest = ge_target_client_by_id(l, target_client_id);
@@ -2001,7 +2001,7 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         }
     }
 
-    ERR_LOG("///////////////bb_process_trade end %s", get_player_describe(src));
+    //ERR_LOG("///////////////bb_process_trade end %s", get_player_describe(src));
 
     send_simple(dest, TRADE_1_TYPE, 0x00);
     if (dest->game_data->pending_item_trade.confirmed) {
@@ -2022,9 +2022,9 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
         return -1;
     }
 
-    ERR_LOG("///////////////bb_process_trade_excute start %s", get_player_describe(src));
+    //ERR_LOG("///////////////bb_process_trade_excute start %s", get_player_describe(src));
 
-    PRINT_HEX_LOG(ERR_LOG, pkt, LE16(pkt->hdr.pkt_len));
+    //PRINT_HEX_LOG(ERR_LOG, pkt, LE16(pkt->hdr.pkt_len));
 
     trade_inv_t* src_trade_inv = get_client_trade_inv_bb(src);
     uint8_t target_client_id = src_trade_inv->other_client_id;
@@ -2053,7 +2053,7 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
     if (dest_trade_inv->confirmed) {
     }
 
-    ERR_LOG("///////////////bb_process_trade_excute end %s", get_player_describe(src));
+    //ERR_LOG("///////////////bb_process_trade_excute end %s", get_player_describe(src));
 
     return 0;
 }
@@ -2461,12 +2461,9 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
     }
 
 #ifdef DEBUG
-    PRINT_HEX_LOG(ERR_LOG, pkt, len);
-    DBG_LOG("目标 GC %u 邀请人:GUILD ID %u 权限 0x%02X", target_gc, c->bb_guild->data.guild_id, c->bb_guild->data.guild_priv_level);
-#endif // DEBUG
-
     PRINT_HEX_LOG(DBG_LOG, pkt, len);
     DBG_LOG("目标 GC %u 邀请人:GUILD ID %u 权限 0x%02X", target_gc, c->bb_guild->data.guild_id, c->bb_guild->data.guild_priv_level);
+#endif // DEBUG
 
     if (c->bb_guild->data.guild_id <= 0)
         return 0;

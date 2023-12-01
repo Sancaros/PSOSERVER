@@ -1103,7 +1103,7 @@ static int lobby_add_client_locked(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < l->max_clients; ++i) {
         if(l->clients[i] == NULL) {
             l->clients[i] = c;
-            l->clients_slot[i] = 1;
+            l->clients_slot[i] = i;
             c->cur_lobby = l;
             c->client_id = i;
             c->arrow_color = 0;
