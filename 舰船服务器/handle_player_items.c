@@ -2618,7 +2618,7 @@ void sort_client_bank(psocn_bank_t* bank) {
 }
 
 /* 增加封印物品的解封数 */
-void add_equip_unsealable_item_kill_count(ship_client_t* src, int16_t v) {
+void add_equip_unsealable_item_kill_count(ship_client_t* src, uint16_t v) {
     inventory_t* inv = get_client_inv(src);
     for (size_t x = 0; x < inv->item_count; x++) {
         iitem_t* iitem = &inv->iitems[x];

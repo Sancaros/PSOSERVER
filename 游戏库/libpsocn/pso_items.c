@@ -395,11 +395,11 @@ int16_t get_unit_bonus(const item_t* item) {
 	return item->dataw[3];
 }
 
-int16_t get_sealed_item_kill_count(const item_t* item) {
+uint16_t get_sealed_item_kill_count(const item_t* item) {
 	return ((item->datab[10] << 8) | item->datab[11]) & 0x7FFF;
 }
 
-void set_sealed_item_kill_count(item_t* item, int16_t v) {
+void set_sealed_item_kill_count(item_t* item, uint16_t v) {
 	if (v > 0x7FFF) {
 		item->dataw[5] = 0xFFFF;
 	}
