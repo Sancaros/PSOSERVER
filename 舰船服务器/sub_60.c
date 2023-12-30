@@ -1877,8 +1877,11 @@ static int sub60_2B_dc(ship_client_t* src, ship_client_t* dest,
             break;
 
         case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_XBOX:
             v = ITEM_VERSION_GC;
+            break;
+
+        case CLIENT_VERSION_XBOX:
+            v = ITEM_VERSION_XBOX;
             break;
 
         default:
@@ -2007,8 +2010,11 @@ static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
             break;
 
         case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_XBOX:
             v = ITEM_VERSION_GC;
+            break;
+
+        case CLIENT_VERSION_XBOX:
+            v = ITEM_VERSION_XBOX;
             break;
 
         case CLIENT_VERSION_BB:
@@ -3781,8 +3787,11 @@ static int sub60_5F_dc(ship_client_t* src, ship_client_t* dest,
             break;
 
         case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_XBOX:
             v = ITEM_VERSION_GC;
+            break;
+
+        case CLIENT_VERSION_XBOX:
+            v = ITEM_VERSION_XBOX;
             break;
 
         default:

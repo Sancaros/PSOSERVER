@@ -1520,8 +1520,11 @@ int client_legit_check(ship_client_t* c, psocn_limits_t* limits) {
         break;
 
     case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_XBOX: /* XXXX */
         v = ITEM_VERSION_GC;
+        break;
+
+    case CLIENT_VERSION_XBOX: /* XXXX */
+        v = ITEM_VERSION_XBOX;
         break;
 
     case CLIENT_VERSION_BB:
@@ -2351,7 +2354,17 @@ static int client_addr_lua(lua_State* l) {
 
     if (lua_islightuserdata(l, 1)) {
         c = (ship_client_t*)lua_touserdata(l, 1);
-        my_ntop(&c->ip_addr, str);
+
+        if (c->version != CLIENT_VERSION_XBOX) {
+            my_ntop(&c->ip_addr, str);
+        }
+        else if (!c->xbl_ip) {
+            lua_pushliteral(l, "");
+            return 1;
+        }
+        //else {
+        //    inet_ntop(AF_INET, &c->xbl_ip->wan_ip, str, INET6_ADDRSTRLEN);
+        //}
         lua_pushstring(l, str);
     }
     else {
@@ -2929,8 +2942,11 @@ static int client_legitCheckItem_lua(lua_State* l) {
             break;
 
         case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_XBOX:
             v = ITEM_VERSION_GC;
+            break;
+
+        case CLIENT_VERSION_XBOX:
+            v = ITEM_VERSION_XBOX;
             break;
 
         default:

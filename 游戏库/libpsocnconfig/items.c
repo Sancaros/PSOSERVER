@@ -940,6 +940,10 @@ int psocn_read_limits(const char *f, psocn_limits_t **l) {
     rv->def_max_percent_gc = INT_MAX;
     rv->def_min_hit_gc = INT_MIN;
     rv->def_max_hit_gc = INT_MAX;
+    rv->def_min_percent_xbox = INT_MIN;
+    rv->def_max_percent_xbox = INT_MAX;
+    rv->def_min_hit_xbox = INT_MIN;
+    rv->def_max_hit_xbox = INT_MAX;
 
     /* Create an XML Parsing context */
     cxt = xmlNewParserCtxt();
@@ -1766,10 +1770,23 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
     uint16_t tmp;
     int level = 0;
     int cpb, rpb, lpb, hascpb, hasrpb, haslpb;
+    uint8_t item2[4];
 
     /* This shouldn't happen... */
     if(version < ITEM_VERSION_GC)
         return 1;
+
+    /* Swap the item2 dword for Xbox players, since the rest of the code here
+    assumes Gamecube byte ordering in that part. */
+    if (version == ITEM_VERSION_XBOX) {
+        item2[0] = i->data.data2b[3];
+        item2[1] = i->data.data2b[2];
+        item2[2] = i->data.data2b[1];
+        item2[3] = i->data.data2b[0];
+    }
+    else {
+        memcpy(item2, i->data.data2b, 4);
+    }
 
     /* Grab the real item type. This is much simpler than in the DC case because
        we don't have to deal with the mess of v1 compatibility. */
@@ -1781,9 +1798,12 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
     lpb = (i->data.datab[3] >> 6) & 0x03;
 
     /* Figure out what slots should have PBs */
-    hascpb = i->data.data2b[1] & 0x01;
-    hasrpb = i->data.data2b[1] & 0x02;
-    haslpb = i->data.data2b[1] & 0x04;
+    hascpb = item2[1] & 0x01;
+    hasrpb = item2[1] & 0x02;
+    haslpb = item2[1] & 0x04;
+    //hascpb = i->data.data2b[1] & 0x01;
+    //hasrpb = i->data.data2b[1] & 0x02;
+    //haslpb = i->data.data2b[1] & 0x04;
 
     /* If we're supposed to check for obviously hacked PBs, do so */
     if(l->check_pbs) {
@@ -1848,13 +1868,13 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the IQ */
-            tmp = i->data.data2b[2];
+            tmp = item2[2];
             if((m->max_iq != -1 && tmp > m->max_iq) ||
                (m->min_iq != -1 && tmp < m->min_iq))
                 return 0;
 
             /* Check the synchro */
-            tmp = i->data.data2b[3];
+            tmp = item2[3];
             if((m->max_synchro != -1 && tmp > m->max_synchro) ||
                (m->min_synchro != -1 && tmp < m->min_synchro))
                 return 0;
@@ -1889,7 +1909,7 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Parse out what the color is and check it */
-            tmp = i->data.data2b[0];
+            tmp = item2[0];
 
             if(!(m->allowed_colors & (1 << tmp)))
                 return 0;
