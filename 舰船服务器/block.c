@@ -3633,7 +3633,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
                 len)) {
                 ERR_LOG("GC %u 未知数 0x%X 据包!", c->guildcard, type);
-                PRINT_HEX_LOG(ERR_LOG, pkt, len);
+                //PRINT_HEX_LOG(ERR_LOG, pkt, len);
                 return -3;
             }
             return 0;

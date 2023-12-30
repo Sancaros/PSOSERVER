@@ -2003,7 +2003,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
                 len)) {
                 ERR_LOG("未知数据包!");
-                PRINT_HEX_LOG(ERR_LOG, pkt, len);
+                //PRINT_HEX_LOG(ERR_LOG, pkt, len);
                 return -3;
             }
             return 0;

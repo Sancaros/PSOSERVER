@@ -1280,23 +1280,23 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir, psocn_rar
     nmaps = a->map_nums;
     nvars = a->map_vars;
 
-//    if (bb_parsed_maps[solo][episode][area].data) {
-//#ifdef DEBUG
-//        DBG_LOG("释放原有内存1，动态读取");
-//#endif // DEBUG
-//        bb_parsed_maps[solo][episode][area].map_count = 0;
-//        bb_parsed_maps[solo][episode][area].variation_count = 0;
-//        free_safe(bb_parsed_maps[solo][episode][area].data);
-//    }
-//
-//    if (bb_parsed_objs[solo][episode][area].data) {
-//#ifdef DEBUG
-//        DBG_LOG("释放原有内存2，动态读取");
-//#endif // DEBUG
-//        bb_parsed_objs[solo][episode][area].map_count = 0;
-//        bb_parsed_objs[solo][episode][area].variation_count = 0;
-//        free_safe(bb_parsed_objs[solo][episode][area].data);
-//    }
+    if (bb_parsed_maps[solo][episode][area].gen_data) {
+#ifdef DEBUG
+        DBG_LOG("释放原有内存1，动态读取");
+#endif // DEBUG
+        bb_parsed_maps[solo][episode][area].map_count = 0;
+        bb_parsed_maps[solo][episode][area].variation_count = 0;
+        free_safe(bb_parsed_maps[solo][episode][area].gen_data);
+    }
+
+    if (bb_parsed_objs[solo][episode][area].gobj_data) {
+#ifdef DEBUG
+        DBG_LOG("释放原有内存2，动态读取");
+#endif // DEBUG
+        bb_parsed_objs[solo][episode][area].map_count = 0;
+        bb_parsed_objs[solo][episode][area].variation_count = 0;
+        free_safe(bb_parsed_objs[solo][episode][area].gobj_data);
+    }
 
     bb_parsed_maps[solo][episode][area].map_count = nmaps;
     bb_parsed_maps[solo][episode][area].variation_count = nvars;
@@ -2147,6 +2147,8 @@ int bb_load_game_enemies(lobby_t* l) {
         //DBG_LOG("rare_enemy_raw_data[%d] = 0x%04X", i >> 1, rare_enemy_data[i >> 1]);
     }
 
+    DBG_LOG("QID %d enemies %d", l->qid, enemies);
+
     /* Allocate space for the enemy set and the enemies therein. */
     if (!(en = (game_enemies_t*)malloc(sizeof(game_enemies_t)))) {
         ERR_LOG("分配敌人设置内存错误: %s", strerror(errno));
@@ -2184,7 +2186,7 @@ int bb_load_game_enemies(lobby_t* l) {
     for (i = 0; i < 0x10; ++i) {
         if (!sets[i] || !osets[i])
             break;
-
+        //这里要补条件
         memcpy(&en->enemies[index], sets[i]->enemies,
             sizeof(game_enemy_t) * sets[i]->enemy_count);
         index += sets[i]->enemy_count;

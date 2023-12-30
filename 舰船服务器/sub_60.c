@@ -7086,18 +7086,18 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000020 )   D0 00 C2 01                                     ??
 
     item_t work_item = { 0 };
-    for (size_t x = 0; x < ARRAYSIZE(gallons_shop_hopkins); x += 2) {
-        if (pkt->add_item.datal[0] == gallons_shop_hopkins[x].item_datal) {
-            work_item.datal[0] = BBItem_Photon_Drop;
-            break;
-        }
-    }
-
-    if (work_item.datal[0] != BBItem_Photon_Drop) {
-        ERR_LOG("%s 兑换失败, 未找到对应物品", get_player_describe(src));
-        send_msg(src, TEXT_MSG_TYPE, __(src, "任务兑换失败,你的背包未找到对应兑换物品"));
-        return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    //for (size_t x = 0; x < ARRAYSIZE(gallons_shop_hopkins); x += 2) {
+    //    if (pkt->add_item.datal[0] == gallons_shop_hopkins[x].item_datal) {
+    //        work_item.datal[0] = BBItem_Photon_Drop;
+    //        break;
+    //    }
+    //}
+    work_item.datal[0] = BBItem_Photon_Drop;
+    //if (work_item.datal[0] != BBItem_Photon_Drop) {
+    //    ERR_LOG("%s 兑换失败, 未找到对应物品", get_player_describe(src));
+    //    send_msg(src, TEXT_MSG_TYPE, __(src, "任务兑换失败,你的背包未找到对应兑换物品"));
+    //    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
 
     inventory_t* inv = get_client_inv(src);
 
