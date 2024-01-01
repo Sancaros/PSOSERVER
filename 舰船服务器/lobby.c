@@ -937,6 +937,22 @@ void lobby_destroy_noremove(lobby_t *l) {
     lobby_destroy_locked(l, 0);
 }
 
+ChallengeParameters_t* create_challenge_params() {
+    ChallengeParameters_t* params = (ChallengeParameters_t*)malloc(sizeof(ChallengeParameters_t));
+    if (params != NULL) {
+        memset(params, 0, sizeof(ChallengeParameters_t));
+        params->rank_text = NULL;
+    }
+    return params;
+}
+
+void destroy_challenge_params(ChallengeParameters_t* params) {
+    if (params != NULL) {
+        free(params->rank_text);
+        free(params);
+    }
+}
+
 static uint8_t lobby_find_max_challenge(lobby_t *l) {
     int min_lev = 255, min_lev2 = 255, i, j, k;
     ship_client_t *c;

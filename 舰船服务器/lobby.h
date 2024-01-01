@@ -102,6 +102,18 @@ typedef struct Map_Size {
     size_t map_vars;
 } Map_Size_t;
 
+typedef struct RankThreshold {
+    uint32_t bitmask;
+    uint32_t seconds;
+} RankThreshold_t;
+
+typedef struct ChallengeParameters {
+    uint8_t stage_number;
+    uint32_t rank_color;
+    char* rank_text;
+    RankThreshold_t rank_thresholds[3];
+} ChallengeParameters_t;
+
 SLIST_HEAD(lobby_qfunc_list, lobby_qfunc);
 
 struct lobby {
@@ -181,6 +193,7 @@ struct lobby {
     uint16_t rare_enemy_data[MAX_RARE_MONSTER_IDS];
     double monster_rare_mult;
     bb_battle_param_t *bb_params;
+    ChallengeParameters_t *challenge_params;
 
     int num_mtypes;
     int num_mids;
@@ -352,6 +365,9 @@ lobby_t *lobby_create_ep3_game(block_t *block, char *name, char *passwd,
                                ship_client_t *c);
 void lobby_destroy(lobby_t *l);
 void lobby_destroy_noremove(lobby_t *l);
+
+ChallengeParameters_t* create_challenge_params();
+void destroy_challenge_params(ChallengeParameters_t* params);
 
 /* Add the client to any available lobby on the current block. */
 int lobby_add_to_any(ship_client_t *c, lobby_t *req);
