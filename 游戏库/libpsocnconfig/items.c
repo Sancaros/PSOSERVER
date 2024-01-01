@@ -1270,7 +1270,7 @@ static int check_percents(psocn_limits_t *l, iitem_t *i,
             is_js = 1;
 
             if(l->check_j_sword) {
-                tmp = (i->data.datab[10] << 8) | i->data.datab[11];
+                tmp = (i->data.data1b[10] << 8) | i->data.data1b[11];
 
                 /* If the kill count bit isn't set in the right percentage slot,
                    bail. */
@@ -1296,7 +1296,7 @@ static int check_percents(psocn_limits_t *l, iitem_t *i,
             is_js = 1;
 
             if(l->check_j_sword) {
-                tmp = (i->data.datab[10] << 8) | i->data.datab[11];
+                tmp = (i->data.data1b[10] << 8) | i->data.data1b[11];
 
                 /* If the kill count bit isn't set in the right percentage slot,
                    bail. */
@@ -1314,50 +1314,50 @@ static int check_percents(psocn_limits_t *l, iitem_t *i,
         /* For hit, we don't have to check if the item is a SEALED or TSUMIKIRI
            J-SWORD since the percent type byte will never be 5 in that case. */
         if(w->max_hit != INT_MAX) {
-            if((i->data.datab[6] == 5 && (s8)i->data.datab[7] > w->max_hit) ||
-               (i->data.datab[8] == 5 && (s8)i->data.datab[9] > w->max_hit) ||
-               (i->data.datab[10] == 5 && (s8)i->data.datab[11] > w->max_hit))
+            if((i->data.data1b[6] == 5 && (s8)i->data.data1b[7] > w->max_hit) ||
+               (i->data.data1b[8] == 5 && (s8)i->data.data1b[9] > w->max_hit) ||
+               (i->data.data1b[10] == 5 && (s8)i->data.data1b[11] > w->max_hit))
                 return 0;
 
             hit_max = 1;
         }
 
         if(w->min_hit != INT_MIN) {
-            if((i->data.datab[6] == 5 && (s8)i->data.datab[7] < w->min_hit) ||
-               (i->data.datab[8] == 5 && (s8)i->data.datab[9] < w->min_hit) ||
-               (i->data.datab[10] == 5 && (s8)i->data.datab[11] < w->min_hit))
+            if((i->data.data1b[6] == 5 && (s8)i->data.data1b[7] < w->min_hit) ||
+               (i->data.data1b[8] == 5 && (s8)i->data.data1b[9] < w->min_hit) ||
+               (i->data.data1b[10] == 5 && (s8)i->data.data1b[11] < w->min_hit))
                 return 0;
 
             hit_min = 1;
         }
 
         if(w->max_percents != INT_MAX) {
-            if(i->data.datab[6] && (s8)i->data.datab[7] > w->max_percents)
-                if(i->data.datab[6] != 5 || !hit_max)
+            if(i->data.data1b[6] && (s8)i->data.data1b[7] > w->max_percents)
+                if(i->data.data1b[6] != 5 || !hit_max)
                     return 0;
 
-            if(i->data.datab[8] && (s8)i->data.datab[9] > w->max_percents)
-                if(i->data.datab[8] != 5 || !hit_max)
+            if(i->data.data1b[8] && (s8)i->data.data1b[9] > w->max_percents)
+                if(i->data.data1b[8] != 5 || !hit_max)
                     return 0;
 
-            if(i->data.datab[10] && (s8)i->data.datab[11] > w->max_percents)
-                if((i->data.datab[10] != 5 || !hit_max) && !is_js)
+            if(i->data.data1b[10] && (s8)i->data.data1b[11] > w->max_percents)
+                if((i->data.data1b[10] != 5 || !hit_max) && !is_js)
                     return 0;
 
             perc_max = 1;
         }
 
         if(w->min_percents != INT_MIN) {
-            if(i->data.datab[6] && (s8)i->data.datab[7] < w->min_percents)
-                if(i->data.datab[6] != 5 || !hit_min)
+            if(i->data.data1b[6] && (s8)i->data.data1b[7] < w->min_percents)
+                if(i->data.data1b[6] != 5 || !hit_min)
                     return 0;
 
-            if(i->data.datab[8] && (s8)i->data.datab[9] < w->min_percents)
-                if(i->data.datab[8] != 5 || !hit_min)
+            if(i->data.data1b[8] && (s8)i->data.data1b[9] < w->min_percents)
+                if(i->data.data1b[8] != 5 || !hit_min)
                     return 0;
 
-            if(i->data.datab[10] && (s8)i->data.datab[11] < w->min_percents)
-                if((i->data.datab[10] != 5 || !hit_min) && !is_js)
+            if(i->data.data1b[10] && (s8)i->data.data1b[11] < w->min_percents)
+                if((i->data.data1b[10] != 5 || !hit_min) && !is_js)
                     return 0;
 
             perc_min = 1;
@@ -1379,9 +1379,9 @@ static int check_percents(psocn_limits_t *l, iitem_t *i,
             tmp = l->def_max_hit_xbox;
 
         if(tmp != INT_MAX) {
-            if((i->data.datab[6] == 5 && (s8)i->data.datab[7] > tmp) ||
-               (i->data.datab[8] == 5 && (s8)i->data.datab[9] > tmp) ||
-               (i->data.datab[10] == 5 && (s8)i->data.datab[11] > tmp))
+            if((i->data.data1b[6] == 5 && (s8)i->data.data1b[7] > tmp) ||
+               (i->data.data1b[8] == 5 && (s8)i->data.data1b[9] > tmp) ||
+               (i->data.data1b[10] == 5 && (s8)i->data.data1b[11] > tmp))
                 return 0;
 
             hit_max = 1;
@@ -1401,9 +1401,9 @@ static int check_percents(psocn_limits_t *l, iitem_t *i,
             tmp = l->def_min_hit_xbox;
 
         if(tmp != INT_MIN) {
-            if((i->data.datab[6] == 5 && (s8)i->data.datab[7] < tmp) ||
-               (i->data.datab[8] == 5 && (s8)i->data.datab[9] < tmp) ||
-               (i->data.datab[10] == 5 && (s8)i->data.datab[11] < tmp))
+            if((i->data.data1b[6] == 5 && (s8)i->data.data1b[7] < tmp) ||
+               (i->data.data1b[8] == 5 && (s8)i->data.data1b[9] < tmp) ||
+               (i->data.data1b[10] == 5 && (s8)i->data.data1b[11] < tmp))
                 return 0;
 
             hit_min = 1;
@@ -1422,16 +1422,16 @@ static int check_percents(psocn_limits_t *l, iitem_t *i,
         else if(ver == ITEM_VERSION_XBOX)
             tmp = l->def_max_percent_xbox;
 
-        if(i->data.datab[6] && (s8)i->data.datab[7] > tmp)
-            if(i->data.datab[6] != 5 || !hit_max)
+        if(i->data.data1b[6] && (s8)i->data.data1b[7] > tmp)
+            if(i->data.data1b[6] != 5 || !hit_max)
                 return 0;
 
-        if(i->data.datab[8] && (s8)i->data.datab[9] > tmp)
-            if(i->data.datab[8] != 5 || !hit_max)
+        if(i->data.data1b[8] && (s8)i->data.data1b[9] > tmp)
+            if(i->data.data1b[8] != 5 || !hit_max)
                 return 0;
 
-        if(i->data.datab[10] && (s8)i->data.datab[11] > tmp)
-            if((i->data.datab[10] != 5 || !hit_max) && !is_js)
+        if(i->data.data1b[10] && (s8)i->data.data1b[11] > tmp)
+            if((i->data.data1b[10] != 5 || !hit_max) && !is_js)
                 return 0;
     }
 
@@ -1447,22 +1447,22 @@ static int check_percents(psocn_limits_t *l, iitem_t *i,
         else if(ver == ITEM_VERSION_XBOX)
             tmp = l->def_min_percent_xbox;
 
-        if(i->data.datab[6] && (s8)i->data.datab[7] < tmp)
-            if(i->data.datab[6] != 5 || !hit_min)
+        if(i->data.data1b[6] && (s8)i->data.data1b[7] < tmp)
+            if(i->data.data1b[6] != 5 || !hit_min)
                 return 0;
 
-        if(i->data.datab[8] && (s8)i->data.datab[9] < tmp)
-            if(i->data.datab[8] != 5 || !hit_min)
+        if(i->data.data1b[8] && (s8)i->data.data1b[9] < tmp)
+            if(i->data.data1b[8] != 5 || !hit_min)
                 return 0;
 
-        if(i->data.datab[10] && (s8)i->data.datab[11] < tmp)
-            if((i->data.datab[10] != 5 || !hit_min) && !is_js)
+        if(i->data.data1b[10] && (s8)i->data.data1b[11] < tmp)
+            if((i->data.data1b[10] != 5 || !hit_min) && !is_js)
                 return 0;
     }
 
     /* Make sure percents are evenly divisible by 5. */
-    if(((s8)i->data.datab[7]) % 5 || ((s8)i->data.datab[9]) % 5 ||
-       (((s8)i->data.datab[11] % 5) && !is_js)) {
+    if(((s8)i->data.data1b[7]) % 5 || ((s8)i->data.data1b[9]) % 5 ||
+       (((s8)i->data.data1b[11] % 5) && !is_js)) {
         return 0;
     }
 
@@ -1476,23 +1476,23 @@ static int check_weapon(psocn_limits_t *l, iitem_t *i,
     psocn_weapon_t *w;
     int is_srank = 0, is_named_srank = 0;
     uint8_t tmp;
-    int is_special_weapon = i->data.datab[4] == 0x80;
+    int is_special_weapon = i->data.data1b[4] == 0x80;
     int is_wrapped = 0;
     uint32_t ic2;
 
     /* Grab the real item type, if its a v2 item.
        Note: Gamecube uses this byte for wrapping paper design. */
-    if(version < ITEM_VERSION_GC && i->data.datab[5])
-        ic = (i->data.datab[5] << 8);
+    if(version < ITEM_VERSION_GC && i->data.data1b[5])
+        ic = (i->data.data1b[5] << 8);
 
     /* Check that the wrapping paper is valid... If we are requested to do so */
     if(version >= ITEM_VERSION_GC && l->check_wrap) {
-        is_wrapped = i->data.datab[4] & 0x40;
+        is_wrapped = i->data.data1b[4] & 0x40;
 
         if(is_wrapped) {
-            if(i->data.datab[5] > 0x0A)
+            if(i->data.data1b[5] > 0x0A)
                 return 0;
-            else if(l->check_wrap >= 2 && i->data.datab[5] == 0x05)
+            else if(l->check_wrap >= 2 && i->data.data1b[5] == 0x05)
                 return 0;
         }
     }
@@ -1505,59 +1505,59 @@ static int check_weapon(psocn_limits_t *l, iitem_t *i,
         is_srank = 1;
 
         /* If we're looking at a S-Rank, figure out if it has a name */
-        if(i->data.datab[6] >= 0x0C) {
+        if(i->data.data1b[6] >= 0x0C) {
             is_named_srank = 1;
 
             if(l->check_srank_names) {
                 /* Check each character of the S-Rank name for validity. Only
                    A-Z are legitimately available. */
                 /* First character */
-                tmp = ((i->data.datab[6] & 0x03) << 3) |
-                    ((i->data.datab[7] & 0xE0) >> 5);
+                tmp = ((i->data.data1b[6] & 0x03) << 3) |
+                    ((i->data.data1b[7] & 0xE0) >> 5);
                 if(tmp > 26) {
                     return 0;
                 }
 
                 /* Second character */
-                tmp = i->data.datab[7] & 0x1F;
+                tmp = i->data.data1b[7] & 0x1F;
                 if(tmp > 26) {
                     return 0;
                 }
 
                 /* Third character */
-                tmp = ((i->data.datab[8] >> 2) & 0x1F);
+                tmp = ((i->data.data1b[8] >> 2) & 0x1F);
                 if(tmp > 26) {
                     return 0;
                 }
 
                 /* Fourth character */
-                tmp = ((i->data.datab[8] & 0x03) << 3) |
-                    ((i->data.datab[9] & 0xE0) >> 5);
+                tmp = ((i->data.data1b[8] & 0x03) << 3) |
+                    ((i->data.data1b[9] & 0xE0) >> 5);
                 if(tmp > 26) {
                     return 0;
                 }
 
                 /* Fifth character */
-                tmp = i->data.datab[9] & 0x1F;
+                tmp = i->data.data1b[9] & 0x1F;
                 if(tmp > 26) {
                     return 0;
                 }
 
                 /* Sixth character */
-                tmp = ((i->data.datab[10] >> 2) & 0x1F);
+                tmp = ((i->data.data1b[10] >> 2) & 0x1F);
                 if(tmp > 26) {
                     return 0;
                 }
 
                 /* Seventh character */
-                tmp = ((i->data.datab[10] & 0x03) << 3) |
-                    ((i->data.datab[11] & 0xE0) >> 5);
+                tmp = ((i->data.data1b[10] & 0x03) << 3) |
+                    ((i->data.data1b[11] & 0xE0) >> 5);
                 if(tmp > 26) {
                     return 0;
                 }
 
                 /* Eighth character */
-                tmp = i->data.datab[11] & 0x1F;
+                tmp = i->data.data1b[11] & 0x1F;
                 if(tmp > 26) {
                     return 0;
                 }
@@ -1573,13 +1573,13 @@ static int check_weapon(psocn_limits_t *l, iitem_t *i,
     /* Check for duplicate percents, as long as its not a named S-Rank. */
     if(!is_named_srank) {
         /* See if the first percent attribute matches with the others */
-        if(i->data.datab[6] && (i->data.datab[6] == i->data.datab[8] ||
-                            i->data.datab[6] == i->data.datab[10])) {
+        if(i->data.data1b[6] && (i->data.data1b[6] == i->data.data1b[8] ||
+                            i->data.data1b[6] == i->data.data1b[10])) {
             return 0;
         }
 
         /* Only case left to try is the second one with the third... */
-        if(i->data.datab[8] && i->data.datab[8] == i->data.datab[10]) {
+        if(i->data.data1b[8] && i->data.data1b[8] == i->data.data1b[10]) {
             return 0;
         }
     }
@@ -1596,8 +1596,8 @@ static int check_weapon(psocn_limits_t *l, iitem_t *i,
 
             /* Check the grind value first -- we have to ignore these on
                SPECIAL WEAPONs, since PSO is screwy in dealing with them... */
-            if(((w->max_grind != -1 && i->data.datab[3] > w->max_grind) ||
-                (w->min_grind != -1 && i->data.datab[3] < w->min_grind)) &&
+            if(((w->max_grind != -1 && i->data.data1b[3] > w->max_grind) ||
+                (w->min_grind != -1 && i->data.data1b[3] < w->min_grind)) &&
                !is_special_weapon) {
                 return 0;
             }
@@ -1607,7 +1607,7 @@ static int check_weapon(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check if the attribute of the weapon is valid */
-            tmp = i->data.datab[4] & 0x3F;
+            tmp = i->data.data1b[4] & 0x3F;
             if(tmp > Weapon_Attr_MAX) {
                 return 0;
             }
@@ -1642,8 +1642,8 @@ static int check_guard(psocn_limits_t *l, iitem_t *i,
     int wrapping;
 
     /* Grab the real item type, if its a v2 item */
-    if(version < ITEM_VERSION_GC && type != ITEM_SUBTYPE_UNIT && i->data.datab[3]) {
-        ic = ic | (i->data.datab[3] << 16);
+    if(version < ITEM_VERSION_GC && type != ITEM_SUBTYPE_UNIT && i->data.data1b[3]) {
+        ic = ic | (i->data.data1b[3] << 16);
     }
 
     /* Find the item in our list, if its there */
@@ -1660,20 +1660,20 @@ static int check_guard(psocn_limits_t *l, iitem_t *i,
                     f = (psocn_frame_t *)j;
 
                     /* Check if the frame has too many slots */
-                    if((f->max_slots != -1 && i->data.datab[5] > f->max_slots) ||
-                       (f->min_slots != -1 && i->data.datab[5] < f->min_slots)) {
+                    if((f->max_slots != -1 && i->data.data1b[5] > f->max_slots) ||
+                       (f->min_slots != -1 && i->data.data1b[5] < f->min_slots)) {
                         return 0;
                     }
 
                     /* Check if the dfp boost is too high */
-                    dfp = i->data.datab[6] | (i->data.datab[7] << 8);
+                    dfp = i->data.data1b[6] | (i->data.data1b[7] << 8);
                     if((f->max_dfp != -1 && dfp > f->max_dfp) ||
                        (f->min_dfp != -1 && dfp < f->min_dfp)) {
                         return 0;
                     }
 
                     /* Check if the evp boost is too high */
-                    evp = i->data.datab[8] | (i->data.datab[9] << 8);
+                    evp = i->data.data1b[8] | (i->data.data1b[9] << 8);
                     if((f->max_evp != -1 && evp > f->max_evp) ||
                        (f->min_evp != -1 && evp < f->min_evp)) {
                         return 0;
@@ -1688,8 +1688,8 @@ static int check_guard(psocn_limits_t *l, iitem_t *i,
                     /* Check the validity of any wrapping paper applied, if
                        applicable. */
                     if(version >= ITEM_VERSION_GC && l->check_wrap) {
-                        if((i->data.datab[4] & 0x40)) {
-                            wrapping = i->data.datab[4] & 0x0F;
+                        if((i->data.data1b[4] & 0x40)) {
+                            wrapping = i->data.data1b[4] & 0x0F;
                             if(wrapping > 0x0A)
                                 return 0;
                             else if(l->check_wrap >= 2 && wrapping == 5)
@@ -1703,14 +1703,14 @@ static int check_guard(psocn_limits_t *l, iitem_t *i,
                     b = (psocn_barrier_t *)j;
 
                     /* Check if the dfp boost is too high */
-                    dfp = i->data.datab[6] | (i->data.datab[7] << 8);
+                    dfp = i->data.data1b[6] | (i->data.data1b[7] << 8);
                     if((b->max_dfp != -1 && dfp > b->max_dfp) ||
                        (b->min_dfp != -1 && dfp < b->min_dfp)) {
                         return 0;
                     }
 
                     /* Check if the evp boost is too high */
-                    evp = i->data.datab[8] | (i->data.datab[9] << 8);
+                    evp = i->data.data1b[8] | (i->data.data1b[9] << 8);
                     if((b->max_evp != -1 && evp > b->max_evp) ||
                        (b->min_evp != -1 && evp < b->min_evp)) {
                         return 0;
@@ -1725,8 +1725,8 @@ static int check_guard(psocn_limits_t *l, iitem_t *i,
                     /* Check the validity of any wrapping paper applied, if
                        applicable. */
                     if(version >= ITEM_VERSION_GC && l->check_wrap) {
-                        if((i->data.datab[4] & 0x40)) {
-                            wrapping = i->data.datab[4] & 0x0F;
+                        if((i->data.data1b[4] & 0x40)) {
+                            wrapping = i->data.data1b[4] & 0x0F;
                             if(wrapping > 0x0A)
                                 return 0;
                             else if(l->check_wrap >= 2 && wrapping == 5)
@@ -1740,7 +1740,7 @@ static int check_guard(psocn_limits_t *l, iitem_t *i,
                     u = (psocn_unit_t *)j;
 
                     /* Check the Plus/Minus number */
-                    plus = i->data.datab[6] | (i->data.datab[7] << 8);
+                    plus = i->data.data1b[6] | (i->data.data1b[7] << 8);
                     if((u->max_plus != INT_MIN && plus > u->max_plus) ||
                        (u->min_plus != INT_MIN && plus < u->min_plus)) {
                         return 0;
@@ -1793,9 +1793,9 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
     ic &= 0x0000FFFF;
 
     /* Grab the photon blasts */
-    cpb = i->data.datab[3] & 0x07;
-    rpb = (i->data.datab[3] >> 3) & 0x07;
-    lpb = (i->data.datab[3] >> 6) & 0x03;
+    cpb = i->data.data1b[3] & 0x07;
+    rpb = (i->data.data1b[3] >> 3) & 0x07;
+    lpb = (i->data.data1b[3] >> 6) & 0x03;
 
     /* Figure out what slots should have PBs */
     hascpb = item2[1] & 0x01;
@@ -1827,7 +1827,7 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's DEF */
-            tmp = (i->data.datab[4] | (i->data.datab[5] << 8)) & 0x7FFF;
+            tmp = (i->data.data1b[4] | (i->data.data1b[5] << 8)) & 0x7FFF;
             tmp /= 100;
             level += tmp;
 
@@ -1836,7 +1836,7 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's POW */
-            tmp = (i->data.datab[6] | (i->data.datab[7] << 8)) & 0x7FFF;
+            tmp = (i->data.data1b[6] | (i->data.data1b[7] << 8)) & 0x7FFF;
             tmp /= 100;
             level += tmp;
 
@@ -1845,7 +1845,7 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's DEX */
-            tmp = (i->data.datab[8] | (i->data.datab[9] << 8)) & 0x7FFF;
+            tmp = (i->data.data1b[8] | (i->data.data1b[9] << 8)) & 0x7FFF;
             tmp /= 100;
             level += tmp;
 
@@ -1854,7 +1854,7 @@ static int check_mag_v3(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's MIND */
-            tmp = (i->data.datab[10] | (i->data.datab[11] << 8)) & 0x7FFF;
+            tmp = (i->data.data1b[10] | (i->data.data1b[11] << 8)) & 0x7FFF;
             tmp /= 100;
             level += tmp;
 
@@ -1937,20 +1937,20 @@ static int check_mag_v2(psocn_limits_t *l, iitem_t *i,
 
     /* Grab the real item type, if its a v2 item, otherwise chop down to only
        16-bits */
-    if(i->data.datab[1] == 0x00 && i->data.datab[2] >= 0xC9)
-        ic = 0x02 | (((i->data.datab[2] - 0xC9) + 0x2C) << 8);
+    if(i->data.data1b[1] == 0x00 && i->data.data1b[2] >= 0xC9)
+        ic = 0x02 | (((i->data.data1b[2] - 0xC9) + 0x2C) << 8);
     else
-        ic = 0x02 | (i->data.datab[1] << 8);
+        ic = 0x02 | (i->data.data1b[1] << 8);
 
     /* Grab the photon blasts */
-    cpb = i->data.datab[3] & 0x07;
-    rpb = (i->data.datab[3] >> 3) & 0x07;
-    lpb = (i->data.datab[3] >> 6) & 0x03;
+    cpb = i->data.data1b[3] & 0x07;
+    rpb = (i->data.data1b[3] >> 3) & 0x07;
+    lpb = (i->data.data1b[3] >> 6) & 0x03;
 
     /* Figure out what slots should have PBs */
     hascpb = i->data.data2b[3] & 0x80;
-    hasrpb = i->data.datab[5] & 0x80;
-    haslpb = i->data.datab[7] & 0x80;
+    hasrpb = i->data.data1b[5] & 0x80;
+    haslpb = i->data.data1b[7] & 0x80;
 
     /* If we're supposed to check for obviously hacked PBs, do so */
     if(l->check_pbs) {
@@ -1974,7 +1974,7 @@ static int check_mag_v2(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's DEF */
-            tmp = (i->data.datab[4] | (i->data.datab[5] << 8)) & 0x7FFE;
+            tmp = (i->data.data1b[4] | (i->data.data1b[5] << 8)) & 0x7FFE;
             tmp /= 100;
             level += tmp;
 
@@ -1983,7 +1983,7 @@ static int check_mag_v2(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's POW */
-            tmp = (i->data.datab[6] | (i->data.datab[7] << 8)) & 0x7FFE;
+            tmp = (i->data.data1b[6] | (i->data.data1b[7] << 8)) & 0x7FFE;
             tmp /= 100;
             level += tmp;
 
@@ -1992,7 +1992,7 @@ static int check_mag_v2(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's DEX */
-            tmp = (i->data.datab[8] | (i->data.datab[9] << 8)) & 0x7FFE;
+            tmp = (i->data.data1b[8] | (i->data.data1b[9] << 8)) & 0x7FFE;
             tmp /= 100;
             level += tmp;
 
@@ -2001,7 +2001,7 @@ static int check_mag_v2(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Check the mag's MIND */
-            tmp = (i->data.datab[10] | (i->data.datab[11] << 8)) & 0x7FFE;
+            tmp = (i->data.data1b[10] | (i->data.data1b[11] << 8)) & 0x7FFE;
             tmp /= 100;
             level += tmp;
 
@@ -2056,8 +2056,8 @@ static int check_mag_v2(psocn_limits_t *l, iitem_t *i,
                 return 0;
 
             /* Parse out what the color is and check it */
-            tmp = (i->data.datab[4] & 0x01) | ((i->data.datab[6] & 0x01) << 1) |
-                ((i->data.datab[8] & 0x01) << 2) | ((i->data.datab[10] & 0x01) << 3);
+            tmp = (i->data.data1b[4] & 0x01) | ((i->data.data1b[6] & 0x01) << 1) |
+                ((i->data.data1b[8] & 0x01) << 2) | ((i->data.data1b[10] & 0x01) << 3);
 
             if(!(m->allowed_colors & (1 << tmp)))
                 return 0;
@@ -2093,8 +2093,8 @@ static int check_tool(psocn_limits_t *l, iitem_t *i,
     psocn_tool_t *t;
 
     /* Grab the real item type, if its a v2 item */
-    if(version < ITEM_VERSION_GC && ic == 0x060D03 && i->data.datab[3]) {
-        ic = 0x000E03 | ((i->data.datab[3] - 1) << 16);
+    if(version < ITEM_VERSION_GC && ic == 0x060D03 && i->data.data1b[3]) {
+        ic = 0x000E03 | ((i->data.data1b[3] - 1) << 16);
     }
 
     /* Find the item in our list, if its there */
@@ -2108,8 +2108,8 @@ static int check_tool(psocn_limits_t *l, iitem_t *i,
             }
 
             /* Check if the user has too many of this tool */
-            if((t->max_stack != -1 && i->data.datab[5] > t->max_stack) ||
-               (t->min_stack != -1 && i->data.datab[5] < t->min_stack)) {
+            if((t->max_stack != -1 && i->data.data1b[5] > t->max_stack) ||
+               (t->min_stack != -1 && i->data.data1b[5] < t->min_stack)) {
                 return 0;
             }
 
@@ -2124,8 +2124,8 @@ static int check_tool(psocn_limits_t *l, iitem_t *i,
 
 int psocn_limits_check_item(psocn_limits_t *l, iitem_t *i,
                                 uint32_t version) {
-    uint32_t item_code = i->data.datab[0] | (i->data.datab[1] << 8) |
-        (i->data.datab[2] << 16);
+    uint32_t item_code = i->data.data1b[0] | (i->data.data1b[1] << 8) |
+        (i->data.data1b[2] << 16);
 
     switch(item_code & 0xFF) {
         case ITEM_TYPE_WEAPON:

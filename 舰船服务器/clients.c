@@ -1543,8 +1543,8 @@ int client_legit_check(ship_client_t* c, psocn_limits_t* limits) {
         if (!irv) {
             SHIPS_LOG("Potentially non-legit found in inventory (GC: %"
                 PRIu32"):\n%08x %08x %08x %08x", c->guildcard,
-                LE32(item->data.datal[0]), LE32(item->data.datal[1]),
-                LE32(item->data.datal[2]), LE32(item->data.data2l));
+                LE32(item->data.data1l[0]), LE32(item->data.data1l[1]),
+                LE32(item->data.data1l[2]), LE32(item->data.data2l));
             return -1;
         }
     }
@@ -2218,7 +2218,7 @@ void show_coren_reward_info(ship_client_t* src, uint32_t week, uint32_t index) {
 
     for (size_t i = 0; i < count; ++i) {
         item_t tmp_i = { 0 };
-        tmp_i.datal[0] = reward_list.rewards[i];
+        tmp_i.data1l[0] = reward_list.rewards[i];
         // 将要写入的数据格式化为字符串
         sprintf_s(data_str, sizeof(data_str), "%d.%s", i + 1
             , item_get_name(&tmp_i, src->version, src->language_code)
@@ -2680,7 +2680,7 @@ static int client_dropItem_lua(lua_State* l) {
     if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
         c = (ship_client_t*)lua_touserdata(l, 1);
         lb = c->cur_lobby;
-        item.datal[0] = (uint32_t)lua_tointeger(l, 2);
+        item.data1l[0] = (uint32_t)lua_tointeger(l, 2);
 
         /* Make sure we're in a team, not a regular lobby... */
         if (lb->type != LOBBY_TYPE_GAME) {
@@ -2690,10 +2690,10 @@ static int client_dropItem_lua(lua_State* l) {
 
         /* Check all the optional arguments */
         if (lua_isinteger(l, 3)) {
-            item.datal[1] = (uint32_t)lua_tointeger(l, 3);
+            item.data1l[1] = (uint32_t)lua_tointeger(l, 3);
 
             if (lua_isinteger(l, 4)) {
-                item.datal[2] = (uint32_t)lua_tointeger(l, 4);
+                item.data1l[2] = (uint32_t)lua_tointeger(l, 4);
 
                 if (lua_isinteger(l, 5)) {
                     item.data2l = (uint32_t)lua_tointeger(l, 5);
@@ -2702,10 +2702,10 @@ static int client_dropItem_lua(lua_State* l) {
         }
 
         /* Do some basic checks of the item... */
-        if (is_stackable(&item) && !(item.datal[1] & 0x0000FF00)) {
+        if (is_stackable(&item) && !(item.data1l[1] & 0x0000FF00)) {
             /* If the item is stackable and doesn't have a quantity, give one
                of it. */
-            item.datal[1] |= (1 << 8);
+            item.data1l[1] |= (1 << 8);
         }
 
         /* Generate the packet to drop the item */
@@ -2719,9 +2719,9 @@ static int client_dropItem_lua(lua_State* l) {
         p2.unk = LE16(0);
         p2.x = c->x;
         p2.z = c->z;
-        p2.data.datal[0] = LE32(item.datal[0]);
-        p2.data.datal[1] = LE32(item.datal[1]);
-        p2.data.datal[2] = LE32(item.datal[2]);
+        p2.data.data1l[0] = LE32(item.data1l[0]);
+        p2.data.data1l[1] = LE32(item.data1l[1]);
+        p2.data.data1l[2] = LE32(item.data1l[2]);
         p2.data.item_id = LE32(lb->item_lobby_id);
         p2.data.data2l = LE32(item.data2l);
         p2.two = LE32(0x00000002);
@@ -2800,13 +2800,13 @@ static int client_item_lua(lua_State* l) {
         /* Create a table and put all 4 dwords of item data in it. */
         lua_newtable(l);
         lua_pushinteger(l, 1);
-        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.datal[0]);
+        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.data1l[0]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.datal[1]);
+        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.data1l[1]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.datal[2]);
+        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.data1l[2]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
         lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.data2l);
@@ -2876,12 +2876,12 @@ static int client_hasItem_lua(lua_State* l) {
 
         for (i = 0; i < c->pl->v1.character.inv.item_count; ++i) {
             item = (iitem_t*)&c->pl->v1.character.inv.iitems[i];
-            val = item->data.datal[0];
+            val = item->data.data1l[0];
 
             /* Grab the real item type, if its a v2 item.
                Note: Gamecube uses this byte for wrapping paper design. */
-            if (c->version < ITEM_VERSION_GC && item->data.datab[5])
-                val = (item->data.datab[5] << 8);
+            if (c->version < ITEM_VERSION_GC && item->data.data1b[5])
+                val = (item->data.data1b[5] << 8);
 
             if ((val & 0x00FFFFFF) == ic) {
                 lua_pushboolean(l, 1);
@@ -2926,9 +2926,9 @@ static int client_legitCheckItem_lua(lua_State* l) {
         ic3 = lua_tointeger(l, 4);
         ic4 = lua_tointeger(l, 5);
 
-        item.data.datal[0] = (uint32_t)ic1;
-        item.data.datal[1] = (uint32_t)ic2;
-        item.data.datal[2] = (uint32_t)ic3;
+        item.data.data1l[0] = (uint32_t)ic1;
+        item.data.data1l[1] = (uint32_t)ic2;
+        item.data.data1l[2] = (uint32_t)ic3;
         item.data.data2l = (uint32_t)ic4;
 
         switch (c->version) {
@@ -2959,8 +2959,8 @@ static int client_legitCheckItem_lua(lua_State* l) {
         if (!rv) {
             SHIPS_LOG("legitCheckItem failed for GC %" PRIu32 " with "
                 "item %08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32
-                "", c->guildcard, item.data.datal[0], item.data.datal[1],
-                item.data.datal[2], item.data.data2l);
+                "", c->guildcard, item.data.data1l[0], item.data.data1l[1],
+                item.data.data1l[2], item.data.data2l);
         }
 
         lua_pushboolean(l, !!rv);

@@ -70,9 +70,9 @@ static int handle_itemreq_gm(ship_client_t* src,
     gen.data.z = req->z;
     gen.data.unk1 = LE16(0x00000010);
 
-    gen.data.item.datal[0] = LE32(src->new_item.datal[0]);
-    gen.data.item.datal[1] = LE32(src->new_item.datal[1]);
-    gen.data.item.datal[2] = LE32(src->new_item.datal[2]);
+    gen.data.item.data1l[0] = LE32(src->new_item.data1l[0]);
+    gen.data.item.data1l[1] = LE32(src->new_item.data1l[1]);
+    gen.data.item.data1l[2] = LE32(src->new_item.data1l[2]);
     gen.data.item.data2l = LE32(src->new_item.data2l);
     gen.data.item2 = LE32(0x00000002);
 
@@ -1170,7 +1170,7 @@ int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    if (src->new_item.datal[0] &&
+    if (src->new_item.data1l[0] &&
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
     }
@@ -1327,7 +1327,7 @@ int sub62_A2_dc(ship_client_t* src, ship_client_t* dest,
     if (!in_game(src))
         return -1;
 
-    if (src->new_item.datal[0] &&
+    if (src->new_item.data1l[0] &&
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
     }
@@ -1520,7 +1520,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
                 trade_inv_src->trade_item_count++;
                 trade_inv_src->meseta = min(pkt->amount, 999999);
-                trade_i.datab[0] = 0x04;
+                trade_i.data1b[0] = 0x04;
                 trade_i.item_id = 0xFFFFFFFF;
                 trade_i.data2l = trade_inv_src->meseta;
             }
@@ -1536,8 +1536,8 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
                 trade_i = player->inv.iitems[item_id].data;
 
                 if (pkt->amount && is_stackable(&trade_i) &&
-                    (pkt->amount < trade_i.datab[5])) {
-                    trade_i.datab[5] = pkt->amount;
+                    (pkt->amount < trade_i.data1b[5])) {
+                    trade_i.data1b[5] = pkt->amount;
                 }
             }
 
@@ -1565,7 +1565,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
                 trade_inv_src->trade_item_count--;
             }
 
-            trade_i.datab[0] = 0x04;
+            trade_i.data1b[0] = 0x04;
             trade_i.item_id = 0xFFFFFFFF;
         }
         else {
@@ -1580,7 +1580,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         item_t tmp = remove_titem(trade_inv_src, trade_i.item_id, pkt->amount);
-        if (item_not_identification_bb(tmp.datal[0], tmp.datal[1])) {
+        if (item_not_identification_bb(tmp.data1l[0], tmp.data1l[1])) {
             ERR_LOG("%s 移除非法交易物品!", get_player_describe(src));
             print_item_data(&tmp, src->version);
             return -4;
@@ -1777,7 +1777,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         item_t item = create_bb_shop_items(player_level, random_shop, shop_type, l->difficulty, i, 随机因子);
-        if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+        if (item_not_identification_bb(item.data1l[0], item.data1l[1])) {
             create = false;
             send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4商店生成错误,菜单类型缺失,请联系管理员处理!"));
             return -1;
@@ -1786,9 +1786,9 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         pmt_weapon_bb_t tmp_wp = { 0 };
         pmt_guard_bb_t tmp_guard = { 0 };
 
-        switch (item.datab[0]) {
+        switch (item.data1b[0]) {
         case ITEM_TYPE_WEAPON:
-            if (pmt_lookup_weapon_bb(item.datal[0], &tmp_wp)) {
+            if (pmt_lookup_weapon_bb(item.data1l[0], &tmp_wp)) {
                 create = false;
                 continue;
             }
@@ -1799,9 +1799,9 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
             break;
 
         case ITEM_TYPE_GUARD:
-            switch (item.datab[1]) {
+            switch (item.data1b[1]) {
             case ITEM_SUBTYPE_FRAME:
-                if (pmt_lookup_guard_bb(item.datal[0], &tmp_guard)) {create = false;
+                if (pmt_lookup_guard_bb(item.data1l[0], &tmp_guard)) {create = false;
                     continue;
                 }
 
@@ -1811,7 +1811,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
                 break;
 
             case ITEM_SUBTYPE_BARRIER:
-                if (pmt_lookup_guard_bb(item.datal[0], &tmp_guard)) {
+                if (pmt_lookup_guard_bb(item.data1l[0], &tmp_guard)) {
                     create = false;
                     continue;
                 }
@@ -1824,7 +1824,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
             case ITEM_SUBTYPE_UNIT:
                 if (char_class_is_android(src->equip_flags)) {
                     for (size_t x = 4; x < 7;x++) {
-                        if (item.datab[2] == x) {
+                        if (item.data1b[2] == x) {
                             create = false;
                             continue;
                         }
@@ -1836,12 +1836,12 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         if (create) {
-            if (isUnique(uniqueNumbers[random_shop][shop_type], i, item.datal[0])) {  // 检查是否已经生成过该数
-                uniqueNumbers[random_shop][shop_type][i] = item.datal[0];  // 将生成的唯一数据添加到数组中
+            if (isUnique(uniqueNumbers[random_shop][shop_type], i, item.data1l[0])) {  // 检查是否已经生成过该数
+                uniqueNumbers[random_shop][shop_type][i] = item.data1l[0];  // 将生成的唯一数据添加到数组中
                 size_t shop_price = price_for_item(&item);
                 if (shop_price <= 0) {
                     ERR_LOG("%s:%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d"
-                        , get_player_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version, 0), item.datal[0], shop_price);
+                        , get_player_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version, 0), item.data1l[0], shop_price);
                     create = false;
                     continue;
                 }
@@ -1893,7 +1893,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     /* 如果是堆叠物品 */
     if (is_stackable(&item)) {
         if (num_bought <= max_stack_size(&item)) {
-            item.datab[5] = num_bought;
+            item.data1b[5] = num_bought;
         }
         else {
             ERR_LOG("%s 发送损坏的物品购买数据!",
@@ -1905,7 +1905,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     item.item_id = new_inv_item_id;
-    item.datab[5] = get_item_amount(&item, num_bought);
+    item.data1b[5] = get_item_amount(&item, num_bought);
 
     uint32_t price = src->game_data->shop_items_price[random_shop][shop_type][shop_item_index] * num_bought;
 
@@ -1961,7 +1961,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         return id_item_index;
     }
 
-    if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
+    if (character->inv.iitems[id_item_index].data.data1b[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("%s 发送无法鉴定的物品!",
             get_player_describe(src));
         send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
@@ -2167,7 +2167,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         else {
             item = remove_invitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
             LOBBY_BANK_DEPOSIT_ITEM_LOG(src, item_id, src->cur_area, &item);
-            if (item.datal[0] == 0 && item.data2l == 0) {
+            if (item.data1l[0] == 0 && item.data2l == 0) {
                 ERR_LOG("%s 移除了不存在于背包的物品!", get_player_describe(src));
                 return -3;
             }
@@ -2389,7 +2389,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     else {
         item_t item;
         clear_inv_item(&item);
-        item.datab[0] = ITEM_TYPE_MESETA;
+        item.data1b[0] = ITEM_TYPE_MESETA;
         item.data2l = meseta_amount;
         item.item_id = generate_item_id(l, 0xFF);
 
@@ -2574,9 +2574,9 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
 //(00000000) 1C 00 62 00 00 00 00 00  D1 05 00 00 01 00 05 00    ..b.............
 //(00000010) 77 B7 09 C4 D2 1E 66 C3  03 00 00 00    w.....f.....
     item_t drop_item = { 0 };
-    drop_item.datab[0] = pkt->item[0];
-    drop_item.datab[1] = pkt->item_subtype;
-    drop_item.datab[5] = pkt->drop_amount;
+    drop_item.data1b[0] = pkt->item[0];
+    drop_item.data1b[1] = pkt->item_subtype;
+    drop_item.data1b[5] = pkt->drop_amount;
 
     litem_t* new_litem = add_lobby_litem_locked(l, &drop_item, src->cur_area, x, z, true);
 
@@ -2596,7 +2596,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
 
     item_t backup_item = remove_invitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
-    if (item_not_identification_bb(backup_item.datal[0],backup_item.datal[1])) {
+    if (item_not_identification_bb(backup_item.data1l[0],backup_item.data1l[1])) {
         ERR_LOG("%s 转换物品ID %d 失败!", get_player_describe(src), item_data.item_id);
         return -1;
     }
@@ -2653,7 +2653,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     item_t item = remove_invitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
-    if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+    if (item_not_identification_bb(item.data1l[0], item.data1l[1])) {
         ERR_LOG("0x%08X 是未识别物品", item_id);
         return -5;
     }
@@ -2745,10 +2745,10 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
 
         item_t item = { 0 };
 
-        item.datal[0] = reward_item;
+        item.data1l[0] = reward_item;
 
         /* 填充物品数据 */
-        if (item.datal[0] == BBItem_Meseta) {
+        if (item.data1l[0] == BBItem_Meseta) {
             pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, src->bb_pl->character.dress_data.section);
             if (!ent) {
                 ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, src->bb_pl->character.dress_data.section);
@@ -2758,18 +2758,18 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             /* 检索物品类型 */
-            switch (item.datab[0]) {
+            switch (item.data1b[0]) {
             case ITEM_TYPE_WEAPON: // 武器
                 /* 打磨值 0 - 10*/
-                item.datab[3] = sfmt_genrand_uint32(rng) % 11;
+                item.data1b[3] = sfmt_genrand_uint32(rng) % 11;
                 /* 特殊攻击 0 - 10 配合难度 0 - 3 33%几率 获得特殊EX */
                 if ((sfmt_genrand_uint32(rng) % 3) == 1) {
-                    item.datab[4] = sfmt_genrand_uint32(rng) % 11 + l->difficulty;
+                    item.data1b[4] = sfmt_genrand_uint32(rng) % 11 + l->difficulty;
                 }
                 /* datab[5] 在这里不涉及 礼物 未鉴定*/
 
                 /* 如果掉落的是武器 则未鉴定 */
-                item.datab[4] |= 0x80;
+                item.data1b[4] |= 0x80;
 
                 /* 生成属性*/
                 size_t num_percentages = 0;
@@ -2779,7 +2779,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                         /* 后期设置调整 生成属性几率 TODO */
                         if ((sfmt_genrand_uint32(rng) % 6) == 1) {
                             /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
-                            item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
+                            item.data1b[(num_percentages * 2) + 6] = (uint8_t)x;
                             tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 21];/* 0 - 5 % 0 - 19*/
 
                             //if (tmp_value > 50)
@@ -2788,7 +2788,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                             //if (tmp_value < -50)
                             //    tmp_value = -50;
 
-                            item.datab[(num_percentages * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
+                            item.data1b[(num_percentages * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
                             num_percentages++;
                         }
                     }
@@ -2800,23 +2800,23 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 pmt_guard_bb_t pmt_guard = { 0 };
                 pmt_unit_bb_t pmt_unit = { 0 };
 
-                switch (item.datab[1]) {
+                switch (item.data1b[1]) {
                 case ITEM_SUBTYPE_FRAME://护甲
-                    if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-                        ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                    if (err = pmt_lookup_guard_bb(item.data1l[0], &pmt_guard)) {
+                        ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.data1l[0]);
                         return -1;
                     }
 
                     /*随机槽位 0 - 4 33几率新增槽位 */
                     if ((sfmt_genrand_uint32(rng) % 3) == 1)
-                        item.datab[5] = sfmt_genrand_uint32(rng) % 4 + 1;
+                        item.data1b[5] = sfmt_genrand_uint32(rng) % 4 + 1;
 
                     /* DFP值 */
                     if (pmt_guard.dfp_range) {
                         tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
                         if (tmp_value < 0)
                             tmp_value = 0;
-                        item.datab[6] = tmp_value;
+                        item.data1b[6] = tmp_value;
                     }
 
                     /* EVP值 */
@@ -2824,13 +2824,13 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                         tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
                         if (tmp_value < 0)
                             tmp_value = 0;
-                        item.datab[8] = tmp_value;
+                        item.data1b[8] = tmp_value;
                     }
                     break;
 
                 case ITEM_SUBTYPE_BARRIER://护盾
-                    if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-                        ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                    if (err = pmt_lookup_guard_bb(item.data1l[0], &pmt_guard)) {
+                        ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.data1l[0]);
                         return -1;
                     }
 
@@ -2839,7 +2839,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                         tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
                         if (tmp_value < 0)
                             tmp_value = 0;
-                        item.datab[6] = tmp_value;
+                        item.data1b[6] = tmp_value;
                     }
 
                     /* EVP值 */
@@ -2847,20 +2847,20 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                         tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
                         if (tmp_value < 0)
                             tmp_value = 0;
-                        item.datab[8] = tmp_value;
+                        item.data1b[8] = tmp_value;
                     }
                     break;
 
                 case ITEM_SUBTYPE_UNIT://插件
-                    if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
-                        ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                    if (err = pmt_lookup_unit_bb(item.data1l[0], &pmt_unit)) {
+                        ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.data1l[0]);
                         UNLOCK_CMUTEX(src);
                         return -1;
                     }
 
                     tmp_value = sfmt_genrand_uint32(rng) % 5;
-                    item.datab[6] = unit_bonus_values[tmp_value][0];
-                    item.datab[7] = unit_bonus_values[tmp_value][1];
+                    item.data1b[6] = unit_bonus_values[tmp_value][0];
+                    item.data1b[7] = unit_bonus_values[tmp_value][1];
 
                     break;
                 }
@@ -2873,7 +2873,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 break;
 
             case ITEM_TYPE_TOOL: // 药品工具
-                item.datab[5] = get_item_amount(&item, 1);
+                item.data1b[5] = get_item_amount(&item, 1);
                 break;
             }
         }
@@ -2948,7 +2948,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/
     if (src->game_data->gm_debug) {
-        result_item.datal[0] = reward_list.rewards[lottery_num(rng, TOTAL_COREN_ITEMS)];
+        result_item.data1l[0] = reward_list.rewards[lottery_num(rng, TOTAL_COREN_ITEMS)];
     }
     else {
         uint32_t rng_value = sfmt_genrand_uint32(rng) % 100 + 1;
@@ -2958,7 +2958,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
         for (size_t i = 0; i < tmp_choice; i++) {
             if ((rng_value <= reward_percent[i]) && (reward_percent[i] != 0)) {
-                result_item.datal[0] = reward_list.rewards[lottery_num(rng, TOTAL_COREN_ITEMS)];
+                result_item.data1l[0] = reward_list.rewards[lottery_num(rng, TOTAL_COREN_ITEMS)];
                 break;
             }
         }
@@ -2973,7 +2973,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
             uint32_t amount = (sfmt_genrand_uint32(rng) % menu_choice_price[menu_choice] + 1) / 2;
 
-            result_item.datal[0] = BBItem_Meseta;
+            result_item.data1l[0] = BBItem_Meseta;
             get_item_amount(&result_item, amount);
 
             item = result_item;
@@ -2999,33 +2999,33 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     }
 
-    item.datal[0] = result_item.datal[0];
+    item.data1l[0] = result_item.data1l[0];
 
     /* 填充物品数据 */
-    if (item.datal[0] == BBItem_Meseta) {
+    if (item.data1l[0] == BBItem_Meseta) {
         item.item_id = 0xFFFFFFFF;
         get_item_amount(&item, menu_choice_price[menu_choice] * (sfmt_genrand_uint32(rng) % 2 + 1));
     }
     else {
         /* 检索物品类型 */
-        switch (item.datab[0]) {
+        switch (item.data1b[0]) {
         case ITEM_TYPE_WEAPON: // 武器
             pmt_weapon_bb_t pmt_weapon = { 0 };
 
-            if (err = pmt_lookup_weapon_bb(item.datal[0], &pmt_weapon)) {
-                ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+            if (err = pmt_lookup_weapon_bb(item.data1l[0], &pmt_weapon)) {
+                ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d 0x%08X", err, item.data1l[0]);
                 return -1;
             }
 
             /* 打磨值 0 - 10*/
             if (pmt_weapon.max_grind) {
-                item.datab[3] = sfmt_genrand_uint32(rng) % pmt_weapon.max_grind;
+                item.data1b[3] = sfmt_genrand_uint32(rng) % pmt_weapon.max_grind;
             }
 
             /* 特殊攻击 0 - 10 配合难度 0 - 3 33%几率 获得特殊EX */
             if (!pmt_weapon.special_type) {
                 if ((sfmt_genrand_uint32(rng) % 3) == 1) {
-                    item.datab[4] = sfmt_genrand_uint32(rng) % 11 + 难度;
+                    item.data1b[4] = sfmt_genrand_uint32(rng) % 11 + 难度;
                 }
             }
 
@@ -3039,7 +3039,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                     /* 后期设置调整 生成属性几率 TODO */
                     if ((sfmt_genrand_uint32(rng) % 6) == 1) {
                         /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
-                        item.datab[(attrib_slot * 2) + 6] = (uint8_t)x;
+                        item.data1b[(attrib_slot * 2) + 6] = (uint8_t)x;
                         tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 21];/* 0 - 5 % 0 - 19*/
 
                         //if (tmp_value > 50)
@@ -3048,7 +3048,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                         //if (tmp_value < -50)
                         //    tmp_value = -50;
 
-                        item.datab[(attrib_slot * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
+                        item.data1b[(attrib_slot * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
                         attrib_slot++;
                     }
                 }
@@ -3060,23 +3060,23 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             pmt_guard_bb_t pmt_guard = { 0 };
             pmt_unit_bb_t pmt_unit = { 0 };
 
-            switch (item.datab[1]) {
+            switch (item.data1b[1]) {
             case ITEM_SUBTYPE_FRAME://护甲
-                if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-                    ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                if (err = pmt_lookup_guard_bb(item.data1l[0], &pmt_guard)) {
+                    ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.data1l[0]);
                     return -1;
                 }
 
                 /*随机槽位 0 - 4 33几率新增槽位 */
                 if ((sfmt_genrand_uint32(rng) % 3) == 1)
-                    item.datab[5] = sfmt_genrand_uint32(rng) % 4 + 1;
+                    item.data1b[5] = sfmt_genrand_uint32(rng) % 4 + 1;
 
                 /* DFP值 */
                 if (pmt_guard.dfp_range) {
                     tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
                     if (tmp_value < 0)
                         tmp_value = 0;
-                    item.datab[6] = tmp_value;
+                    item.data1b[6] = tmp_value;
                 }
 
                 /* EVP值 */
@@ -3084,13 +3084,13 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                     tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
                     if (tmp_value < 0)
                         tmp_value = 0;
-                    item.datab[8] = tmp_value;
+                    item.data1b[8] = tmp_value;
                 }
                 break;
 
             case ITEM_SUBTYPE_BARRIER://护盾
-                if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-                    ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                if (err = pmt_lookup_guard_bb(item.data1l[0], &pmt_guard)) {
+                    ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.data1l[0]);
                     return -1;
                 }
 
@@ -3099,7 +3099,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                     tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.dfp_range + 1);
                     if (tmp_value < 0)
                         tmp_value = 0;
-                    item.datab[6] = tmp_value;
+                    item.data1b[6] = tmp_value;
                 }
 
                 /* EVP值 */
@@ -3107,20 +3107,20 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                     tmp_value = sfmt_genrand_uint32(rng) % (pmt_guard.evp_range + 1);
                     if (tmp_value < 0)
                         tmp_value = 0;
-                    item.datab[8] = tmp_value;
+                    item.data1b[8] = tmp_value;
                 }
                 break;
 
             case ITEM_SUBTYPE_UNIT://插件
-                if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
-                    ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                if (err = pmt_lookup_unit_bb(item.data1l[0], &pmt_unit)) {
+                    ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.data1l[0]);
                     UNLOCK_CMUTEX(src);
                     return -1;
                 }
 
                 tmp_value = sfmt_genrand_uint32(rng) % 5;
-                item.datab[6] = unit_bonus_values[tmp_value][0];
-                item.datab[7] = unit_bonus_values[tmp_value][1];
+                item.data1b[6] = unit_bonus_values[tmp_value][0];
+                item.data1b[7] = unit_bonus_values[tmp_value][1];
 
                 break;
             }
@@ -3132,14 +3132,14 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             assign_mag_stats(&item, &stats);
             if (!check_mag_has_pb(&item)) {
                 uint32_t rng = rand_int(&src->sfmt_rng, _countof(smrpb));
-                item.datab[3] = smrpb[rng].datab3;
+                item.data1b[3] = smrpb[rng].datab3;
                 item.data2b[2] = smrpb[rng].data2b2;
                 item.data2b[3] = get_player_msg_color_set(src);
             }
             break;
 
         case ITEM_TYPE_TOOL: // 药品工具
-            item.datab[5] = get_item_amount(&item, 1);
+            item.data1b[5] = get_item_amount(&item, 1);
             break;
         }
 

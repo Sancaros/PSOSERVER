@@ -331,16 +331,16 @@ uint8_t magedit_lookup_mag_evolution_number(item_t* item) {
     }
 
     /* 确保我们正在查找 玛古物品 */
-    if (item->datab[0] != ITEM_TYPE_MAG) {
+    if (item->data1b[0] != ITEM_TYPE_MAG) {
         return -2;
     }
 
     /* 确保不超出索引 */
-    if (item->datab[1] >= mag_evolution_numbers_table_max_values) {
+    if (item->data1b[1] >= mag_evolution_numbers_table_max_values) {
         return -3;
     }
 
     /* 获取数据 */
-    return mag_evolution_numbers_table.values[item->datab[1]];
+    return mag_evolution_numbers_table.values[item->data1b[1]];
 }
 

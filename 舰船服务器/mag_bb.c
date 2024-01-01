@@ -81,13 +81,13 @@ bool is_special_mag(item_t* mag, uint8_t section, uint8_t ch_class) {
 	uint8_t old_type;
 	int16_t mDefense, mPower, mDex, mMind;
 
-	old_type = mag->datab[1];
+	old_type = mag->data1b[1];
 
-	if (mag->datab[2] >= 100) {
-		mDefense = mag->dataw[2] / 100;//defense
-		mPower = mag->dataw[3] / 100;//Power
-		mDex = mag->dataw[4] / 100;//Dex
-		mMind = mag->dataw[5] / 100;//Mind
+	if (mag->data1b[2] >= 100) {
+		mDefense = mag->data1w[2] / 100;//defense
+		mPower = mag->data1w[3] / 100;//Power
+		mDex = mag->data1w[4] / 100;//Dex
+		mMind = mag->data1w[5] / 100;//Mind
 
 		switch (section) {
 		case SID_Viridia:
@@ -100,27 +100,27 @@ bool is_special_mag(item_t* mag, uint8_t section, uint8_t ch_class) {
 				{
 				case CLASS_HUMAR:
 				case CLASS_HUCAST:
-					mag->datab[1] = Mag_Deva;
+					mag->data1b[1] = Mag_Deva;
 					break;
 				case CLASS_HUNEWEARL:
 				case CLASS_HUCASEAL:
-					mag->datab[1] = Mag_Savitri;
+					mag->data1b[1] = Mag_Savitri;
 					break;
 				case CLASS_RAMAR:
 				case CLASS_RACAST:
-					mag->datab[1] = Mag_Pushan;
+					mag->data1b[1] = Mag_Pushan;
 					break;
 				case CLASS_RACASEAL:
 				case CLASS_RAMARL:
-					mag->datab[1] = Mag_Rukmin;
+					mag->data1b[1] = Mag_Rukmin;
 					break;
 				case CLASS_FONEWM:
 				case CLASS_FOMAR:
-					mag->datab[1] = Mag_Nidra;
+					mag->data1b[1] = Mag_Nidra;
 					break;
 				case CLASS_FONEWEARL:
 				case CLASS_FOMARL:
-					mag->datab[1] = Mag_Sato;
+					mag->data1b[1] = Mag_Sato;
 					break;
 				default:
 					break;
@@ -136,27 +136,27 @@ bool is_special_mag(item_t* mag, uint8_t section, uint8_t ch_class) {
 				{
 				case CLASS_HUMAR:
 				case CLASS_HUCAST:
-					mag->datab[1] = Mag_Rati;
+					mag->data1b[1] = Mag_Rati;
 					break;
 				case CLASS_HUNEWEARL:
 				case CLASS_HUCASEAL:
-					mag->datab[1] = Mag_Savitri;
+					mag->data1b[1] = Mag_Savitri;
 					break;
 				case CLASS_RAMAR:
 				case CLASS_RACAST:
-					mag->datab[1] = Mag_Pushan;
+					mag->data1b[1] = Mag_Pushan;
 					break;
 				case CLASS_RACASEAL:
 				case CLASS_RAMARL:
-					mag->datab[1] = Mag_Dewari;
+					mag->data1b[1] = Mag_Dewari;
 					break;
 				case CLASS_FONEWM:
 				case CLASS_FOMAR:
-					mag->datab[1] = Mag_Nidra;
+					mag->data1b[1] = Mag_Nidra;
 					break;
 				case CLASS_FONEWEARL:
 				case CLASS_FOMARL:
-					mag->datab[1] = Mag_Bhima;
+					mag->data1b[1] = Mag_Bhima;
 					break;
 				default:
 					break;
@@ -172,27 +172,27 @@ bool is_special_mag(item_t* mag, uint8_t section, uint8_t ch_class) {
 				{
 				case CLASS_HUMAR:
 				case CLASS_HUCAST:
-					mag->datab[1] = Mag_Rati;
+					mag->data1b[1] = Mag_Rati;
 					break;
 				case CLASS_HUNEWEARL:
 				case CLASS_HUCASEAL:
-					mag->datab[1] = Mag_Savitri;
+					mag->data1b[1] = Mag_Savitri;
 					break;
 				case CLASS_RAMAR:
 				case CLASS_RACAST:
-					mag->datab[1] = Mag_Pushan;
+					mag->data1b[1] = Mag_Pushan;
 					break;
 				case CLASS_RACASEAL:
 				case CLASS_RAMARL:
-					mag->datab[1] = Mag_Rukmin;
+					mag->data1b[1] = Mag_Rukmin;
 					break;
 				case CLASS_FONEWM:
 				case CLASS_FOMAR:
-					mag->datab[1] = Mag_Nidra;
+					mag->data1b[1] = Mag_Nidra;
 					break;
 				case CLASS_FONEWEARL:
 				case CLASS_FOMARL:
-					mag->datab[1] = Mag_Bhima;
+					mag->data1b[1] = Mag_Bhima;
 					break;
 				default:
 					break;
@@ -201,7 +201,7 @@ bool is_special_mag(item_t* mag, uint8_t section, uint8_t ch_class) {
 			break;
 		}
 	}
-	return (old_type != mag->datab[1]);
+	return (old_type != mag->data1b[1]);
 }
 
 int add_reward_special_mag_pb(ship_client_t* src, sfmt_t* sfmt) {
@@ -210,10 +210,10 @@ int add_reward_special_mag_pb(ship_client_t* src, sfmt_t* sfmt) {
 	if (inv) {
 		item_t* mag = &inv->iitems[find_equipped_mag(inv)].data;
 		if (mag) {
-			if (mag->datab[2] >= 10) {
+			if (mag->data1b[2] >= 10) {
 				if (!check_mag_has_pb(mag)) {
 					uint32_t rng = rand_int(sfmt, _countof(smrpb));
-					mag->datab[3] = smrpb[rng].datab3;
+					mag->data1b[3] = smrpb[rng].datab3;
 					mag->data2b[2] = smrpb[rng].data2b2;
 					mag->data2b[3] = get_player_msg_color_set(src);
 					return rng;
@@ -226,13 +226,13 @@ int add_reward_special_mag_pb(ship_client_t* src, sfmt_t* sfmt) {
 }
 
 uint16_t compute_mag_level(const item_t* item) {
-	return (item->dataw[2] / 100) + (item->dataw[3] / 100) + (item->dataw[4] / 100) + (item->dataw[5] / 100);
+	return (item->data1w[2] / 100) + (item->data1w[3] / 100) + (item->data1w[4] / 100) + (item->data1w[5] / 100);
 }
 
 uint16_t compute_mag_strength_flags(const item_t* item) {
-	uint16_t pow = item->dataw[3] / 100;
-	uint16_t dex = item->dataw[4] / 100;
-	uint16_t mind = item->dataw[5] / 100;
+	uint16_t pow = item->data1w[3] / 100;
+	uint16_t dex = item->data1w[4] / 100;
+	uint16_t mind = item->data1w[5] / 100;
 	uint16_t ret = 0;
 
 	if ((dex < pow) && (mind < pow)) {
@@ -255,7 +255,7 @@ uint16_t compute_mag_strength_flags(const item_t* item) {
 }
 
 void update_stat(item_t* data, size_t which, int8_t delta) {
-	uint16_t existing_stat = data->dataw[which] % 100;
+	uint16_t existing_stat = data->data1w[which] % 100;
 
 	if ((delta > 0) || ((delta < 0) && (-delta < existing_stat))) {
 		uint16_t level = compute_mag_level(data);
@@ -266,7 +266,7 @@ void update_stat(item_t* data, size_t which, int8_t delta) {
 		if ((level == 200) && ((99 - existing_stat) < delta)) {
 			delta = 99 - existing_stat;
 		}
-		data->dataw[which] += delta;
+		data->data1w[which] += delta;
 	}
 }
 
@@ -283,12 +283,12 @@ void ItemMagStats_init(magitemstat_t* stat, uint8_t color) {
 }
 
 void assign_mag_stats(item_t* item, magitemstat_t* stat) {
-	item->datab[2] = (uint8_t)level(stat);
-	item->datab[3] = stat->photon_blasts;
-	item->dataw[2] = stat->def & 0x7FFE;
-	item->dataw[3] = stat->pow & 0x7FFE;
-	item->dataw[4] = stat->dex & 0x7FFE;
-	item->dataw[5] = stat->mind & 0x7FFE;
+	item->data1b[2] = (uint8_t)level(stat);
+	item->data1b[3] = stat->photon_blasts;
+	item->data1w[2] = stat->def & 0x7FFE;
+	item->data1w[3] = stat->pow & 0x7FFE;
+	item->data1w[4] = stat->dex & 0x7FFE;
+	item->data1w[5] = stat->mind & 0x7FFE;
 	item->data2b[0] = (uint8_t)stat->synchro;
 	item->data2b[1] = (uint8_t)stat->iq;
 	item->data2b[2] = stat->flags;
@@ -296,15 +296,15 @@ void assign_mag_stats(item_t* item, magitemstat_t* stat) {
 }
 
 void clear_mag_stats(item_t* item) {
-	if (item->datab[0] == 2) {
-		item->datab[1] = '\0';
+	if (item->data1b[0] == 2) {
+		item->data1b[1] = '\0';
 		assign_mag_stats(item, &(magitemstat_t) { 0 });
 	}
 }
 
 uint8_t mag_photon_blast_for_slot(const item_t* item, uint8_t slot) {
 	uint8_t flags = item->data2b[2];
-	uint8_t pb_nums = item->datab[3];
+	uint8_t pb_nums = item->data1b[3];
 
 	if (slot == 0) { // Center
 		return (flags & 1) ? (pb_nums & 0x07) : 0xFF;
@@ -372,19 +372,18 @@ int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 		ERR_LOG("玛古 %s 光子槽 %d 已有技能", get_item_describe(item, 5), pb_num);
 		return -2;
 	}
+	uint8_t flags = item->data2b[2];
+	uint8_t pb_nums = item->data1b[3];
 
-	uint8_t* flags = &(item->data2b[2]);
-	uint8_t* pb_nums = &(item->datab[3]);
-
-	if (!(*flags & 1)) { // Center
-		*pb_nums |= pb_num;
-		*flags |= 1;
+	if (!(flags & 1)) { // Center
+		pb_nums |= pb_num;
+		flags |= 1;
 	}
-	else if (!(*flags & 2)) { // Right
-		*pb_nums |= (pb_num << 3);
-		*flags |= 2;
+	else if (!(flags & 2)) { // Right
+		pb_nums |= (pb_num << 3);
+		flags |= 2;
 	}
-	else if (!(*flags & 4)) { // Left
+	else if (!(flags & 4)) {
 		uint8_t orig_pb_num = pb_num;
 		if (mag_photon_blast_for_slot(item, 0) < orig_pb_num) {
 			pb_num--;
@@ -393,14 +392,16 @@ int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 			pb_num--;
 		}
 		if (pb_num >= 4) {
-			// Left photon blast number is too high
+			// 异常处理改为打印错误信息
 			ERR_LOG("Left photon blast number is too high.");
-			*pb_nums |= (pb_num << 6);
 			return -3;
 		}
-		*flags |= 4;
+		pb_nums |= (pb_num << 6);
+		flags |= 4;
 	}
 
+	item->data2b[2] = flags;
+	item->data1b[3] = pb_nums;
 	return 0;
 }
 
@@ -413,7 +414,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	// 可以使用mag_item_index和feed_item_index进行后续操作
 	/* 搜索物品的结果索引 删除前 先获取索引值 */
 	item_t delete_feed_item = remove_invitem(src, feed_item_id, 1, src->version != CLIENT_VERSION_BB);
-	if (item_not_identification_bb(delete_feed_item.datal[0], delete_feed_item.datal[1])) {
+	if (item_not_identification_bb(delete_feed_item.data1l[0], delete_feed_item.data1l[1])) {
 		ERR_LOG("%s 删除 ID 0x%08X 失败", get_player_describe(src), feed_item_id);
 		err = -5;
 		return err;
@@ -430,7 +431,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	/* 查找该玛古的喂养表 */
 	pmt_mag_bb_t mag_table = { 0 };
-	if ((err = pmt_lookup_mag_bb(mag_item_data->datal[0], &mag_table))) {
+	if ((err = pmt_lookup_mag_bb(mag_item_data->data1l[0], &mag_table))) {
 		ERR_LOG("%s 喂养了不存在的玛古数据!错误码 %d",
 			get_player_describe(src), err);
 		return err;
@@ -438,7 +439,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	size_t result_index = find_result_index(primary_identifier(&delete_feed_item));
 	pmt_mag_feed_result_t feed_result = { 0 };
-	if ((err = pmt_lookup_mag_feed_table_bb(mag_item_data->datal[0], mag_table.feed_table, result_index, &feed_result))) {
+	if ((err = pmt_lookup_mag_feed_table_bb(mag_item_data->data1l[0], mag_table.feed_table, result_index, &feed_result))) {
 		ERR_LOG("%s 喂养了不存在的玛古数据!错误码 %d",
 			get_player_describe(src), err);
 		return err;
@@ -462,13 +463,13 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	mag_item_data->data2b[0] = (uint8_t)clamp((ssize_t)mag_item_data->data2b[0] + feed_result.synchro, 0, 120);
 	mag_item_data->data2b[1] = (uint8_t)clamp((ssize_t)mag_item_data->data2b[1] + feed_result.iq, 0, 200);
 	uint8_t mag_level = (uint8_t)compute_mag_level(mag_item_data);
-	mag_item_data->datab[2] = mag_level;
+	mag_item_data->data1b[2] = mag_level;
 
 	// Note: Sega really did just hardcode all these rules into the client. There
 	// is no data file describing these evolutions, unfortunately.
 	/* 开始计算玛古是否药进化 并赋予相应的进化值 */
 	uint8_t evolution_number = magedit_lookup_mag_evolution_number(mag_item_data);
-	uint8_t mag_type = mag_item_data->datab[1];
+	uint8_t mag_type = mag_item_data->data1b[1];
 
 	if (mag_level < 10) {
 		// 啥也不做
@@ -481,19 +482,19 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			case CLASS_HUNEWEARL: // HUnewearl
 			case CLASS_HUCAST: // HUcast
 			case CLASS_HUCASEAL: // HUcaseal
-				mag_item_data->datab[1] = Mag_Varuna; // Varuna
+				mag_item_data->data1b[1] = Mag_Varuna; // Varuna
 				break;
 			case CLASS_RAMAR: // RAmar
 			case CLASS_RAMARL: // RAmarl
 			case CLASS_RACAST: // RAcast
 			case CLASS_RACASEAL: // RAcaseal
-				mag_item_data->datab[1] = Mag_Kalki; // Kalki
+				mag_item_data->data1b[1] = Mag_Kalki; // Kalki
 				break;
 			case CLASS_FOMAR: // FOmar
 			case CLASS_FOMARL: // FOmarl
 			case CLASS_FONEWM: // FOnewm
 			case CLASS_FONEWEARL: // FOnewearl
-				mag_item_data->datab[1] = Mag_Vritra; // Vritra
+				mag_item_data->data1b[1] = Mag_Vritra; // Vritra
 				break;
 			default:
 				ERR_LOG("%s 无效角色职业 %d", get_player_describe(src), get_player_class(src));
@@ -507,29 +508,29 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			uint16_t flags = compute_mag_strength_flags(mag_item_data);
 			if (mag_type == Mag_Kalki) {
 				if ((flags & 0x110) == 0) {
-					mag_item_data->datab[1] = Mag_Mitra;
+					mag_item_data->data1b[1] = Mag_Mitra;
 				} else if (flags & 8) {
-					mag_item_data->datab[1] = Mag_Surya;
+					mag_item_data->data1b[1] = Mag_Surya;
 				} else if (flags & 0x20) {
-					mag_item_data->datab[1] = Mag_Tapas;
+					mag_item_data->data1b[1] = Mag_Tapas;
 				}
 			}
 			else if (mag_type == Mag_Varuna) {
 				if (flags & 0x108) {
-					mag_item_data->datab[1] = Mag_Rudra;
+					mag_item_data->data1b[1] = Mag_Rudra;
 				} else if (flags & 0x10) {
-					mag_item_data->datab[1] = Mag_Marutah;
+					mag_item_data->data1b[1] = Mag_Marutah;
 				} else if (flags & 0x20) {
-					mag_item_data->datab[1] = Mag_Vayu;
+					mag_item_data->data1b[1] = Mag_Vayu;
 				}
 			}
 			else if (mag_type == Mag_Vritra) {
 				if (flags & 0x120) {
-					mag_item_data->datab[1] = Mag_Namuci;
+					mag_item_data->data1b[1] = Mag_Namuci;
 				} else if (flags & 8) {
-					mag_item_data->datab[1] = Mag_Sumba;
+					mag_item_data->data1b[1] = Mag_Sumba;
 				} else if (flags & 0x10) {
-					mag_item_data->datab[1] = Mag_Ashvinau;
+					mag_item_data->data1b[1] = Mag_Ashvinau;
 				}
 			}
 		}
@@ -538,10 +539,10 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		if (evolution_number < 4) {
 			if (mag_level >= 100) {
 				uint8_t section_id_group = get_player_section(src) % 3;
-				uint16_t def = mag_item_data->dataw[2] / 100;
-				uint16_t pow = mag_item_data->dataw[3] / 100;
-				uint16_t dex = mag_item_data->dataw[4] / 100;
-				uint16_t mind = mag_item_data->dataw[5] / 100;
+				uint16_t def = mag_item_data->data1w[2] / 100;
+				uint16_t pow = mag_item_data->data1w[3] / 100;
+				uint16_t dex = mag_item_data->data1w[4] / 100;
+				uint16_t mind = mag_item_data->data1w[5] / 100;
 				bool is_male = char_class_is_male(src->equip_flags);
 				size_t table_index = (is_male ? 0 : 1) + section_id_group * 2;
 
@@ -574,17 +575,17 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 						Mag_Nidra,	Mag_Sato,		Mag_Nidra,	Mag_Bhima,		Mag_Nidra,		Mag_Bhima, // Force
 					};
 					// clang-format on
-					mag_item_data->datab[1] = result_table[table_index];
+					mag_item_data->data1b[1] = result_table[table_index];
 				}
 			}
 
 			// If a special evolution did not occur, do a normal level 50 evolution
-			if (mag_type == mag_item_data->datab[1]) {
+			if (mag_type == mag_item_data->data1b[1]) {
 				uint16_t flags = compute_mag_strength_flags(mag_item_data);
-				uint16_t def = mag_item_data->dataw[2] / 100;
-				uint16_t pow = mag_item_data->dataw[3] / 100;
-				uint16_t dex = mag_item_data->dataw[4] / 100;
-				uint16_t mind = mag_item_data->dataw[5] / 100;
+				uint16_t def = mag_item_data->data1w[2] / 100;
+				uint16_t pow = mag_item_data->data1w[3] / 100;
+				uint16_t dex = mag_item_data->data1w[4] / 100;
+				uint16_t mind = mag_item_data->data1w[5] / 100;
 
 				bool is_hunter = char_class_is_hunter(src->equip_flags);
 				bool is_ranger = char_class_is_ranger(src->equip_flags);
@@ -597,34 +598,34 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 				if (is_hunter) {
 					if (flags & 0x108) {
-						mag_item_data->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->data1b[1] = (get_player_section(src) & 1)
 							? ((dex < mind) ? Mag_Apsaras : Mag_Kama)
 							: ((dex < mind) ? Mag_Bhirava : Mag_Varaha);
 					}
 					else if (flags & 0x010) {
-						mag_item_data->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->data1b[1] = (get_player_section(src) & 1)
 							? ((mind < pow) ? Mag_Garuda : Mag_Yaksa)
 							: ((mind < pow) ? Mag_Ila : Mag_Nandin);
 					}
 					else if (flags & 0x020) {
-						mag_item_data->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->data1b[1] = (get_player_section(src) & 1)
 							? ((pow < dex) ? Mag_Soma : Mag_Bana)
 							: ((pow < dex) ? Mag_Ushasu : Mag_Kabanda);
 					}
 				}
 				else if (is_ranger) {
 					if (flags & 0x110) {
-						mag_item_data->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->data1b[1] = (get_player_section(src) & 1)
 							? ((mind < pow) ? Mag_Kaitabha : Mag_Varaha)
 							: ((mind < pow) ? Mag_Bhirava : Mag_Kama);
 					}
 					else if (flags & 0x008) {
-						mag_item_data->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->data1b[1] = (get_player_section(src) & 1)
 							? ((dex < mind) ? Mag_Kaitabha : Mag_Madhu)
 							: ((dex < mind) ? Mag_Bhirava : Mag_Kama);
 					}
 					else if (flags & 0x020) {
-						mag_item_data->datab[1] = (get_player_section(src) & 1)
+						mag_item_data->data1b[1] = (get_player_section(src) & 1)
 							? ((pow < dex) ? Mag_Durga : Mag_Kabanda)
 							: ((pow < dex) ? Mag_Apsaras : Mag_Varaha);
 					}
@@ -632,32 +633,32 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 				else if (is_force) {
 					if (flags & 0x120) {
 						if (def < 45) {
-							mag_item_data->datab[1] = (get_player_section(src) & 1)
+							mag_item_data->data1b[1] = (get_player_section(src) & 1)
 								? ((pow < dex) ? Mag_Ila : Mag_Kumara)
 								: ((pow < dex) ? Mag_Kabanda : Mag_Naga);
 						}
 						else {
-							mag_item_data->datab[1] = Mag_Bana;
+							mag_item_data->data1b[1] = Mag_Bana;
 						}
 					}
 					else if (flags & 0x008) {
 						if (def < 45) {
-							mag_item_data->datab[1] = (get_player_section(src) & 1)
+							mag_item_data->data1b[1] = (get_player_section(src) & 1)
 								? ((dex < mind) ? Mag_Naga : Mag_Marica)
 								: ((dex < mind) ? Mag_Ravana : Mag_Naraka);
 						}
 						else {
-							mag_item_data->datab[1] = Mag_Andhaka;
+							mag_item_data->data1b[1] = Mag_Andhaka;
 						}
 					}
 					else if (flags & 0x010) {
 						if (def < 45) {
-							mag_item_data->datab[1] = (get_player_section(src) & 1)
+							mag_item_data->data1b[1] = (get_player_section(src) & 1)
 								? ((mind < pow) ? Mag_Garuda : Mag_Bhirava)
 								: ((mind < pow) ? Mag_Ribhava : Mag_Sita);
 						}
 						else {
-							mag_item_data->datab[1] = Mag_Bana;
+							mag_item_data->data1b[1] = Mag_Bana;
 						}
 					}
 				}
@@ -666,10 +667,10 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	}
 
 	 //如果玛古进化了,则增加光子爆发
-	if (mag_type != mag_item_data->datab[1]) {
+	if (mag_type != mag_item_data->data1b[1]) {
 		pmt_mag_bb_t new_mag_def = { 0 };
 
-		if (err = pmt_lookup_mag_bb(mag_item_data->datal[0], &new_mag_def)) {
+		if (err = pmt_lookup_mag_bb(mag_item_data->data1l[0], &new_mag_def)) {
 			ERR_LOG("%s 的背包中有不存在的MAG数据!错误码 %d",
 				get_player_describe(src), err);
 			return err;
@@ -747,9 +748,9 @@ int Mag_Alignment(item_t* mag) {
 	int v1, v2, v3, v4, v5, v6;
 
 	v4 = 0;
-	v3 = mag->dataw[3];
-	v2 = mag->dataw[4];
-	v1 = mag->dataw[5];
+	v3 = mag->data1w[3];
+	v2 = mag->data1w[4];
+	v1 = mag->data1w[5];
 
 	v4 |= (v2 < v3 && v1 < v3) ? 8 : 0;
 	v4 |= (v3 < v2 && v1 < v2) ? 0x10 : 0;
@@ -820,10 +821,10 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 	int32_t Alignment = Mag_Alignment(mag);
 
 	if (EvolutionClass <= 3) {
-		v10 = mag->dataw[3] / 100;
-		v11 = mag->dataw[4] / 100;
-		v12 = mag->dataw[5] / 100;
-		v13 = mag->dataw[2] / 100;
+		v10 = mag->data1w[3] / 100;
+		v11 = mag->data1w[4] / 100;
+		v12 = mag->data1w[5] / 100;
+		v13 = mag->data1w[2] / 100;
 
 		switch (type) {
 		case CLASS_HUMAR:
@@ -836,26 +837,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 				{
 					if (v12 > v11)
 					{
-						mag->datab[1] = Mag_Apsaras;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+						mag->data1b[1] = Mag_Apsaras;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 					}
 					else
 					{
-						mag->datab[1] = Mag_Kama;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+						mag->data1b[1] = Mag_Kama;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 					}
 				}
 				else
 				{
 					if (v12 > v11)
 					{
-						mag->datab[1] = Mag_Bhirava;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+						mag->data1b[1] = Mag_Bhirava;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 					}
 					else
 					{
-						mag->datab[1] = Mag_Varaha;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+						mag->data1b[1] = Mag_Varaha;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 					}
 				}
 			}
@@ -867,26 +868,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 					{
 						if (v10 > v12)
 						{
-							mag->datab[1] = Mag_Garuda;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+							mag->data1b[1] = Mag_Garuda;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 						}
 						else
 						{
-							mag->datab[1] = Mag_Yaksa;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+							mag->data1b[1] = Mag_Yaksa;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 						}
 					}
 					else
 					{
 						if (v10 > v12)
 						{
-							mag->datab[1] = Mag_Ila;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+							mag->data1b[1] = Mag_Ila;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 						}
 						else
 						{
-							mag->datab[1] = Mag_Nandin;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+							mag->data1b[1] = Mag_Nandin;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 						}
 					}
 				}
@@ -898,26 +899,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 						{
 							if (v11 > v10)
 							{
-								mag->datab[1] = Mag_Soma;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+								mag->data1b[1] = Mag_Soma;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 							}
 							else
 							{
-								mag->datab[1] = Mag_Bana;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+								mag->data1b[1] = Mag_Bana;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 							}
 						}
 						else
 						{
 							if (v11 > v10)
 							{
-								mag->datab[1] = Mag_Ushasu;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+								mag->data1b[1] = Mag_Ushasu;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 							}
 							else
 							{
-								mag->datab[1] = Mag_Kabanda;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+								mag->data1b[1] = Mag_Kabanda;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 							}
 						}
 					}
@@ -935,26 +936,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 				{
 					if (v10 > v12)
 					{
-						mag->datab[1] = Mag_Kaitabha;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+						mag->data1b[1] = Mag_Kaitabha;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 					}
 					else
 					{
-						mag->datab[1] = Mag_Varaha;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+						mag->data1b[1] = Mag_Varaha;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 					}
 				}
 				else
 				{
 					if (v10 > v12)
 					{
-						mag->datab[1] = Mag_Bhirava;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+						mag->data1b[1] = Mag_Bhirava;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 					}
 					else
 					{
-						mag->datab[1] = Mag_Kama;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+						mag->data1b[1] = Mag_Kama;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 					}
 				}
 			}
@@ -966,26 +967,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 					{
 						if (v12 > v11)
 						{
-							mag->datab[1] = Mag_Kaitabha;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+							mag->data1b[1] = Mag_Kaitabha;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 						}
 						else
 						{
-							mag->datab[1] = Mag_Madhu;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+							mag->data1b[1] = Mag_Madhu;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 						}
 					}
 					else
 					{
 						if (v12 > v11)
 						{
-							mag->datab[1] = Mag_Bhirava;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+							mag->data1b[1] = Mag_Bhirava;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 						}
 						else
 						{
-							mag->datab[1] = Mag_Kama;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+							mag->data1b[1] = Mag_Kama;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 						}
 					}
 				}
@@ -997,26 +998,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 						{
 							if (v11 > v10)
 							{
-								mag->datab[1] = Mag_Durga;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+								mag->data1b[1] = Mag_Durga;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 							}
 							else
 							{
-								mag->datab[1] = Mag_Kabanda;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+								mag->data1b[1] = Mag_Kabanda;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 							}
 						}
 						else
 						{
 							if (v11 > v10)
 							{
-								mag->datab[1] = Mag_Apsaras;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+								mag->data1b[1] = Mag_Apsaras;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 							}
 							else
 							{
-								mag->datab[1] = Mag_Varaha;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+								mag->data1b[1] = Mag_Varaha;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 							}
 						}
 					}
@@ -1032,8 +1033,8 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 			{
 				if (v13 > 44)
 				{
-					mag->datab[1] = Mag_Bana;
-					mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+					mag->data1b[1] = Mag_Bana;
+					mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 				}
 				else
 				{
@@ -1041,26 +1042,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 					{
 						if (v11 > v10)
 						{
-							mag->datab[1] = Mag_Ila;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+							mag->data1b[1] = Mag_Ila;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 						}
 						else
 						{
-							mag->datab[1] = Mag_Kumara;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+							mag->data1b[1] = Mag_Kumara;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 						}
 					}
 					else
 					{
 						if (v11 > v10)
 						{
-							mag->datab[1] = Mag_Kabanda;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+							mag->data1b[1] = Mag_Kabanda;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 						}
 						else
 						{
-							mag->datab[1] = Mag_Naga;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+							mag->data1b[1] = Mag_Naga;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 						}
 					}
 				}
@@ -1071,8 +1072,8 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 				{
 					if (v13 > 44)
 					{
-						mag->datab[1] = Mag_Andhaka;
-						mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+						mag->data1b[1] = Mag_Andhaka;
+						mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 					}
 					else
 					{
@@ -1080,26 +1081,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 						{
 							if (v12 > v11)
 							{
-								mag->datab[1] = Mag_Naga;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+								mag->data1b[1] = Mag_Naga;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 							}
 							else
 							{
-								mag->datab[1] = Mag_Marica;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+								mag->data1b[1] = Mag_Marica;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 							}
 						}
 						else
 						{
 							if (v12 > v11)
 							{
-								mag->datab[1] = Mag_Ravana;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Farlla);
+								mag->data1b[1] = Mag_Ravana;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Farlla);
 							}
 							else
 							{
-								mag->datab[1] = Mag_Naraka;
-								mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+								mag->data1b[1] = Mag_Naraka;
+								mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 							}
 						}
 					}
@@ -1110,8 +1111,8 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 					{
 						if (v13 > 44)
 						{
-							mag->datab[1] = Mag_Bana;
-							mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Estlla);
+							mag->data1b[1] = Mag_Bana;
+							mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Estlla);
 						}
 						else
 						{
@@ -1119,26 +1120,26 @@ void Mag_LV50_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 							{
 								if (v10 > v12)
 								{
-									mag->datab[1] = Mag_Garuda;
-									mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+									mag->data1b[1] = Mag_Garuda;
+									mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 								}
 								else
 								{
-									mag->datab[1] = Mag_Bhirava;
-									mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+									mag->data1b[1] = Mag_Bhirava;
+									mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 								}
 							}
 							else
 							{
 								if (v10 > v12)
 								{
-									mag->datab[1] = Mag_Ribhava;
-									mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Farlla);
+									mag->data1b[1] = Mag_Ribhava;
+									mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Farlla);
 								}
 								else
 								{
-									mag->datab[1] = Mag_Sita;
-									mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+									mag->data1b[1] = Mag_Sita;
+									mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 								}
 							}
 						}
@@ -1164,24 +1165,24 @@ void Mag_LV35_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 	case CLASS_HUCASEAL:
 		if (Alignment & 0x108)
 		{
-			mag->datab[1] = Mag_Rudra;
-			mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+			mag->data1b[1] = Mag_Rudra;
+			mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 			return;
 		}
 		else
 		{
 			if (Alignment & 0x10)
 			{
-				mag->datab[1] = Mag_Marutah;
-				mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+				mag->data1b[1] = Mag_Marutah;
+				mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 				return;
 			}
 			else
 			{
 				if (Alignment & 0x20)
 				{
-					mag->datab[1] = Mag_Vayu;
-					mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+					mag->data1b[1] = Mag_Vayu;
+					mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 					return;
 				}
 			}
@@ -1193,24 +1194,24 @@ void Mag_LV35_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 	case CLASS_RAMARL:
 		if (Alignment & 0x110)
 		{
-			mag->datab[1] = Mag_Mitra;
-			mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+			mag->data1b[1] = Mag_Mitra;
+			mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 			return;
 		}
 		else
 		{
 			if (Alignment & 0x08)
 			{
-				mag->datab[1] = Mag_Surya;
-				mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+				mag->data1b[1] = Mag_Surya;
+				mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 				return;
 			}
 			else
 			{
 				if (Alignment & 0x20)
 				{
-					mag->datab[1] = Mag_Tapas;
-					mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+					mag->data1b[1] = Mag_Tapas;
+					mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 					return;
 				}
 			}
@@ -1222,24 +1223,24 @@ void Mag_LV35_Evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 	case CLASS_FOMAR:
 		if (Alignment & 0x120)
 		{
-			mag->datab[1] = Mag_Namuci;
-			mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Mylla_Youlla);
+			mag->data1b[1] = Mag_Namuci;
+			mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Mylla_Youlla);
 			return;
 		}
 		else
 		{
 			if (Alignment & 0x08)
 			{
-				mag->datab[1] = Mag_Sumba;
-				mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Golla);
+				mag->data1b[1] = Mag_Sumba;
+				mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Golla);
 				return;
 			}
 			else
 			{
 				if (Alignment & 0x10)
 				{
-					mag->datab[1] = Mag_Ashvinau;
-					mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], PB_Pilla);
+					mag->data1b[1] = Mag_Ashvinau;
+					mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], PB_Pilla);
 					return;
 				}
 			}
@@ -1275,11 +1276,11 @@ void mag_evolution_lv10(item_t* mag, uint8_t sectionID, uint8_t type, int32_t Ev
 	}
 
 	if (pb != 0xFF)
-		mag_add_photo_blast(&mag->data2b[2], &mag->datab[3], pb);
+		mag_add_photo_blast(&mag->data2b[2], &mag->data1b[3], pb);
 }
 
 void mag_check_evolution(item_t* mag, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
-	int datab2 = mag->datab[2];
+	int datab2 = mag->data1b[2];
 
 	if ((datab2 < 10) || (datab2 >= 35)) {
 		if ((datab2 < 35) || (datab2 >= 50)) {

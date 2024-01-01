@@ -33,13 +33,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){\
+            if(!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])){\
 	            len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -68,13 +68,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){\
+            if(!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])){\
 	            len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -103,13 +103,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){\
+            if(!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])){\
 	            len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -138,13 +138,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){\
+            if(!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])){\
 	            len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -173,13 +173,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){\
+            if(!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])){\
 	            len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -208,13 +208,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if(!item_not_identification_bb((item)->datal[0], (item)->datal[1])){ \
+            if(!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])){ \
 	            len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -243,13 +243,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if (!item_not_identification_bb((item)->datal[0], (item)->datal[1])) { \
+            if (!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])) { \
                 len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -280,13 +280,13 @@ do { \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_enemy_pt_name_with_mid(l, pt_index, mid));\
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if (!item_not_identification_bb((item)->datal[0], (item)->datal[1])) { \
+            if (!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])) { \
                 len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", (item)->item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \
@@ -316,13 +316,13 @@ do { \
         ); \
         if (l) { \
             len += snprintf(buff + len, sizeof(buff) - len, "%s\n", get_lobby_describe(l)); \
-            if (!item_not_identification_bb((item)->datal[0], (item)->datal[1])) { \
+            if (!item_not_identification_bb((item)->data1l[0], (item)->data1l[1])) { \
                 len += snprintf(buff + len, sizeof(buff) - len, "物品: %s\n", get_item_describe(item, (c)->version)); \
                 len += snprintf(buff + len, sizeof(buff) - len, "编号: 0x%08X\n", (item)->item_id); \
                 len += snprintf(buff + len, sizeof(buff) - len, "数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X\n", \
-                            (item)->datab[0], (item)->datab[1], (item)->datab[2], (item)->datab[3], \
-                            (item)->datab[4], (item)->datab[5], (item)->datab[6], (item)->datab[7], \
-                            (item)->datab[8], (item)->datab[9], (item)->datab[10], (item)->datab[11], \
+                            (item)->data1b[0], (item)->data1b[1], (item)->data1b[2], (item)->data1b[3], \
+                            (item)->data1b[4], (item)->data1b[5], (item)->data1b[6], (item)->data1b[7], \
+                            (item)->data1b[8], (item)->data1b[9], (item)->data1b[10], (item)->data1b[11], \
                             (item)->data2b[0], (item)->data2b[1], (item)->data2b[2], (item)->data2b[3]); \
                 len += snprintf(buff + len, sizeof(buff) - len, "----------------------------------------------------\n"); \
             } else { \

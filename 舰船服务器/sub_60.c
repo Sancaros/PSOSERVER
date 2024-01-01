@@ -1712,7 +1712,7 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
 
     item_t item_data = remove_invitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
-    if (item_data.datal[0] == 0 && item_data.data2l == 0) {
+    if (item_data.data1l[0] == 0 && item_data.data2l == 0) {
         ERR_LOG("%s 掉落堆叠物品失败! ID 0x%08X 数量 %u",
             get_player_describe(src), item_id, amount);
         return -1;
@@ -1801,7 +1801,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     item_t* drop_item = &inv->iitems[index].data;
 
     item_t item = remove_invitem(src, drop_item->item_id, drop_amount, src->version != CLIENT_VERSION_BB);
-    if (item.datal[0] == 0 && item.data2l == 0) {
+    if (item.data1l[0] == 0 && item.data2l == 0) {
         ERR_LOG("%s 丢弃物品失败!",
             get_player_describe(src));
         return -1;
@@ -1857,9 +1857,9 @@ static int sub60_2B_dc(ship_client_t* src, ship_client_t* dest,
 
     /* Run the bank action script, if any. */
     if (script_execute(ScriptActionBankAction, src, SCRIPT_ARG_PTR, src,
-        SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.datal[0],
-        SCRIPT_ARG_UINT32, pkt->data.datal[1], SCRIPT_ARG_UINT32,
-        pkt->data.datal[2], SCRIPT_ARG_UINT32, pkt->data.data2l,
+        SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.data1l[0],
+        SCRIPT_ARG_UINT32, pkt->data.data1l[1], SCRIPT_ARG_UINT32,
+        pkt->data.data1l[2], SCRIPT_ARG_UINT32, pkt->data.data2l,
         SCRIPT_ARG_UINT32, pkt->data.item_id, SCRIPT_ARG_END) < 0) {
         return -1;
     }
@@ -1889,12 +1889,12 @@ static int sub60_2B_dc(ship_client_t* src, ship_client_t* dest,
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data.datal[0], &pkt->data.datal[0], sizeof(uint32_t) * 5);
+        memcpy(&item.data.data1l[0], &pkt->data.data1l[0], sizeof(uint32_t) * 5);
 
         if (!psocn_limits_check_item(l->limits_list, &item, v)) {
             DBG_LOG("%s Potentially non-legit item in legit mode:\n"
-                "%08x %08x %08x %08x", get_player_describe(src), LE32(pkt->data.datal[0]),
-                LE32(pkt->data.datal[1]), LE32(pkt->data.datal[2]),
+                "%08x %08x %08x %08x", get_player_describe(src), LE32(pkt->data.data1l[0]),
+                LE32(pkt->data.data1l[1]), LE32(pkt->data.data1l[2]),
                 LE32(pkt->data.data2l));
 
             /* The item failed the check, so kick the user. */
@@ -1911,7 +1911,7 @@ static int sub60_2B_dc(ship_client_t* src, ship_client_t* dest,
        actually legit, so make a note of the ID, add it to the inventory and
        forward the packet on. */
     l->item_player_id[src->client_id] = (uint16_t)LE32(pkt->data.item_id);
-    v = LE32(pkt->data.datal[0]);
+    v = LE32(pkt->data.data1l[0]);
 
     if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
@@ -1921,14 +1921,14 @@ static int sub60_2B_dc(ship_client_t* src, ship_client_t* dest,
         /* Its stackable, so see if we have any in the inventory already */
         for (i = 0; i < src->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if (src->iitems[i].data.datal[0] == pkt->data.datal[0]) {
-                src->iitems[i].data.datal[1] += pkt->data.datal[1];
+            if (src->iitems[i].data.data1l[0] == pkt->data.data1l[0]) {
+                src->iitems[i].data.data1l[1] += pkt->data.data1l[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&src->iitems[src->item_count++].data.datal[0], &pkt->data.datal[0],
+    memcpy(&src->iitems[src->item_count++].data.data1l[0], &pkt->data.data1l[0],
         sizeof(uint32_t) * 5);
 
 send_pkt:
@@ -1990,9 +1990,9 @@ static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Run the bank action script, if any. */
     if (script_execute(ScriptActionBankAction, src, SCRIPT_ARG_PTR, src,
-        SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.datal[0],
-        SCRIPT_ARG_UINT32, pkt->data.datal[1], SCRIPT_ARG_UINT32,
-        pkt->data.datal[2], SCRIPT_ARG_UINT32, pkt->data.data2l,
+        SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.data1l[0],
+        SCRIPT_ARG_UINT32, pkt->data.data1l[1], SCRIPT_ARG_UINT32,
+        pkt->data.data1l[2], SCRIPT_ARG_UINT32, pkt->data.data2l,
         SCRIPT_ARG_UINT32, pkt->data.item_id, SCRIPT_ARG_END) < 0) {
         return -1;
     }
@@ -2026,12 +2026,12 @@ static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data.datal[0], &pkt->data.datal[0], sizeof(uint32_t) * 5);
+        memcpy(&item.data.data1l[0], &pkt->data.data1l[0], sizeof(uint32_t) * 5);
 
         if (!psocn_limits_check_item(l->limits_list, &item, v)) {
             DBG_LOG("%s Potentially non-legit item in legit mode:\n"
-                "%08x %08x %08x %08x", get_player_describe(src), LE32(pkt->data.datal[0]),
-                LE32(pkt->data.datal[1]), LE32(pkt->data.datal[2]),
+                "%08x %08x %08x %08x", get_player_describe(src), LE32(pkt->data.data1l[0]),
+                LE32(pkt->data.data1l[1]), LE32(pkt->data.data1l[2]),
                 LE32(pkt->data.data2l));
 
             /* The item failed the check, so kick the user. */
@@ -2048,7 +2048,7 @@ static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
        actually legit, so make a note of the ID, add it to the inventory and
        forward the packet on. */
     l->item_player_id[src->client_id] = (uint16_t)LE32(pkt->data.item_id);
-    v = LE32(pkt->data.datal[0]);
+    v = LE32(pkt->data.data1l[0]);
 
     if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
@@ -2060,14 +2060,14 @@ static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
         /* Its stackable, so see if we have any in the inventory already */
         for (i = 0; i < src->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if (inv->iitems[i].data.datal[0] == pkt->data.datal[0]) {
-                inv->iitems[i].data.datal[1] += pkt->data.datal[1];
+            if (inv->iitems[i].data.data1l[0] == pkt->data.data1l[0]) {
+                inv->iitems[i].data.data1l[1] += pkt->data.data1l[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&inv->iitems[inv->item_count++].data.datal[0], &pkt->data.datal[0],
+    memcpy(&inv->iitems[inv->item_count++].data.data1l[0], &pkt->data.data1l[0],
         sizeof(uint32_t) * 5);
 
 send_pkt:
@@ -3731,21 +3731,21 @@ static int sub60_5E_dc(ship_client_t* src, ship_client_t* dest,
     if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    ic = LE32(pkt->data.datal[0]);
+    ic = LE32(pkt->data.data1l[0]);
 
     /* See if its a stackable item, since we have to treat them differently. */
     if (is_stackable(&pkt->data)) {
         /* Its stackable, so see if we have any in the inventory already */
         for (i = 0; i < src->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if (src->iitems[i].data.datal[0] == pkt->data.datal[0]) {
-                src->iitems[i].data.datal[1] += pkt->data.datal[1];
+            if (src->iitems[i].data.data1l[0] == pkt->data.data1l[0]) {
+                src->iitems[i].data.data1l[1] += pkt->data.data1l[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&src->iitems[src->item_count].data.datal[0], &pkt->data.datal[0],
+    memcpy(&src->iitems[src->item_count].data.data1l[0], &pkt->data.data1l[0],
         sizeof(uint32_t) * 4);
     src->iitems[src->item_count++].data.data2l = 0;
 
@@ -3799,13 +3799,13 @@ static int sub60_5F_dc(ship_client_t* src, ship_client_t* dest,
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data.datal[0], &pkt->data.item.datal[0], 5 * sizeof(uint32_t));
+        memcpy(&item.data.data1l[0], &pkt->data.item.data1l[0], 5 * sizeof(uint32_t));
 
         if (!psocn_limits_check_item(l->limits_list, &item, v)) {
             /* The item failed the check, deal with it. */
             DBG_LOG("Potentially non-legit item dropped in legit mode:\n"
-                "%08x %08x %08x %08x %08x", LE32(pkt->data.item.datal[0]),
-                LE32(pkt->data.item.datal[1]), LE32(pkt->data.item.datal[2]),
+                "%08x %08x %08x %08x %08x", LE32(pkt->data.item.data1l[0]),
+                LE32(pkt->data.item.data1l[1]), LE32(pkt->data.item.data1l[2]),
                 LE32(pkt->data.item.data2l), LE32(pkt->data.item2));
 
             /* Grab the item name, if we can find it. */
@@ -3851,7 +3851,7 @@ static int sub60_5F_dc(ship_client_t* src, ship_client_t* dest,
     }
 
     /* If we end up here, then the item is legit... */
-    v = LE32(pkt->data.item.datal[0]) & 0xff;
+    v = LE32(pkt->data.item.data1l[0]) & 0xff;
 
     /* If the item isn't a mag, or the client isn't Xbox or GC, then just
        send the packet away now. */
@@ -4922,7 +4922,7 @@ int handle_bb_battle_mode(ship_client_t* src,
                     if (lc->mode == 0x02) {
                         for (ch2 = 0; ch2 < lc->mode_pl->bb.inv.item_count; ch2++)
                         {
-                            if (lc->mode_pl->bb.inv.iitems[ch2].data.datab[0] == 0x02)
+                            if (lc->mode_pl->bb.inv.iitems[ch2].data.data1b[0] == 0x02)
                                 lc->mode_pl->bb.inv.iitems[ch2].present = 0;
                         }
                         cleanup_bb_inv(lc->client_id, &lc->mode_pl->bb.inv);
@@ -6562,7 +6562,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     item_t item = remove_invitem(src, item_id, sell_amount, src->version != CLIENT_VERSION_BB);
-    if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+    if (item_not_identification_bb(item.data1l[0], item.data1l[1])) {
         ERR_LOG("%s 出售 %d 件 ID 0x%08X 失败", 
             get_player_describe(src), sell_amount, item_id);
         return -1;
@@ -6597,7 +6597,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     item_t item = remove_invitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
-    if (item.datal[0] == 0 && item.data2l == 0) {
+    if (item.data1l[0] == 0 && item.data2l == 0) {
         ERR_LOG("%s 掉落堆叠物品失败! ID 0x%08X 数量 %u",
             get_player_describe(src), item_id, amount);
         return -1;
@@ -6676,13 +6676,13 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
         int wp_index = find_equipped_weapon(inv);
         item_t* item = &inv->iitems[wp_index].data;
 
-        if (((item->datab[1] < 0x0A) && (item->datab[2] < 0x05)) ||
-            ((item->datab[1] < 0x0D) && (item->datab[2] < 0x04))) {
-            special = item->datab[4] & 0x1F;
+        if (((item->data1b[1] < 0x0A) && (item->data1b[2] < 0x05)) ||
+            ((item->data1b[1] < 0x0D) && (item->data1b[2] < 0x04))) {
+            special = item->data1b[4] & 0x1F;
         }
         else {
             pmt_weapon_bb_t tmp_wp = { 0 };
-            if (pmt_lookup_weapon_bb(item->datal[0], &tmp_wp)) {
+            if (pmt_lookup_weapon_bb(item->data1l[0], &tmp_wp)) {
                 ERR_LOG("%s 装备了不存在的物品数据!",
                     get_player_describe(src));
                 return -1;
@@ -6833,23 +6833,23 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
         if (!(inv->iitems[x].flags & EQUIP_FLAGS)) {
             continue;
         }
-        if (inv->iitems[x].data.datab[0] != ITEM_TYPE_GUARD) {
+        if (inv->iitems[x].data.data1b[0] != ITEM_TYPE_GUARD) {
             continue;
         }
 
         item_t* item = &inv->iitems[x].data;
-        switch (item->datab[1]) {
+        switch (item->data1b[1]) {
         case ITEM_SUBTYPE_FRAME:
-            if (pmt_lookup_guard_bb(item->datal[0], &tmp_guard)) {
-                ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->datal[0]);
+            if (pmt_lookup_guard_bb(item->data1l[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->data1l[0]);
                 break;
             }
             eic += LE32(tmp_guard.eic);
             break;
 
         case ITEM_SUBTYPE_BARRIER:
-            if (pmt_lookup_guard_bb(item->datal[0], &tmp_guard)) {
-                ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->datal[0]);
+            if (pmt_lookup_guard_bb(item->data1l[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", item->data1l[0]);
                 break;
             }
             eic += LE32(tmp_guard.eic);
@@ -6942,13 +6942,13 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("%s 捐赠不存在的装备物品! 错误码 %d", get_player_describe(src), i);
         return i;
     }
-    pmt_item_base_check_t item_base_check = get_item_definition_bb(inv->iitems[i].data.datal[0], inv->iitems[i].data.datal[1]);
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(inv->iitems[i].data.data1l[0], inv->iitems[i].data.data1l[1]);
     if (item_base_check.err) {
         return send_msg(src, MSG1_TYPE, "%s 错误码 %d", __(src, "\tE\tC4公会捐赠的物品无效."), item_base_check.err);
     }
 
     item_t item = remove_invitem(src, pkt->ex_item_id, ex_amount, src->version != CLIENT_VERSION_BB);
-    if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+    if (item_not_identification_bb(item.data1l[0], item.data1l[1])) {
         ERR_LOG("无法从玩家背包中移除 ID 0x%08X 物品!", pkt->ex_item_id);
         return -1;
     }
@@ -7041,7 +7041,7 @@ static int sub60_D5_bb(ship_client_t* src, ship_client_t* dest,
     item_t work_item = pkt->exchange_item;
 
     item_t del_item = remove_invitem(src, work_item.item_id, 1, src->version != CLIENT_VERSION_BB);
-    if (item_not_identification_bb(del_item.datal[0], del_item.datal[1])) {
+    if (item_not_identification_bb(del_item.data1l[0], del_item.data1l[1])) {
         ERR_LOG("%s 删除物品 %d ID 0x%08X 失败", get_player_describe(src), 1, work_item.item_id);
         return -2;
     }
@@ -7051,7 +7051,7 @@ static int sub60_D5_bb(ship_client_t* src, ship_client_t* dest,
     item_t compare_item = pkt->reward_item;
 
     compare_item.item_id = generate_item_id(l, src->client_id);
-    compare_item.datab[5] = get_item_amount(&compare_item, 1);
+    compare_item.data1b[5] = get_item_amount(&compare_item, 1);
 
     if (!(rv = add_invitem(src, compare_item))) {
         ERR_LOG("%s 背包空间不足, 无法获得物品! 错误码 %d", get_player_describe(src), rv);
@@ -7101,7 +7101,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     //        break;
     //    }
     //}
-    work_item.datal[0] = BBItem_Photon_Drop;
+    work_item.data1l[0] = BBItem_Photon_Drop;
     //if (work_item.datal[0] != BBItem_Photon_Drop) {
     //    ERR_LOG("%s 兑换失败, 未找到对应物品", get_player_describe(src));
     //    send_msg(src, TEXT_MSG_TYPE, __(src, "任务兑换失败,你的背包未找到对应兑换物品"));
@@ -7127,7 +7127,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         size_t max_count = get_item_amount(del_item, 99);
 
         item_t pd = remove_invitem(src, del_item->item_id, max_count, src->version != CLIENT_VERSION_BB);
-        if (item_not_identification_bb(pd.datal[0], pd.datal[1])) {
+        if (item_not_identification_bb(pd.data1l[0], pd.data1l[1])) {
             ERR_LOG("%s 删除PD %d ID 0x%08X 失败", get_player_describe(src), max_count, del_item->item_id);
             return -2;
         }
@@ -7137,7 +7137,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         /* 给玩家背包添加兑换完成的物品 */
         item_t add_item = pkt->add_item;
         add_item.item_id = generate_item_id(l, src->client_id);
-        add_item.datab[5] = get_item_amount(&add_item, 1);
+        add_item.data1b[5] = get_item_amount(&add_item, 1);
 
         if (!(rv = add_invitem(src, add_item))) {
             ERR_LOG("%s 背包空间不足, 无法获得物品! 错误码 %d", get_player_describe(src), rv);
@@ -7197,7 +7197,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
         item_t item = remove_invitem(src, compare_item_id, 1, src->version != CLIENT_VERSION_BB);
-        if (item.datal[0] == 0 && item.data2l == 0) {
+        if (item.data1l[0] == 0 && item.data2l == 0) {
             ERR_LOG("兑换 %d ID 0x%04X 失败", 1, compare_item_id);
             return -1;
         }
@@ -7206,7 +7206,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
 
         item_t add_item = pkt->add_item;
         add_item.item_id = generate_item_id(l, src->client_id);
-        add_item.datab[5] = get_item_amount(&add_item, 1);
+        add_item.data1b[5] = get_item_amount(&add_item, 1);
 
         if (!add_invitem(src, add_item)) {
             ERR_LOG("%s 背包空间不足, 无法获得物品!", get_player_describe(src));
@@ -7237,8 +7237,8 @@ static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
 
     for (size_t x = 0; x < inv->item_count; x++) {
         if ((inv->iitems[x].data.item_id == pkt->item_id) &&
-            (pkt->upgrade_item.datal[0] == inv->iitems[x].data.datal[0]) && 
-            (inv->iitems[x].data.datab[0] == ITEM_TYPE_WEAPON)) {
+            (pkt->upgrade_item.data1l[0] == inv->iitems[x].data.data1l[0]) && 
+            (inv->iitems[x].data.data1b[0] == ITEM_TYPE_WEAPON)) {
             uint32_t del_item_pid = pkt->payment_type ? BBItem_Photon_Drop : BBItem_Photon_Sphere;
 
             size_t itemid = find_iitem_code_stack_item_id(inv, del_item_pid);
@@ -7248,7 +7248,7 @@ static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             item_t remove_item = remove_invitem(src, itemid, pkt->payment_count, src->version != CLIENT_VERSION_BB);
-            if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
+            if (item_not_identification_bb(remove_item.data1l[0], remove_item.data1l[1])) {
                 ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
                 PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
                 return -3;
@@ -7274,19 +7274,19 @@ static int sub60_DA_bb(ship_client_t* src, ship_client_t* dest,
 
             size_t attribute_index = 0;
             for (size_t z = 6; z <= 10; z += 2) {
-                if (!(item->datab[z] & 0x80) && (item->datab[z] == pkt->attribute)) {
+                if (!(item->data1b[z] & 0x80) && (item->data1b[z] == pkt->attribute)) {
                     attribute_index = z;
                 }
-                else if (item->datab[z] == 0) {
+                else if (item->data1b[z] == 0) {
                     attribute_index = z;
                 }
             }
 
-            item->datab[attribute_index] = pkt->attribute;
-            item->datab[attribute_index] += attribute_amount;
+            item->data1b[attribute_index] = pkt->attribute;
+            item->data1b[attribute_index] += attribute_amount;
 
             remove_item = remove_invitem(src, item->item_id, 1, src->version != CLIENT_VERSION_BB);
-            if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
+            if (item_not_identification_bb(remove_item.data1l[0], remove_item.data1l[1])) {
                 ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
                 PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
                 return -3;
@@ -7376,7 +7376,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
         item_t remove_item = remove_invitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
-        if (item_not_identification_bb(remove_item.datal[0], remove_item.datal[1])) {
+        if (item_not_identification_bb(remove_item.data1l[0], remove_item.data1l[1])) {
             ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
             PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
             return -3;
@@ -7385,7 +7385,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
 
         subcmd_send_bb_exchange_item_in_quest(src, itemid, 1, 0x00000001);
 
-        item.datal[0] = good_luck[sfmt_genrand_uint32(rng) % ARRAYSIZE(good_luck)];
+        item.data1l[0] = good_luck[sfmt_genrand_uint32(rng) % ARRAYSIZE(good_luck)];
         item.item_id = generate_item_id(l, src->client_id);
         if (!add_invitem(src, item)) {
             ERR_LOG("%s 获取兑换物品失败!", get_player_describe(src));
@@ -7443,37 +7443,37 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x0001:
         /* 删除光子票据 10个 但是会全部删除 */
         remove_item = remove_invitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
-        if (remove_item.datal[0] == 0 && remove_item.data2l == 0) {
+        if (remove_item.data1l[0] == 0 && remove_item.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
             PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
             return -3;
         }
         // 宽永通宝
-        item.datal[0] = 0x0000D500;
+        item.data1l[0] = 0x0000D500;
         break;
 
     case 0x0002:
         /* 删除光子票据 15个 但是会全部删除 */
         remove_item = remove_invitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
-        if (remove_item.datal[0] == 0 && remove_item.data2l == 0) {
+        if (remove_item.data1l[0] == 0 && remove_item.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
             PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
             return -3;
         }
         // 棒棒糖
-        item.datal[0] = 0x00070A00;
+        item.data1l[0] = 0x00070A00;
         break;
 
     case 0x0003:
         /* 删除光子票据 20个 但是会全部删除 */
         remove_item = remove_invitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
-        if (remove_item.datal[0] == 0 && remove_item.data2l == 0) {
+        if (remove_item.data1l[0] == 0 && remove_item.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_player_describe(src));
             PRINT_HEX_LOG(ERR_LOG, pkt, pkt->hdr.pkt_len);
             return -3;
         }
         // 隐身衣
-        item.datal[0] = 0x00570101;
+        item.data1l[0] = 0x00570101;
         break;
 
     default:

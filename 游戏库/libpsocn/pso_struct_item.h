@@ -88,9 +88,9 @@ typedef struct item_data {
     // 这导致它与其他版本的 PSO（即所有其他版本）不兼容。
     // 我们需要在接收和发送数据之前手动对 data2 进行字节交换来解决这个问题。
     union {
-        uint8_t datab[12];//单字节
-        uint16_t dataw[6];//宽字节
-        uint32_t datal[3];//4字节
+        uint8_t data1b[12];//单字节
+        uint16_t data1w[6];//宽字节
+        uint32_t data1l[3];//4字节
     }PACKED;
     uint32_t item_id;
     union {

@@ -3316,7 +3316,7 @@ bool get_item_pmt_bb(const uint32_t datal1, const uint32_t datal2,
 
 pmt_item_base_t get_item_base_bb(const item_t* item) {
     pmt_item_base_t item_base = { 0 };
-    pmt_item_base_check_t item_base_check = get_item_definition_bb(item->datal[0], item->datal[1]);
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(item->data1l[0], item->data1l[1]);
 #ifdef DEBUG
     if (item_base_check.err) {
         DBG_LOG("物品基础信息错误 错误码 %d", item_base_check.err);
@@ -3351,21 +3351,21 @@ uint8_t get_item_stars(uint16_t index) {
 uint8_t get_item_base_stars(const item_t* item) {
     uint8_t star = 0;
 
-    switch (item->datab[0]) {
+    switch (item->data1b[0]) {
     case ITEM_TYPE_WEAPON:
     case ITEM_TYPE_GUARD:
         star = get_item_stars(get_item_index(item));
         break;
 
     case ITEM_TYPE_MAG:
-        star = (item->datab[1] > 0x27) ? 12 : 0;
+        star = (item->data1b[1] > 0x27) ? 12 : 0;
         break;
 
     case ITEM_TYPE_TOOL:
         pmt_tool_bb_t def = { 0 };
 
-        if (pmt_lookup_tools_bb(item->datal[0], item->datal[1], &def)) {
-            ERR_LOG("不存在物品数据! 0x%08X", item->datal[0]);
+        if (pmt_lookup_tools_bb(item->data1l[0], item->data1l[1], &def)) {
+            ERR_LOG("不存在物品数据! 0x%08X", item->data1l[0]);
             return -1;
         }
 
@@ -3388,18 +3388,18 @@ uint8_t get_special_stars(uint8_t det) {
 
 uint8_t get_item_adjusted_stars(const item_t* item) {
     uint8_t ret = get_item_base_stars(item);
-    if (item->datab[0] == ITEM_TYPE_WEAPON) {
+    if (item->data1b[0] == ITEM_TYPE_WEAPON) {
         if (ret < 9) {
-            if (!(item->datab[4] & 0x80)) {
-                ret += get_special_stars(item->datab[4]);
+            if (!(item->data1b[4] & 0x80)) {
+                ret += get_special_stars(item->data1b[4]);
             }
         }
-        else if (item->datab[4] & 0x80) {
+        else if (item->data1b[4] & 0x80) {
             ret = 0;
         }
     }
-    else if (item->datab[0] == 1) {
-        if (item->datab[1] == 3) {
+    else if (item->data1b[0] == 1) {
+        if (item->data1b[1] == 3) {
             int16_t unit_bonus = get_unit_bonus(item);
             if (unit_bonus < 0) {
                 ret--;
@@ -3458,9 +3458,9 @@ int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
 
 bool is_unsealable_item(const item_t* item) {
     for (size_t z = 0; z < unsealableitems_max_bb; z++) {
-        if ((unsealableitems_bb[z].item[0] == item->datab[0]) &&
-            (unsealableitems_bb[z].item[1] == item->datab[1]) &&
-            (unsealableitems_bb[z].item[2] == item->datab[2])) {
+        if ((unsealableitems_bb[z].item[0] == item->data1b[0]) &&
+            (unsealableitems_bb[z].item[1] == item->data1b[1]) &&
+            (unsealableitems_bb[z].item[2] == item->data1b[2])) {
             return true;
         }
     }
@@ -3482,24 +3482,24 @@ void set_item_kill_count_if_unsealable(item_t* item) {
 相反则让其未鉴定*/
 void set_item_identified_flag(bool is_mode, item_t* item) {
     pmt_weapon_bb_t weapon;
-    if (item->datab[0] == ITEM_TYPE_WEAPON) {
+    if (item->data1b[0] == ITEM_TYPE_WEAPON) {
         errno_t err;
         /* 先确保他是一把有效的武器 */
-        if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
+        if (err = pmt_lookup_weapon_bb(item->data1l[0], &weapon)) {
             ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
             return;
         }
 
         /* 检测物品是否稀有或有属性 */
-        if (is_item_rare(item) || (item->datab[4] != 0)) {
+        if (is_item_rare(item) || (item->data1b[4] != 0)) {
             /* 挑战模式 则取消未鉴定状态 */
             if (is_mode) {
-                if (item->datab[4] & 0x80)
-                    item->datab[4] &= ~(0x80);
+                if (item->data1b[4] & 0x80)
+                    item->data1b[4] &= ~(0x80);
             }
             else {
-                if (!(item->datab[4] & 0x80)) {
-                    item->datab[4] |= 0x80;
+                if (!(item->data1b[4] & 0x80)) {
+                    item->data1b[4] |= 0x80;
                 }
             }
         }
@@ -3638,7 +3638,7 @@ bool check_mag_has_pb(const item_t* mag) {
     errno_t err = 0;
 
     pmt_mag_bb_t pmtmag = { 0 };
-    if (err = pmt_lookup_mag_bb(mag->datal[0], &pmtmag)) {
+    if (err = pmt_lookup_mag_bb(mag->data1l[0], &pmtmag)) {
         ERR_LOG("pmt_lookup_mag_bb 不存在数据! 错误码 %d", err);
         return true;
     }

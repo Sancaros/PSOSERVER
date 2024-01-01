@@ -776,7 +776,7 @@ static void convert_gcxb_to_xbgc(ship_client_t* s, void* buf) {
 
         /* If the item is a mag, then we have to swap the last dword of the item
            data. Otherwise colors and stats get messed up. */
-        if (item->data.datab[0] == ITEM_TYPE_MAG) {
+        if (item->data.data1b[0] == ITEM_TYPE_MAG) {
             item->data.data2l = SWAP32(item->data.data2l);
         }
     }

@@ -731,9 +731,9 @@ inline void print_item_data(const item_t* item, int version) {
 	ITEM_LOG("编号: 0x%08X",
 		item->item_id);
 	ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		item->datab[0], item->datab[1], item->datab[2], item->datab[3],
-		item->datab[4], item->datab[5], item->datab[6], item->datab[7],
-		item->datab[8], item->datab[9], item->datab[10], item->datab[11],
+		item->data1b[0], item->data1b[1], item->data1b[2], item->data1b[3],
+		item->data1b[4], item->data1b[5], item->data1b[6], item->data1b[7],
+		item->data1b[8], item->data1b[9], item->data1b[10], item->data1b[11],
 		item->data2b[0], item->data2b[1], item->data2b[2], item->data2b[3]);
 	ITEM_LOG("------------------------------------------------------------");
 }
@@ -744,9 +744,9 @@ inline void print_pitem_data(const item_t* item, int version) {
 	PICKS_LOG("编号: 0x%08X",
 		item->item_id);
 	PICKS_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		item->datab[0], item->datab[1], item->datab[2], item->datab[3],
-		item->datab[4], item->datab[5], item->datab[6], item->datab[7],
-		item->datab[8], item->datab[9], item->datab[10], item->datab[11],
+		item->data1b[0], item->data1b[1], item->data1b[2], item->data1b[3],
+		item->data1b[4], item->data1b[5], item->data1b[6], item->data1b[7],
+		item->data1b[8], item->data1b[9], item->data1b[10], item->data1b[11],
 		item->data2b[0], item->data2b[1], item->data2b[2], item->data2b[3]);
 	PICKS_LOG("------------------------------------------------------------");
 }
@@ -757,9 +757,9 @@ inline void print_ditem_data(const item_t* item, int version) {
 	DROPS_LOG("编号: 0x%08X",
 		item->item_id);
 	DROPS_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		item->datab[0], item->datab[1], item->datab[2], item->datab[3],
-		item->datab[4], item->datab[5], item->datab[6], item->datab[7],
-		item->datab[8], item->datab[9], item->datab[10], item->datab[11],
+		item->data1b[0], item->data1b[1], item->data1b[2], item->data1b[3],
+		item->data1b[4], item->data1b[5], item->data1b[6], item->data1b[7],
+		item->data1b[8], item->data1b[9], item->data1b[10], item->data1b[11],
 		item->data2b[0], item->data2b[1], item->data2b[2], item->data2b[3]);
 	DROPS_LOG("------------------------------------------------------------");
 }
@@ -770,9 +770,9 @@ inline void print_titem_data(const item_t* item, int version) {
 	TRADES_LOG("编号: 0x%08X",
 		item->item_id);
 	TRADES_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		item->datab[0], item->datab[1], item->datab[2], item->datab[3],
-		item->datab[4], item->datab[5], item->datab[6], item->datab[7],
-		item->datab[8], item->datab[9], item->datab[10], item->datab[11],
+		item->data1b[0], item->data1b[1], item->data1b[2], item->data1b[3],
+		item->data1b[4], item->data1b[5], item->data1b[6], item->data1b[7],
+		item->data1b[8], item->data1b[9], item->data1b[10], item->data1b[11],
 		item->data2b[0], item->data2b[1], item->data2b[2], item->data2b[3]);
 	TRADES_LOG("------------------------------------------------------------");
 }
@@ -793,9 +793,9 @@ inline void print_iitem_data(const iitem_t* iitem, int item_index, int version) 
 	);
 	ITEM_LOG("编号: 0x%08X", iitem->data.item_id);
 	ITEM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		iitem->data.datab[0], iitem->data.datab[1], iitem->data.datab[2], iitem->data.datab[3],
-		iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
-		iitem->data.datab[8], iitem->data.datab[9], iitem->data.datab[10], iitem->data.datab[11],
+		iitem->data.data1b[0], iitem->data.data1b[1], iitem->data.data1b[2], iitem->data.data1b[3],
+		iitem->data.data1b[4], iitem->data.data1b[5], iitem->data.data1b[6], iitem->data.data1b[7],
+		iitem->data.data1b[8], iitem->data.data1b[9], iitem->data.data1b[10], iitem->data.data1b[11],
 		iitem->data.data2b[0], iitem->data.data2b[1], iitem->data.data2b[2], iitem->data.data2b[3]);
 	ITEM_LOG("------------------------------------------------------------");
 }
@@ -809,16 +809,16 @@ inline void print_bitem_data(const bitem_t* bitem, int item_index, int version) 
 		"(%s) "
 		"Flags %04X",
 		item_index,
-		((max_stack_size_for_item(bitem->data.datab[0], bitem->data.datab[1]) > 1) ? "堆叠" : "单独"),
+		((max_stack_size_for_item(bitem->data.data1b[0], bitem->data.data1b[1]) > 1) ? "堆叠" : "单独"),
 		bitem->amount,
 		((bitem->show_flags & LE32(0x0001)) ? "显示" : "隐藏"),
 		bitem->show_flags
 	);
 	ITEM_LOG("编号: 0x%08X", bitem->data.item_id);
 	ITEM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-		bitem->data.datab[0], bitem->data.datab[1], bitem->data.datab[2], bitem->data.datab[3],
-		bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],
-		bitem->data.datab[8], bitem->data.datab[9], bitem->data.datab[10], bitem->data.datab[11],
+		bitem->data.data1b[0], bitem->data.data1b[1], bitem->data.data1b[2], bitem->data.data1b[3],
+		bitem->data.data1b[4], bitem->data.data1b[5], bitem->data.data1b[6], bitem->data.data1b[7],
+		bitem->data.data1b[8], bitem->data.data1b[9], bitem->data.data1b[10], bitem->data.data1b[11],
 		bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
 	ITEM_LOG("------------------------------------------------------------");
 }
@@ -848,9 +848,9 @@ inline void print_biitem_data(void* data, int item_index, int version, int inv, 
 
 			ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
 				inv_text,
-				iitem->data.datab[0], iitem->data.datab[1], iitem->data.datab[2], iitem->data.datab[3],
-				iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
-				iitem->data.datab[8], iitem->data.datab[9], iitem->data.datab[10], iitem->data.datab[11],
+				iitem->data.data1b[0], iitem->data.data1b[1], iitem->data.data1b[2], iitem->data.data1b[3],
+				iitem->data.data1b[4], iitem->data.data1b[5], iitem->data.data1b[6], iitem->data.data1b[7],
+				iitem->data.data1b[8], iitem->data.data1b[9], iitem->data.data1b[10], iitem->data.data1b[11],
 				iitem->data.data2b[0], iitem->data.data2b[1], iitem->data.data2b[2], iitem->data.data2b[3]);
 		}
 		else {
@@ -872,9 +872,9 @@ inline void print_biitem_data(void* data, int item_index, int version, int inv, 
 
 			ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
 				inv_text,
-				bitem->data.datab[0], bitem->data.datab[1], bitem->data.datab[2], bitem->data.datab[3],
-				bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],
-				bitem->data.datab[8], bitem->data.datab[9], bitem->data.datab[10], bitem->data.datab[11],
+				bitem->data.data1b[0], bitem->data.data1b[1], bitem->data.data1b[2], bitem->data.data1b[3],
+				bitem->data.data1b[4], bitem->data.data1b[5], bitem->data.data1b[6], bitem->data.data1b[7],
+				bitem->data.data1b[8], bitem->data.data1b[9], bitem->data.data1b[10], bitem->data.data1b[11],
 				bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
 		}
 	}

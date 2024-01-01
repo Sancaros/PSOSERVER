@@ -621,7 +621,7 @@ typedef enum item_code_e {
 typedef struct item_map_s {
     union {
         item_code_t code;
-        uint8_t datab[4];
+        uint8_t data1b[4];
     };
     const char* name;
 } PACKED item_map_t;

@@ -708,12 +708,12 @@ static int handle_item(ship_client_t* src, const char* params) {
     clear_inv_item(&src->new_item);
 
     /* Copy over the item data. */
-    src->new_item.datal[0] = SWAP32(item[0]);
-    src->new_item.datal[1] = SWAP32(item[1]);
-    src->new_item.datal[2] = SWAP32(item[2]);
+    src->new_item.data1l[0] = SWAP32(item[0]);
+    src->new_item.data1l[1] = SWAP32(item[1]);
+    src->new_item.data1l[2] = SWAP32(item[2]);
     src->new_item.data2l = SWAP32(item[3]);
 
-    pmt_item_base_check_t item_base_check = get_item_definition_bb(src->new_item.datal[0], src->new_item.datal[1]);
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(src->new_item.data1l[0], src->new_item.data1l[1]);
     if (item_base_check.err) {
         clear_inv_item(&src->new_item);
         return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
@@ -784,13 +784,13 @@ static int handle_item1(ship_client_t* src, const char* params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效 item1 物品代码."));
     }
 
-    pmt_item_base_check_t item_base_check = get_item_definition_bb(item, src->new_item.datal[0]);
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(item, src->new_item.data1l[0]);
     if (item_base_check.err) {
         clear_inv_item(&src->new_item);
         return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
     }
 
-    src->new_item.datal[0] = SWAP32(item);
+    src->new_item.data1l[0] = SWAP32(item);
 
     LOBBY_GM_MAKE_ITEM_LOG(src, src->new_item.item_id, src->cur_area, &src->new_item);
 
@@ -823,7 +823,7 @@ static int handle_item2(ship_client_t* src, const char* params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效 item2 物品代码."));
     }
 
-    src->new_item.datal[1] = SWAP32(item);
+    src->new_item.data1l[1] = SWAP32(item);
 
     LOBBY_GM_MAKE_ITEM_LOG(src, src->new_item.item_id, src->cur_area, &src->new_item);
 
@@ -853,7 +853,7 @@ static int handle_item3(ship_client_t* src, const char* params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效 item3 物品代码."));
     }
 
-    src->new_item.datal[2] = SWAP32(item);
+    src->new_item.data1l[2] = SWAP32(item);
 
     LOBBY_GM_MAKE_ITEM_LOG(src, src->new_item.item_id, src->cur_area, &src->new_item);
 
@@ -907,7 +907,7 @@ static int handle_mitem(ship_client_t* src, const char* params) {
     }
 
     /* Make sure there's something set with /item */
-    if (!src->new_item.datal[0]) {
+    if (!src->new_item.data1l[0]) {
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."),
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
@@ -981,9 +981,9 @@ static void dumpinv_internal(ship_client_t* src, bool is_max_item) {
             );
             GM_LOG("编号: 0x%08X", character_v1->inv.iitems[i].data.item_id);
             GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-                character_v1->inv.iitems[i].data.datab[0], character_v1->inv.iitems[i].data.datab[1], character_v1->inv.iitems[i].data.datab[2], character_v1->inv.iitems[i].data.datab[3],
-                character_v1->inv.iitems[i].data.datab[4], character_v1->inv.iitems[i].data.datab[5], character_v1->inv.iitems[i].data.datab[6], character_v1->inv.iitems[i].data.datab[7],
-                character_v1->inv.iitems[i].data.datab[8], character_v1->inv.iitems[i].data.datab[9], character_v1->inv.iitems[i].data.datab[10], character_v1->inv.iitems[i].data.datab[11],
+                character_v1->inv.iitems[i].data.data1b[0], character_v1->inv.iitems[i].data.data1b[1], character_v1->inv.iitems[i].data.data1b[2], character_v1->inv.iitems[i].data.data1b[3],
+                character_v1->inv.iitems[i].data.data1b[4], character_v1->inv.iitems[i].data.data1b[5], character_v1->inv.iitems[i].data.data1b[6], character_v1->inv.iitems[i].data.data1b[7],
+                character_v1->inv.iitems[i].data.data1b[8], character_v1->inv.iitems[i].data.data1b[9], character_v1->inv.iitems[i].data.data1b[10], character_v1->inv.iitems[i].data.data1b[11],
                 character_v1->inv.iitems[i].data.data2b[0], character_v1->inv.iitems[i].data.data2b[1], character_v1->inv.iitems[i].data.data2b[2], character_v1->inv.iitems[i].data.data2b[3]);
             GM_LOG("------------------------------------------------------------");
         }
@@ -1024,9 +1024,9 @@ static void dumpinv_internal(ship_client_t* src, bool is_max_item) {
             );
             GM_LOG("编号: 0x%08X", character_bb->inv.iitems[i].data.item_id);
             GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-                character_bb->inv.iitems[i].data.datab[0], character_bb->inv.iitems[i].data.datab[1], character_bb->inv.iitems[i].data.datab[2], character_bb->inv.iitems[i].data.datab[3],
-                character_bb->inv.iitems[i].data.datab[4], character_bb->inv.iitems[i].data.datab[5], character_bb->inv.iitems[i].data.datab[6], character_bb->inv.iitems[i].data.datab[7],
-                character_bb->inv.iitems[i].data.datab[8], character_bb->inv.iitems[i].data.datab[9], character_bb->inv.iitems[i].data.datab[10], character_bb->inv.iitems[i].data.datab[11],
+                character_bb->inv.iitems[i].data.data1b[0], character_bb->inv.iitems[i].data.data1b[1], character_bb->inv.iitems[i].data.data1b[2], character_bb->inv.iitems[i].data.data1b[3],
+                character_bb->inv.iitems[i].data.data1b[4], character_bb->inv.iitems[i].data.data1b[5], character_bb->inv.iitems[i].data.data1b[6], character_bb->inv.iitems[i].data.data1b[7],
+                character_bb->inv.iitems[i].data.data1b[8], character_bb->inv.iitems[i].data.data1b[9], character_bb->inv.iitems[i].data.data1b[10], character_bb->inv.iitems[i].data.data1b[11],
                 character_bb->inv.iitems[i].data.data2b[0], character_bb->inv.iitems[i].data.data2b[1], character_bb->inv.iitems[i].data.data2b[2], character_bb->inv.iitems[i].data.data2b[3]);
             GM_LOG("------------------------------------------------------------");
         }
@@ -1103,9 +1103,9 @@ static void dumpinv_lobby_internal(lobby_t* l) {
         GM_LOG("编号: 0x%08X", j->item.item_id);
         GM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
         GM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-            j->item.datab[0], j->item.datab[1], j->item.datab[2], j->item.datab[3],
-            j->item.datab[4], j->item.datab[5], j->item.datab[6], j->item.datab[7],
-            j->item.datab[8], j->item.datab[9], j->item.datab[10], j->item.datab[11],
+            j->item.data1b[0], j->item.data1b[1], j->item.data1b[2], j->item.data1b[3],
+            j->item.data1b[4], j->item.data1b[5], j->item.data1b[6], j->item.data1b[7],
+            j->item.data1b[8], j->item.data1b[9], j->item.data1b[10], j->item.data1b[11],
             j->item.data2b[0], j->item.data2b[1], j->item.data2b[2], j->item.data2b[3]);
         GM_LOG("------------------------------------------------------------");
     }
@@ -1252,15 +1252,15 @@ static void dumpbank_internal(ship_client_t* src) {
                 "(%s) "
                 "Flags %04X",
                 i,
-                ((max_stack_size_for_item(bank->bitems[i].data.datab[0], bank->bitems[i].data.datab[1]) > 1) ? "堆叠" : "单独"),
+                ((max_stack_size_for_item(bank->bitems[i].data.data1b[0], bank->bitems[i].data.data1b[1]) > 1) ? "堆叠" : "单独"),
                 bank->bitems[i].amount,
                 ((bank->bitems[i].show_flags & LE32(0x0001)) ? "显示" : "隐藏"),
                 bank->bitems[i].show_flags
             );
             GM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-                bank->bitems[i].data.datab[0], bank->bitems[i].data.datab[1], bank->bitems[i].data.datab[2], bank->bitems[i].data.datab[3],
-                bank->bitems[i].data.datab[4], bank->bitems[i].data.datab[5], bank->bitems[i].data.datab[6], bank->bitems[i].data.datab[7],
-                bank->bitems[i].data.datab[8], bank->bitems[i].data.datab[9], bank->bitems[i].data.datab[10], bank->bitems[i].data.datab[11],
+                bank->bitems[i].data.data1b[0], bank->bitems[i].data.data1b[1], bank->bitems[i].data.data1b[2], bank->bitems[i].data.data1b[3],
+                bank->bitems[i].data.data1b[4], bank->bitems[i].data.data1b[5], bank->bitems[i].data.data1b[6], bank->bitems[i].data.data1b[7],
+                bank->bitems[i].data.data1b[8], bank->bitems[i].data.data1b[9], bank->bitems[i].data.data1b[10], bank->bitems[i].data.data1b[11],
                 bank->bitems[i].data.data2b[0], bank->bitems[i].data.data2b[1], bank->bitems[i].data.data2b[2], bank->bitems[i].data.data2b[3]);
             GM_LOG("------------------------------------------------------------");
         }

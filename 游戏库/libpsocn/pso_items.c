@@ -24,17 +24,17 @@
 
 /* 初始化物品数据 */
 void clear_inv_item(item_t* item) {
-	item->datal[0] = 0;
-	item->datal[1] = 0;
-	item->datal[2] = 0;
+	item->data1l[0] = 0;
+	item->data1l[1] = 0;
+	item->data1l[2] = 0;
 	item->item_id = 0xFFFFFFFF;
 	item->data2l = 0;
 }
 
 void clear_bank_item(item_t* item) {
-	item->datal[0] = 0;
-	item->datal[1] = 0;
-	item->datal[2] = 0;
+	item->data1l[0] = 0;
+	item->data1l[1] = 0;
+	item->data1l[2] = 0;
 	item->item_id = 0xFFFFFFFF;
 	item->data2l = 0;
 }
@@ -49,11 +49,11 @@ bool create_tmp_item(const uint32_t* item, size_t item_size, item_t* tmp_item) {
 
 	for (size_t i = 0; i < 3; i++) {
 		if (item[i] != 0) {
-			tmp_item->datal[i] = item[i];
+			tmp_item->data1l[i] = item[i];
 		}
 		else {
 			// 处理空值的情况，这里可以选择赋予默认值或执行其他逻辑
-			tmp_item->datal[i] = 0;/* 默认值 */;
+			tmp_item->data1l[i] = 0;/* 默认值 */;
 		}
 	}
 	tmp_item->item_id = 0;
@@ -117,23 +117,23 @@ size_t primary_code_identifier(const uint32_t code) {
 size_t primary_identifier(const item_t* item) {
 	// The game treats any item starting with 04 as Meseta, and ignores the rest
 	// of data1 (the value is in data2)
-	switch (item->datab[0]) {
+	switch (item->data1b[0]) {
 
 	case ITEM_TYPE_MESETA:
 		return 0x040000;
 
 	case ITEM_TYPE_TOOL:
-		if (item->datab[1] == ITEM_SUBTYPE_DISK) {
+		if (item->data1b[1] == ITEM_SUBTYPE_DISK) {
 			return 0x030200;// Tech disk (data1[2] is level, so omit it)
 		}
 		break;
 
 	case ITEM_TYPE_MAG:
-		return 0x020000 | (item->datab[1] << 8); // Mag
+		return 0x020000 | (item->data1b[1] << 8); // Mag
 
 	}
 
-	return (item->datab[0] << 16) | (item->datab[1] << 8) | item->datab[2];
+	return (item->data1b[0] << 16) | (item->data1b[1] << 8) | item->data1b[2];
 }
 
 bool is_stackable(const item_t* item) {
@@ -141,14 +141,14 @@ bool is_stackable(const item_t* item) {
 }
 
 size_t stack_size(const item_t* item) {
-	if (max_stack_size_for_item(item->datab[0], item->datab[1]) > 1) {
-		return item->datab[5];
+	if (max_stack_size_for_item(item->data1b[0], item->data1b[1]) > 1) {
+		return item->data1b[5];
 	}
 	return 1;
 }
 
 size_t max_stack_size(const item_t* item) {
-	return max_stack_size_for_item(item->datab[0], item->datab[1]);
+	return max_stack_size_for_item(item->data1b[0], item->data1b[1]);
 }
 
 /* 物品类型堆叠检测表函数 */
@@ -203,30 +203,30 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 /* 仅用于房间物品数量 */
 uint8_t get_item_amount(item_t* item, uint32_t amount) {
 	if (is_stackable(item)) {
-		if (item->datab[0] == ITEM_TYPE_MESETA) {
+		if (item->data1b[0] == ITEM_TYPE_MESETA) {
 			item->data2l = (amount > MAX_PLAYER_MESETA ? MAX_PLAYER_MESETA : amount);
 			return 0;
 		}
-		else if (item->datab[5] <= 0) {
-			item->datab[5] = 1;
+		else if (item->data1b[5] <= 0) {
+			item->data1b[5] = 1;
 		}
 		else if (amount > (uint8_t)max_stack_size(item)) {
-			item->datab[5] = (uint8_t)max_stack_size(item);
+			item->data1b[5] = (uint8_t)max_stack_size(item);
 		}
 		else if (amount > 0) {
-			item->datab[5] = (uint8_t)amount;
+			item->data1b[5] = (uint8_t)amount;
 		}
 	}
-	else if (item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK) {
-		item->datab[5] = 0x00;
+	else if (item->data1b[0] == ITEM_TYPE_TOOL && item->data1b[1] == ITEM_SUBTYPE_DISK) {
+		item->data1b[5] = 0x00;
 	}
 
-	return item->datab[5];
+	return item->data1b[5];
 }
 
 void clear_tool_item_if_invalid(item_t* item) {
-	if ((item->datab[1] == ITEM_SUBTYPE_DISK) &&
-		((item->datab[2] > 0x1D) || (item->datab[4] > 0x12))) {
+	if ((item->data1b[1] == ITEM_SUBTYPE_DISK) &&
+		((item->data1b[2] > 0x1D) || (item->data1b[4] > 0x12))) {
 		clear_inv_item(item);
 	}
 }
@@ -240,7 +240,7 @@ bool is_common_consumable(uint32_t primary_identifier) {
 
 void clear_after(item_t* this, size_t position, size_t count) {
 	for (size_t x = position; x < count; x++) {
-		this->datab[x] = 0;
+		this->data1b[x] = 0;
 	}
 }
 
@@ -249,22 +249,22 @@ const char* item_get_name_by_code(const item_t* item) {
 
 	const char* unknow_name = "未识别物品名称";
 
-	if (item->datal[0] == BBItem_Saber0)
+	if (item->data1l[0] == BBItem_Saber0)
 		return "空";
 
 	/* Look through the list for the one we want */
 	while (cur->code != Item_NoSuchItem) {
-		if (cur->datab[0] == item->datab[0]) {
-			if (item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK)
-				if (cur->datab[2] == item->datab[4])
+		if (cur->data1b[0] == item->data1b[0]) {
+			if (item->data1b[0] == ITEM_TYPE_TOOL && item->data1b[1] == ITEM_SUBTYPE_DISK)
+				if (cur->data1b[2] == item->data1b[4])
 					return cur->name;
 
 
-			if (item->datab[0] == ITEM_TYPE_MAG) {
-				if (cur->datab[1] == item->datab[1])
+			if (item->data1b[0] == ITEM_TYPE_MAG) {
+				if (cur->data1b[1] == item->data1b[1])
 					return cur->name;
 			}
-			else if (cur->datab[1] == item->datab[1] && cur->datab[2] == item->datab[2]) {
+			else if (cur->data1b[1] == item->data1b[1] && cur->data1b[2] == item->data1b[2]) {
 				return cur->name;
 
 			}
@@ -286,20 +286,20 @@ const char* bbitem_get_name_by_code(const item_t* item, int languageCheck) {
 		cur = bbitem_list_en;
 	}
 
-	if (item->datal[0] == BBItem_Saber0)
+	if (item->data1l[0] == BBItem_Saber0)
 		return "空";
 
 	/* Look through the list for the one we want */
 	while (cur->code != BBItem_NoSuchItem) {
-		if (cur->datab[0] == item->datab[0]) {
-			if (item->datab[0] == ITEM_TYPE_TOOL && item->datab[1] == ITEM_SUBTYPE_DISK && cur->datab[2] == item->datab[4]) {
+		if (cur->data1b[0] == item->data1b[0]) {
+			if (item->data1b[0] == ITEM_TYPE_TOOL && item->data1b[1] == ITEM_SUBTYPE_DISK && cur->data1b[2] == item->data1b[4]) {
 				return cur->name;
 			}
-			else if (item->datab[0] == ITEM_TYPE_MAG) {
-				if (cur->datab[1] == item->datab[1])
+			else if (item->data1b[0] == ITEM_TYPE_MAG) {
+				if (cur->data1b[1] == item->data1b[1])
 					return cur->name;
 			}
-			else if (cur->datab[1] == item->datab[1] && cur->datab[2] == item->datab[2]) {
+			else if (cur->data1b[1] == item->data1b[1] && cur->data1b[2] == item->data1b[2]) {
 				return cur->name;
 
 			}
@@ -365,56 +365,56 @@ const char* item_get_name(const item_t* item, int version, int languageCheck) {
 }
 
 bool is_item_empty(item_t* item) {
-	return (item->datal[0] == 0) &&
-		(item->datal[1] == 0) &&
-		(item->datal[2] == 0) &&
+	return (item->data1l[0] == 0) &&
+		(item->data1l[1] == 0) &&
+		(item->data1l[2] == 0) &&
 		(item->data2l == 0);
 }
 
 void set_armor_or_shield_defense_bonus(item_t* item, int16_t bonus) {
-	item->dataw[3] = bonus;
+	item->data1w[3] = bonus;
 }
 
 int16_t get_armor_or_shield_defense_bonus(const item_t* item) {
-	return item->dataw[3];
+	return item->data1w[3];
 }
 
 void set_common_armor_evasion_bonus(item_t* item, int16_t bonus) {
-	item->dataw[4] = bonus;
+	item->data1w[4] = bonus;
 }
 
 int16_t get_common_armor_evasion_bonus(const item_t* item) {
-	return item->dataw[4];
+	return item->data1w[4];
 }
 
 void set_unit_bonus(item_t* item, int16_t bonus) {
-	item->dataw[3] = bonus;
+	item->data1w[3] = bonus;
 }
 
 int16_t get_unit_bonus(const item_t* item) {
-	return item->dataw[3];
+	return item->data1w[3];
 }
 
 uint16_t get_sealed_item_kill_count(const item_t* item) {
-	return ((item->datab[10] << 8) | item->datab[11]) & 0x7FFF;
+	return ((item->data1b[10] << 8) | item->data1b[11]) & 0x7FFF;
 }
 
 void set_sealed_item_kill_count(item_t* item, uint16_t v) {
 	if (v > 0x7FFF) {
-		item->dataw[5] = 0xFFFF;
+		item->data1w[5] = 0xFFFF;
 	}
 	else {
-		item->datab[10] = (v >> 8) | 0x80;
-		item->datab[11] = v;
+		item->data1b[10] = (v >> 8) | 0x80;
+		item->data1b[11] = v;
 	}
 }
 
 bool is_s_rank_weapon(const item_t* item) {
-	if (item->datab[0] == 0) {
-		if ((item->datab[1] > 0x6F) && (item->datab[1] < 0x89)) {
+	if (item->data1b[0] == 0) {
+		if ((item->data1b[1] > 0x6F) && (item->data1b[1] < 0x89)) {
 			return true;
 		}
-		if ((item->datab[1] > 0xA4) && (item->datab[1] < 0xAA)) {
+		if ((item->data1b[1] > 0xA4) && (item->data1b[1] < 0xAA)) {
 			return true;
 		}
 	}
@@ -424,10 +424,10 @@ bool is_s_rank_weapon(const item_t* item) {
 bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
 	size_t z;
 	for (z = 0; z < 12; z++) {
-		if (itemDataA->datab[z] < itemDataB->datab[z]) {
+		if (itemDataA->data1b[z] < itemDataB->data1b[z]) {
 			return false;
 		}
-		else if (itemDataA->datab[z] > itemDataB->datab[z]) {
+		else if (itemDataA->data1b[z] > itemDataB->data1b[z]) {
 			return true;
 		}
 	}
@@ -482,14 +482,14 @@ const char* get_unit_bonus_describe(const item_t* item) {
 	memset(item_attrib_des, 0, sizeof(item_attrib_des));
 
 	for (x; x < attrib_val_len; x++) {
-		if (item->datab[6] == unit_attrib_val[x]) {
+		if (item->data1b[6] == unit_attrib_val[x]) {
 			break;
 		}
 	}
 
 	// 处理属性1
 	if (x <= attrib_val_len)
-		if (item->datab[10] & 0x80)
+		if (item->data1b[10] & 0x80)
 			sprintf(item_attrib_des, "%s 解封:%d", unit_attrib[x], get_sealed_item_kill_count(item));
 		else
 			sprintf(item_attrib_des, "%s", unit_attrib[x]);
@@ -507,17 +507,17 @@ char* get_weapon_attrib_describe(const item_t* item) {
 	char attrib3[50] = "空";
 
 	// 处理属性1
-	if (item->datab[6] < attrib_len)
-		sprintf(attrib1, "%s%d", weapon_attrib[item->datab[6]], item->datab[7]);
+	if (item->data1b[6] < attrib_len)
+		sprintf(attrib1, "%s%d", weapon_attrib[item->data1b[6]], item->data1b[7]);
 
 	// 处理属性2
-	if (item->datab[8] < attrib_len)
-		sprintf(attrib2, "%s%d", weapon_attrib[item->datab[8]], item->datab[9]);
+	if (item->data1b[8] < attrib_len)
+		sprintf(attrib2, "%s%d", weapon_attrib[item->data1b[8]], item->data1b[9]);
 
 	// 处理属性3
-	if (item->datab[10] < attrib_len)
-		sprintf(attrib3, "%s%d", weapon_attrib[item->datab[10]], item->datab[11]);
-	else if (item->datab[10] & 0x80) {
+	if (item->data1b[10] < attrib_len)
+		sprintf(attrib3, "%s%d", weapon_attrib[item->data1b[10]], item->data1b[11]);
+	else if (item->data1b[10] & 0x80) {
 		sprintf(attrib3, "解封:%d", get_sealed_item_kill_count(item));
 	}
 
@@ -531,39 +531,39 @@ char* get_item_describe(const item_t* item, int version) {
 	memset(item_des, 0, sizeof(item_des));
 
 	/* 检索物品类型 */
-	switch (item->datab[0]) {
+	switch (item->data1b[0]) {
 	case ITEM_TYPE_WEAPON: // 武器
 		const char* special_describe;
 		if (is_s_rank_weapon(item)) {
-			special_describe = get_s_rank_special_describe(item->datab[2], 0);
+			special_describe = get_s_rank_special_describe(item->data1b[2], 0);
 		}
 		else {
-			special_describe = get_weapon_special_describe(item->datab[4], 0);
+			special_describe = get_weapon_special_describe(item->data1b[4], 0);
 		}
 
 		sprintf(item_des, "%s +%d %s EX(%s) %s"
 			, item_get_name(item, version, 0)
-			, item->datab[3]
-			, item->datab[4] & 0x80 ? "未鉴定" : "已鉴定"
+			, item->data1b[3]
+			, item->data1b[4] & 0x80 ? "未鉴定" : "已鉴定"
 			, special_describe
 			, is_s_rank_weapon(item) ? "" : get_weapon_attrib_describe(item)
 		);
 		break;
 	case ITEM_TYPE_GUARD: // 装甲
-		switch (item->datab[1]) {
+		switch (item->data1b[1]) {
 		case ITEM_SUBTYPE_FRAME://护甲
 			sprintf(item_des, "%s %d槽 [%d+/%d+]"
 				, item_get_name(item, version, 0)
-				, item->datab[5]
-				, item->datab[6]
-				, item->datab[8]
+				, item->data1b[5]
+				, item->data1b[6]
+				, item->data1b[8]
 			);
 			break;
 		case ITEM_SUBTYPE_BARRIER://护盾
 			sprintf(item_des, "%s [%d+/%d+]"
 				, item_get_name(item, version, 0)
-				, item->datab[6]
-				, item->datab[8]
+				, item->data1b[6]
+				, item->data1b[8]
 			);
 			break;
 
@@ -580,27 +580,27 @@ char* get_item_describe(const item_t* item, int version) {
 		sprintf(item_des, "%s %s Lv%d 同步 %d 智商 %d [%d/%d/%d/%d]"
 			, item_get_name(item, version, 0)
 			, get_mag_color_name(item->data2b[3])
-			, item->datab[2]
+			, item->data1b[2]
 			, item->data2b[0]
 			, item->data2b[1]
-			, item->dataw[2] / 100
-			, item->dataw[3] / 100
-			, item->dataw[4] / 100
-			, item->dataw[5] / 100
+			, item->data1w[2] / 100
+			, item->data1w[3] / 100
+			, item->data1w[4] / 100
+			, item->data1w[5] / 100
 		);
 		break;
 
 	case ITEM_TYPE_TOOL:
-		if (item->datab[1] == ITEM_SUBTYPE_DISK) {
+		if (item->data1b[1] == ITEM_SUBTYPE_DISK) {
 			sprintf(item_des, "%s Lv%d"
-				, get_technique_comment(item->datab[4])
-				, item->datab[2] + 1
+				, get_technique_comment(item->data1b[4])
+				, item->data1b[2] + 1
 			);
 		}
 		else {
 			sprintf(item_des, "%s x%d"
 				, item_get_name(item, version, 0)
-				, item->datab[5]
+				, item->data1b[5]
 			);
 		}
 		break;
@@ -615,7 +615,7 @@ char* get_item_describe(const item_t* item, int version) {
 	default:
 		sprintf(item_des, "未解析物品 %s 0x%08X"
 			, item_get_name(item, version, 0)
-			, item->datal[0]
+			, item->data1l[0]
 		);
 		break;
 
@@ -630,14 +630,14 @@ const char* get_unit_unsealable_bonus_describe(const item_t* item) {
 	memset(item_attrib_des, 0, sizeof(item_attrib_des));
 
 	for (x; x < attrib_val_len; x++) {
-		if (item->datab[6] == unit_attrib_val[x]) {
+		if (item->data1b[6] == unit_attrib_val[x]) {
 			break;
 		}
 	}
 
 	// 处理属性1
 	if (x <= attrib_val_len)
-		if (item->datab[10] & 0x80) {
+		if (item->data1b[10] & 0x80) {
 			sprintf(item_attrib_des, "[解封:%d]", get_sealed_item_kill_count(item));
 			return item_attrib_des;
 		}
@@ -660,13 +660,13 @@ char* get_item_unsealable_describe(const item_t* item, int version) {
 
 	memset(item_des, 0, sizeof(item_des));
 
-	if (item->datab[0] == ITEM_TYPE_WEAPON) {
+	if (item->data1b[0] == ITEM_TYPE_WEAPON) {
 		sprintf(item_des, "%s %s"
 			, item_get_name(item, version, 0)
 			, is_s_rank_weapon(item) ? "" : get_weapon_unsealable_attrib_describe(item)
 		);
 	}
-	else if ((item->datab[0] == ITEM_TYPE_GUARD) && (item->datab[1] == ITEM_SUBTYPE_UNIT)) {
+	else if ((item->data1b[0] == ITEM_TYPE_GUARD) && (item->data1b[1] == ITEM_SUBTYPE_UNIT)) {
 		sprintf(item_des, "%s %s"
 			, item_get_name(item, version, 0)
 			, get_unit_unsealable_bonus_describe(item)
@@ -675,7 +675,7 @@ char* get_item_unsealable_describe(const item_t* item, int version) {
 	else {
 		sprintf(item_des, "未解析物品 %s 0x%08X"
 			, item_get_name(item, version, 0)
-			, item->datal[0]
+			, item->data1l[0]
 		);
 	}
 

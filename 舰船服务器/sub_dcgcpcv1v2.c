@@ -90,9 +90,9 @@ int subcmd_send_lobby_item(lobby_t* l, subcmd_itemreq_t* req,
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.datal[0] = LE32(item[0]);
-    gen.data.item.datal[1] = LE32(item[1]);
-    gen.data.item.datal[2] = LE32(item[2]);
+    gen.data.item.data1l[0] = LE32(item[0]);
+    gen.data.item.data1l[1] = LE32(item[1]);
+    gen.data.item.data1l[2] = LE32(item[2]);
     gen.data.item.data2l = LE32(item[3]);
     gen.data.item2 = LE32(0x00000002);
 

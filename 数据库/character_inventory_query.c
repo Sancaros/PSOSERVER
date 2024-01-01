@@ -389,9 +389,9 @@ static int db_insert_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		"'%" PRIu32 "', '%" PRIu8 "'"
 		")",
 		CHARACTER_INVENTORY_ITEMS,
-		item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
-		item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
-		item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
+		item->data.data1b[0], item->data.data1b[1], item->data.data1b[2], item->data.data1b[3],
+		item->data.data1b[4], item->data.data1b[5], item->data.data1b[6], item->data.data1b[7],
+		item->data.data1b[8], item->data.data1b[9], item->data.data1b[10], item->data.data1b[11],
 		item->data.item_id,
 		item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
 		item_index, item->present, item->flags,
@@ -428,9 +428,9 @@ static int db_update_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		" WHERE "
 		"(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
 		CHARACTER_INVENTORY_ITEMS,
-		item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
-		item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
-		item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
+		item->data.data1b[0], item->data.data1b[1], item->data.data1b[2], item->data.data1b[3],
+		item->data.data1b[4], item->data.data1b[5], item->data.data1b[6], item->data.data1b[7],
+		item->data.data1b[8], item->data.data1b[9], item->data.data1b[10], item->data.data1b[11],
 		item->data.item_id,
 		item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
 		item->present, item->flags,
@@ -547,29 +547,29 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 			i++;
 			//DBG_LOG("0x%08X", inv->iitems[k].flags);
 
-			inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[4] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[4] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[5] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[5] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[6] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[6] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[7] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[7] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[8] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[8] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[9] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[9] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[10] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[10] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
-			inv->iitems[k].data.datab[11] = (uint8_t)strtoul(row[i], &endptr, 16);
+			inv->iitems[k].data.data1b[11] = (uint8_t)strtoul(row[i], &endptr, 16);
 			i++;
 
 			inv->iitems[k].data.item_id = (uint32_t)strtoul(row[i], &endptr, 16);
@@ -804,9 +804,9 @@ void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
 		inv->iitems[item_index].present = 0;
 		inv->iitems[item_index].flags = 0;
 
-		inv->iitems[item_index].data.datal[0] = 0;
-		inv->iitems[item_index].data.datal[1] = 0;
-		inv->iitems[item_index].data.datal[2] = 0;
+		inv->iitems[item_index].data.data1l[0] = 0;
+		inv->iitems[item_index].data.data1l[1] = 0;
+		inv->iitems[item_index].data.data1l[2] = 0;
 		inv->iitems[item_index].data.item_id = 0xFFFFFFFF;
 		inv->iitems[item_index].data.data2l = 0;
 	}

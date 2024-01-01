@@ -89,11 +89,11 @@ int subcmd_send_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, litem_t*
 
     bb.data = dc.data = litem->item;
 
-    if (litem->item.datab[0] == ITEM_TYPE_MESETA)
+    if (litem->item.data1b[0] == ITEM_TYPE_MESETA)
         bb.data.data2l = dc.data.data2l = litem->item.data2l;
 
     if (is_stackable(&litem->item))
-        bb.data.datab[5] = dc.data.datab[5] = litem->item.datab[5];
+        bb.data.data1b[5] = dc.data.data1b[5] = litem->item.data1b[5];
 
     bb.two = dc.two = LE32(0x00000002);
 
@@ -148,11 +148,11 @@ int subcmd_send_drop_stack_dc(ship_client_t* src,
 
     bb.data = dc.data = item;
 
-    if (item.datab[0] == ITEM_TYPE_MESETA)
+    if (item.data1b[0] == ITEM_TYPE_MESETA)
         bb.data.data2l = dc.data.data2l = item.data2l;
 
     if (is_stackable(&item))
-        bb.data.datab[5] = dc.data.datab[5] = item.datab[5];
+        bb.data.data1b[5] = dc.data.data1b[5] = item.data1b[5];
 
     bb.two = dc.two = LE32(0x00000002);
 
@@ -214,11 +214,11 @@ int subcmd_send_lobby_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, sh
 
     bb.data = dc.data = litem->item;
 
-    if (litem->item.datab[0] == ITEM_TYPE_MESETA)
+    if (litem->item.data1b[0] == ITEM_TYPE_MESETA)
         bb.data.data2l = dc.data.data2l = litem->item.data2l;
 
     if (is_stackable(&litem->item))
-        bb.data.datab[5] = dc.data.datab[5] = litem->item.datab[5];
+        bb.data.data1b[5] = dc.data.data1b[5] = litem->item.data1b[5];
 
     bb.two = dc.two = LE32(0x00000002);
 
@@ -281,11 +281,11 @@ int subcmd_send_lobby_drop_stack_dc(ship_client_t* src,
 
     bb.data = dc.data = item;
 
-    if (item.datab[0] == ITEM_TYPE_MESETA)
+    if (item.data1b[0] == ITEM_TYPE_MESETA)
         bb.data.data2l = dc.data.data2l = item.data2l;
 
     if (is_stackable(&item))
-        bb.data.datab[5] = dc.data.datab[5] = item.datab[5];
+        bb.data.data1b[5] = dc.data.data1b[5] = item.data1b[5];
 
     bb.two = dc.two = LE32(0x00000002);
 
@@ -352,13 +352,13 @@ int subcmd_send_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amo
     pkt.shdr.client_id = src->client_id;
 
     /* 填充剩余数据 */
-    memcpy(&pkt.item.datab[0], &item.datab[0], 12);
+    memcpy(&pkt.item.data1b[0], &item.data1b[0], 12);
     pkt.item.item_id = item.item_id;
 
-    if ((!is_stackable(&item)) || (item.datab[0] == ITEM_TYPE_MESETA))
+    if ((!is_stackable(&item)) || (item.data1b[0] == ITEM_TYPE_MESETA))
         pkt.item.data2l = item.data2l;
     else
-        pkt.item.datab[5] = (uint8_t)amount;
+        pkt.item.data1b[5] = (uint8_t)amount;
 
     /* 最后一个32位字节的初始化为0 未使用的*/
     pkt.unused2 = 0;
@@ -385,13 +385,13 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32
     pkt.shdr.client_id = src->client_id;
 
     /* 填充剩余数据 */
-    memcpy(&pkt.item.datab[0], &item.datab[0], 12);
+    memcpy(&pkt.item.data1b[0], &item.data1b[0], 12);
     pkt.item.item_id = item.item_id;
 
-    if ((!is_stackable(&item)) || (item.datab[0] == ITEM_TYPE_MESETA))
+    if ((!is_stackable(&item)) || (item.data1b[0] == ITEM_TYPE_MESETA))
         pkt.item.data2l = item.data2l;
     else
-        pkt.item.datab[5] = (uint8_t)amount;
+        pkt.item.data1b[5] = (uint8_t)amount;
 
     /* 最后一个32位字节的初始化为0 未使用的*/
     pkt.unused2 = 0;
@@ -471,8 +471,8 @@ int subcmd_send_lobby_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* charac
 
     if (drop) {
         item_t tmp_meseta = { 0 };
-        tmp_meseta.datal[0] = LE32(Item_Meseta);
-        tmp_meseta.datal[1] = tmp_meseta.datal[2] = 0;
+        tmp_meseta.data1l[0] = LE32(Item_Meseta);
+        tmp_meseta.data1l[1] = tmp_meseta.data1l[2] = 0;
         tmp_meseta.item_id = generate_item_id(l, c->client_id);
         tmp_meseta.data2l = amount;
 
@@ -525,9 +525,9 @@ int subcmd_send_lobby_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) 
     gen.data.z = req->z;
     gen.data.unk1 = LE32(0x00000010);
 
-    gen.data.item.datal[0] = LE32(c->new_item.datal[0]);
-    gen.data.item.datal[1] = LE32(c->new_item.datal[1]);
-    gen.data.item.datal[2] = LE32(c->new_item.datal[2]);
+    gen.data.item.data1l[0] = LE32(c->new_item.data1l[0]);
+    gen.data.item.data1l[1] = LE32(c->new_item.data1l[1]);
+    gen.data.item.data1l[2] = LE32(c->new_item.data1l[2]);
     gen.data.item.data2l = LE32(c->new_item.data2l);
     gen.data.item2 = LE32(0x00000002);
 
@@ -605,9 +605,9 @@ int subcmd_send_bb_drop_box_or_enemy_item(ship_client_t* dest, subcmd_bb_itemreq
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.datal[0] = LE32(item->datal[0]);
-    gen.data.item.datal[1] = LE32(item->datal[1]);
-    gen.data.item.datal[2] = LE32(item->datal[2]);
+    gen.data.item.data1l[0] = LE32(item->data1l[0]);
+    gen.data.item.data1l[1] = LE32(item->data1l[1]);
+    gen.data.item.data1l[2] = LE32(item->data1l[2]);
     gen.data.item.data2l = LE32(item->data2l);
 
     gen.data.item.item_id = LE32(item->item_id);
@@ -668,9 +668,9 @@ int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, co
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.datal[0] = LE32(item->datal[0]);
-    gen.data.item.datal[1] = LE32(item->datal[1]);
-    gen.data.item.datal[2] = LE32(item->datal[2]);
+    gen.data.item.data1l[0] = LE32(item->data1l[0]);
+    gen.data.item.data1l[1] = LE32(item->data1l[1]);
+    gen.data.item.data1l[2] = LE32(item->data1l[2]);
     gen.data.item.data2l = LE32(item->data2l);
 
     gen.data.item.item_id = LE32(item->item_id);
@@ -842,22 +842,22 @@ int subcmd_send_lobby_bb_level(ship_client_t* dest) {
     /* 增加MAG的升级奖励. */
     for (i = 0; i < character->inv.item_count; ++i) {
         if ((character->inv.iitems[i].flags & EQUIP_FLAGS) &&
-            character->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
+            character->inv.iitems[i].data.data1b[0] == ITEM_TYPE_MAG) {
             item_t* item = &character->inv.iitems[i].data;
             base = LE16(pkt.dfp);
-            mag = LE16(item->dataw[2]) / 100;
+            mag = LE16(item->data1w[2]) / 100;
             pkt.dfp = LE16((base + mag));
 
             base = LE16(pkt.atp);
-            mag = LE16(item->dataw[3]) / 50;
+            mag = LE16(item->data1w[3]) / 50;
             pkt.atp = LE16((base + mag));
 
             base = LE16(pkt.ata);
-            mag = LE16(item->dataw[4]) / 200;
+            mag = LE16(item->data1w[4]) / 200;
             pkt.ata = LE16((base + mag));
 
             base = LE16(pkt.mst);
-            mag = LE16(item->dataw[5]) / 50;
+            mag = LE16(item->data1w[5]) / 50;
             pkt.mst = LE16((base + mag));
 
             break;

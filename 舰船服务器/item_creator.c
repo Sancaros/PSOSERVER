@@ -55,15 +55,15 @@ void deduplicate_weapon_bonuses(item_t* item) {
 
 	for (x = 0; x < 6; x += 2) {
 		for (y = 0; y < x; y += 2) {
-			if (item->datab[y + 6] == 0x00) {
-				item->datab[x + 6] = 0x00;
+			if (item->data1b[y + 6] == 0x00) {
+				item->data1b[x + 6] = 0x00;
 			}
-			else if (item->datab[x + 6] == item->datab[y + 6]) {
-				item->datab[x + 6] = 0x00;
+			else if (item->data1b[x + 6] == item->data1b[y + 6]) {
+				item->data1b[x + 6] = 0x00;
 			}
 		}
-		if (item->datab[x + 6] == 0x00) {
-			item->datab[x + 7] = 0x00;
+		if (item->data1b[x + 6] == 0x00) {
+			item->data1b[x + 7] = 0x00;
 		}
 	}
 }
@@ -122,15 +122,15 @@ uint8_t get_rand_from_weighted_tables_2d_vertical(sfmt_t* rng,
 
 void generate_common_weapon_bonuses(sfmt_t* rng,
 	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
-	if (item->datab[0] == ITEM_TYPE_WEAPON) {
+	if (item->data1b[0] == ITEM_TYPE_WEAPON) {
 		for (size_t row = 0; row < 3; row++) {
 			uint8_t spec = ent->nonrare_bonus_prob_spec[row][area_norm];
 			if (spec != 0xFF) {
-				item->datab[(row * 2) + 6] = get_rand_from_weighted_tables_2d_vertical(rng,
+				item->data1b[(row * 2) + 6] = get_rand_from_weighted_tables_2d_vertical(rng,
 					ent->bonus_type_prob_tables, area_norm, 6, 10);
 				int16_t amount = get_rand_from_weighted_tables_2d_vertical(rng,
 					ent->bonus_value_prob_tables, spec, 23, 6);
-				item->datab[(row * 2) + 7] = amount * 5 - 10;
+				item->data1b[(row * 2) + 7] = amount * 5 - 10;
 			}
 			// Note: The original code has a special case here, which divides
 			// item->datab[z + 7] by 5 and multiplies it by 5 again if bonus_type is 5
@@ -143,14 +143,14 @@ void generate_common_weapon_bonuses(sfmt_t* rng,
 
 void generate_seal_weapon_extra_bonuses(sfmt_t* rng,
 	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
-	if (item->datab[0] == ITEM_TYPE_WEAPON) {
+	if (item->data1b[0] == ITEM_TYPE_WEAPON) {
 		uint8_t spec = ent->nonrare_bonus_prob_spec[2][area_norm];
 		if (spec != 0xFF) {
-			item->datab[10] = get_rand_from_weighted_tables_2d_vertical(rng,
+			item->data1b[10] = get_rand_from_weighted_tables_2d_vertical(rng,
 				ent->bonus_type_prob_tables, area_norm, 6, 10);
 			int16_t amount = get_rand_from_weighted_tables_2d_vertical(rng,
 				ent->bonus_value_prob_tables, spec, 23, 6);
-			item->datab[11] = amount * 5 - 10;
+			item->data1b[11] = amount * 5 - 10;
 		}
 		deduplicate_weapon_bonuses(item);
 	}
@@ -158,16 +158,16 @@ void generate_seal_weapon_extra_bonuses(sfmt_t* rng,
 
 void generate_common_weapon_grind(sfmt_t* rng,
 	item_t* item, uint8_t offset_within_subtype_range, pt_bb_entry_t* ent) {
-	if (item->datab[0] == ITEM_TYPE_WEAPON) {
+	if (item->data1b[0] == ITEM_TYPE_WEAPON) {
 		uint8_t offset = (uint8_t)clamp(offset_within_subtype_range, 0, 3);
-		item->datab[3] = get_rand_from_weighted_tables_2d_vertical(rng,
+		item->data1b[3] = get_rand_from_weighted_tables_2d_vertical(rng,
 			ent->grind_prob_tables, offset, 9, 4);
 	}
 }
 
 void generate_common_weapon_special(sfmt_t* rng,
 	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
-	if (item->datab[0] != ITEM_TYPE_WEAPON) {
+	if (item->data1b[0] != ITEM_TYPE_WEAPON) {
 		return;
 	}
 	if (is_item_rare(item)) {
@@ -180,13 +180,13 @@ void generate_common_weapon_special(sfmt_t* rng,
 	if (rand_int(rng, 100) >= ent->special_percent[area_norm]) {
 		return;
 	}
-	item->datab[4] = choose_weapon_special(rng, 
+	item->data1b[4] = choose_weapon_special(rng, 
 		special_mult * (uint8_t)rand_float_0_1_from_crypt(rng));
 }
 
 void generate_common_weapon_variances(lobby_t* l, sfmt_t* rng, uint8_t area_norm, item_t* item, pt_bb_entry_t* ent) {
 	clear_inv_item(item);
-	item->datab[0] = ITEM_TYPE_WEAPON;
+	item->data1b[0] = ITEM_TYPE_WEAPON;
 
 	uint8_t weapon_type_prob_table[0x0D] = { 0 };
 	weapon_type_prob_table[0] = 0;
@@ -199,20 +199,20 @@ void generate_common_weapon_variances(lobby_t* l, sfmt_t* rng, uint8_t area_norm
 		}
 	}
 
-	item->datab[1] = get_rand_from_weighted_tables_1d(rng, weapon_type_prob_table, 13);
-	if (item->datab[1] == 0) {
+	item->data1b[1] = get_rand_from_weighted_tables_1d(rng, weapon_type_prob_table, 13);
+	if (item->data1b[1] == 0) {
 		clear_inv_item(item);
 	}
 	else {
-		int8_t subtype_base = ent->subtype_base_table[item->datab[1] - 1];
-		uint8_t area_length = ent->subtype_area_length_table[item->datab[1] - 1];
+		int8_t subtype_base = ent->subtype_base_table[item->data1b[1] - 1];
+		uint8_t area_length = ent->subtype_area_length_table[item->data1b[1] - 1];
 		if (subtype_base < 0) {
-			item->datab[2] = (area_norm + subtype_base) / area_length;
+			item->data1b[2] = (area_norm + subtype_base) / area_length;
 			generate_common_weapon_grind(rng,
-				item, (area_norm + subtype_base) - (item->datab[2] * area_length), ent);
+				item, (area_norm + subtype_base) - (item->data1b[2] * area_length), ent);
 		}
 		else {
-			item->datab[2] = subtype_base + (area_norm / area_length);
+			item->data1b[2] = subtype_base + (area_norm / area_length);
 			generate_common_weapon_grind(rng,
 				item, area_norm - (area_norm / area_length) * area_length, ent);
 		}
@@ -240,23 +240,23 @@ uint32_t choose_meseta_amount(sfmt_t* rng,
 }
 
 void generate_common_armor_slot_count(sfmt_t* rng, item_t* item, pt_bb_entry_t* ent) {
-	item->datab[5] = get_rand_from_weighted_tables_1d(rng, ent->armor_slot_count_prob_table, 5);
+	item->data1b[5] = get_rand_from_weighted_tables_1d(rng, ent->armor_slot_count_prob_table, 5);
 }
 
 void generate_common_armor_slots_and_bonuses(sfmt_t* rng, item_t* item, pt_bb_entry_t* ent) {
 	/* ¼ì²âÎïÆ·ÊÇ·ñÊôÓÚ¿ø¼× */
-	if ((item->datab[0] != ITEM_TYPE_GUARD) || (item->datab[1] < ITEM_SUBTYPE_FRAME) || (item->datab[1] > ITEM_SUBTYPE_BARRIER)) {
+	if ((item->data1b[0] != ITEM_TYPE_GUARD) || (item->data1b[1] < ITEM_SUBTYPE_FRAME) || (item->data1b[1] > ITEM_SUBTYPE_BARRIER)) {
 		return;
 	}
 
-	if (item->datab[1] == ITEM_SUBTYPE_FRAME) {
+	if (item->data1b[1] == ITEM_SUBTYPE_FRAME) {
 		generate_common_armor_slot_count(rng, item, ent);
 	}
 
 	pmt_guard_bb_t def;
 	errno_t err = 0;
-	if (err = pmt_lookup_guard_bb(item->datal[0], &def)) {
-		ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item->datal[0]);
+	if (err = pmt_lookup_guard_bb(item->data1l[0], &def)) {
+		ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item->data1l[0]);
 		return;
 	}
 	set_armor_or_shield_defense_bonus(item, (int16_t)(def.dfp_range * rand_float_0_1_from_crypt(rng)));
@@ -269,7 +269,7 @@ void generate_common_armor_or_shield_type_and_variances(sfmt_t* rng,
 
 	uint8_t type = get_rand_from_weighted_tables_1d(rng,
 		ent->armor_shield_type_index_prob_table, 5);
-	item->datab[2] = area_norm + type + ent->armor_level;
+	item->data1b[2] = area_norm + type + ent->armor_level;
 
 	//DBG_LOG("0x%02X", item->datab[2]);
 	////if (item->datab[2] < 3) {
@@ -287,8 +287,8 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 		return;
 	}
 	clear_inv_item(item);
-	item->datab[0] = ITEM_TYPE_GUARD;
-	item->datab[1] = ITEM_SUBTYPE_UNIT;
+	item->data1b[0] = ITEM_TYPE_GUARD;
+	item->data1b[1] = ITEM_SUBTYPE_UNIT;
 
 	// Note: The original code calls generate_unit_weights_table1 here (which we
 	// have inlined into generate_unit_weights_tables above). This call seems
@@ -312,13 +312,13 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 		else {
 			if (z > 0x4F) {
 				if (det <= 0x87) {
-					item->datab[2] = (uint8_t)(z + 0xC0);
+					item->data1b[2] = (uint8_t)(z + 0xC0);
 				}
 			}
 			else {
-				item->datab[2] = (uint8_t)(z / 5);
+				item->data1b[2] = (uint8_t)(z / 5);
 				pmt_unit_bb_t def;
-				pmt_lookup_unit_bb(item->datab[2], &def);
+				pmt_lookup_unit_bb(item->data1b[2], &def);
 				switch (z % 5) {
 				case 0:
 					set_unit_bonus(item, -(def.pm_range * 2));
@@ -342,9 +342,9 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 }
 
 void generate_common_mag_variances(item_t* item, uint8_t color) {
-	if (item->datab[0] == ITEM_TYPE_MAG) {
+	if (item->data1b[0] == ITEM_TYPE_MAG) {
 		/* µôÂä¿Õ°×³õÊ¼Âê¹Å */
-		item->datab[1] = 0x00;
+		item->data1b[1] = 0x00;
 		magitemstat_t stats;
 		ItemMagStats_init(&stats, color);
 		assign_mag_stats(item, &stats);
@@ -357,9 +357,9 @@ void generate_common_tool_type(uint8_t tool_class, item_t* item) {
 #ifdef DEBUG
 		ERR_LOG("ÎŞĞ§ÎïÆ·Àà±ğ %d", tool_class);
 #endif // DEBUG
-		item->datab[0] = ITEM_TYPE_TOOL;
-		item->datab[1] = data[0];
-		item->datab[2] = data[1];
+		item->data1b[0] = ITEM_TYPE_TOOL;
+		item->data1b[1] = data[0];
+		item->data1b[2] = data[1];
 	}
 }
 
@@ -391,12 +391,12 @@ void generate_common_tool_variances(sfmt_t* rng, uint32_t area_norm, item_t* ite
 
 	generate_common_tool_type(tool_class, item);
 
-	if (!item_not_identification_bb(item->datal[0], item->datal[1])) {
+	if (!item_not_identification_bb(item->data1l[0], item->data1l[1])) {
 		// ·¨Êõ¹âÅÌ
-		if (item->datab[1] == ITEM_SUBTYPE_DISK) {
-			item->datab[4] = get_rand_from_weighted_tables_2d_vertical(rng,
+		if (item->data1b[1] == ITEM_SUBTYPE_DISK) {
+			item->data1b[4] = get_rand_from_weighted_tables_2d_vertical(rng,
 				ent->technique_index_prob_table, area_norm, 19, 10);
-			item->datab[2] = generate_tech_disk_level(rng, item->datab[4], area_norm, ent);
+			item->data1b[2] = generate_tech_disk_level(rng, item->data1b[4], area_norm, ent);
 			clear_tool_item_if_invalid(item);
 		}
 		get_item_amount(item, 1);
@@ -512,17 +512,17 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 		// Forbid HP/TP-restoring units and meseta in challenge mode
 		// Note: PSO GC doesn't check for 0x61 or 0x62 here since those items
 		// (HP/Resurrection and TP/Resurrection) only exist on BB.
-		if (item->datab[0] == ITEM_TYPE_GUARD) {
-			if ((item->datab[1] == ITEM_SUBTYPE_UNIT) &&
-				(((item->datab[2] >= 0x33) && (item->datab[2] <= 0x38)) || 
-					(item->datab[2] == 0x61) || 
-					(item->datab[2] == 0x62))) {
+		if (item->data1b[0] == ITEM_TYPE_GUARD) {
+			if ((item->data1b[1] == ITEM_SUBTYPE_UNIT) &&
+				(((item->data1b[2] >= 0x33) && (item->data1b[2] <= 0x38)) || 
+					(item->data1b[2] == 0x61) || 
+					(item->data1b[2] == 0x62))) {
 				ERR_LOG("Restricted: restore units not allowed in Challenge mode");
 				clear_inv_item(item);
 				return;
 			}
 		}
-		else if (item->datab[0] == ITEM_TYPE_MESETA) {
+		else if (item->data1b[0] == ITEM_TYPE_MESETA) {
 			ERR_LOG("Restricted: meseta not allowed in Challenge mode");
 			clear_inv_item(item);
 			return;
@@ -530,7 +530,7 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 	}
 
 	if (restrictions) {
-		switch (item->datab[0]) {
+		switch (item->data1b[0]) {
 		case ITEM_TYPE_WEAPON:
 		case ITEM_TYPE_GUARD:
 			switch (restrictions->weapon_and_armor_mode) {
@@ -568,7 +568,7 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 				ERR_LOG("Restricted: tools not allowed");
 				clear_inv_item(item);
 			}
-			else if (item->datab[1] == ITEM_SUBTYPE_DISK) {
+			else if (item->data1b[1] == ITEM_SUBTYPE_DISK) {
 				switch (restrictions->tech_disk_mode) {
 				case TECH_DISK_MODE_ALLOW:
 					break;
@@ -580,10 +580,10 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 					ERR_LOG("Restricted: tech disk level limited to %hhu",
 						(uint8_t)(restrictions->max_tech_level + 1));
 					if (restrictions->max_tech_level == 0) {
-						item->datab[2] = 0;
+						item->data1b[2] = 0;
 					}
 					else {
-						item->datab[2] %= restrictions->max_tech_level;
+						item->data1b[2] %= restrictions->max_tech_level;
 					}
 					break;
 				default:
@@ -591,7 +591,7 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 					return;
 				}
 			}
-			else if ((item->datab[1] == ITEM_SUBTYPE_SCAPE_DOLL) && restrictions->forbid_scape_dolls) {
+			else if ((item->data1b[1] == ITEM_SUBTYPE_SCAPE_DOLL) && restrictions->forbid_scape_dolls) {
 				ERR_LOG("Restricted: scape dolls not allowed");
 				clear_inv_item(item);
 			}
@@ -612,13 +612,13 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 }
 
 void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area, item_t* item, pt_bb_entry_t* ent) {
-	switch (item->datab[0]) {
+	switch (item->data1b[0]) {
 	case ITEM_TYPE_WEAPON:
 		generate_common_weapon_variances(l, rng, norm_area, item, ent);
 		break;
 
 	case ITEM_TYPE_GUARD:
-		switch (item->datab[1]) {
+		switch (item->data1b[1]) {
 		case ITEM_SUBTYPE_FRAME:
 		case ITEM_SUBTYPE_BARRIER:
 			generate_common_armor_or_shield_type_and_variances(rng, norm_area, item, ent);
@@ -628,7 +628,7 @@ void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area,
 			float f1 = (float)(1.0 + ent->unit_maxes[norm_area]);
 			float f2 = rand_float_0_1_from_crypt(rng);
 			generate_common_unit_variances(rng, (uint32_t)(f1 * f2) & 0xFF, item);
-			if (item->datab[2] == 0xFF) {
+			if (item->data1b[2] == 0xFF) {
 				clear_inv_item(item);
 			}
 			break;
@@ -651,7 +651,7 @@ void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area,
 		// Note: The original code does the following here:
 		// clear_inv_item(&item);
 		// item->datab[0] = 0x05;
-		ERR_LOG("%s µôÂäÎŞĞ§ÎïÆ·ÀàĞÍ 0x%02X", get_lobby_leader_describe(l), item->datab[0]);
+		ERR_LOG("%s µôÂäÎŞĞ§ÎïÆ·ÀàĞÍ 0x%02X", get_lobby_leader_describe(l), item->data1b[0]);
 	}
 
 	clear_item_if_restricted(l, item);
@@ -659,7 +659,7 @@ void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area,
 }
 
 void generate_rare_weapon_bonuses(sfmt_t* rng, pt_bb_entry_t* ent, item_t* item, uint32_t random_sample) {
-	if (item->datab[0] != ITEM_TYPE_WEAPON) {
+	if (item->data1b[0] != ITEM_TYPE_WEAPON) {
 		return;
 	}
 
@@ -668,8 +668,8 @@ void generate_rare_weapon_bonuses(sfmt_t* rng, pt_bb_entry_t* ent, item_t* item,
 			ent->bonus_type_prob_tables, random_sample, 6, 10);
 		int16_t bonus_value = get_rand_from_weighted_tables_2d_vertical(rng,
 			ent->bonus_value_prob_tables, 5, 23, 6);
-		item->datab[z + 6] = bonus_type;
-		item->datab[z + 7] = bonus_value * 5 - 10;
+		item->data1b[z + 6] = bonus_type;
+		item->data1b[z + 7] = bonus_value * 5 - 10;
 		// Note: The original code has a special case here, which divides
 		// item->datab[z + 7] by 5 and multiplies it by 5 again if bonus_type is 5
 		// (Hit). Why this is done is unclear, because item->datab[z + 7] must
@@ -697,7 +697,7 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 		else
 			new_rare_rate = orignal_rare_rate * (1 + l->monster_rare_drop_mult);
 
-		DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, orignal_rare_rate, new_rare_rate);
+		//DBG_LOG("drop_rare %lf probability %lf %lf", drop_rare, orignal_rare_rate, new_rare_rate);
 
 		if (drop_rare >= new_rare_rate) {
 #ifdef DBG_RARE_ITEM_PROC
@@ -714,12 +714,12 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 #endif // DBG_RARE_ITEM_PROC
 	}
 
-	item.datab[0] = drop.item_code[0];
-	item.datab[1] = drop.item_code[1];
-	item.datab[2] = drop.item_code[2];
+	item.data1b[0] = drop.item_code[0];
+	item.data1b[1] = drop.item_code[1];
+	item.data1b[2] = drop.item_code[2];
 	/* ÔÙ´Î¼ì²âÎïÆ·ÊÇ·ñ´æÔÚ */
 	if (!is_item_empty(&item)) {
-		switch (item.datab[0]) {
+		switch (item.data1b[0]) {
 		case ITEM_TYPE_WEAPON:
 			generate_rare_weapon_bonuses(rng, ent, &item, rand_int(rng, 10));
 			set_item_identified_flag(l->challenge, &item);
@@ -796,25 +796,25 @@ item_t on_box_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 		/* ¶şÎ¬±í Ô­Ê¼±í¸ñ XÖá 7ÁĞ YÖá 10ĞĞ*/
 		switch (item_class) {
 		case BOX_TYPE_WEAPON: // ÎäÆ÷
-			item.datab[0] = ITEM_TYPE_WEAPON;
+			item.data1b[0] = ITEM_TYPE_WEAPON;
 			break;
 		case BOX_TYPE_ARMOR: // ¿ø¼×
-			item.datab[0] = ITEM_TYPE_GUARD;
-			item.datab[1] = ITEM_SUBTYPE_FRAME;
+			item.data1b[0] = ITEM_TYPE_GUARD;
+			item.data1b[1] = ITEM_SUBTYPE_FRAME;
 			break;
 		case BOX_TYPE_SHIELD: // ¶ÜÅÆ
-			item.datab[0] = ITEM_TYPE_GUARD;
-			item.datab[1] = ITEM_SUBTYPE_BARRIER;
+			item.data1b[0] = ITEM_TYPE_GUARD;
+			item.data1b[1] = ITEM_SUBTYPE_BARRIER;
 			break;
 		case BOX_TYPE_UNIT: // ²å¼ş
-			item.datab[0] = ITEM_TYPE_GUARD;
-			item.datab[1] = ITEM_SUBTYPE_UNIT;
+			item.data1b[0] = ITEM_TYPE_GUARD;
+			item.data1b[1] = ITEM_SUBTYPE_UNIT;
 			break;
 		case BOX_TYPE_TOOL: // ¹¤¾ß
-			item.datab[0] = ITEM_TYPE_TOOL;
+			item.data1b[0] = ITEM_TYPE_TOOL;
 			break;
 		case BOX_TYPE_MESETA: // ÃÀÈüËş
-			item.datab[0] = ITEM_TYPE_MESETA;
+			item.data1b[0] = ITEM_TYPE_MESETA;
 			break;
 		case BOX_TYPE_NOTHING: // ÎŞµôÂä
 			break;
@@ -932,32 +932,32 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 
 		switch (item_class) {
 		case ENEMY_TYPE_WEAPON: // Weapon
-			item.datab[0] = ITEM_TYPE_WEAPON;
+			item.data1b[0] = ITEM_TYPE_WEAPON;
 			break;
 		case ENEMY_TYPE_ARMOR: // Armor
-			item.datab[0] = ITEM_TYPE_GUARD;
-			item.datab[1] = ITEM_SUBTYPE_FRAME;
+			item.data1b[0] = ITEM_TYPE_GUARD;
+			item.data1b[1] = ITEM_SUBTYPE_FRAME;
 			break;
 		case ENEMY_TYPE_SHIELD: // Shield
-			item.datab[0] = ITEM_TYPE_GUARD;
-			item.datab[1] = ITEM_SUBTYPE_BARRIER;
+			item.data1b[0] = ITEM_TYPE_GUARD;
+			item.data1b[1] = ITEM_SUBTYPE_BARRIER;
 			break;
 		case ENEMY_TYPE_UNIT: // Unit
-			item.datab[0] = ITEM_TYPE_GUARD;
-			item.datab[1] = ITEM_SUBTYPE_UNIT;
+			item.data1b[0] = ITEM_TYPE_GUARD;
+			item.data1b[1] = ITEM_SUBTYPE_UNIT;
 			break;
 		case ENEMY_TYPE_TOOL: // Tool
-			item.datab[0] = ITEM_TYPE_TOOL;
+			item.data1b[0] = ITEM_TYPE_TOOL;
 			break;
 		case ENEMY_TYPE_MESETA: // Meseta
-			item.datab[0] = ITEM_TYPE_MESETA;
+			item.data1b[0] = ITEM_TYPE_MESETA;
 			item.data2l = choose_meseta_amount(rng, ent->enemy_meseta_ranges, enemy_type) & 0xFFFF;
 			break;
 		default:
 			return item;
 		}
 
-		if (item.datab[0] != ITEM_TYPE_MESETA) {
+		if (item.data1b[0] != ITEM_TYPE_MESETA) {
 			generate_common_item_variances(l, rng, norm_area, &item, ent);
 		}
 	}
@@ -987,28 +987,28 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 	static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 	item_t item = { 0 };
 	int8_t tmp_value = 0;
-	item.datab[0] = ÎïÆ·ÀàĞÍ;
+	item.data1b[0] = ÎïÆ·ÀàĞÍ;
 	errno_t err = 0;
 	uint8_t ÄÑ¶È = l->difficulty, ÕÂ½Ú = l->episode, ÌôÕ½ = l->challenge;
 
 	/* ¼ìË÷ÎïÆ·ÀàĞÍ */
-	switch (item.datab[0]) {
+	switch (item.data1b[0]) {
 	case ITEM_TYPE_WEAPON: // ÎäÆ÷
-		item.datab[1] = rand_int(Ëæ»úÒò×Ó, 12) + 1; /* 01 - 0C ÆÕÍ¨ÎäÆ÷ÎïÆ·*/
+		item.data1b[1] = rand_int(Ëæ»úÒò×Ó, 12) + 1; /* 01 - 0C ÆÕÍ¨ÎäÆ÷ÎïÆ·*/
 
 			/* 9 ÒÔÏÂ¶¼ÊÇ 0/1 + ÄÑ¶È 9ÒÔÉÏÔò 0-3£¨ÄÑ¶È£©ÀàĞÍID*/
-		if (item.datab[1] > 9) {
-			item.datab[2] = ÄÑ¶È;
+		if (item.data1b[1] > 9) {
+			item.data1b[2] = ÄÑ¶È;
 		}
 		else
-			item.datab[2] = rand_int(Ëæ»úÒò×Ó, 2) + ÄÑ¶È; /* ÄÑ¶È×î´óÖµ 3 Ôö¼ÓÖµ 0 1 2 */
+			item.data1b[2] = rand_int(Ëæ»úÒò×Ó, 2) + ÄÑ¶È; /* ÄÑ¶È×î´óÖµ 3 Ôö¼ÓÖµ 0 1 2 */
 
 		/* ´òÄ¥Öµ 0 - 10*/
-		int8_t subtype_base = ent->subtype_base_table[item.datab[1] - 1];
-		uint8_t area_length = ent->subtype_area_length_table[item.datab[1] - 1];
+		int8_t subtype_base = ent->subtype_base_table[item.data1b[1] - 1];
+		uint8_t area_length = ent->subtype_area_length_table[item.data1b[1] - 1];
 		if (subtype_base < 0) {
 			generate_common_weapon_grind(Ëæ»úÒò×Ó,
-				&item, (normarea + subtype_base) - (item.datab[2] * area_length), ent);
+				&item, (normarea + subtype_base) - (item.data1b[2] * area_length), ent);
 		}
 		else {
 			generate_common_weapon_grind(Ëæ»úÒò×Ó,
@@ -1016,7 +1016,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 		}
 
 		/* ÌØÊâ¹¥»÷ 0 - 12 ÅäºÏÇøÓò 0 - 3*/
-		item.datab[4] = generate_weapon_special(ent, normarea, Ëæ»úÒò×Ó);
+		item.data1b[4] = generate_weapon_special(ent, normarea, Ëæ»úÒò×Ó);
 		set_item_identified_flag(l->challenge, &item);
 
 		/* datab[5] ÔÚÕâÀï²»Éæ¼° ÀñÎï Î´¼ø¶¨*/
@@ -1030,7 +1030,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 				uint32_t r = rand_int(Ëæ»úÒò×Ó, 6);
 				if (r == 1) {
 					/*+6 ¶ÔÓ¦ÊôĞÔ²Û£¨½á¹û·Ö±ğÎª 6 8 10£© +7¶ÔÓ¦ÊıÖµ£¨½á¹û·Ö±ğÎª Ëæ»úÊı1-20 1-35 1-45 1-50£©*/
-					item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
+					item.data1b[(num_percentages * 2) + 6] = (uint8_t)x;
 					tmp_value = /*sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 6 +*/ weapon_bonus_values[sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 21];/* 0 - 5 % 0 - 19*/
 
 					//if (tmp_value > 50)
@@ -1039,7 +1039,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 					//if (tmp_value < -50)
 					//	tmp_value = -50;
 
-					item.datab[(num_percentages * 2) + 7] = tmp_value;
+					item.data1b[(num_percentages * 2) + 7] = tmp_value;
 					num_percentages++;
 				}
 			}
@@ -1050,18 +1050,18 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 	case ITEM_TYPE_GUARD: // ×°¼×
 		pmt_guard_bb_t pmt_guard = { 0 };
 		pmt_unit_bb_t pmt_unit = { 0 };
-		item.datab[1] = 0;
+		item.data1b[1] = 0;
 
 		/* ±ØĞëÊÇ1»ò2 ¶ÔÓ¦»¤¼×»òÕß»¤¶Ü*/
-		while (item.datab[1] == 0)
-			item.datab[1] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) & 3;
+		while (item.data1b[1] == 0)
+			item.data1b[1] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) & 3;
 
-		switch (item.datab[1]) {
+		switch (item.data1b[1]) {
 		case ITEM_SUBTYPE_FRAME://»¤¼×
 			/*»¤¼×ÎïÆ·×ÓÀàĞÍ*/
-			item.datab[2] = get_common_frame_subtype_range_for_difficult(ÄÑ¶È, 0x06, Ëæ»úÒò×Ó); /* 0x00 - 0x17 ÆÕÍ¨¿ø¼× ËæÄÑ¶ÈÌáÉıµôÂäÎïÆ·ÀàĞÍ */
-			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-				ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.datal[0]);
+			item.data1b[2] = get_common_frame_subtype_range_for_difficult(ÄÑ¶È, 0x06, Ëæ»úÒò×Ó); /* 0x00 - 0x17 ÆÕÍ¨¿ø¼× ËæÄÑ¶ÈÌáÉıµôÂäÎïÆ·ÀàĞÍ */
+			if (err = pmt_lookup_guard_bb(item.data1l[0], &pmt_guard)) {
+				ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.data1l[0]);
 				break;
 			}
 
@@ -1085,9 +1085,9 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 		case ITEM_SUBTYPE_BARRIER://»¤¶Ü 0 - 20 
 
 			/*»¤¶ÜÎïÆ·×ÓÀàĞÍ*/
-			item.datab[2] = get_common_barrier_subtype_range_for_difficult(ÄÑ¶È, 0x06, Ëæ»úÒò×Ó); /* 0x00 - 0x14 ÆÕÍ¨»¤¶Ü*/
-			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-				ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.datal[0]);
+			item.data1b[2] = get_common_barrier_subtype_range_for_difficult(ÄÑ¶È, 0x06, Ëæ»úÒò×Ó); /* 0x00 - 0x14 ÆÕÍ¨»¤¶Ü*/
+			if (err = pmt_lookup_guard_bb(item.data1l[0], &pmt_guard)) {
+				ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.data1l[0]);
 				break;
 			}
 
@@ -1107,14 +1107,14 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 			break;
 
 		case ITEM_SUBTYPE_UNIT://²å¼ş ²»Éú³É´øÊôĞÔµÄ Ê¡µÄÂé·³ TODO ÒÔºóÔÙ×ö¸üÏêÏ¸µÄ
-			item.datab[2] = get_common_random_unit_subtype_value(ÄÑ¶È, Ëæ»úÒò×Ó);
-			if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
-				ERR_LOG("pmt_lookup_unit_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.datal[0]);
+			item.data1b[2] = get_common_random_unit_subtype_value(ÄÑ¶È, Ëæ»úÒò×Ó);
+			if (err = pmt_lookup_unit_bb(item.data1l[0], &pmt_unit)) {
+				ERR_LOG("pmt_lookup_unit_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.data1l[0]);
 				break;
 			}
 
 			pmt_unit_bb_t def;
-			pmt_lookup_unit_bb(item.datab[2], &def);
+			pmt_lookup_unit_bb(item.data1b[2], &def);
 			switch (rand_int(Ëæ»úÒò×Ó, 5)) {
 			case 0:
 				set_unit_bonus(&item, -(def.pm_range * 2));
@@ -1142,41 +1142,41 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 		break;
 
 	case ITEM_TYPE_TOOL: // Ò©Æ·¹¤¾ß
-		item.datab[1] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 12;
-		switch (item.datab[1]) {
+		item.data1b[1] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 12;
+		switch (item.data1b[1]) {
 		case ITEM_SUBTYPE_MATE:
 		case ITEM_SUBTYPE_FLUID:
 			switch (ÄÑ¶È) {
 			case GAME_TYPE_DIFFICULTY_NORMAL:
-				item.datab[2] = 0;
-				item.datab[5] = get_item_amount(&item, 1);
+				item.data1b[2] = 0;
+				item.data1b[5] = get_item_amount(&item, 1);
 				break;
 
 			case GAME_TYPE_DIFFICULTY_HARD:
-				item.datab[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2;
-				item.datab[5] = get_item_amount(&item, 1);
+				item.data1b[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2;
+				item.data1b[5] = get_item_amount(&item, 1);
 				break;
 
 			case GAME_TYPE_DIFFICULTY_VERY_HARD:
-				item.datab[2] = (sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2) + 1;
-				item.datab[5] = get_item_amount(&item, 1);
+				item.data1b[2] = (sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2) + 1;
+				item.data1b[5] = get_item_amount(&item, 1);
 				break;
 
 			case GAME_TYPE_DIFFICULTY_ULTIMATE:
-				item.datab[2] = 2;
-				item.datab[5] = get_item_amount(&item, 1);
+				item.data1b[2] = 2;
+				item.data1b[5] = get_item_amount(&item, 1);
 				break;
 			}
 			break;
 
 		case ITEM_SUBTYPE_ANTI_TOOL:
-			item.datab[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2;
-			item.datab[5] = get_item_amount(&item, 1);
+			item.data1b[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2;
+			item.data1b[5] = get_item_amount(&item, 1);
 			break;
 
 		case ITEM_SUBTYPE_GRINDER:
-			item.datab[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 3;
-			item.datab[5] = get_item_amount(&item, 1);
+			item.data1b[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 3;
+			item.data1b[5] = get_item_amount(&item, 1);
 			break;
 
 			//case ITEM_SUBTYPE_MATERIAL:
@@ -1184,14 +1184,14 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 			//    break;
 
 		case ITEM_SUBTYPE_DISK:
-			item.datab[4] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 19;
-			switch (item.datab[4]) {
+			item.data1b[4] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 19;
+			switch (item.data1b[4]) {
 			case TECHNIQUE_RYUKER:
 			case TECHNIQUE_REVERSER:
-				item.datab[2] = 0; // reverser & ryuker always level 1 ÕâÁ½¸ö·¨ÊõÓÀÔ¶ÊÇ1¼¶
+				item.data1b[2] = 0; // reverser & ryuker always level 1 ÕâÁ½¸ö·¨ÊõÓÀÔ¶ÊÇ1¼¶
 				break;
 			case TECHNIQUE_ANTI:
-				item.datab[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % max_anti_lvl[ÄÑ¶È];
+				item.data1b[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % max_anti_lvl[ÄÑ¶È];
 				break;
 			case TECHNIQUE_FOIE:
 			case TECHNIQUE_GIFOIE:
@@ -1209,7 +1209,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 			case TECHNIQUE_SHIFTA:
 			case TECHNIQUE_RESTA:
 			case TECHNIQUE_MEGID:
-				item.datab[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % max_tech_lvl[ÄÑ¶È];
+				item.data1b[2] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % max_tech_lvl[ÄÑ¶È];
 				break;
 			}
 			break;
@@ -1222,7 +1222,7 @@ item_t create_common_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ëæ»úÒò×
 		case ITEM_SUBTYPE_TELEPIPE:
 		case ITEM_SUBTYPE_TRAP_VISION:
 		case ITEM_SUBTYPE_PHOTON:
-			item.datab[5] = get_item_amount(&item, 1);
+			item.data1b[5] = get_item_amount(&item, 1);
 			break;
 		}
 	}
@@ -1237,33 +1237,33 @@ item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ë
 	uint8_t ÄÑ¶È = l->difficulty, ÕÂ½Ú = l->episode, ÌôÕ½ = l->challenge;
 	clear_inv_item(&item);
 
-	item.datab[0] = (def0 >> 0x18) & 0x0F;
-	item.datab[1] = (def0 >> 0x10) + ((item.datab[0] == ITEM_TYPE_WEAPON) || (item.datab[0] == ITEM_TYPE_GUARD));
-	item.datab[2] = (def0 >> 8);
+	item.data1b[0] = (def0 >> 0x18) & 0x0F;
+	item.data1b[1] = (def0 >> 0x10) + ((item.data1b[0] == ITEM_TYPE_WEAPON) || (item.data1b[0] == ITEM_TYPE_GUARD));
+	item.data1b[2] = (def0 >> 8);
 
-	switch (item.datab[0]) {
+	switch (item.data1b[0]) {
 	case ITEM_TYPE_WEAPON:
 		/* ´òÄ¥Öµ ÊôĞÔ EX */
-		item.datab[3] = (def1 >> 0x18) & 0xFF;
-		item.datab[4] = def0 & 0xFF;
-		item.datab[6] = (def1 >> 8) & 0xFF;
-		item.datab[7] = def1 & 0xFF;
-		item.datab[8] = (def2 >> 0x18) & 0xFF;
-		item.datab[9] = (def2 >> 0x10) & 0xFF;
-		item.datab[10] = (def2 >> 8) & 0xFF;
-		item.datab[11] = def2 & 0xFF;
+		item.data1b[3] = (def1 >> 0x18) & 0xFF;
+		item.data1b[4] = def0 & 0xFF;
+		item.data1b[6] = (def1 >> 8) & 0xFF;
+		item.data1b[7] = def1 & 0xFF;
+		item.data1b[8] = (def2 >> 0x18) & 0xFF;
+		item.data1b[9] = (def2 >> 0x10) & 0xFF;
+		item.data1b[10] = (def2 >> 8) & 0xFF;
+		item.data1b[11] = def2 & 0xFF;
 
 
 		/* ´òÄ¥Öµ 0 - 7*/
 		if (sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2)
-			item.datab[3] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 8 + 1;
+			item.data1b[3] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 8 + 1;
 
 		/* ÌØÊâ¹¥»÷ 0 - 10 ÅäºÏÄÑ¶È 0 - 3*/
 		if (sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2)
-			item.datab[4] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 11 + ÄÑ¶È;
+			item.data1b[4] = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 11 + ÄÑ¶È;
 
-		if (item.datab[4])
-			item.datab[4] |= 0x80;
+		if (item.data1b[4])
+			item.data1b[4] |= 0x80;
 		/* datab[5] ÔÚÕâÀï²»Éæ¼° ÀñÎï Î´¼ø¶¨*/
 
 		/* Éú³ÉÊôĞÔ*/
@@ -1275,7 +1275,7 @@ item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ë
 				uint32_t r = rand_int(Ëæ»úÒò×Ó, 6);
 				if (r == 1) {
 					/*+6 ¶ÔÓ¦ÊôĞÔ²Û£¨½á¹û·Ö±ğÎª 6 8 10£© +7¶ÔÓ¦ÊıÖµ£¨½á¹û·Ö±ğÎª Ëæ»úÊı1-20 1-35 1-45 1-50£©*/
-					item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
+					item.data1b[(num_percentages * 2) + 6] = (uint8_t)x;
 					tmp_value = /*sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 21];/* 0 - 5 % 0 - 19*/
 
 					//if (tmp_value > 50)
@@ -1284,7 +1284,7 @@ item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ë
 					//if (tmp_value < -50)
 					//	tmp_value = -50;
 
-					item.datab[(num_percentages * 2) + 7] = tmp_value;
+					item.data1b[(num_percentages * 2) + 7] = tmp_value;
 					num_percentages++;
 				}
 			}
@@ -1292,12 +1292,12 @@ item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ë
 		break;
 
 	case ITEM_TYPE_GUARD:
-		switch (item.datab[1]) {
+		switch (item.data1b[1]) {
 		case ITEM_SUBTYPE_FRAME://»¤¼×
 		case ITEM_SUBTYPE_BARRIER://»¤¶Ü 0 - 20 
 			pmt_guard_bb_t pmt_guard = { 0 };
-			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-				ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.datal[0]);
+			if (err = pmt_lookup_guard_bb(item.data1l[0], &pmt_guard)) {
+				ERR_LOG("pmt_lookup_guard_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.data1l[0]);
 				break;
 			}
 
@@ -1307,15 +1307,15 @@ item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ë
 
 		case ITEM_SUBTYPE_UNIT://²å¼ş
 			pmt_unit_bb_t pmt_unit = { 0 };
-			if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
-				ERR_LOG("pmt_lookup_unit_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.datal[0]);
+			if (err = pmt_lookup_unit_bb(item.data1l[0], &pmt_unit)) {
+				ERR_LOG("pmt_lookup_unit_bb ²»´æÔÚÊı¾İ! ´íÎóÂë %d 0x%08X", err, item.data1l[0]);
 				break;
 			}
 
 			if (sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 2) {
 				tmp_value = sfmt_genrand_uint32(Ëæ»úÒò×Ó) % 5;
-				item.datab[6] = unit_bonus_values[tmp_value][0];
-				item.datab[7] = unit_bonus_values[tmp_value][1];
+				item.data1b[6] = unit_bonus_values[tmp_value][0];
+				item.data1b[7] = unit_bonus_values[tmp_value][1];
 			}
 			break;
 		}
@@ -1328,17 +1328,17 @@ item_t create_common_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* Ë
 		assign_mag_stats(&item, &stats);
 		break;
 	case ITEM_TYPE_TOOL:
-		if (item.datab[1] == ITEM_SUBTYPE_DISK) {
-			item.datab[4] = def0 & 0xFF;
+		if (item.data1b[1] == ITEM_SUBTYPE_DISK) {
+			item.data1b[4] = def0 & 0xFF;
 		}
-		item.datab[5] = get_item_amount(&item, 1);
+		item.data1b[5] = get_item_amount(&item, 1);
 		break;
 	case ITEM_TYPE_MESETA:
 		item.data2l = ((def1 >> 0x10) & 0xFFFF) * 10;
 		break;
 
 	default:
-		ERR_LOG("ÎŞĞ§ÎïÆ·ÀàĞÍ 0x%02X", item.datab[0]);
+		ERR_LOG("ÎŞĞ§ÎïÆ·ÀàĞÍ 0x%02X", item.data1b[0]);
 	}
 
 	return item;
@@ -1349,7 +1349,7 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 	item_t item = { 0 };
 	/* ³õÊ¼»¯ÎïÆ·Êı¾İ */
 	clear_inv_item(&item);
-	item.datab[0] = (def0 >> 0x18) & 0x0F;
+	item.data1b[0] = (def0 >> 0x18) & 0x0F;
 	/* Ëæ»úÑ¡ÔñµôÂÊÆÕÍ¨ÎïÆ·»¹ÊÇÏ¡ÓĞÎïÆ· */
 	//uint32_t choice_rng = rand_int(rng, 4); /* 50% ¼¸ÂÊÑ¡ÔñµôÂäÀ¬»øÎïÆ·»¹ÊÇÆäËûÎïÆ· */
 	/* »ñÈ¡·¿Ö÷Íæ¼ÒµÄÑÕÉ«ID */
@@ -1471,7 +1471,7 @@ item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint3
 	}
 
 	//if (choice_rng == 0)
-		item = create_common_bb_box_item(l, ent, rng, area, section_id, item.datab[0]);
+		item = create_common_bb_box_item(l, ent, rng, area, section_id, item.data1b[0]);
 	/*else
 		item = create_common_bb_box_waste_item(l, ent, rng, def0, def1, def2);*/
 	

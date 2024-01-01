@@ -686,7 +686,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
         for (size_t x = 0; x < char_data->character.inv.item_count; x++) {
             item_t* item = &char_data->character.inv.iitems[x].data;
-            if (item->datab[0] == ITEM_TYPE_MAG) {
+            if (item->data1b[0] == ITEM_TYPE_MAG) {
                 item->data2b[3] = costume_mag_color_type[char_data->character.dress_data.ch_class][char_data->character.dress_data.costume];
             }
         }

@@ -1963,7 +1963,7 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
             item_t* ti = &src_trade->items[x];
             encode_if_mag(ti, src->version);
 
-            if (ti->datab[0] == 0x04) {
+            if (ti->data1b[0] == 0x04) {
                 ti->item_id = 0xFFFFFFFF;
                 src_trade->meseta = ti->data2l;
             }
@@ -1980,13 +1980,13 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
 
             /* 客户端已经自动移除该物品 所以这里只需要进行内存操作即可 */
             item_t item = remove_invitem(src, item_id, item_amount, src->version != CLIENT_VERSION_BB);
-            if (item_not_identification_bb(item.datal[0], item.datal[1])) {
+            if (item_not_identification_bb(item.data1l[0], item.data1l[1])) {
                 ERR_LOG("%s 交易物品失败!",
                     get_player_describe(src));
                 return -2;
             }
 
-            if (item.datab[0] != ITEM_TYPE_MESETA) {
+            if (item.data1b[0] != ITEM_TYPE_MESETA) {
                 item.item_id = generate_item_id(l, dest->client_id);
             }
 

@@ -296,9 +296,9 @@ static int db_insert_bank_common_items(bitem_t* item, uint32_t gc, int item_inde
         "'%" PRIu32 "'"
         ")",
         CHARACTER_BANK_COMMON_ITEMS,
-        item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
-        item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
-        item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
+        item->data.data1b[0], item->data.data1b[1], item->data.data1b[2], item->data.data1b[3],
+        item->data.data1b[4], item->data.data1b[5], item->data.data1b[6], item->data.data1b[7],
+        item->data.data1b[8], item->data.data1b[9], item->data.data1b[10], item->data.data1b[11],
         item->data.item_id,
         item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
         item_index, item->amount, item->show_flags,
@@ -379,9 +379,9 @@ static int db_update_bank_common_items(bitem_t* item, uint32_t gc, int item_inde
         " WHERE "
         "guildcard = '%" PRIu32 "' AND item_index = '%d'",
         CHARACTER_BANK_COMMON_ITEMS,
-        item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
-        item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
-        item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
+        item->data.data1b[0], item->data.data1b[1], item->data.data1b[2], item->data.data1b[3],
+        item->data.data1b[4], item->data.data1b[5], item->data.data1b[6], item->data.data1b[7],
+        item->data.data1b[8], item->data.data1b[9], item->data.data1b[10], item->data.data1b[11],
         item->data.item_id,
         item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
         item->amount, item->show_flags,
@@ -502,29 +502,29 @@ static int db_get_char_bank_common_items(uint32_t gc, bitem_t* item, int item_in
     item->show_flags = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
 
-    item->data.datab[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[4] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[4] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[5] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[5] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[6] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[6] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[7] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[7] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[8] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[8] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[9] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[9] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[10] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[10] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.datab[11] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data1b[11] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
 
     item->data.item_id = (uint32_t)strtoul(row[i], &endptr, 16);
@@ -588,29 +588,29 @@ static int db_get_char_bank_common_itemdata(uint32_t gc, psocn_bank_t* bank) {
             j++;
             bank->bitems[k].show_flags = (uint16_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[0] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[0] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[1] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[1] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[2] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[2] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[3] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[3] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[4] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[4] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[5] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[5] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[6] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[6] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[7] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[7] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[8] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[8] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[9] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[9] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[10] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[10] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
-            bank->bitems[k].data.datab[11] = (uint8_t)strtoul(row[j], &endptr, 16);
+            bank->bitems[k].data.data1b[11] = (uint8_t)strtoul(row[j], &endptr, 16);
             j++;
             bank->bitems[k].data.item_id = (uint32_t)strtoul(row[j], &endptr, 16);
             j++;
@@ -634,9 +634,9 @@ static int db_get_char_bank_common_itemdata(uint32_t gc, psocn_bank_t* bank) {
 void clean_up_char_common_bank(psocn_bank_t* bank, int item_index, int del_count) {
     for (item_index; item_index < del_count; item_index++) {
 
-        bank->bitems[item_index].data.datal[0] = 0;
-        bank->bitems[item_index].data.datal[1] = 0;
-        bank->bitems[item_index].data.datal[2] = 0;
+        bank->bitems[item_index].data.data1l[0] = 0;
+        bank->bitems[item_index].data.data1l[1] = 0;
+        bank->bitems[item_index].data.data1l[2] = 0;
         bank->bitems[item_index].data.item_id = 0xFFFFFFFF;
         bank->bitems[item_index].data.data2l = 0;
 

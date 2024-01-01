@@ -1577,8 +1577,8 @@ typedef enum bbitem_code_e {
 typedef struct bbitem_map_s {
     union {
         bbitem_code_t code;
-        uint8_t datab[4];
-        uint32_t datal;
+        uint8_t data1b[4];
+        uint32_t data1l;
     };
     const char* name;
 } PACKED bbitem_map_t;

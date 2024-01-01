@@ -498,56 +498,56 @@ typedef void (*LogFunc)(const char*, ...);
 #define PRINT_HEX_LOG(method, data, length) do {\
     pthread_mutex_lock(&pkt_mutex);\
     size_t i;\
-    memset(&dp[0], 0, sizeof(dp));\
-    if (data == NULL || length <= 0 || length > sizeof(dp)) {\
+    char* dp = (char*)malloc(65535 * 2);\
+    if (dp == NULL) {\
         pthread_mutex_unlock(&pkt_mutex);\
-        sprintf(dp, "空指针数据包或无效长度 % d 数据包.", length);\
-        method(dp);\
+        method("无法分配内存.");\
     } else {\
-        uint8_t* buff = (uint8_t*)data;\
-        if (isPacketEmpty(buff, length)) {\
-            pthread_mutex_unlock(&pkt_mutex);\
-            sprintf(dp, "空数据包 长度 %d.", length);\
+        memset(dp, 0, 65535 * 2);\
+        if (data == NULL || length <= 0) {\
+            sprintf(dp, "空指针数据包或无效长度 %d 数据包.", length);\
             method(dp);\
         } else {\
-            strcpy(dp, "数据包如下:\n\r"); \
-            for (i = 0; i < length; i++) {\
-                if (i % 16 == 0) { \
-                    if (i != 0) { \
-                        strcat(dp, "\n"); \
+            uint8_t* buff = (uint8_t*)data;\
+            if (isPacketEmpty(buff, length)) {\
+                sprintf(dp, "空数据包 长度 %d.", length);\
+                method(dp);\
+            } else {\
+                strcpy(dp, "数据包如下:\n\r"); \
+                for (i = 0; i < length; i++) {\
+                    if (i % 16 == 0) { \
+                        if (i != 0) { \
+                            strcat(dp, "\n"); \
+                        }\
+                        sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i); \
                     }\
-                    sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i); \
-                }\
-                sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]); \
-                if (i % 8 == 7 && i % 16 != 15) {\
-                    strcat(dp, " "); \
-                }\
-                if (i % 16 == 15 || i == length - 1) {\
-                    size_t j; \
-                    strcat(dp, "    "); \
-                    for (j = i - (i % 16); j <= i; j++) {\
-                        if (j >= length) {\
-                            strcat(dp, " "); \
-                        }\
-                        else if (buff[j] >= ' ' && buff[j] <= '~') {\
-                            char tmp_str[2] = { buff[j], '\0' }; \
-                            strcat(dp, tmp_str); \
-                        }\
-                        else {\
-                            strcat(dp, "."); \
+                    sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]); \
+                    if (i % 8 == 7 && i % 16 != 15) {\
+                        strcat(dp, " "); \
+                    }\
+                    if (i % 16 == 15 || i == length - 1) {\
+                        size_t j; \
+                        strcat(dp, "    "); \
+                        for (j = i - (i % 16); j <= i; j++) {\
+                            if (j >= length) {\
+                                strcat(dp, " "); \
+                            }\
+                            else if (buff[j] >= ' ' && buff[j] <= '~') {\
+                                char tmp_str[2] = { buff[j], '\0' }; \
+                                strcat(dp, tmp_str); \
+                            }\
+                            else {\
+                                strcat(dp, "."); \
+                            }\
                         }\
                     }\
                 }\
-            }\
-            if (strlen(dp) + 2 + 1 <= sizeof(dp)) {\
                 strcat(dp, "\n\r"); \
                 method(dp); \
             }\
-            else {\
-                method("不足以容纳换行符"); \
-            }\
-            pthread_mutex_unlock(&pkt_mutex); \
         }\
+        free_safe(dp);\
+        pthread_mutex_unlock(&pkt_mutex); \
     }\
 } while (0)
 
