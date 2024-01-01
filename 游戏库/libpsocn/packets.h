@@ -4269,23 +4269,32 @@ typedef struct bb_guild_create {
 } PACKED bb_guild_create_pkt;
 
 // 02EA (S->C): 应该是某种公会功能完成后的响应
-// This command behaves exactly like 1FEA.
-typedef struct bb_guild_unk_02EA {
+// No arguments except header.flag, which specifies the error code. Values:
+// 0 = success
+// 1 = generic error
+// 2 = name already registered
+// 3 = generic error
+// 4 = generic error
+// 5 = generic error
+// 6 = generic error
+// Anything else = command is ignored
+typedef struct bb_guild_cmd_response_02EA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
 } PACKED bb_guild_unk_02EA_pkt;
 
 // 03EA (C->S): 新增会员
 typedef struct bb_guild_member_add {
     bb_pkt_hdr_t hdr;
     uint32_t target_guildcard;
-    uint8_t data[];
 } PACKED bb_guild_member_add_pkt;
 
-// 04EA (S->C): UNKNOW
-typedef struct bb_guild_unk_04EA {
+// 04EA (S->C): Add team member result
+// No arguments except header.flag, which specifies the error code. Values:
+// 0 = success
+// 5 = team is full
+// Anything else = generic error
+typedef struct bb_guild_member_add_result_04EA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
 } PACKED bb_guild_unk_04EA_pkt;
 
 // 05EA (C->S): 移除公会会员
@@ -4293,25 +4302,26 @@ typedef struct bb_guild_unk_04EA {
 typedef struct bb_guild_member_remove {
     bb_pkt_hdr_t hdr;
     uint32_t target_guildcard;
-    uint8_t data[];
 } PACKED bb_guild_member_remove_pkt;
 
-// 06EA (S->C): UNKNOW
+// 06EA (S->C): Remove team member result
+// No arguments except header.flag, which specifies the error code. 0 means
+// success, but it's not known what any other values mean. The client expects
+// the error code to be less than 7.
 typedef struct bb_guild_unk_06EA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
 } PACKED bb_guild_unk_06EA_pkt;
 
 // 07EA (C->S): 公会聊天
 typedef struct bb_guild_member_chat {
     bb_pkt_hdr_t hdr;                                            /* 0x0000 8 */
     uint16_t name[BB_CHARACTER_NAME_LENGTH];                     /* 0x000C 24 */
-    // It seems there are no real limits on the message length, other than the
-    // overall command length limit of 0x7C00 bytes.
+    // Text follows here. The message is truncated by the client if it is longer
+    // than 0x8F wchar_ts.
     uint8_t chat[];
 } PACKED bb_guild_member_chat_pkt;
 
-// 08EA (C->S): Team admin
+// 08EA (C->S): Get team member list
 // No arguments
 typedef struct bb_guild_member_setting {
     bb_pkt_hdr_t hdr;
@@ -4319,25 +4329,22 @@ typedef struct bb_guild_member_setting {
     bb_guild_member_list_t entries[0];
 } PACKED bb_guild_member_setting_pkt;
 
-// 09EA (S->C): UNKNOW
+// 09EA (S->C): Team member list
 typedef struct bb_guild_unk_09EA {
     bb_pkt_hdr_t hdr;
+
+    //le_uint32_t entry_count = 0;
+    //struct Entry {
+    //    // This is displayed as "<%04d> %s" % (rank, name)
+    //    le_uint32_t rank = 0;
+    //    le_uint32_t privilege_level = 0; // 0x10 or 0x20 = green, 0x30 = blue, 0x40 = red, anything else = white
+    //    le_uint32_t guild_card_number = 0;
+    //    pstring<TextEncoding::UTF16, 0x10> name;
+    //} __packed__;
+    //// Variable-length field:
+    //// Entry entries[entry_count];
     uint8_t data[];
 } PACKED bb_guild_unk_09EA_pkt;
-
-// 09EA (S->C): Unknown
-struct S_Unknown_BB_09EA {
-    bb_pkt_hdr_t hdr;
-    uint32_t entry_count;
-    uint8_t unknown_a2[4];
-    struct Entry123 {
-        // This is displayed as "<%04d> %s" % (value, message)
-        uint32_t value;
-        uint32_t color; // 0x10 or 0x20 = green, 0x30 = blue, 0x40 = red, anything else = white
-        uint32_t unknown_a1;
-        uint16_t message[0x10];
-    } PACKED entries[0];// [entry_count] actually
-} PACKED;
 
 // 0AEA (S->C): UNKNOW
 typedef struct bb_guild_unk_0AEA {
@@ -4351,17 +4358,12 @@ typedef struct bb_guild_unk_0BEA {
     uint8_t data[];
 } PACKED bb_guild_unk_0BEA_pkt;
 
-// 0CEA (S->C): UNKNOW
+// 0CEA (S->C): Unknown
+// The client appears to ignore this command.
 typedef struct bb_guild_unk_0CEA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
-} PACKED bb_guild_unk_0CEA_pkt;
-
-// 0CEA (S->C): Unknown
-struct S_Unknown_BB_0CEA {
     uint8_t unknown_a1[0x20];
-    uint16_t unknown_a2[0];
-} PACKED;
+} PACKED bb_guild_unk_0CEA_pkt;
 
 // 0DEA (C->S): 邀请目标进公会
 // No arguments
@@ -4390,6 +4392,13 @@ typedef struct bb_guild_get_data {
     uint8_t guild_flag[0x0800];            // 公会图标
     uint8_t unknow;
 } PACKED bb_guild_get_data_pkt;
+//
+//// 0EEA (S->C): Team name
+//
+//struct S_TeamName_BB_0EEA {
+//    parray<uint8_t, 0x10> unused;
+//    pstring<TextEncoding::UTF16, 0x10> team_name;
+//} __packed__;
 
 // 0FEA (C->S): 设置公会旗帜
 typedef struct bb_guild_member_flag_setting {
@@ -4397,22 +4406,32 @@ typedef struct bb_guild_member_flag_setting {
     uint8_t guild_flag[0x0800];
 } PACKED bb_guild_member_flag_setting_pkt;
 
-// 10EA: 解散公会
-// No arguments
+//// The client also accepts this command but completely ignores it.
+//
+//struct C_SetTeamFlag_BB_0FEA {
+//    parray<le_uint16_t, 0x20 * 0x20> flag_data;
+//} __packed__;
+
+// 10EA: 解散公会 Delete team (C->S) and result (S->C)
+// No arguments (C->S)
+// No arguments except header.flag (S->C)
 typedef struct bb_guild_dissolve {
     bb_pkt_hdr_t hdr;
-    //uint32_t guild_id;
-    uint8_t data[];
 } PACKED bb_guild_dissolve_pkt;
 
 // 11EA (C->S): 提升会员权限
-// TODO: header.flag is used for this command. Figure out what it's for.
+// The format below is used only when the client sends this command; when the
+// server sends it, only header.flag is used. As with various other team
+// commands, header.flag specifies the error code in this case.
+// header.flag specifies the new privilege level for the specified team member.
+// Known values: 0 = normal, 0x30 = leader, 0x40 = master
 typedef struct bb_guild_member_promote {
     bb_pkt_hdr_t hdr;
     uint32_t target_guildcard;
 } PACKED bb_guild_member_promote_pkt;
 
 // 12EA (S->C): 公会初始数据
+// If the client is not in a team, all fields should be zero.
 typedef struct bb_guild_init_data {
     bb_pkt_hdr_t hdr;
     uint32_t is_aready_in_guild; // Command is ignored unless this is 0
@@ -4426,6 +4445,8 @@ typedef struct bb_guild_init_data {
 } PACKED bb_guild_init_data_pkt;
 
 typedef struct bb_guild_lobby_client {
+    // The client uses the first four of these to determine if the player is in a
+    // team or not - if they are all zero, the player is not in a team.
     uint32_t guild_owner_gc;
     uint32_t guild_id;
     uint32_t guild_points_rank;
@@ -4454,15 +4475,18 @@ typedef struct bb_guild_member_tittle {
 } PACKED bb_guild_member_tittle_pkt;
 
 // 15EA (S->C): BB 玩家整体公会数据 用于发送给其他玩家
+// header.flag specifies the number of entries. The entry format appears to be
+// the same as for the 13EA command.
 typedef struct bb_full_guild_data {
     bb_pkt_hdr_t hdr;                              /* 0x0000 - 0x0007*/
     bb_guild_lobby_client_t entries;
 } PACKED bb_full_guild_data_pkt;
 
-// 16EA (S->C): UNKNOW
+// 16EA (S->C): Transfer item via Simple Mail result
+// No arguments except header.flag, which is 0 if the transfer failed and
+// nonzero if it succeeded.
 typedef struct bb_guild_unk_16EA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
 } PACKED bb_guild_unk_16EA_pkt;
 
 // 17EA (S->C): 未完成
@@ -4503,6 +4527,21 @@ typedef struct bb_guild_privilege_item_entry {
     uint32_t point_amount;
     uint32_t item_id;
 } PACKED bb_guild_privilege_item_entry_t;
+//// 19EA: Team reward list
+//// No arguments (C->S)
+//
+//struct S_TeamRewardList_BB_19EA_1AEA {
+//    le_uint32_t num_entries;
+//    struct Entry {
+//        /* 0000 */ pstring<TextEncoding::UTF16, 0x40> name;
+//        /* 0080 */ pstring<TextEncoding::UTF16, 0x80> description;
+//        /* 0180 */ le_uint32_t team_points = 0;
+//        /* 0184 */ le_uint32_t reward_id = 0;
+//        /* 0188 */
+//    } __packed__;
+//    // Variable length field:
+//    // Entry entries[num_entries];
+//} __packed__;
 
 // 1AEA: (S->C): 可购买公会特典列表
 typedef struct bb_guild_req_privilege_items {
@@ -4531,28 +4570,29 @@ typedef struct bb_guild_rank_list {
     bb_guild_rank_entry_t entries[0];
 } PACKED bb_guild_rank_list_pkt;
 
-// 1DEA (S->C): UNKNOW
+// 1DEA (S->C): Update team rewards bitmask
+// header.flag specifies the new rewards bitmask.
 typedef struct bb_guild_unk_1DEA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
 } PACKED bb_guild_unk_1DEA_pkt;
 
-// 1EEA (C->S): Unknown
+// 1EEA (C->S): Rename team
 // header.flag is used, but it's unknown what the value means.
-typedef struct bb_guild_unk_1EEA {
+typedef struct bb_guild_rename_1EEA {
     bb_pkt_hdr_t hdr;
-    uint16_t unknown_a1[0x10];
+    uint16_t new_guild_name[0x10];
 } PACKED bb_guild_unk_1EEA_pkt;
 
-// 1FEA (S->C): Unknown
-// header.flag must be in the range [0, 6]. If it isn't, the command is ignored.
-// No other arguments.
+// 1FEA (S->C): Rename team result
+// This command behaves like 02EA, but is sent in response to 1EEA instead.
 typedef struct bb_guild_unk_1FEA {
     bb_pkt_hdr_t hdr;
 } PACKED bb_guild_unk_1FEA_pkt;
 
 // 20EA (C->S): Unknown
-// header.flag is used, but no other arguments
+// header.flag is used, but no other arguments. When sent by the server,
+// header.flag is an error code, similar to various other result commands in
+// this section.
 typedef struct bb_guild_unk_20EA {
     bb_pkt_hdr_t hdr;
 } PACKED bb_guild_unk_20EA_pkt;

@@ -1314,8 +1314,8 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                 }
 
                 /* 这里无法给自己发数据 */
-                send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+                send_bb_guild_cmd(c, BB_GUILD_FULL_DATA, 0x00000000);
+                send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
 
             }
             else
@@ -1481,8 +1481,8 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
             send_lobby_end_burst(l);
 
             /* 将房间中的玩家公会数据发送至新进入的客户端 */
-            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA, 0x00000000);
+            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
         }
 
         rv = send_simple(c, PING_TYPE, 0) | lobby_handle_done_burst_bb(l, c);
@@ -1537,8 +1537,8 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
         send_lobby_end_burst(l);
 
         /* 将房间中的玩家公会数据发送至新进入的客户端 */
-        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA, 0x00000000);
+        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -2285,104 +2285,6 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     return 0;
 }
 
-static int bb_process_options(ship_client_t* c, bb_options_config_update_pkt* pkt) {
-    uint16_t type = LE16(pkt->hdr.pkt_type);
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-    size_t pkt_size = len - sizeof(bb_pkt_hdr_t);
-    int result = 0;
-
-    switch (type)
-    {
-        /* 0x01ED 493*/
-    case BB_UPDATE_OPTION_FLAGS:
-        if ((result = check_size_v(pkt_size, sizeof(pkt->option), 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        c->bb_opts->option_flags = pkt->option;
-        c->option_flags = c->bb_opts->option_flags;
-        break;
-
-        /* 0x02ED 749*/
-    case BB_UPDATE_SYMBOL_CHAT:
-        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS, 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        memcpy(c->bb_opts->symbol_chats, pkt->symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
-        break;
-
-        /* 0x03ED 1005*/
-    case BB_UPDATE_SHORTCUTS:
-        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_SHORTCUTS, 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        memcpy(c->bb_opts->shortcuts, pkt->shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
-        break;
-
-        /* 0x04ED 1261*/
-    case BB_UPDATE_KEY_CONFIG:
-        if ((result = check_size_v(pkt_size, sizeof(pkt->key_config), 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        memcpy(c->bb_opts->key_cfg.keyboard_config, pkt->key_config, sizeof(pkt->key_config));
-        break;
-
-        /* 0x05ED 1517*/
-    case BB_UPDATE_JOYSTICK_CONFIG:
-        if ((result = check_size_v(pkt_size, sizeof(pkt->joystick_config), 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        memcpy(c->bb_opts->key_cfg.joystick_config, pkt->joystick_config, sizeof(pkt->joystick_config));
-        break;
-
-        /* 0x06ED 1773*/
-    case BB_UPDATE_TECH_MENU:
-        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_TECH_MENU, 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        memcpy(c->bb_pl->tech_menu, pkt->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-        break;
-
-        /* 0x07ED 2029*/
-    case BB_UPDATE_CONFIG:
-        if ((result = check_size_v(pkt_size, sizeof(pkt->customize), 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        memcpy(c->bb_pl->character.config, pkt->customize, sizeof(pkt->customize));
-        break;
-
-        /* 0x08ED 2285*/
-    case BB_UPDATE_C_MODE_CONFIG:
-        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS, 0))) {
-            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
-            return result;
-        }
-
-        memcpy(&c->bb_pl->c_records, &pkt->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-        break;
-
-    default:
-        DBG_LOG("BB未知数据! 指令 0x%04X", type);
-        PRINT_HEX_LOG(ERR_LOG, pkt, len);
-        break;
-    }
-
-    return 0;
-}
-
 static int bb_set_guild_text(ship_client_t* c, bb_guildcard_set_txt_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
     size_t data_len = sizeof(bb_guildcard_set_txt_pkt);
@@ -2515,10 +2417,10 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                         c2->bb_guild->data.guild_reward[j] = c->bb_guild->data.guild_reward[j];
                     }
 
-                    send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-                    send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
-                    send_bb_guild_cmd(c, BB_GUILD_UNK_04EA);
-                    send_bb_guild_cmd(c2, BB_GUILD_UNK_04EA);
+                    send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA, 0x00000000);
+                    send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
+                    send_bb_guild_cmd(c, BB_GUILD_UNK_04EA, 0x00000000);
+                    send_bb_guild_cmd(c2, BB_GUILD_UNK_04EA, 0x00000000);
 
                     pthread_mutex_unlock(&c2->mutex);
                     done = 1;
@@ -2578,7 +2480,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
     if (target_gc != c->guildcard) {
         if (c->bb_guild->data.guild_priv_level == BB_GUILD_PRIV_LEVEL_MASTER) {
             shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c);
-            send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
+            send_bb_guild_cmd(c, BB_GUILD_UNK_06EA, 0x00000000);
 
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i]->guildcard == target_gc) {
@@ -2690,7 +2592,7 @@ static int process_bb_guild_invite(ship_client_t* c, bb_guild_invite_pkt* pkt) {
     //uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    return send_bb_guild_cmd(c, BB_GUILD_GET_TARGET_DATA);
+    return send_bb_guild_cmd(c, BB_GUILD_GET_TARGET_DATA, 0x00000000);
 }
 
 static int process_bb_guild_unk_0EEA(ship_client_t* c, bb_guild_get_data_pkt* pkt) {
@@ -2738,7 +2640,7 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
     if ((c->bb_guild->data.guild_priv_level == BB_GUILD_PRIV_LEVEL_MASTER) && (c->bb_guild->data.guild_id != 0)) {
 
         shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c);
-        send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
+        send_bb_guild_cmd(c, BB_GUILD_DISSOLVE, 0x00000000);
     }
 
     //PRINT_HEX_LOG(ERR_LOG, pkt, len);
@@ -2817,8 +2719,8 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
         //会长转让
         shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c);
         c->bb_guild->data.guild_priv_level = BB_GUILD_PRIV_LEVEL_ADMIN;
-        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA, 0x00000000);
+        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
 #ifdef DEBUG
         DBG_LOG("会长转换GC %u", c->guildcard);
 #endif // DEBUG
@@ -2828,11 +2730,11 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
     if (c2 != NULL) {
         if (c2->bb_guild->data.guild_priv_level != guild_priv_level) {
             c2->bb_guild->data.guild_priv_level = guild_priv_level;
-            send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-            send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
+            send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA, 0x00000000);
+            send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
         }
 
-        send_bb_guild_cmd(c, BB_GUILD_MEMBER_PROMOTE);
+        send_bb_guild_cmd(c, BB_GUILD_MEMBER_PROMOTE, 0x00000000);
     }
 
     return 0;
@@ -2850,7 +2752,7 @@ static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setti
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    return send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
+    return send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING, 0x00000000);
 }
 
 static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_tittle_pkt* pkt) {
@@ -2874,7 +2776,7 @@ static int process_bb_guild_full_data(ship_client_t* c, bb_full_guild_data_pkt* 
         return -1;
     }
 
-    return send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+    return send_bb_guild_cmd(c, BB_GUILD_FULL_DATA, 0x00000000);
 }
 
 static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pkt) {
@@ -3055,6 +2957,40 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         PRINT_HEX_LOG(ERR_LOG, hdr, len);
         return send_bb_error_menu_list(c);
     }
+    return 0;
+}
+
+static int bb_process_E8_cmds(ship_client_t* c, uint8_t* pkt) {
+    bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
+    uint16_t type = LE16(hdr->pkt_type);
+    uint16_t len = LE16(hdr->pkt_len);
+
+    switch (type) {
+        /* 0x04E8 1256*/
+    case BB_ADD_GUILDCARD_TYPE:
+        /* 0x05E8 1512*/
+    case BB_DEL_GUILDCARD_TYPE:
+        /* 0x07E8 2024*/
+    case BB_ADD_BLOCKED_USER_TYPE:
+        /* 0x08E8 2280*/
+    case BB_DEL_BLOCKED_USER_TYPE:
+        /* 0x09E8 2536*/
+    case BB_SET_GUILDCARD_COMMENT_TYPE:
+        /* 0x0AE8 2792*/
+    case BB_SORT_GUILDCARD_TYPE:
+        /* Let the shipgate deal with these... */
+        return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+
+        /* 0x06E8 1768*/
+    case BB_SET_GUILDCARD_TEXT_TYPE:
+        return bb_set_guild_text(c, (bb_guildcard_set_txt_pkt*)pkt);
+
+    default:
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        PRINT_HEX_LOG(ERR_LOG, hdr, len);
+        return send_bb_error_menu_list(c);
+    }
+
     return 0;
 }
 
@@ -3274,6 +3210,104 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
     return 0;
 }
 
+static int bb_process_option_config(ship_client_t* c, bb_options_config_update_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+    size_t pkt_size = len - sizeof(bb_pkt_hdr_t);
+    int result = 0;
+
+    switch (type)
+    {
+        /* 0x01ED 493*/
+    case BB_UPDATE_OPTION_FLAGS:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->option), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        c->bb_opts->option_flags = pkt->option;
+        c->option_flags = c->bb_opts->option_flags;
+        break;
+
+        /* 0x02ED 749*/
+    case BB_UPDATE_SYMBOL_CHAT:
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS, 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->symbol_chats, pkt->symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
+        break;
+
+        /* 0x03ED 1005*/
+    case BB_UPDATE_SHORTCUTS:
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_SHORTCUTS, 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->shortcuts, pkt->shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
+        break;
+
+        /* 0x04ED 1261*/
+    case BB_UPDATE_KEY_CONFIG:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->key_config), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->key_cfg.keyboard_config, pkt->key_config, sizeof(pkt->key_config));
+        break;
+
+        /* 0x05ED 1517*/
+    case BB_UPDATE_JOYSTICK_CONFIG:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->joystick_config), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->key_cfg.joystick_config, pkt->joystick_config, sizeof(pkt->joystick_config));
+        break;
+
+        /* 0x06ED 1773*/
+    case BB_UPDATE_TECH_MENU:
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_TECH_MENU, 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_pl->tech_menu, pkt->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
+        break;
+
+        /* 0x07ED 2029*/
+    case BB_UPDATE_CONFIG:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->customize), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_pl->character.config, pkt->customize, sizeof(pkt->customize));
+        break;
+
+        /* 0x08ED 2285*/
+    case BB_UPDATE_C_MODE_CONFIG:
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS, 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(&c->bb_pl->c_records, &pkt->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+        break;
+
+    default:
+        DBG_LOG("BB未知数据! 指令 0x%04X", type);
+        PRINT_HEX_LOG(ERR_LOG, pkt, len);
+        break;
+    }
+
+    return 0;
+}
+
 #define DEBUG_BB_BLOCK1
 
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
@@ -3314,9 +3348,18 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case BB_CHALLENGE_DF:
             return bb_process_challenge(c, pkt);
 
+            /* 0x00E8 校验工会卡功能 */
+        case BB_GUILD_CHECKSUM_TYPE:
+            return bb_process_E8_cmds(c, pkt);
+
             /* 0x00EA 公会功能 */
         case BB_GUILD_COMMAND:
             return bb_process_guild(c, pkt);
+
+            /* 0x00ED 选项设置功能 */
+        case BB_UPDATE_OPTION:
+            return bb_process_option_config(c, (bb_options_config_update_pkt*)pkt);
+
         }
 
         switch (type) {
@@ -3530,43 +3573,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             /* 0x00E7 231*/
         case BB_FULL_CHARACTER_TYPE:
             return bb_process_full_char(c, (bb_full_char_pkt*)pkt);
-
-            /* 0x01ED 493*/
-        case BB_UPDATE_OPTION_FLAGS:
-            /* 0x02ED 749*/
-        case BB_UPDATE_SYMBOL_CHAT:
-            /* 0x03ED 1005*/
-        case BB_UPDATE_SHORTCUTS:
-            /* 0x04ED 1261*/
-        case BB_UPDATE_KEY_CONFIG:
-            /* 0x05ED 1517*/
-        case BB_UPDATE_JOYSTICK_CONFIG:
-            /* 0x06ED 1773*/
-        case BB_UPDATE_TECH_MENU:
-            /* 0x07ED 2029*/
-        case BB_UPDATE_CONFIG:
-            /* 0x08ED 2285*/
-        case BB_UPDATE_C_MODE_CONFIG:
-            return bb_process_options(c, (bb_options_config_update_pkt*)pkt);
-
-            /* 0x04E8 1256*/
-        case BB_ADD_GUILDCARD_TYPE:
-            /* 0x05E8 1512*/
-        case BB_DEL_GUILDCARD_TYPE:
-            /* 0x07E8 2024*/
-        case BB_ADD_BLOCKED_USER_TYPE:
-            /* 0x08E8 2280*/
-        case BB_DEL_BLOCKED_USER_TYPE:
-            /* 0x09E8 2536*/
-        case BB_SET_GUILDCARD_COMMENT_TYPE:
-            /* 0x0AE8 2792*/
-        case BB_SORT_GUILDCARD_TYPE:
-            /* Let the shipgate deal with these... */
-            return shipgate_fw_bb(&ship->sg, pkt, 0, c);
-
-            /* 0x06E8 1768*/
-        case BB_SET_GUILDCARD_TEXT_TYPE:
-            return bb_set_guild_text(c, (bb_guildcard_set_txt_pkt*)pkt);
 
         default:
             //DBG_LOG("BB未知数据! 指令 0x%04X", type);

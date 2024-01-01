@@ -12711,7 +12711,7 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
 }
 
 /* 用于 0x00EA BB公会 指令*/
-int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
+int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code, uint32_t flags) {
     uint8_t* sendbuf = get_sendbuf();
     bb_guild_pkt_pkt* pkt = (bb_guild_pkt_pkt*)sendbuf;
     lobby_t* l = c->cur_lobby;
@@ -12740,9 +12740,9 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     {
         /* 02EA */
     case BB_GUILD_UNK_02EA:
-        pkt->hdr.pkt_len = LE16(0x0008);
+        pkt->hdr.pkt_len = LE16(sizeof(bb_pkt_hdr_t));
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -12751,7 +12751,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     case BB_GUILD_UNK_04EA:
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -12774,7 +12774,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         target_data->hdr.pkt_len = LE16(len);
         target_data->hdr.pkt_type = cmd_code;
-        target_data->hdr.flags = 0x00000000;
+        target_data->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)target_data);
@@ -12784,7 +12784,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         pkt->hdr.pkt_len = LE16(sizeof(bb_pkt_hdr_t));
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -12794,7 +12794,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         pkt->hdr.pkt_len = LE16(sizeof(bb_pkt_hdr_t));
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -12818,7 +12818,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         init_data->hdr.pkt_len = LE16(len);
         init_data->hdr.pkt_type = cmd_code;
-        init_data->hdr.flags = 0;
+        init_data->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)init_data);
@@ -12864,7 +12864,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         title->hdr.pkt_len = LE16(sizeof(bb_guild_member_tittle_pkt));
         title->hdr.pkt_type = cmd_code;
-        title->hdr.flags = 0x00000000;
+        title->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)title);
@@ -12879,7 +12879,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
 
         PRINT_HEX_LOG(DBG_LOG, (uint8_t*)pkt, pkt->hdr.pkt_len);
@@ -12893,7 +12893,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         pkt->hdr.pkt_len = LE16(0x000C);
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
@@ -12916,7 +12916,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 填充数据头 */
         privilege_list->hdr.pkt_len = LE16(len * num + sizeof(bb_pkt_hdr_t));
         privilege_list->hdr.pkt_type = cmd_code;
-        privilege_list->hdr.flags = 0x00000000;
+        privilege_list->hdr.flags = flags;
 
         privilege_list->entries_num = num;
 
@@ -12939,7 +12939,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 填充数据头 */
         menu->hdr.pkt_len = LE16(len * num + sizeof(bb_pkt_hdr_t));
         menu->hdr.pkt_type = cmd_code;
-        menu->hdr.flags = 0;
+        menu->hdr.flags = flags;
 
         menu->entries_num = num;
 
@@ -12953,7 +12953,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -12962,7 +12962,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     case BB_GUILD_UNK_1EEA:
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -12971,7 +12971,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     case BB_GUILD_UNK_1FEA:
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -12980,7 +12980,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     case BB_GUILD_UNK_20EA:
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        pkt->hdr.flags = flags;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);

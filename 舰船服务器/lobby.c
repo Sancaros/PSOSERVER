@@ -1470,8 +1470,8 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
     }
 
     if (c->version >= CLIENT_VERSION_BB) {
-        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA, 0x00000000);
+        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
     }
 
     /* ...and let his/her new lobby know that he/she has arrived. */

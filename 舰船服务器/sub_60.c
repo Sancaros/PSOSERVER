@@ -1388,8 +1388,8 @@ static int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
             src->game_data->lobby_return = false;
 
         /* 将房间中的玩家公会数据发送至新进入的客户端 */
-        send_bb_guild_cmd(src, BB_GUILD_FULL_DATA);
-        send_bb_guild_cmd(src, BB_GUILD_INITIALIZATION_DATA);
+        send_bb_guild_cmd(src, BB_GUILD_FULL_DATA, 0x00000000);
+        send_bb_guild_cmd(src, BB_GUILD_INITIALIZATION_DATA, 0x00000000);
     }
 
     rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
