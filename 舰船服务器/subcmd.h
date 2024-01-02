@@ -272,35 +272,12 @@ typedef struct G_SendGuildCard_BB {
 } PACKED G_SendGuildCard_BB_6x06;
 
 // 0x07: Symbol chat
-struct SymbolChat {
-    // TODO: How does this format differ across PSO versions? The GC version
-    // treats some fields as unexpectedly large values (for example, face_spec
-    // through unused2 are byteswapped as an uint32_t), so we should verify
-    // that the order of these fields is the same on other versions.
-    // Bits: ----------------------DMSSSCCCFF
-    //   S = sound, C = face color, F = face shape, D = capture, M = mute sound
-    /* 00 */ uint32_t spec;
-    // Corner objects are specified in reading order ([0] is the top-left one).
-    // Bits (each entry): ---VHCCCZZZZZZZZ
-    //   V = reverse vertical, H = reverse horizontal, C = color, Z = object
-    // If Z is all 1 bits (0xFF), no corner object is rendered.
-    /* 04 */ uint16_t corner_objects[4];
-    struct FacePart {
-        uint8_t type; // FF = no part in this slot
-        uint8_t x;
-        uint8_t y;
-        // Bits: ------VH (V = reverse vertical, H = reverse horizontal)
-        uint8_t flags;
-    /* 0C */ } PACKED face_parts[12];
-    /* 3C */
-} PACKED;
-
-struct G_SymbolChat_6x07 {
+typedef struct G_SymbolChat_6x07 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t client_id;
-    struct SymbolChat data;
-} PACKED;
+    symbol_chat_data_t data;
+} PACKED G_SymbolChat_6x07_t;
 
 // 0x07: Symbol chat
 typedef struct subcmd_symbol_chat_corner_object {

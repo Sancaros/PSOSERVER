@@ -147,7 +147,7 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
 
     SAFE_STRCAT(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->unknown_t6[0],
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)c_records->unknown_t6,
         18);
 
     //SAFE_STRCAT(myquery, "', '");

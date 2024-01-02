@@ -40,7 +40,7 @@ static int db_del_char_mode_quest_data(uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-static int db_updata_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, uint32_t gc, uint8_t slot) {
+static int db_updata_mode_quest_data(psocn_bb_quest_global_flags_t* mode_quest_data, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "UPDATE %s SET "
@@ -77,7 +77,7 @@ static int db_updata_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data
     return 0;
 }
 
-int db_insert_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, uint32_t gc, uint8_t slot) {
+int db_insert_char_mode_quest_data(psocn_bb_quest_global_flags_t* mode_quest_data, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf_s(myquery, sizeof(myquery), "INSERT INTO %s ("
@@ -121,7 +121,7 @@ int db_insert_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, 
     return 0;
 }
 
-int db_update_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, uint32_t gc, uint8_t slot, uint32_t flag) {
+int db_update_char_mode_quest_data(psocn_bb_quest_global_flags_t* mode_quest_data, uint32_t gc, uint8_t slot, uint32_t flag) {
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
         if (db_insert_char_mode_quest_data(mode_quest_data, gc, slot)) {
@@ -157,7 +157,7 @@ int db_update_char_mode_quest_data(psocn_bb_mode_quest_data_t* mode_quest_data, 
 }
 
 /* 获取玩家mode_quest_data数据数据项 */
-int db_get_char_mode_quest_data(uint32_t gc, uint8_t slot, psocn_bb_mode_quest_data_t* mode_quest_data, int check) {
+int db_get_char_mode_quest_data(uint32_t gc, uint8_t slot, psocn_bb_quest_global_flags_t* mode_quest_data, int check) {
     void* result;
     char** row;
     char* endptr;

@@ -83,17 +83,6 @@ typedef struct bb_player_hdr {
     uint32_t unk2;
 } PACKED bb_player_hdr_t;
 
-typedef struct cs_config_entry {
-    uint16_t parent_category_id;
-    uint16_t category_id;
-} PACKED cs_config_entry_t;
-
-typedef struct choice_search_config {
-    // 0 = enabled, 1 = disabled. Unused for command C3
-    uint32_t choice_search_disabled;
-    cs_config_entry_t entries[5];
-} PACKED choice_search_config_t;
-
 /* Alias some stuff from its "pso_character.h" versions to what was in
    here before... */
 

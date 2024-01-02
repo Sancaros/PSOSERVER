@@ -160,16 +160,16 @@ typedef struct psocn_bb_key_config {
 
 /* BB公会数据结构 TODO 2108字节 无法整除8倍数 缺8位 会导致数据无法传输 */
 typedef struct psocn_bb_guild {
-    uint32_t guild_owner_gc;               // 公会创始人
-    uint32_t guild_id;                     // 公会索引 
+    /* 0000 */uint32_t guild_owner_gc;               // 公会创始人
+    /* 0004 */uint32_t guild_id;                     // 公会索引 
     // 公会信息     8
-    uint32_t guild_points_rank;
-    uint32_t guild_points_rest;
-    uint32_t guild_priv_level;             // 会员等级     4
-    uint16_t guild_name[0x000E];           // 公会名称     28 guild_name_tag1 guild_name_tag2 guild_name[12]
-    uint32_t guild_rank;                   // 公会排行     4
-    uint8_t guild_flag[0x0800];            // 公会图标     2048
-    // 公会奖励     8种奖励
+    /* 0008 */uint32_t guild_points_rank;
+    /* 000C */uint32_t guild_points_rest;
+    /* 0010 */uint32_t guild_priv_level;             // 会员等级     4
+    /* 0014 */uint16_t guild_name[0x000E];           // 公会名称     28 guild_name_tag1 guild_name_tag2 guild_name[12]
+    /* 0030 */uint32_t guild_rank;                   // 公会排行     4
+    /* 0034 */uint8_t guild_flag[0x0800];            // 公会图标     2048
+    /* 0834 */// 公会奖励     8种奖励
     union {
         struct{
             uint8_t guild_reward0;
@@ -184,6 +184,7 @@ typedef struct psocn_bb_guild {
         uint8_t guild_reward[8];
         uint32_t guild_rewards[2];
     }PACKED;
+    /* 0838 */
 } PACKED bb_guild_t;
 
 typedef struct psocn_bb_db_guild {
@@ -215,30 +216,91 @@ typedef struct psocn_bb_guild_card {
     uint8_t char_class;                 /* 1   人物职业 */
 } PACKED psocn_bb_guild_card_t;
 
-typedef struct psocn_bb_mode_quest_data {
+typedef struct symbol_chat_face_part {
+    uint8_t type; // FF = no part in this slot
+    uint8_t x;
+    uint8_t y;
+    // Bits: ------VH (V = reverse vertical, H = reverse horizontal)
+    uint8_t flags;
+    /* 0C */
+} PACKED symbol_chat_face_part_t;
+
+typedef struct symbol_chat_data {
+    // TODO: How does this format differ across PSO versions? The GC version
+    // treats some fields as unexpectedly large values (for example, face_spec
+    // through unused2 are byteswapped as an uint32_t), so we should verify
+    // that the order of these fields is the same on other versions.
+    // Bits: ----------------------DMSSSCCCFF
+    //   S = sound, C = face color, F = face shape, D = capture, M = mute sound
+    /* 00 */ uint32_t spec;
+    // Corner objects are specified in reading order ([0] is the top-left one).
+    // Bits (each entry): ---VHCCCZZZZZZZZ
+    //   V = reverse vertical, H = reverse horizontal, C = color, Z = object
+    // If Z is all 1 bits (0xFF), no corner object is rendered.
+    /* 04 */ uint16_t corner_objects[4];
+    symbol_chat_face_part_t face_parts[12];
+    /* 3C */
+} PACKED symbol_chat_data_t;
+
+typedef struct symbol_chat_entry {
+    /* 00 */ uint32_t present;
+    /* 04 */ uint16_t name[0x14];
+    /* 2C */ symbol_chat_data_t data;
+    /* 68 */
+} PACKED symbol_chat_entry_t;
+
+typedef struct quest_flags_for_difficulty {
+    uint8_t data[0x80];
+} PACKED quest_flags_for_difficulty_t;
+
+typedef struct quest_flags {
+    quest_flags_for_difficulty_t data[4];
+} PACKED quest_flags_t;
+
+typedef struct quest_data_1 {
+    /* 04F0 */ uint8_t unknown_a2[4];
+    /* 04F4 */ quest_flags_t quest_flags;
+    /* 06F4 */ uint32_t death_count;
+} PACKED quest_data_1_t;
+
+typedef struct choice_search_config {
+    uint32_t disabled; // 0 = enabled, 1 = disabled. Unused in command C3
+    struct {
+        uint16_t parent_choice_id;
+        uint16_t choice_id;
+    } PACKED entries[5];
+} PACKED choice_search_config_t;
+
+typedef struct psocn_bb_quest_global_flags {
     union {
         /* TODO 确认每一个任务对应的索引 0 或者 1 */
         uint32_t part[PSOCN_STLENGTH_BB_DB_MODE_QUEST_DATA];
         uint8_t all[PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA];
     }PACKED;
-} PACKED psocn_bb_mode_quest_data_t;
+} PACKED psocn_bb_quest_global_flags_t;
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节 大小 14744*/
 typedef struct psocn_bb_full_char {
     psocn_bb_char_t character;                                               // 玩家数据表               OK
     //char guildcard_string1[16];                                            // 未完成保存
     ////////////未保存
-    /* 04DC */ uint32_t unknown_a1;
+    /* 04DC */ uint32_t flags;
     /* 04E0 */ uint32_t creation_timestamp;
     /* 04E4 */ uint32_t signature; // == 0xA205B064 (see SaveFileFormats.hh)
     /* 04E8 */ uint32_t play_time_seconds;
     ////////////
     uint32_t option_flags;                                                   // account
-    uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];                   // 玩家任务数据表1          OK
+    union {
+        uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];                   // 玩家任务数据表1          OK
+        quest_data_1_t quest_flag_data;
+    };
     psocn_bank_t bank;                                                       // 玩家银行数据表           OK
     psocn_bb_guild_card_t gc;                                                // 玩家GC数据表部分         OK
     uint32_t unk2;                                                           // 未完成保存
-    uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];                 // 选项数据表
+    union {
+        uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];                 // 选项数据表
+        symbol_chat_entry_t symbol_chat[12];
+    };
     uint8_t shortcuts[PSOCN_STLENGTH_BB_DB_SHORTCUTS];                       // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
     uint16_t infoboard[0x00AC];
@@ -246,8 +308,9 @@ typedef struct psocn_bb_full_char {
     uint8_t unk3[4];
     bb_challenge_records_t c_records;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
-    uint8_t unk4[0x002C];                                                    // 未完成保存
-    psocn_bb_mode_quest_data_t mode_quest_data;                              // 玩家任务数据表2
+    choice_search_config_t choice_search_config;
+    uint8_t unk4[0x0014];                                                    // 未完成保存
+    psocn_bb_quest_global_flags_t mode_quest_data;                           // 玩家任务数据表2
     bb_system_file_t system_file;
     bb_key_config_t key_cfg;                                                 // 选项数据表               OK
     bb_guild_t guild_data;                                                   // GUILD数据表              OK
@@ -265,7 +328,7 @@ typedef struct psocn_bb_db_char {
     uint16_t infoboard[0x00AC];//172
     bb_challenge_records_t c_records;
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
-    psocn_bb_mode_quest_data_t mode_quest_data;
+    psocn_bb_quest_global_flags_t mode_quest_data;
     battle_records_t b_records;
 } PACKED psocn_bb_db_char_t;
 
