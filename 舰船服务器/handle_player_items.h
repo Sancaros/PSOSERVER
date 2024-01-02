@@ -29,7 +29,8 @@ bool check_structs_equal(const void* s1, const void* s2, size_t sz);
 
 /* 生成物品ID */
 size_t generate_item_id(lobby_t* l, size_t client_id);
-void on_item_id_generated_externally(lobby_t* l, uint8_t client_id, uint32_t item_id);
+void on_item_id_generated_externally(lobby_t* l, uint32_t item_id);
+void assign_inventory_and_bank_item_ids(lobby_t* l, ship_client_t* c, bool consume_ids);
 size_t destroy_item_id(lobby_t* l, size_t client_id);
 
 /* 修复玩家背包数据 */
@@ -107,6 +108,8 @@ void fix_inv_bank_item(ship_client_t* src);
 
 /* 整理背包物品 */
 void sort_client_bank(psocn_bank_t* bank);
+
+void assign_bank_ids(psocn_bank_t* bank, uint32_t base_id);
 
 /* 增加封印物品的解封数 */
 void add_equip_unsealable_item_kill_count(ship_client_t* src, uint16_t v);

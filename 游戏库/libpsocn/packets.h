@@ -3708,46 +3708,55 @@ typedef struct bb_rare_monster_list {
     uint16_t enemy_ids[MAX_RARE_MONSTER_IDS];
 } PACKED bb_rare_monster_list_pkt;
 
-// DF (C->S): Unknown (BB)
+// DF (C->S): Set Challenge Mode parameters (BB)
 // This command has many subcommands. It's not clear what any of them do.
 //////////////////////////////////////////////////////////////////////////
 /* TODO 完成挑战模式BLOCK DF指令*/
 typedef struct bb_challenge_01df {
     bb_pkt_hdr_t hdr;
-    uint32_t unknown_a1;
+    uint32_t stage;
 } PACKED bb_challenge_01df_pkt;
 
 typedef struct bb_challenge_02df {
     bb_pkt_hdr_t hdr;
-    uint32_t unknown_a1;
+    uint32_t template_index;
 } PACKED bb_challenge_02df_pkt;
 
 typedef struct bb_challenge_03df {
+    // No existing challenge mode quest sets this to a value other than zero.
     bb_pkt_hdr_t hdr;
-    uint32_t unknown_a1;
+    uint32_t difficulty;
 } PACKED bb_challenge_03df_pkt;
 
 typedef struct bb_challenge_04df {
+    // 设置挑战模式经验倍数
     bb_pkt_hdr_t hdr;
-    uint32_t unknown_a1;
+    float exp_multiplier;
 } PACKED bb_challenge_04df_pkt;
 
 typedef struct bb_challenge_05df {
     bb_pkt_hdr_t hdr;
-    uint32_t unknown_a1;
-    uint16_t unknown_a2[0x0C];
+    // ARGB8888
+    uint32_t rank_color;
+    uint16_t rank_text[0x0C];
 } PACKED bb_challenge_05df_pkt;
 
 typedef struct bb_challenge_06df {
     bb_pkt_hdr_t hdr;
-    uint32_t unknown_a1[3];
+    // 1 = B, 2 = A, 4 = S
+    uint32_t rank;
+    uint32_t seconds;
+    // 1 = B, 2 = A, 4 = S
+    uint32_t rank_bitmask;
 } PACKED bb_challenge_06df_pkt;
 
 typedef struct bb_challenge_07df {
     bb_pkt_hdr_t hdr;
-    uint32_t unknown_a1; //0xFFFFFFFF
-    uint32_t unknown_a2; // ALways 0
-    uint32_t unknown_a3[5]; //应该是物品item_t
+    // 0 = B, 1 = A, 2 = S, anything else = error
+    uint32_t prize_rank; //0xFFFFFFFF
+    // Same as in 06DF
+    uint32_t rank_bitmask; // ALways 0
+    item_t item;
 } PACKED bb_challenge_07df_pkt;
 
 // E0 (S->C): Tournament list (Episode 3)

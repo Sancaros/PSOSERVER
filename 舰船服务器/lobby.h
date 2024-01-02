@@ -110,7 +110,7 @@ typedef struct RankThreshold {
 typedef struct ChallengeParameters {
     uint8_t stage_number;
     uint32_t rank_color;
-    char* rank_text;
+    char rank_text[24];
     RankThreshold_t rank_thresholds[3];
 } ChallengeParameters_t;
 
@@ -149,6 +149,7 @@ struct lobby {
     bool questE0_done;
 
     uint32_t exp_mult;
+    float c_exp_mult;
 
     uint8_t v2;
     uint8_t section;
@@ -367,6 +368,7 @@ void lobby_destroy(lobby_t *l);
 void lobby_destroy_noremove(lobby_t *l);
 
 ChallengeParameters_t* create_challenge_params();
+ChallengeParameters_t* require_challenge_params(lobby_t* l);
 void destroy_challenge_params(ChallengeParameters_t* params);
 
 /* Add the client to any available lobby on the current block. */

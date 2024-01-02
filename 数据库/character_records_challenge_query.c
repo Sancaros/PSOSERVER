@@ -118,11 +118,11 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
         , c_records->times_ep1_offline[4], c_records->times_ep1_offline[5], c_records->times_ep1_offline[6], c_records->times_ep1_offline[7]
         , c_records->times_ep1_offline[8]
 
-        , c_records->grave_unk4, c_records->grave_deaths, c_records->unknown_u4
+        , c_records->grave_is_ep2, c_records->grave_deaths, c_records->grave_floor
 
         /* grave_coords_time */
-        , c_records->grave_coords_time[0], c_records->grave_coords_time[1], c_records->grave_coords_time[2], c_records->grave_coords_time[3]
-        , c_records->grave_coords_time[4]
+        , c_records->grave_time, c_records->grave_defeated_by_enemy_rt_index, c_records->grave_x, c_records->grave_y
+        , c_records->grave_z
 
         /* battle */
         , c_records->battle[0], c_records->battle[1], c_records->battle[2], c_records->battle[3]
@@ -147,7 +147,7 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
 
     SAFE_STRCAT(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->string,
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->unknown_t6[0],
         18);
 
     //SAFE_STRCAT(myquery, "', '");
@@ -300,19 +300,29 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
         j++;
     }
 
-    c_records->grave_unk4 = (uint32_t)strtoul(row[j], NULL, 10);
+    c_records->grave_is_ep2 = (uint32_t)strtoul(row[j], NULL, 10);
     j++;
 
     c_records->grave_deaths = (uint16_t)strtoul(row[j], NULL, 10);
     j++;
 
-    c_records->unknown_u4 = (uint16_t)strtoul(row[j], NULL, 16);
+    c_records->grave_floor = (uint16_t)strtoul(row[j], NULL, 16);
     j++;
 
-    for (i = 0; i < 5; i++) {
-        c_records->grave_coords_time[i] = (uint32_t)strtoul(row[j], NULL, 10);
-        j++;
-    }
+    c_records->grave_time = (uint32_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    c_records->grave_defeated_by_enemy_rt_index = (uint32_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    c_records->grave_x = (float)strtoul(row[j], NULL, 10);
+    j++;
+
+    c_records->grave_y = (float)strtoul(row[j], NULL, 10);
+    j++;
+
+    c_records->grave_z = (float)strtoul(row[j], NULL, 10);
+    j++;
 
     memcpy((char*)&c_records->grave_team, row[j], 20);
     j++;
@@ -326,7 +336,7 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
     memcpy((char*)&c_records->unk3, row[j], 4);
     j++;
 
-    memcpy((char*)&c_records->string, row[j], 18);
+    memcpy((char*)&c_records->unknown_t6[0], row[j], 18);
     j++;
 
     c_records->title_tag = (uint16_t)strtoul(row[j], NULL, 16);

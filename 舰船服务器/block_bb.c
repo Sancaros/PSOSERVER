@@ -3006,6 +3006,32 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
         return -1;
     }
 
+    ChallengeParameters_t* cp = require_challenge_params(l);
+
+    if (!cp) {
+        ERR_LOG("%s 的挑战模式房间缺少挑战参数", get_player_describe(src));
+        return -1;
+    }
+
+    cp->stage_number = pkt->stage;
+
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
+
+    PRINT_HEX_LOG(ERR_LOG, pkt, len);
+    return 0;
+}
+
+static int process_bb_challenge_02DF(ship_client_t* src, bb_challenge_02df_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = src->cur_lobby;
+
+    if (len != LE16(0x000C)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        PRINT_HEX_LOG(ERR_LOG, pkt, len);
+        return -1;
+    }
+
     ///* 初始化挑战模式的物品ID */
     //if (src->version == CLIENT_VERSION_BB) {
     //    for (size_t x = 0; x < 4; x++) {
@@ -3070,9 +3096,10 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
     return 0;
 }
 
-static int process_bb_challenge_02DF(ship_client_t* src, bb_challenge_02df_pkt* pkt) {
+static int process_bb_challenge_03DF(ship_client_t* src, bb_challenge_03df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = src->cur_lobby;
 
     if (len != LE16(0x000C)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -3080,20 +3107,8 @@ static int process_bb_challenge_02DF(ship_client_t* src, bb_challenge_02df_pkt* 
         return -1;
     }
 
-    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
-
-    PRINT_HEX_LOG(ERR_LOG, pkt, len);
-    return 0;
-}
-
-static int process_bb_challenge_03DF(ship_client_t* src, bb_challenge_03df_pkt* pkt) {
-    uint16_t type = LE16(pkt->hdr.pkt_type);
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != LE16(0x000C)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        PRINT_HEX_LOG(ERR_LOG, pkt, len);
-        return -1;
+    if (l->difficulty != pkt->difficulty) {
+        l->difficulty = pkt->difficulty;
     }
 
     DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
@@ -3105,12 +3120,15 @@ static int process_bb_challenge_03DF(ship_client_t* src, bb_challenge_03df_pkt* 
 static int process_bb_challenge_04DF(ship_client_t* src, bb_challenge_04df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = src->cur_lobby;
 
     if (len != LE16(0x000C)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         PRINT_HEX_LOG(ERR_LOG, pkt, len);
         return -1;
     }
+
+    l->c_exp_mult = pkt->exp_multiplier;
 
     DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
@@ -3121,12 +3139,23 @@ static int process_bb_challenge_04DF(ship_client_t* src, bb_challenge_04df_pkt* 
 static int process_bb_challenge_05DF(ship_client_t* src, bb_challenge_05df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = src->cur_lobby;
 
     if (len != LE16(0x0024)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         PRINT_HEX_LOG(ERR_LOG, pkt, len);
         return -1;
     }
+
+    ChallengeParameters_t* cp = require_challenge_params(l);
+
+    if (!cp) {
+        ERR_LOG("%s 的挑战模式房间缺少挑战参数", get_player_describe(src));
+        return -1;
+    }
+
+    cp->rank_color = pkt->rank_color;
+    istrncpy16_raw(ic_utf16_to_utf8, cp->rank_text, (char*)pkt->rank_text, 24, 24);
 
     DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
@@ -3137,12 +3166,27 @@ static int process_bb_challenge_05DF(ship_client_t* src, bb_challenge_05df_pkt* 
 static int process_bb_challenge_06DF(ship_client_t* src, bb_challenge_06df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = src->cur_lobby;
 
     if (len != LE16(0x0014)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         PRINT_HEX_LOG(ERR_LOG, pkt, len);
         return -1;
     }
+
+    ChallengeParameters_t* cp = require_challenge_params(l);
+
+    if (!cp) {
+        ERR_LOG("%s 的挑战模式房间缺少挑战参数", get_player_describe(src));
+        return -1;
+    }
+
+    RankThreshold_t* threshold = &cp->rank_thresholds[pkt->rank];
+    threshold->bitmask = pkt->rank_bitmask;
+    threshold->seconds = pkt->seconds;
+    //string time_str = format_duration(static_cast<uint64_t>(threshold.seconds) * 1000000);
+    //l->log.info("(Challenge mode) Rank %c threshold set to %s (bitmask %08" PRIX32 ")",
+    //    char_for_challenge_rank(cmd.rank), time_str.c_str(), threshold.bitmask);
 
     DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
@@ -3153,6 +3197,20 @@ static int process_bb_challenge_06DF(ship_client_t* src, bb_challenge_06df_pkt* 
 static int process_bb_challenge_07DF(ship_client_t* src, bb_challenge_07df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = src->cur_lobby;
+
+    bb_challenge_records_t* cr = &src->bb_pl->c_records;
+
+    ChallengeAwardState_t* award_state = l->episode == GAME_TYPE_EPISODE_2
+        ? &cr->ep2_online_award_state
+        : &cr->ep1_online_award_state;
+
+    award_state->rank_award_flags |= pkt->rank_bitmask;
+
+    //p->add_item(cmd.item, c->version());
+    //l->on_item_id_generated_externally(cmd.item.id);
+    //string desc = s->describe_item(Version::BB_V4, cmd.item, false);
+    //l->log.info("(Challenge mode) Item awarded to player %hhu: %s", c->lobby_client_id, desc.c_str());
 
     //if (len != LE16(0x0014)) {
     //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -3173,7 +3231,15 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
+    lobby_t* l = c->cur_lobby;
 
+    if (!in_game(c)) {
+        return -1;
+    }
+
+    if(l->challenge != 1) {
+        return -2;
+    }
 #ifdef DEBUG
 
     DBG_LOG("挑战指令 0x%04X %s %u字节", type, c_cmd_name(type, 0), len);

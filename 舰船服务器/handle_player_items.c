@@ -73,14 +73,42 @@ size_t generate_item_id(lobby_t* l, size_t client_id) {
     return ++l->item_lobby_id;
 }
 
-void on_item_id_generated_externally(lobby_t* l, uint8_t client_id, uint32_t item_id) {
-    if (l->version != CLIENT_VERSION_BB) {
-        if ((item_id > 0x00010000) && (item_id < 0x02010000)) {
-            uint16_t item_client_id = (item_id >> 21) & 0x7FF;
-            if (item_client_id == client_id) {
-                uint32_t* next_item_id = &(l->item_player_id[client_id]);
-                *next_item_id = (*next_item_id > item_id + 1) ? *next_item_id : item_id + 1;
+void on_item_id_generated_externally(lobby_t* l, uint32_t item_id) {
+    if ((item_id > 0x00010000) && (item_id < 0x00810000)) {
+        uint16_t item_client_id = (item_id >> 21) & 0x7FF;
+        if (item_client_id < 12) {
+            uint32_t next_item_id = l->item_player_id[item_client_id];
+            if (item_id + 1 > next_item_id) {
+                next_item_id = item_id + 1;
             }
+            l->item_player_id[item_client_id] = next_item_id;
+        }
+    }
+}
+
+void assign_inventory_and_bank_item_ids(lobby_t* l, ship_client_t* c, bool consume_ids) {
+    inventory_t* inv = get_client_inv(c);
+    psocn_bank_t* bank = get_client_bank_bb(c);
+
+    uint32_t orig_next_item_id = l->item_player_id[c->client_id];
+    for (size_t z = 0; z < inv->item_count; z++) {
+        inv->iitems[z].data.item_id = generate_item_id(l, c->client_id);
+    }
+    if (!consume_ids) {
+        l->item_player_id[c->client_id] = orig_next_item_id;
+    }
+
+    DBG_LOG("Assigned inventory item IDs%s", consume_ids ? "" : " but did not mark IDs as used");
+
+    if (consume_ids) {
+        //c->print_inventory(stderr);
+        if (bank->item_count) {
+            assign_bank_ids(bank, 0x99000000 + (c->client_id << 20));
+            DBG_LOG("Assigned bank item IDs");
+            //c->print_bank(stderr);
+        }
+        else {
+            DBG_LOG("%s Bank is empty", get_player_describe(c));
         }
     }
 }
@@ -2614,6 +2642,12 @@ void sort_client_bank(psocn_bank_t* bank) {
                 }
             }
         }
+    }
+}
+
+void assign_bank_ids(psocn_bank_t* bank, uint32_t base_id) {
+    for (size_t z = 0; z < bank->item_count; z++) {
+        bank->bitems[z].data.item_id = base_id + z;
     }
 }
 

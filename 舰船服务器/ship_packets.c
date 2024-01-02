@@ -11138,8 +11138,18 @@ static void copy_record_to_dc(dc_records_update_pkt *pkt, int entry,
 
             /* Deal with the grave data... */
             /* Copy over the simple stuff... */
-            memcpy(&pkt->entries[entry].challenge.grave_unk4,
-                   &src->pl->pc.records.challenge.grave_unk4, 24);
+            /*memcpy(&pkt->entries[entry].challenge.grave_unk4,
+                   &src->pl->pc.records.challenge.grave_unk4, 24);*/
+
+            pkt->entries[entry].challenge.grave_stage_num = src->pl->pc.records.challenge.grave_stage_num;
+            pkt->entries[entry].challenge.grave_floor = src->pl->pc.records.challenge.grave_floor;
+            pkt->entries[entry].challenge.grave_deaths = src->pl->pc.records.challenge.grave_deaths;
+
+            pkt->entries[entry].challenge.grave_time = src->pl->pc.records.challenge.grave_time;
+            pkt->entries[entry].challenge.grave_defeated_by_enemy_rt_index = src->pl->pc.records.challenge.grave_defeated_by_enemy_rt_index;
+            pkt->entries[entry].challenge.grave_x = src->pl->pc.records.challenge.grave_x;
+            pkt->entries[entry].challenge.grave_y = src->pl->pc.records.challenge.grave_y;
+            pkt->entries[entry].challenge.grave_z = src->pl->pc.records.challenge.grave_z;
 
             /* Convert the team name */
             in = 40;
@@ -11244,8 +11254,18 @@ static void copy_record_to_pc(pc_records_update_pkt *pkt, int entry,
 
             /* Deal with the grave data... */
             /* Copy over the simple stuff... */
-            memcpy(&pkt->entries[entry].challenge.grave_unk4,
-                   &src->pl->v2.records.challenge.grave_unk4, 24);
+            //memcpy(&pkt->entries[entry].challenge.grave_unk4,
+            //       &src->pl->v2.records.challenge.grave_unk4, 24);
+
+            pkt->entries[entry].challenge.grave_stage_num = src->pl->v2.records.challenge.grave_stage_num;
+            pkt->entries[entry].challenge.grave_floor = src->pl->v2.records.challenge.grave_floor;
+            pkt->entries[entry].challenge.grave_deaths = src->pl->v2.records.challenge.grave_deaths;
+
+            pkt->entries[entry].challenge.grave_time = src->pl->v2.records.challenge.grave_time;
+            pkt->entries[entry].challenge.grave_defeated_by_enemy_rt_index = src->pl->v2.records.challenge.grave_defeated_by_enemy_rt_index;
+            pkt->entries[entry].challenge.grave_x = src->pl->v2.records.challenge.grave_x;
+            pkt->entries[entry].challenge.grave_y = src->pl->v2.records.challenge.grave_y;
+            pkt->entries[entry].challenge.grave_z = src->pl->v2.records.challenge.grave_z;
 
             /* Convert the team name */
             in = 20;
@@ -11337,8 +11357,8 @@ static void copy_record_to_bb(bb_records_update_pkt* pkt, int entry,
             (src->pl->v2.records.challenge.title_color << 8);
 
         /* Copy the rank over. */
-        memcpy(pkt->entries[entry].challenge.string, src->pl->v2.records.challenge.rank_title,
-            0x0C);
+        //memcpy(pkt->entries[entry].challenge.string, src->pl->v2.records.challenge.rank_title,
+        //    0x0C);
 
         /* Copy the times for the levels and battle stuff over... */
         memcpy(pkt->entries[entry].challenge.times_ep1_online,
@@ -11366,10 +11386,10 @@ static void copy_record_to_bb(bb_records_update_pkt* pkt, int entry,
         pkt->entries[entry].challenge.title_color = src->pl->pc.records.challenge.title_color;
 
         /* Copy the rank over. */
-        for (j = 0; j < 0x0C; ++j) {
-            pkt->entries[entry].challenge.string[j] =
-                (char)LE16(src->pl->pc.records.challenge.rank_title[j]);
-        }
+        //for (j = 0; j < 0x0C; ++j) {
+        //    pkt->entries[entry].challenge.string[j] =
+        //        (char)LE16(src->pl->pc.records.challenge.rank_title[j]);
+        //}
 
         /* Copy the times for the levels and battle stuff over... */
         memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records.challenge.times_ep1_offline,

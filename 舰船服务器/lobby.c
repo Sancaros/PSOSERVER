@@ -701,6 +701,16 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     if(!chal && !battle)
         lobby_setup_drops(c, l, psocn_crc32((uint8_t *)l->name, 16));
 
+    if (chal) {
+        l->challenge_params = create_challenge_params();
+        if (!l->challenge_params) {
+            ERR_LOG("%s 的挑战模式房间挑战参数内存分配失败", get_player_describe(c));
+            pthread_mutex_destroy(&l->mutex);
+            free_safe(l);
+            return NULL;
+        }
+    }
+
 #ifdef ENABLE_LUA
     /* Initialize the script table */
     lua_newtable(block->ship->lstate);
@@ -941,9 +951,16 @@ ChallengeParameters_t* create_challenge_params() {
     ChallengeParameters_t* params = (ChallengeParameters_t*)malloc(sizeof(ChallengeParameters_t));
     if (params != NULL) {
         memset(params, 0, sizeof(ChallengeParameters_t));
-        params->rank_text = NULL;
     }
     return params;
+}
+
+ChallengeParameters_t* require_challenge_params(lobby_t* l) {
+    if (!l->challenge_params) {
+        ERR_LOG("challenge params are missing");
+        return NULL;
+    }
+    return l->challenge_params;
 }
 
 void destroy_challenge_params(ChallengeParameters_t* params) {

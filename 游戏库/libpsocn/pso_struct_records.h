@@ -32,8 +32,19 @@
 #pragma pack(push, 1) 
 #endif
 
+typedef struct ChallengeAwardState {
+#ifdef __BIG_ENDIAN__
+    uint32_t rank_award_flags;
+    uint32_t maximum_rank; // Encrypted; see decrypt_challenge_time
+#else
+    uint32_t maximum_rank; // Encrypted; see decrypt_challenge_time
+    uint32_t rank_award_flags;
+#endif
+} PACKED ChallengeAwardState_t;
+
 /* 24 */
 typedef struct battle_records {
+    // On Episode 3, place_counts[0] is win count and [1] is loss count
     uint16_t place_counts[4];//8
     uint16_t disconnect_count;//2
     union data {
@@ -72,9 +83,22 @@ typedef struct dc_challenge_records {
         char rank_title[12]; //³ÆºÅ
     }PACKED;
     uint32_t times_ep1_online[9];
-    uint16_t grave_unk4;
+    uint8_t grave_stage_num;
+    uint8_t grave_floor;
     uint16_t grave_deaths;
-    uint32_t grave_coords_time[5];
+    // grave_time is encoded with the following bit fields:
+//   YYYYMMMM DDDDDDDD HHHHHHHH mmmmmmmm
+//   Y = year after 2000 (clamped to [0, 15])
+//   M = month
+//   D = day
+//   H = hour
+//   m = minute
+    /* 38 */ uint32_t grave_time;
+    /* 3C */ uint32_t grave_defeated_by_enemy_rt_index;
+    /* 40 */ float grave_x;
+    /* 44 */ float grave_y;
+    /* 48 */ float grave_z;
+    //uint32_t grave_coords_time[5];
     union {
         struct {
             char grave_team_tag;
@@ -108,9 +132,22 @@ typedef struct pc_challenge_records {
         uint16_t rank_title[12]; //³ÆºÅ
     }PACKED;
     uint32_t times_ep1_online[9];
-    uint16_t grave_unk4;
+    uint8_t grave_stage_num;
+    uint8_t grave_floor;
     uint16_t grave_deaths;
-    uint32_t grave_coords_time[5];
+    // grave_time is encoded with the following bit fields:
+//   YYYYMMMM DDDDDDDD HHHHHHHH mmmmmmmm
+//   Y = year after 2000 (clamped to [0, 15])
+//   M = month
+//   D = day
+//   H = hour
+//   m = minute
+    /* 38 */ uint32_t grave_time;
+    /* 3C */ uint32_t grave_defeated_by_enemy_rt_index;
+    /* 40 */ float grave_x;
+    /* 44 */ float grave_y;
+    /* 48 */ float grave_z;
+    //uint32_t grave_coords_time[5];
     union {
         struct {
             uint16_t grave_team_tag;
@@ -138,10 +175,25 @@ typedef struct v3_challenge_records {
     uint32_t times_ep1_online[9];
     uint32_t times_ep2_online[5];
     uint32_t times_ep1_offline[9];
-    uint8_t unknown_g3[4];
+    uint8_t grave_is_ep2;
+    uint8_t grave_stage_num;
+    uint8_t grave_floor;
+    uint8_t unknown_g0;
     uint16_t grave_deaths;
     uint16_t unknown_u4;
-    uint32_t grave_coords_time[5];
+    // grave_time is encoded with the following bit fields:
+//   YYYYMMMM DDDDDDDD HHHHHHHH mmmmmmmm
+//   Y = year after 2000 (clamped to [0, 15])
+//   M = month
+//   D = day
+//   H = hour
+//   m = minute
+    /* 38 */ uint32_t grave_time;
+    /* 3C */ uint32_t grave_defeated_by_enemy_rt_index;
+    /* 40 */ float grave_x;
+    /* 44 */ float grave_y;
+    /* 48 */ float grave_z;
+    //uint32_t grave_coords_time[5];
     union {
         struct {
             char grave_team_tag;
@@ -152,7 +204,10 @@ typedef struct v3_challenge_records {
     }PACKED;
     char grave_message[32];
     uint8_t unknown_m5[4];
-    uint32_t unknown_t6[9];
+    uint32_t unknown_t6[3];
+    ChallengeAwardState_t ep1_online_award_state;
+    ChallengeAwardState_t ep2_online_award_state;
+    ChallengeAwardState_t ep1_offline_award_state;
     union {
         struct {
             char title_tag;
@@ -178,10 +233,25 @@ typedef struct bb_challenge_records {
     uint32_t times_ep1_online[9];
     uint32_t times_ep2_online[5];
     uint32_t times_ep1_offline[9];
-    uint32_t grave_unk4;
+    uint8_t grave_is_ep2;
+    uint8_t grave_stage_num;
+    uint8_t grave_floor;
+    uint8_t unknown_g0;
     uint16_t grave_deaths;
-    uint16_t unknown_u4;
-    uint32_t grave_coords_time[5];
+    uint8_t unknown_u4[2];
+    // grave_time is encoded with the following bit fields:
+//   YYYYMMMM DDDDDDDD HHHHHHHH mmmmmmmm
+//   Y = year after 2000 (clamped to [0, 15])
+//   M = month
+//   D = day
+//   H = hour
+//   m = minute
+    /* 38 */ uint32_t grave_time;
+    /* 3C */ uint32_t grave_defeated_by_enemy_rt_index;
+    /* 40 */ float grave_x;
+    /* 44 */ float grave_y;
+    /* 48 */ float grave_z;
+    //uint32_t grave_coords_time[5];
     union {
         struct {
             uint16_t grave_team_tag;
@@ -192,7 +262,13 @@ typedef struct bb_challenge_records {
     }PACKED;
     uint16_t grave_message[32];
     uint8_t unk3[4];
-    uint16_t string[18];
+
+    uint32_t unknown_t6[3];
+    ChallengeAwardState_t ep1_online_award_state;
+    ChallengeAwardState_t ep2_online_award_state;
+    ChallengeAwardState_t ep1_offline_award_state;
+    //uint16_t string[18];
+
     union {
         struct {
             uint16_t title_tag;
