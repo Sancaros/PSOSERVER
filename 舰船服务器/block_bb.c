@@ -2239,7 +2239,7 @@ static int bb_process_full_char(ship_client_t* src, bb_full_char_pkt* pkt) {
     /////////////////////////////////////////////////////////////////////////////////////tech_menu
     memcpy(char_data->tech_menu, src->bb_pl->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
     /////////////////////////////////////////////////////////////////////////////////////mode_quest_data
-    memcpy(char_data->mode_quest_data.all, src->bb_pl->mode_quest_data.all, PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    memcpy(char_data->quest_global_flags.all, src->bb_pl->quest_global_flags.all, PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     //for (i = 0; i < 276; i++) {
     //    char_data->unk1[i] = 0x01;

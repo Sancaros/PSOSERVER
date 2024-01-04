@@ -274,8 +274,8 @@ typedef struct choice_search_config {
 typedef struct psocn_bb_quest_global_flags {
     union {
         /* TODO 确认每一个任务对应的索引 0 或者 1 */
-        uint32_t part[PSOCN_STLENGTH_BB_DB_MODE_QUEST_DATA];
-        uint8_t all[PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA];
+        uint32_t part[PSOCN_STLENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA];
+        uint8_t all[PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA];
     }PACKED;
 } PACKED psocn_bb_quest_global_flags_t;
 
@@ -309,8 +309,11 @@ typedef struct psocn_bb_full_char {
     bb_challenge_records_t c_records;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
     choice_search_config_t choice_search_config;
+    //uint8_t unknow_a6[0x10];
+    //uint32_t quest_global_flags[0x10];
+    //uint8_t unknow_a7[0x1C];
     uint8_t unk4[0x0014];                                                    // 未完成保存
-    psocn_bb_quest_global_flags_t mode_quest_data;                           // 玩家任务数据表2
+    psocn_bb_quest_global_flags_t quest_global_flags;                        // 玩家任务数据表2
     bb_system_file_t system_file;
     bb_key_config_t key_cfg;                                                 // 选项数据表               OK
     bb_guild_t guild_data;                                                   // GUILD数据表              OK
@@ -328,7 +331,7 @@ typedef struct psocn_bb_db_char {
     uint16_t infoboard[0x00AC];//172
     bb_challenge_records_t c_records;
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
-    psocn_bb_quest_global_flags_t mode_quest_data;
+    psocn_bb_quest_global_flags_t quest_global_flags;
     battle_records_t b_records;
 } PACKED psocn_bb_db_char_t;
 

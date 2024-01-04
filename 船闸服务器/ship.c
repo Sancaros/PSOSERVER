@@ -3334,7 +3334,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_mode_quest_data(&char_data->mode_quest_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_mode_quest_data(&char_data->quest_global_flags, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         ERR_LOG("(GC %"PRIu32 ", 槽位 %" PRIu8 ") 更新的quest_data2数据有误 %s", gc, slot, char_data->character.dress_data.gc_string);
 
         return 0;
@@ -3696,7 +3696,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
         }
 
         /* 从数据库中获取玩家角色的mode_quest_data数据 */
-        if ((err |= db_get_char_mode_quest_data(gc, slot, &bb_data->mode_quest_data, 0))) {
+        if ((err |= db_get_char_mode_quest_data(gc, slot, &bb_data->quest_global_flags, 0))) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色mode_quest_data数据, 错误码:%d", gc, slot, err);
         }
 
@@ -3737,7 +3737,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             db_update_char_name(&backupdata.character.name, gc, slot);
             db_update_char_techniques(&backupdata.character, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_quest_data1(backupdata.quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR);
-            db_update_char_mode_quest_data(&backupdata.mode_quest_data, gc, slot, PSOCN_DB_UPDATA_CHAR);
+            db_update_char_mode_quest_data(&backupdata.quest_global_flags, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_tech_menu(backupdata.tech_menu, gc, slot, PSOCN_DB_UPDATA_CHAR);
             db_update_char_bank(&backupdata.bank, gc, slot);
             db_update_char_b_records(&backupdata.b_records, gc, slot, PSOCN_DB_UPDATA_CHAR);

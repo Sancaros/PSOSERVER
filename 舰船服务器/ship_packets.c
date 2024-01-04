@@ -11915,7 +11915,7 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(&pkt->data.b_records, &c->bb_pl->b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
     memcpy(&pkt->data.c_records, &c->bb_pl->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-    memcpy(pkt->data.mode_quest_data.all, c->bb_pl->mode_quest_data.all, PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    memcpy(pkt->data.quest_global_flags.all, c->bb_pl->quest_global_flags.all, PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
     ///////////////////////////////////////////////////////////////////////////////////////
     /* 复制完整的公会数据 从首个元素开始 复制 2108字节 */

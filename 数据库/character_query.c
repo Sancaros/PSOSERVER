@@ -471,8 +471,8 @@ static int db_update_character(psocn_bb_db_char_t* data, char* table, uint32_t g
 
     SAFE_STRCAT(myquery, "', mode_quest_data = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->mode_quest_data.all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_global_flags.all,
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
         "slot = '%" PRIu8 "'", gc, slot);
@@ -673,8 +673,8 @@ int db_insert_char_data(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot
 
     SAFE_STRCAT(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->mode_quest_data.all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->quest_global_flags.all,
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     SAFE_STRCAT(myquery, "', '");
 

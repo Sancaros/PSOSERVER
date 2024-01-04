@@ -69,8 +69,8 @@ int db_update_character_default(psocn_bb_db_char_t* data, int index) {
 
     SAFE_STRCAT(myquery, "', mode_quest_data = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->mode_quest_data.all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_global_flags.all,
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `index` = %d", index);
 
@@ -129,7 +129,7 @@ int db_get_character_default(psocn_bb_db_char_t* data, int index) {
     memcpy((char*)&data->b_records, row[6], PSOCN_STLENGTH_BATTLE_RECORDS);
     memcpy((char*)&data->c_records, row[7], PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     memcpy((char*)&data->tech_menu, row[8], PSOCN_STLENGTH_BB_DB_TECH_MENU);
-    memcpy((char*)&data->mode_quest_data.all, row[9], PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    memcpy((char*)&data->quest_global_flags.all, row[9], PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     return 0;
 }
@@ -231,8 +231,8 @@ int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->mode_quest_data.all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_global_flags.all,
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "')");
 

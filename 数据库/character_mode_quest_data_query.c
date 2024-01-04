@@ -61,7 +61,7 @@ static int db_updata_mode_quest_data(psocn_bb_quest_global_flags_t* mode_quest_d
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
         (char*)mode_quest_data->all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
         "slot = '%" PRIu8 "'", gc, slot);
@@ -107,7 +107,7 @@ int db_insert_char_mode_quest_data(psocn_bb_quest_global_flags_t* mode_quest_dat
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
         (char*)mode_quest_data->all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     SAFE_STRCAT(myquery, "')");
 
@@ -192,10 +192,10 @@ int db_get_char_mode_quest_data(uint32_t gc, uint8_t slot, psocn_bb_quest_global
 
     /* 获取二进制数据 */
     int i = 3;
-    memcpy(mode_quest_data, row[i], PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    memcpy(mode_quest_data, row[i], PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
     i++;
 
-    for (size_t x = 0; x < PSOCN_STLENGTH_BB_DB_MODE_QUEST_DATA; x++) {
+    for (size_t x = 0; x < PSOCN_STLENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA; x++) {
         mode_quest_data->part[x] = (uint32_t)strtoul(row[i], &endptr, 10);
         i++;
     }

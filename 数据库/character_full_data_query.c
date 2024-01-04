@@ -105,7 +105,7 @@ int db_get_orignal_char_full_to_db_data(uint32_t gc, uint8_t slot, psocn_bb_db_c
     memcpy(char_data->infoboard, org_char->data.infoboard, sizeof(char_data->infoboard));
     memcpy(&char_data->c_records, &org_char->data.c_records, sizeof(bb_challenge_records_t));
     memcpy(char_data->tech_menu, org_char->data.tech_menu, sizeof(char_data->tech_menu));
-    memcpy(char_data->mode_quest_data.all, org_char->data.mode_quest_data.all, PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    memcpy(char_data->quest_global_flags.all, org_char->data.quest_global_flags.all, PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
     memcpy(&char_data->b_records, &org_char->data.b_records, sizeof(battle_records_t));
 
     psocn_db_result_free(result);
@@ -212,8 +212,8 @@ int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
 
     SAFE_STRCAT(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->mode_quest_data.all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_global_flags.all,
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     SAFE_STRCAT(myquery, "', '");
 
@@ -294,8 +294,8 @@ int db_update_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t 
 
     SAFE_STRCAT(myquery, "', mode_quest_data = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->mode_quest_data.all,
-        PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&full_char->quest_global_flags.all,
+        PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA);
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `guildcard` = '%u' AND `slot` = '%u'", gc, slot);
 

@@ -7014,7 +7014,7 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000000 )   14 00 60 00 00 00 00 00  D2 03 FF FF 05 00 00 00    ..`.............
     //( 00000010 )   9A D7 00 00                                         ....
     if (quest_offset < 23) {
-        src->bb_pl->mode_quest_data.part[quest_offset] = value;
+        src->bb_pl->quest_global_flags.part[quest_offset] = value;
     }
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);

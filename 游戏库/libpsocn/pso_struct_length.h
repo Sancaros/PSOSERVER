@@ -57,8 +57,8 @@
 #define PSOCN_STLENGTH_BB_DB_OPTS               4448
 #define PSOCN_STLENGTH_BB_DB_QUEST_DATA1        520
 ////////////////////////////////////////////////////////////////
-#define PSOCN_STLENGTH_BB_DB_MODE_QUEST_DATA    22
-#define PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA  88
+#define PSOCN_STLENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA    22
+#define PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA  88
 ////////////////////////////////////////////////////////////////
 #define PSOCN_STLENGTH_BB_DB_TECH_MENU          40
 #define PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS       1248

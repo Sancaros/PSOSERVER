@@ -1402,8 +1402,8 @@ static int handle_clean(ship_client_t* c, const char* params) {
 
         if (!strcmp(params, "quest2")) {
 
-            for (int i = 0; i < PSOCN_DATALENGTH_BB_DB_MODE_QUEST_DATA; i++) {
-                c->bb_pl->mode_quest_data.all[i] = 0x00;
+            for (int i = 0; i < PSOCN_DATALENGTH_BB_DB_QUEST_GLOBAL_FLAGS_DATA; i++) {
+                c->bb_pl->quest_global_flags.all[i] = 0x00;
             }
 
             send_txt(c, "%s", __(c, "\tE\tC4任务2数据已清空."));
